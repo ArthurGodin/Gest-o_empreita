@@ -1,0 +1,21 @@
+-- ============================================================================
+-- Seed — dados de exemplo para desenvolvimento local
+-- ============================================================================
+-- ATENÇÃO: este script é apenas para dev. NÃO rodar em produção.
+-- Roda automaticamente quando você executa `supabase db reset`.
+--
+-- Para usar:
+--   1. Crie um usuário pelo Supabase Studio (http://localhost:54323)
+--      ou pelo signup na app, e copie o UUID.
+--   2. Substitua o placeholder abaixo e rode `supabase db reset`.
+-- ============================================================================
+
+-- Exemplo (descomente e ajuste o user_id):
+--
+-- with new_company as (
+--   insert into public.companies (name, legal_name, phone, city, state)
+--   values ('Coberturas do Léo', 'Coberturas do Léo LTDA', '(11) 99999-0000', 'São Paulo', 'SP')
+--   returning id
+-- )
+-- insert into public.company_members (company_id, user_id, role)
+-- select id, 'COLE-AQUI-O-UUID-DO-USER'::uuid, 'owner' from new_company;
