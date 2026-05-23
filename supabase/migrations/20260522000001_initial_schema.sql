@@ -1,4 +1,4 @@
--- ============================================================================
+  -- ============================================================================
 -- Migration 0001 — Schema inicial multi-tenant
 -- ============================================================================
 -- Cria as tabelas fundacionais: companies, company_members, customers,
@@ -8,8 +8,29 @@
 -- Princípio de isolamento: a função public.user_company_ids() retorna o
 -- conjunto de companies do usuário autenticado. Todas as políticas filtram
 -- por essa função, garantindo que tenant A jamais enxergue dado de tenant B.
+--
+-- IDEMPOTENTE: pode rodar quantas vezes quiser — o bloco de reset abaixo
+-- limpa qualquer estado anterior antes de recriar.
 -- ============================================================================
 
+-- ─── Reset (idempotência) ───────────────────────────────────────────────────
+-- Ordem reversa de dependência. CASCADE remove triggers, índices, policies e FKs.
+drop table if exists public.quote_items     cascade;
+drop table if exists public.quotes          cascade;
+drop table if exists public.projects        cascade;
+drop table if exists public.customers       cascade;
+drop table if exists public.company_members cascade;
+drop table if exists public.companies       cascade;
+
+drop function if exists public.user_role_in(uuid)  cascade;
+drop function if exists public.user_company_ids()  cascade;
+drop function if exists public.tg_set_updated_at() cascade;
+
+drop type if exists public.quote_status     cascade;
+drop type if exists public.project_status   cascade;
+drop type if exists public.company_role     cascade;
+
+-- ─── Extensões ──────────────────────────────────────────────────────────────
 create extension if not exists "pgcrypto";
 
 -- ─── Enums ──────────────────────────────────────────────────────────────────
@@ -327,7 +348,7 @@ create policy "public share token — read quote items"
   on public.quote_items for select
   to anon
   using (
-    exists (
+    exists (  
       select 1 from public.quotes q
       where q.id = quote_items.quote_id
         and q.share_token is not null

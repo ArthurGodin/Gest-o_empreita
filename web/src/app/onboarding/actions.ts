@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const schema = z.object({
   name: z.string().min(2, "Informe o nome da empresa"),
@@ -34,6 +35,7 @@ export async function createCompanyAction(
     };
   }
 
+  // 1. Verificar sessão com o client normal (respeita RLS).
   const supabase = createClient();
   const {
     data: { user },
@@ -43,29 +45,38 @@ export async function createCompanyAction(
     return { ok: false, error: "Sessão expirada. Faça login novamente." };
   }
 
-  const { data: company, error: companyError } = await supabase
+  // 2. Onboarding é bootstrap: o usuário ainda não é membro de nenhuma empresa.
+  // Usamos o admin client (service role) para criar empresa + membership
+  // de forma atômica. Justificado porque já validamos a sessão acima.
+  const admin = createAdminClient();
+
+  const { data: company, error: companyError } = await admin
     .from("companies")
     .insert(parsed.data)
     .select("id")
     .single();
 
   if (companyError || !company) {
+    console.error("[onboarding] insert companies failed:", companyError);
     return {
       ok: false,
-      error: "Não foi possível criar a empresa. Tente novamente.",
+      error: `Erro ao criar empresa: ${companyError?.message ?? "desconhecido"} ${companyError?.code ? `(code ${companyError.code})` : ""}`,
     };
   }
 
-  const { error: memberError } = await supabase.from("company_members").insert({
-    company_id: company.id,
+  const { error: memberError } = await admin.from("company_members").insert({
+    company_id: company.id as string,
     user_id: user.id,
     role: "owner",
   });
 
   if (memberError) {
+    console.error("[onboarding] insert company_members failed:", memberError);
+    // Rollback manual: remove a company recém-criada para não deixar órfã
+    await admin.from("companies").delete().eq("id", company.id as string);
     return {
       ok: false,
-      error: "Empresa criada, mas não foi possível vincular o usuário.",
+      error: `Empresa criada, mas erro ao vincular usuário: ${memberError.message} ${memberError.code ? `(code ${memberError.code})` : ""}`,
     };
   }
 
