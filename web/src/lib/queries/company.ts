@@ -1,8 +1,10 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import type { CompanyRole } from "@/lib/supabase/types";
 
 export interface CompanyMembership {
   company_id: string;
-  role: "owner" | "manager" | "foreman" | "worker";
+  role: CompanyRole;
   company: {
     id: string;
     name: string;
@@ -10,7 +12,11 @@ export interface CompanyMembership {
   };
 }
 
-export async function getUserCompanies(): Promise<CompanyMembership[]> {
+/**
+ * Todas as empresas que o usuário atual é membro.
+ * Cacheado por request (React cache).
+ */
+export const getUserCompanies = cache(async (): Promise<CompanyMembership[]> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("company_members")
@@ -24,17 +30,27 @@ export async function getUserCompanies(): Promise<CompanyMembership[]> {
         logo_url
       )
     `,
-    )
-    .throwOnError();
+    );
 
   if (error) throw error;
   return (data ?? []) as unknown as CompanyMembership[];
-}
+});
 
-export async function getCurrentUser() {
+/**
+ * Empresa ativa do usuário (a primeira por enquanto — futuramente teremos
+ * um switcher de empresa quando suportarmos multi-empresa por usuário).
+ */
+export const getActiveCompany = cache(
+  async (): Promise<CompanyMembership | null> => {
+    const memberships = await getUserCompanies();
+    return memberships[0] ?? null;
+  },
+);
+
+export const getCurrentUser = cache(async () => {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
