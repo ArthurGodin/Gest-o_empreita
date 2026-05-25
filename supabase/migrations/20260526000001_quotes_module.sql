@@ -9,7 +9,7 @@
 -- - quote_sequences   : numeração atômica ORC-{ano}-{seq} por empresa
 -- - function next_quote_number(company_id)
 -- - trigger pra gerar share_token cripto-seguro em quotes
--- - storage buckets: company-logos (público) e quotes-pdf (privado)
+-- - storage buckets: company-logos (público)   e quotes-pdf (privado)
 --
 -- IDEMPOTENTE: pode rodar quantas vezes precisar.
 -- ============================================================================

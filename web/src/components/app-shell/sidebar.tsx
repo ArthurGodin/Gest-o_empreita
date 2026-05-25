@@ -6,6 +6,7 @@ import {
   FileText,
   HardHat,
   Home,
+  Package,
   Users,
   Wallet,
   Settings,
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/app/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/app/obras", label: "Obras", icon: HardHat },
   { href: "/app/clientes", label: "Clientes", icon: Users },
+  { href: "/app/catalogo", label: "Catálogo", icon: Package },
   { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
 ] as const;
 

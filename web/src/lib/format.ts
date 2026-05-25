@@ -3,6 +3,68 @@
  * helpers visuais (cn) e isso aqui é dado.
  */
 
+// ─── Dinheiro ──────────────────────────────────────────────────────────────
+
+/**
+ * Converte input de usuário ("R$ 8,00", "8,00", "8.00", "8", "1.234,56")
+ * em valor em centavos (int).
+ *
+ * Retorna null se a entrada não bate o formato esperado.
+ *
+ * Regras:
+ *   - Strip de espaços, "R$", e separadores de milhares
+ *   - Aceita vírgula OU ponto como separador decimal (último não-dígito vira ponto)
+ *   - Não aceita negativo
+ *   - Não aceita mais de 2 casas decimais (truncia, não arredonda — comportamento de "centavos exatos")
+ */
+export function parseBRLToCents(input: string): number | null {
+  if (input == null) return null;
+  const trimmed = String(input).trim();
+  if (!trimmed) return null;
+
+  // Remove "R$", espaços e qualquer char não dígito/separador
+  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  if (cleaned.includes("-")) return null;
+
+  // Identifica o separador decimal: o ÚLTIMO ponto ou vírgula é decimal,
+  // os anteriores são milhar.
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  const decimalSepIdx = Math.max(lastComma, lastDot);
+
+  let integerPart: string;
+  let decimalPart: string;
+  if (decimalSepIdx === -1) {
+    integerPart = cleaned;
+    decimalPart = "";
+  } else {
+    integerPart = cleaned.slice(0, decimalSepIdx).replace(/[.,]/g, "");
+    decimalPart = cleaned.slice(decimalSepIdx + 1).replace(/[.,]/g, "");
+  }
+
+  if (!integerPart) integerPart = "0";
+  if (!/^\d+$/.test(integerPart)) return null;
+  if (decimalPart && !/^\d+$/.test(decimalPart)) return null;
+
+  // Trunca a 2 casas decimais (não permitimos mais)
+  const decimalNormalized = (decimalPart + "00").slice(0, 2);
+
+  const cents = parseInt(integerPart, 10) * 100 + parseInt(decimalNormalized || "0", 10);
+  if (isNaN(cents)) return null;
+  return cents;
+}
+
+/** Inverso de parseBRLToCents: 800 → "8,00". Pra preencher inputs editáveis. */
+export function centsToBRLInput(cents: number): string {
+  if (!Number.isFinite(cents)) return "0,00";
+  const sign = cents < 0 ? "-" : "";
+  const abs = Math.abs(cents);
+  const reais = Math.floor(abs / 100);
+  const centavos = (abs % 100).toString().padStart(2, "0");
+  return `${sign}${reais.toString()},${centavos}`;
+}
+
 export function formatPhone(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const digits = raw.replace(/\D/g, "");
