@@ -30,6 +30,8 @@ export type QuoteStatus =
   | "rejected"
   | "expired";
 export type QuoteApprovalAction = "approved" | "rejected";
+export type StageStatus = "todo" | "in_progress" | "done";
+export type CostCategory = "material" | "labor" | "freight" | "other";
 
 export interface Database {
   public: {
@@ -134,6 +136,9 @@ export interface Database {
           starts_on: string | null;
           ends_on: string | null;
           budget_cents: number | null;
+          template_id: string | null;
+          progress_pct: number | null;
+          last_diary_at: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -149,6 +154,9 @@ export interface Database {
           starts_on?: string | null;
           ends_on?: string | null;
           budget_cents?: number | null;
+          template_id?: string | null;
+          progress_pct?: number | null;
+          last_diary_at?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -314,6 +322,212 @@ export interface Database {
         >;
         Relationships: [];
       };
+      stage_templates: {
+        Row: {
+          id: string;
+          company_id: string | null;
+          name: string;
+          description: string | null;
+          is_system: boolean;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id?: string | null;
+          name: string;
+          description?: string | null;
+          is_system?: boolean;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["stage_templates"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      stage_template_items: {
+        Row: {
+          id: string;
+          template_id: string;
+          position: number;
+          name: string;
+          est_days: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_id: string;
+          position?: number;
+          name: string;
+          est_days?: number | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["stage_template_items"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      project_stages: {
+        Row: {
+          id: string;
+          project_id: string;
+          company_id: string;
+          position: number;
+          name: string;
+          status: StageStatus;
+          est_days: number | null;
+          started_on: string | null;
+          completed_on: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          company_id: string;
+          position?: number;
+          name: string;
+          status?: StageStatus;
+          est_days?: number | null;
+          started_on?: string | null;
+          completed_on?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["project_stages"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      diary_entries: {
+        Row: {
+          id: string;
+          project_id: string;
+          company_id: string;
+          author_id: string | null;
+          body: string;
+          weather: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          company_id: string;
+          author_id?: string | null;
+          body?: string;
+          weather?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["diary_entries"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      diary_photos: {
+        Row: {
+          id: string;
+          entry_id: string;
+          project_id: string;
+          company_id: string;
+          storage_path: string;
+          width: number | null;
+          height: number | null;
+          size_bytes: number;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          entry_id: string;
+          project_id: string;
+          company_id: string;
+          storage_path: string;
+          width?: number | null;
+          height?: number | null;
+          size_bytes: number;
+          position?: number;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["diary_photos"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      project_costs: {
+        Row: {
+          id: string;
+          project_id: string;
+          company_id: string;
+          stage_id: string | null;
+          category: CostCategory;
+          description: string;
+          amount_cents: number;
+          incurred_on: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          company_id: string;
+          stage_id?: string | null;
+          category: CostCategory;
+          description: string;
+          amount_cents: number;
+          incurred_on?: string;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["project_costs"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      time_entries: {
+        Row: {
+          id: string;
+          project_id: string;
+          company_id: string;
+          worker_name: string;
+          worker_role: string | null;
+          worked_on: string;
+          started_at: string;
+          ended_at: string | null;
+          hours_worked: number | null;
+          gps_lat: number | null;
+          gps_lng: number | null;
+          gps_accuracy_m: number | null;
+          notes: string | null;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          company_id: string;
+          worker_name: string;
+          worker_role?: string | null;
+          worked_on?: string;
+          started_at: string;
+          ended_at?: string | null;
+          hours_worked?: number | null;
+          gps_lat?: number | null;
+          gps_lng?: number | null;
+          gps_accuracy_m?: number | null;
+          notes?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["time_entries"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -342,12 +556,31 @@ export interface Database {
         };
         Returns: void;
       };
+      insert_diary_entry: {
+        Args: {
+          p_project_id: string;
+          p_company_id: string;
+          p_body: string;
+          p_photos: Json;
+        };
+        Returns: string;
+      };
+      instantiate_template_stages: {
+        Args: {
+          p_project_id: string;
+          p_company_id: string;
+          p_template_id: string;
+        };
+        Returns: number;
+      };
     };
     Enums: {
       company_role: CompanyRole;
       project_status: ProjectStatus;
       quote_status: QuoteStatus;
       quote_approval_action: QuoteApprovalAction;
+      stage_status: StageStatus;
+      cost_category: CostCategory;
     };
     CompositeTypes: Record<string, never>;
   };

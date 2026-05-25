@@ -14,6 +14,7 @@ import { env } from "@/lib/env";
 
 export const BUCKET_COMPANY_LOGOS = "company-logos";
 export const BUCKET_QUOTES_PDF = "quotes-pdf";
+export const BUCKET_DIARY_PHOTOS = "diary-photos";
 
 // ─── Logos ─────────────────────────────────────────────────────────────────
 
@@ -92,6 +93,66 @@ export async function downloadQuotePdf(
     // o caller pode comparar com quote.updated_at pra decidir invalidação.
     lastModified: new Date(),
   };
+}
+
+// ─── Fotos do diário (bucket privado) ──────────────────────────────────────
+
+function randomSegment(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+function uuidv4(): string {
+  // crypto.randomUUID está disponível no runtime Node 18+ do Vercel.
+  return globalThis.crypto.randomUUID();
+}
+
+export async function uploadDiaryPhoto(
+  companyId: string,
+  projectId: string,
+  buffer: Buffer,
+): Promise<{ ok: true; storage_path: string } | { ok: false; error: string }> {
+  const folder = `${companyId}/${projectId}/upload-${Date.now()}-${randomSegment()}`;
+  const path = `${folder}/${uuidv4()}.jpg`;
+  const admin = createAdminClient();
+
+  const { error } = await admin.storage
+    .from(BUCKET_DIARY_PHOTOS)
+    .upload(path, buffer, {
+      contentType: "image/jpeg",
+      upsert: false,
+      cacheControl: "3600",
+    });
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, storage_path: path };
+}
+
+/**
+ * Gera URL assinada para uma foto do diário. Usada pelo link público e
+ * pela rota autenticada de stream de foto.
+ *
+ * TTL default 1h.
+ */
+export async function signedDiaryPhotoUrl(
+  storagePath: string,
+  ttlSeconds = 3600,
+): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from(BUCKET_DIARY_PHOTOS)
+    .createSignedUrl(storagePath, ttlSeconds);
+
+  if (error || !data?.signedUrl) {
+    return { ok: false, error: error?.message ?? "Foto não encontrada." };
+  }
+  return { ok: true, url: data.signedUrl };
+}
+
+export async function deleteDiaryPhotos(storagePaths: string[]): Promise<void> {
+  if (storagePaths.length === 0) return;
+  const admin = createAdminClient();
+  // Storage API aceita batch
+  await admin.storage.from(BUCKET_DIARY_PHOTOS).remove(storagePaths);
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
