@@ -1,4 +1,5 @@
-import { CalendarDays, CheckCircle2, Clock, MessageSquare, Phone, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, Download, MessageSquare, Phone, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone } from "@/lib/format";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
@@ -250,6 +251,22 @@ export function PublicQuoteView({
         {/* ── Aprovação (apenas sent/viewed) ───────────────────────── */}
         {(status === "sent" || status === "viewed") && (
           <ApprovalForm token={quote.share_token} />
+        )}
+
+        {/* ── Baixar PDF (sempre disponível) ────────────────────────── */}
+        {status !== "expired" && (
+          <div className="flex justify-center">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <a
+                href={`/q/${quote.share_token}/pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download className="h-4 w-4" />
+                Baixar PDF do orçamento
+              </a>
+            </Button>
+          </div>
         )}
 
         {/* ── Footer ───────────────────────────────────────────────── */}

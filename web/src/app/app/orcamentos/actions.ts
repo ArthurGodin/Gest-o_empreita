@@ -489,6 +489,101 @@ export async function revokeShareTokenAction(id: string): Promise<SendQuoteResul
   };
 }
 
+// ─── Convert approved quote → project ──────────────────────────────────────
+
+export type ConvertToProjectResult =
+  | { ok: true; project_id: string }
+  | { ok: false; error: string };
+
+/**
+ * Cria um `projects` row a partir de um orçamento aprovado e linka via
+ * `quotes.project_id`. Idempotente — se já tem project_id, retorna o existente.
+ */
+export async function convertToProjectAction(
+  quoteId: string,
+): Promise<ConvertToProjectResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const supabase = createClient();
+
+  const { data: quote, error: fetchError } = await supabase
+    .from("quotes")
+    .select(
+      "id, status, project_id, customer_id, title, total_cents, customer:customers(address)",
+    )
+    .eq("id", quoteId)
+    .eq("company_id", company.company_id)
+    .maybeSingle();
+
+  if (fetchError) {
+    logServerError("quotes.convert.fetch", fetchError);
+    return { ok: false, error: clientErrorFor(fetchError) };
+  }
+  if (!quote) return { ok: false, error: "Orçamento não encontrado." };
+
+  const q = quote as unknown as {
+    id: string;
+    status: string;
+    project_id: string | null;
+    customer_id: string;
+    title: string;
+    total_cents: number;
+    customer: { address: string | null } | null;
+  };
+
+  if (q.status !== "approved") {
+    return {
+      ok: false,
+      error: "Só dá pra virar obra um orçamento aprovado pelo cliente.",
+    };
+  }
+
+  if (q.project_id) {
+    return { ok: true, project_id: q.project_id };
+  }
+
+  const { data: project, error: createError } = await supabase
+    .from("projects")
+    .insert({
+      company_id: company.company_id,
+      customer_id: q.customer_id,
+      name: q.title,
+      address: q.customer?.address ?? null,
+      status: "planning",
+      starts_on: new Date().toISOString().slice(0, 10),
+      budget_cents: q.total_cents,
+      created_by: user.id,
+    })
+    .select("id")
+    .single();
+
+  if (createError || !project) {
+    logServerError("quotes.convert.create-project", createError);
+    return { ok: false, error: clientErrorFor(createError) };
+  }
+
+  const projectId = project.id as string;
+
+  const { error: linkError } = await supabase
+    .from("quotes")
+    .update({ project_id: projectId })
+    .eq("id", quoteId)
+    .eq("company_id", company.company_id);
+
+  if (linkError) {
+    logServerError("quotes.convert.link", linkError);
+  }
+
+  revalidatePath("/app/orcamentos");
+  revalidatePath(`/app/orcamentos/${quoteId}`);
+  revalidatePath("/app/obras");
+  return { ok: true, project_id: projectId };
+}
+
 // ─── Delete (só draft) ─────────────────────────────────────────────────────
 
 export async function deleteQuoteAction(

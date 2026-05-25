@@ -1,9 +1,11 @@
-import { Calendar, CheckCircle2, Mail, MapPin, Phone, User, XCircle } from "lucide-react";
+import { Calendar, CheckCircle2, Download, Mail, MapPin, Phone, User, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone } from "@/lib/format";
 import { STATUS_LABEL } from "@/lib/quote-status";
 import type { QuoteWithRelations } from "@/lib/queries/quotes";
 import { ShareLinkCard } from "./share-link-card";
+import { ConvertToProject } from "./convert-to-project";
 
 /**
  * Modo read-only do orçamento (quando status != draft).
@@ -19,16 +21,23 @@ export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
       {/* ── Banner de aprovação/rejeição (quando aplicável) ─────── */}
       {quote.effective_status === "approved" && lastApproval && (
         <div className="rounded-xl border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/40">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700 dark:text-green-400" />
-            <div className="text-sm">
-              <div className="font-semibold text-green-900 dark:text-green-100">
-                Aprovado por {lastApproval.signer_name}
-              </div>
-              <div className="text-green-800/80 dark:text-green-200/80">
-                {formatDateBR(lastApproval.created_at)} · Próximo passo: clique em &quot;Virar obra&quot; pra começar.
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700 dark:text-green-400" />
+              <div className="text-sm">
+                <div className="font-semibold text-green-900 dark:text-green-100">
+                  Aprovado por {lastApproval.signer_name}
+                </div>
+                <div className="text-green-800/80 dark:text-green-200/80">
+                  {formatDateBR(lastApproval.created_at)}
+                  {!quote.project_id && " · Próximo passo: clique em \"Virar obra\" pra começar."}
+                  {quote.project_id && " · Obra já criada."}
+                </div>
               </div>
             </div>
+            {!quote.project_id && (
+              <ConvertToProject quoteId={quote.id} quoteTitle={quote.title} />
+            )}
           </div>
         </div>
       )}
@@ -79,6 +88,16 @@ export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
       {quote.share_token && (
         <ShareLinkCard quoteId={quote.id} shareToken={quote.share_token} />
       )}
+
+      {/* ── Download PDF ────────────────────────────────────────── */}
+      <div className="flex justify-end">
+        <Button asChild variant="outline">
+          <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
+            <Download className="h-4 w-4" />
+            Baixar PDF
+          </a>
+        </Button>
+      </div>
 
       {/* ── Cliente + validade ──────────────────────────────────── */}
       <section className="rounded-xl border bg-card p-5">
