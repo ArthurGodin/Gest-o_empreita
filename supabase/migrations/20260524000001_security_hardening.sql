@@ -32,7 +32,10 @@ drop policy if exists "public share token — read quote"       on public.quotes
 drop policy if exists "public share token — read quote items" on public.quote_items;
 
 -- ─── SEC-2: bootstrap só para a primeira membership da company ─────────────
+-- Drop ambos os nomes (antigo + novo) para garantir re-execução limpa.
 drop policy if exists "user can insert self as owner during onboarding"
+  on public.company_members;
+drop policy if exists "bootstrap first owner of empty company"
   on public.company_members;
 
 create policy "bootstrap first owner of empty company"
