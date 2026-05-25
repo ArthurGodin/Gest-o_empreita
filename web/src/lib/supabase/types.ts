@@ -29,6 +29,7 @@ export type QuoteStatus =
   | "approved"
   | "rejected"
   | "expired";
+export type QuoteApprovalAction = "approved" | "rejected";
 
 export interface Database {
   public: {
@@ -235,6 +236,78 @@ export interface Database {
         >;
         Relationships: [];
       };
+      catalog_items: {
+        Row: {
+          id: string;
+          company_id: string;
+          description: string;
+          unit: string;
+          default_price_cents: number;
+          usage_count: number;
+          last_used_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          description: string;
+          unit?: string;
+          default_price_cents?: number;
+          usage_count?: number;
+          last_used_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["catalog_items"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      quote_approvals: {
+        Row: {
+          id: string;
+          quote_id: string;
+          company_id: string;
+          action: QuoteApprovalAction;
+          signer_name: string;
+          rejection_reason: string | null;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          quote_id: string;
+          company_id: string;
+          action: QuoteApprovalAction;
+          signer_name: string;
+          rejection_reason?: string | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["quote_approvals"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      quote_sequences: {
+        Row: {
+          company_id: string;
+          year: number;
+          last_num: number;
+        };
+        Insert: {
+          company_id: string;
+          year: number;
+          last_num?: number;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["quote_sequences"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -246,11 +319,16 @@ export interface Database {
         Args: { p_company_id: string };
         Returns: CompanyRole;
       };
+      next_quote_number: {
+        Args: { p_company_id: string };
+        Returns: string;
+      };
     };
     Enums: {
       company_role: CompanyRole;
       project_status: ProjectStatus;
       quote_status: QuoteStatus;
+      quote_approval_action: QuoteApprovalAction;
     };
     CompositeTypes: Record<string, never>;
   };
