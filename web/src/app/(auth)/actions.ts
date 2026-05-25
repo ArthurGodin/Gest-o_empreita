@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { logServerError } from "@/lib/log";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -70,7 +71,14 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   });
 
   if (error) {
-    return { ok: false, error: error.message };
+    logServerError("auth.signup", error);
+    // Mensagem genérica: não revelamos "email já cadastrado" para impedir
+    // user enumeration. Quem tem conta usa /login; quem não tem, conhecerá
+    // o problema pela falha na confirmação ou no login posterior.
+    return {
+      ok: false,
+      error: "Não foi possível criar a conta. Verifique os dados ou tente novamente.",
+    };
   }
 
   revalidatePath("/", "layout");

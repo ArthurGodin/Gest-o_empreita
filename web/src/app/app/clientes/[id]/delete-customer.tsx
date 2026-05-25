@@ -29,14 +29,20 @@ export function DeleteCustomer({ id, customerName }: DeleteCustomerProps) {
   function onConfirm() {
     setError(null);
     startTransition(async () => {
-      const result = await deleteCustomerAction(id);
-      if (!result.ok) {
-        setError(result.error ?? "Não foi possível apagar.");
-        return;
+      try {
+        const result = await deleteCustomerAction(id);
+        if (!result.ok) {
+          setError(result.error ?? "Não foi possível apagar.");
+          return;
+        }
+        setOpen(false);
+        router.push("/app/clientes");
+        router.refresh();
+      } catch (err) {
+        // Falha de rede / 500 do server action — não deixar o modal travado.
+        console.error("[delete-customer] action threw:", err);
+        setError("Sem conexão ou erro no servidor. Tente novamente.");
       }
-      setOpen(false);
-      router.push("/app/clientes");
-      router.refresh();
     });
   }
 

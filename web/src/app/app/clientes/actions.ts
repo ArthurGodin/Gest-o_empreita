@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
+import { clientErrorFor, logServerError } from "@/lib/log";
 
 const customerSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome do cliente"),
@@ -75,11 +76,8 @@ export async function createCustomerAction(
     .single();
 
   if (error || !data) {
-    console.error("[customers] create failed:", error);
-    return {
-      ok: false,
-      error: `Erro ao criar cliente: ${error?.message ?? "desconhecido"}`,
-    };
+    logServerError("customers.create", error);
+    return { ok: false, error: clientErrorFor(error) };
   }
 
   revalidatePath("/app/clientes");
@@ -93,6 +91,11 @@ export async function updateCustomerAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Sessão expirada. Faça login." };
 
+  const company = await getActiveCompany();
+  if (!company) {
+    return { ok: false, error: "Empresa não encontrada." };
+  }
+
   const parsed = customerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
@@ -103,22 +106,27 @@ export async function updateCustomerAction(
   }
 
   const supabase = createClient();
-  const { error } = await supabase
+  // Scope explícito por company_id — defense-in-depth se RLS algum dia falhar.
+  // `.select()` confirma que UMA linha foi de fato atualizada (rowCount).
+  const { data, error } = await supabase
     .from("customers")
     .update(normalizeData(parsed.data))
-    .eq("id", id);
+    .eq("id", id)
+    .eq("company_id", company.company_id)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
-    console.error("[customers] update failed:", error);
-    return {
-      ok: false,
-      error: `Erro ao atualizar: ${error.message}`,
-    };
+    logServerError("customers.update", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+  if (!data) {
+    return { ok: false, error: "Cliente não encontrado." };
   }
 
   revalidatePath("/app/clientes");
   revalidatePath(`/app/clientes/${id}`);
-  return { ok: true, id };
+  return { ok: true, id: data.id as string };
 }
 
 export async function deleteCustomerAction(
@@ -127,19 +135,33 @@ export async function deleteCustomerAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Sessão expirada." };
 
+  const company = await getActiveCompany();
+  if (!company) {
+    return { ok: false, error: "Empresa não encontrada." };
+  }
+
   const supabase = createClient();
-  const { error } = await supabase.from("customers").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", id)
+    .eq("company_id", company.company_id)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
-    console.error("[customers] delete failed:", error);
-    // FK restrict: cliente tem obras → mensagem amigável
-    if (error.code === "23503") {
+    logServerError("customers.delete", error);
+    // FK restrict (cliente tem obras vinculadas) → mensagem específica
+    if ((error as { code?: string }).code === "23503") {
       return {
         ok: false,
         error: "Este cliente tem obras vinculadas. Apague as obras antes.",
       };
     }
-    return { ok: false, error: error.message };
+    return { ok: false, error: clientErrorFor(error) };
+  }
+  if (!data) {
+    return { ok: false, error: "Cliente não encontrado." };
   }
 
   revalidatePath("/app/clientes");

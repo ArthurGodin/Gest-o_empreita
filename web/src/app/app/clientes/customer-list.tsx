@@ -21,7 +21,9 @@ export function CustomerList({ customers }: CustomerListProps) {
     return customers.filter((c) => {
       if (c.name.toLowerCase().includes(q)) return true;
       if (qDigits && c.phone?.replace(/\D/g, "").includes(qDigits)) return true;
+      if (qDigits && c.document?.replace(/\D/g, "").includes(qDigits)) return true;
       if (c.city?.toLowerCase().includes(q)) return true;
+      if (c.state?.toLowerCase().includes(q)) return true;
       if (c.email?.toLowerCase().includes(q)) return true;
       return false;
     });

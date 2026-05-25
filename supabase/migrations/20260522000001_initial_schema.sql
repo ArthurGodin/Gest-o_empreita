@@ -1,4 +1,4 @@
-  -- ============================================================================
+-- ============================================================================
 -- Migration 0001 — Schema inicial multi-tenant
 -- ============================================================================
 -- Cria as tabelas fundacionais: companies, company_members, customers,
@@ -9,26 +9,14 @@
 -- conjunto de companies do usuário autenticado. Todas as políticas filtram
 -- por essa função, garantindo que tenant A jamais enxergue dado de tenant B.
 --
--- IDEMPOTENTE: pode rodar quantas vezes quiser — o bloco de reset abaixo
--- limpa qualquer estado anterior antes de recriar.
+-- ATENÇÃO: esta migration é forward-only. Não é re-runnable em uma DB com
+-- dados — `create table` falha se já existir. Para reset em dev, use
+-- `supabase/dev_reset.sql` (explicitamente destrutivo).
+--
+-- As políticas iniciais aqui são deliberadamente um pouco frouxas para
+-- destravar o onboarding. A migration 20260524000001_security_hardening.sql
+-- aperta-as.
 -- ============================================================================
-
--- ─── Reset (idempotência) ───────────────────────────────────────────────────
--- Ordem reversa de dependência. CASCADE remove triggers, índices, policies e FKs.
-drop table if exists public.quote_items     cascade;
-drop table if exists public.quotes          cascade;
-drop table if exists public.projects        cascade;
-drop table if exists public.customers       cascade;
-drop table if exists public.company_members cascade;
-drop table if exists public.companies       cascade;
-
-drop function if exists public.user_role_in(uuid)  cascade;
-drop function if exists public.user_company_ids()  cascade;
-drop function if exists public.tg_set_updated_at() cascade;
-
-drop type if exists public.quote_status     cascade;
-drop type if exists public.project_status   cascade;
-drop type if exists public.company_role     cascade;
 
 -- ─── Extensões ──────────────────────────────────────────────────────────────
 create extension if not exists "pgcrypto";
