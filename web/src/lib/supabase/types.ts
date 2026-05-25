@@ -177,6 +177,7 @@ export interface Database {
           rejected_at: string | null;
           notes: string | null;
           pdf_storage_path: string | null;
+          pdf_generated_at: string | null;
           notification_sent_at: string | null;
           created_at: string;
           updated_at: string;
@@ -202,6 +203,7 @@ export interface Database {
           rejected_at?: string | null;
           notes?: string | null;
           pdf_storage_path?: string | null;
+          pdf_generated_at?: string | null;
           notification_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -326,6 +328,19 @@ export interface Database {
       next_quote_number: {
         Args: { p_company_id: string };
         Returns: string;
+      };
+      replace_quote_items: {
+        Args: {
+          p_quote_id: string;
+          p_company_id: string;
+          p_title: string;
+          p_description: string | null;
+          p_customer_id: string;
+          p_valid_until: string | null;
+          p_notes: string | null;
+          p_items: Json;
+        };
+        Returns: void;
       };
     };
     Enums: {

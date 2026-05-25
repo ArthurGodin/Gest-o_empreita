@@ -12,27 +12,45 @@ import { checkSendReadiness } from "@/lib/quote-status";
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
 const itemDraftSchema = z.object({
-  description: z.string().trim().min(1, "Descrição vazia"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Descrição vazia")
+    .max(500, "Descrição muito longa (máx 500 caracteres)"),
   unit: z.string().trim().min(1, "Unidade vazia").max(10),
-  quantity: z.number().finite().min(0, "Quantidade não pode ser negativa"),
-  unit_price_cents: z
+  quantity: z
     .number()
-    .int()
-    .min(0)
-    .max(1_000_000_000_00),
+    .finite()
+    .min(0, "Quantidade não pode ser negativa")
+    .max(1_000_000, "Quantidade muito grande"),
+  unit_price_cents: z.number().int().min(0).max(1_000_000_000_00),
   catalog_item_id: z.string().uuid().optional().nullable(),
 });
 
 const updateQuoteSchema = z.object({
-  title: z.string().trim().min(1, "Adicione um título"),
-  description: z.string().trim().optional().or(z.literal("")),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Adicione um título")
+    .max(200, "Título muito longo (máx 200 caracteres)"),
+  description: z
+    .string()
+    .trim()
+    .max(5000, "Descrição muito longa (máx 5000 caracteres)")
+    .optional()
+    .or(z.literal("")),
   customer_id: z.string().uuid("Cliente inválido"),
   valid_until: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (use YYYY-MM-DD)")
     .optional()
     .or(z.literal("")),
-  notes: z.string().trim().optional().or(z.literal("")),
+  notes: z
+    .string()
+    .trim()
+    .max(5000, "Observações muito longas (máx 5000 caracteres)")
+    .optional()
+    .or(z.literal("")),
   items: z.array(itemDraftSchema).max(200, "Máximo 200 itens por orçamento"),
 });
 
@@ -44,7 +62,12 @@ export type QuoteActionResult =
 
 const createSchema = z.object({
   customer_id: z.string().uuid("Cliente inválido"),
-  title: z.string().trim().min(1).max(200).default("Novo orçamento"),
+  title: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200, "Título muito longo (máx 200 caracteres)")
+    .default("Novo orçamento"),
 });
 
 interface CreateInput {
@@ -182,60 +205,30 @@ export async function updateQuoteAction(
     };
   }
 
-  // 2. Calcula totais a partir dos items
-  const itemsToInsert = parsed.data.items.map((it, idx) => ({
-    quote_id: id,
-    company_id: company.company_id,
-    position: idx,
-    description: it.description,
-    unit: it.unit,
-    quantity: it.quantity,
-    unit_price_cents: it.unit_price_cents,
-    total_cents: Math.round(it.quantity * it.unit_price_cents),
-  }));
+  // 2. Chama RPC atômica `replace_quote_items` que:
+  //    - Atualiza o header (title/description/customer_id/valid_until/notes/totals)
+  //    - Invalida pdf_storage_path e pdf_generated_at (PDF cache)
+  //    - DELETE + INSERT dos items numa única transação PL/pgSQL
+  // Se qualquer passo falhar, NADA é commitado — sem mais data loss.
+  const { error: rpcError } = await supabase.rpc("replace_quote_items", {
+    p_quote_id: id,
+    p_company_id: company.company_id,
+    p_title: parsed.data.title,
+    p_description: parsed.data.description || null,
+    p_customer_id: parsed.data.customer_id,
+    p_valid_until: parsed.data.valid_until || null,
+    p_notes: parsed.data.notes || null,
+    p_items: parsed.data.items.map((it) => ({
+      description: it.description,
+      unit: it.unit || "un",
+      quantity: it.quantity,
+      unit_price_cents: it.unit_price_cents,
+    })),
+  });
 
-  const subtotal = itemsToInsert.reduce((s, it) => s + it.total_cents, 0);
-
-  // 3. Atualiza header
-  const { error: updateError } = await supabase
-    .from("quotes")
-    .update({
-      title: parsed.data.title,
-      description: parsed.data.description || null,
-      customer_id: parsed.data.customer_id,
-      valid_until: parsed.data.valid_until || null,
-      notes: parsed.data.notes || null,
-      subtotal_cents: subtotal,
-      total_cents: subtotal, // sem desconto por enquanto
-    })
-    .eq("id", id)
-    .eq("company_id", company.company_id);
-
-  if (updateError) {
-    logServerError("quotes.update.header", updateError);
-    return { ok: false, error: clientErrorFor(updateError) };
-  }
-
-  // 4. Apaga items antigos e insere os novos
-  const { error: deleteError } = await supabase
-    .from("quote_items")
-    .delete()
-    .eq("quote_id", id);
-
-  if (deleteError) {
-    logServerError("quotes.update.delete-items", deleteError);
-    return { ok: false, error: clientErrorFor(deleteError) };
-  }
-
-  if (itemsToInsert.length > 0) {
-    const { error: insertError } = await supabase
-      .from("quote_items")
-      .insert(itemsToInsert);
-
-    if (insertError) {
-      logServerError("quotes.update.insert-items", insertError);
-      return { ok: false, error: clientErrorFor(insertError) };
-    }
+  if (rpcError) {
+    logServerError("quotes.update.rpc", rpcError);
+    return { ok: false, error: clientErrorFor(rpcError) };
   }
 
   revalidatePath("/app/orcamentos");
@@ -568,14 +561,37 @@ export async function convertToProjectAction(
 
   const projectId = project.id as string;
 
-  const { error: linkError } = await supabase
+  // Link com guarda atômica: só atualiza se quote.project_id AINDA é null.
+  // Se outra request concorrente já linkou, NOSSO update afeta 0 linhas e
+  // sabemos que precisa rollback (delete da project órfã).
+  const { data: linked, error: linkError } = await supabase
     .from("quotes")
     .update({ project_id: projectId })
     .eq("id", quoteId)
-    .eq("company_id", company.company_id);
+    .eq("company_id", company.company_id)
+    .is("project_id", null)
+    .select("id")
+    .maybeSingle();
 
   if (linkError) {
     logServerError("quotes.convert.link", linkError);
+    // Tenta limpar orphan; falha silenciosa (orphan será limpo no GC futuro)
+    await supabase.from("projects").delete().eq("id", projectId);
+    return { ok: false, error: clientErrorFor(linkError) };
+  }
+
+  if (!linked) {
+    // Outra request concorrente venceu — apaga nossa project órfã e retorna a que venceu
+    await supabase.from("projects").delete().eq("id", projectId);
+    const { data: winner } = await supabase
+      .from("quotes")
+      .select("project_id")
+      .eq("id", quoteId)
+      .eq("company_id", company.company_id)
+      .maybeSingle();
+    const winnerId = (winner as { project_id: string | null } | null)?.project_id;
+    if (winnerId) return { ok: true, project_id: winnerId };
+    return { ok: false, error: "Não foi possível criar a obra. Tente novamente." };
   }
 
   revalidatePath("/app/orcamentos");

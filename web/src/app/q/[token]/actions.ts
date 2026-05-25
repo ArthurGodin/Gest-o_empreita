@@ -129,21 +129,32 @@ export async function approveQuoteAction(input: {
   const { ip, userAgent } = clientMeta();
   const approvedAt = new Date();
 
-  // Update quote
-  const { error: updateError } = await admin
+  // Update quote com STATUS GUARD atômico — só faz a transição se status ainda
+  // está em ('sent', 'viewed'). Evita race com reject simultâneo.
+  const { data: updated, error: updateError } = await admin
     .from("quotes")
     .update({
       status: "approved",
       approved_at: approvedAt.toISOString(),
     })
-    .eq("id", quote.id);
+    .eq("id", quote.id)
+    .in("status", ["sent", "viewed"])
+    .select("id")
+    .maybeSingle();
 
   if (updateError) {
     logServerError("public.approve.update", updateError);
     return { ok: false, error: clientErrorFor(updateError) };
   }
 
-  // Insert auditoria
+  // 0 linhas afetadas: outra request mudou o status entre nosso check e a
+  // update. Re-checa estado atual e retorna idempotente.
+  if (!updated) {
+    return { ok: true, redirectTo: `/q/${parsed.data.token}/aprovado` };
+  }
+
+  // Insert auditoria — unique(quote_id, action) impede duplicação por
+  // double-click. Se já existe, ignora silenciosamente (idempotente).
   const { error: approvalError } = await admin.from("quote_approvals").insert({
     quote_id: quote.id,
     company_id: quote.company_id,
@@ -154,32 +165,54 @@ export async function approveQuoteAction(input: {
   });
 
   if (approvalError) {
-    logServerError("public.approve.insert-audit", approvalError);
-    // Não rollback — quote já marcado como aprovado, isso é só auditoria
-  }
-
-  // Email best-effort
-  if (!quote.notification_sent_at) {
-    const email = buildQuoteApprovedEmail({
-      quoteNumber: quote.number,
-      quoteTitle: quote.title,
-      totalCents: quote.total_cents,
-      customerName: quote.customer?.name ?? "Cliente",
-      signerName: parsed.data.signer_name,
-      signedAt: approvedAt,
-      detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/orcamentos/${quote.id}`,
-    });
-
-    const result = await notifyCompanyOwner(quote.company_id, email);
-    if (result.sent) {
-      await admin
-        .from("quotes")
-        .update({ notification_sent_at: new Date().toISOString() })
-        .eq("id", quote.id);
+    const code = (approvalError as { code?: string }).code;
+    if (code !== "23505") {
+      // 23505 = unique violation → audit já existe, OK. Outros erros loga.
+      logServerError("public.approve.insert-audit", approvalError);
     }
   }
 
+  // Email — tenta enviar. Marca notification_sent_at *antes* da idempotência
+  // ser checada se já estiver setado. Resiliente a falhas: se Resend falha,
+  // fica null e a próxima tentativa de outro flow (futuro lembrete cron) re-envia.
+  await trySendNotification(admin, {
+    quote_id: quote.id,
+    company_id: quote.company_id,
+    already_sent_at: quote.notification_sent_at,
+    builder: () =>
+      buildQuoteApprovedEmail({
+        quoteNumber: quote.number,
+        quoteTitle: quote.title,
+        totalCents: quote.total_cents,
+        customerName: quote.customer?.name ?? "Cliente",
+        signerName: parsed.data.signer_name,
+        signedAt: approvedAt,
+        detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/orcamentos/${quote.id}`,
+      }),
+  });
+
   return { ok: true, redirectTo: `/q/${parsed.data.token}/aprovado` };
+}
+
+// ─── Helper compartilhado pra envio de email idempotente ───────────────────
+async function trySendNotification(
+  admin: ReturnType<typeof createAdminClient>,
+  ctx: {
+    quote_id: string;
+    company_id: string;
+    already_sent_at: string | null;
+    builder: () => { subject: string; html: string; text: string };
+  },
+) {
+  if (ctx.already_sent_at) return; // já notificou antes
+  const result = await notifyCompanyOwner(ctx.company_id, ctx.builder());
+  if (result.sent) {
+    await admin
+      .from("quotes")
+      .update({ notification_sent_at: new Date().toISOString() })
+      .eq("id", ctx.quote_id);
+  }
+  // Se falhou: NÃO marca, pra permitir retry futuro (Wave 2 fix #9).
 }
 
 // ─── Reject ────────────────────────────────────────────────────────────────
@@ -231,17 +264,26 @@ export async function rejectQuoteAction(input: {
   const rejectedAt = new Date();
   const reason = parsed.data.reason?.trim() || null;
 
-  const { error: updateError } = await admin
+  // Update guard-by-status — evita race com approve simultâneo
+  const { data: updated, error: updateError } = await admin
     .from("quotes")
     .update({
       status: "rejected",
       rejected_at: rejectedAt.toISOString(),
     })
-    .eq("id", quote.id);
+    .eq("id", quote.id)
+    .in("status", ["sent", "viewed"])
+    .select("id")
+    .maybeSingle();
 
   if (updateError) {
     logServerError("public.reject.update", updateError);
     return { ok: false, error: clientErrorFor(updateError) };
+  }
+
+  // Outra request mudou o status no meio — provavelmente approve venceu
+  if (!updated) {
+    return { ok: true, redirectTo: `/q/${parsed.data.token}` };
   }
 
   const { error: approvalError } = await admin.from("quote_approvals").insert({
@@ -255,29 +297,28 @@ export async function rejectQuoteAction(input: {
   });
 
   if (approvalError) {
-    logServerError("public.reject.insert-audit", approvalError);
-  }
-
-  if (!quote.notification_sent_at) {
-    const email = buildQuoteRejectedEmail({
-      quoteNumber: quote.number,
-      quoteTitle: quote.title,
-      totalCents: quote.total_cents,
-      customerName: quote.customer?.name ?? "Cliente",
-      signerName: parsed.data.signer_name,
-      signedAt: rejectedAt,
-      rejectionReason: reason,
-      detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/orcamentos/${quote.id}`,
-    });
-
-    const result = await notifyCompanyOwner(quote.company_id, email);
-    if (result.sent) {
-      await admin
-        .from("quotes")
-        .update({ notification_sent_at: new Date().toISOString() })
-        .eq("id", quote.id);
+    const code = (approvalError as { code?: string }).code;
+    if (code !== "23505") {
+      logServerError("public.reject.insert-audit", approvalError);
     }
   }
+
+  await trySendNotification(admin, {
+    quote_id: quote.id,
+    company_id: quote.company_id,
+    already_sent_at: quote.notification_sent_at,
+    builder: () =>
+      buildQuoteRejectedEmail({
+        quoteNumber: quote.number,
+        quoteTitle: quote.title,
+        totalCents: quote.total_cents,
+        customerName: quote.customer?.name ?? "Cliente",
+        signerName: parsed.data.signer_name,
+        signedAt: rejectedAt,
+        rejectionReason: reason,
+        detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/orcamentos/${quote.id}`,
+      }),
+  });
 
   return { ok: true, redirectTo: `/q/${parsed.data.token}` };
 }

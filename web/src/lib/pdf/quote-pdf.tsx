@@ -7,6 +7,27 @@ import {
   Text,
   View,
 } from "@react-pdf/renderer";
+import { env } from "@/lib/env";
+
+/**
+ * SR-#6 (SSRF guard): só permitimos URLs de logo apontando pro Supabase
+ * Storage. Se algum dia alguém escrever um URL externo em companies.logo_url
+ * (via DBA, futuro feature, etc), react-pdf NÃO vai fazer SSRF disso.
+ */
+function safeLogoUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    const allowedHost = new URL(env.NEXT_PUBLIC_SUPABASE_URL).host;
+    if (u.host !== allowedHost) return null;
+    if (!u.pathname.startsWith("/storage/v1/object/public/company-logos/")) {
+      return null;
+    }
+    return url;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Template PDF do orçamento.
@@ -266,13 +287,16 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
         {/* Header: logo + dados da empresa | número do orçamento */}
         <View style={styles.header}>
           <View style={styles.companyBlock}>
-            {company.logo_url ? (
-              <Image style={styles.logo} src={company.logo_url} />
-            ) : (
-              <Text style={styles.logoFallback}>
-                {company.name.slice(0, 2).toUpperCase()}
-              </Text>
-            )}
+            {(() => {
+              const url = safeLogoUrl(company.logo_url);
+              return url ? (
+                <Image style={styles.logo} src={url} />
+              ) : (
+                <Text style={styles.logoFallback}>
+                  {company.name.slice(0, 2).toUpperCase()}
+                </Text>
+              );
+            })()}
             <View style={styles.companyInfo}>
               <Text style={styles.companyName}>{company.name}</Text>
               {company.cnpj && (

@@ -1,12 +1,16 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CatalogAutocomplete } from "@/components/catalog-autocomplete";
-import { centsToBRLInput, parseBRLToCents } from "@/lib/format";
+import {
+  centsToBRLInput,
+  parseBRLToCents,
+  parseQuantity,
+} from "@/lib/format";
 import { formatBRL } from "@/lib/utils";
 import { createCatalogItemAction } from "@/app/app/catalogo/actions";
 import type { CatalogItem } from "@/lib/queries/catalog";
@@ -47,7 +51,36 @@ export function ItemRow({
 }: ItemRowProps) {
   const [savingCatalog, startSavingCatalog] = useTransition();
 
-  const lineTotal = item.quantity * item.unit_price_cents;
+  // ─── Price input controlled, sincronizado com unit_price_cents do parent ──
+  // Cenário-bug: usuário digita "500,00" sem dar blur, depois clica uma
+  // sugestão do catálogo que sobrescreve unit_price_cents pra 30000. Input
+  // não-controlado (defaultValue) NÃO reage à mudança externa de state.
+  // Solução: priceText local + useEffect que ressincroniza quando o valor
+  // do parent muda por uma fonte externa (ex: catálogo), mas não quando
+  // foi o próprio blur do input que pediu a atualização.
+  const [priceText, setPriceText] = useState(() =>
+    centsToBRLInput(item.unit_price_cents),
+  );
+  const lastSyncedCents = useRef(item.unit_price_cents);
+
+  useEffect(() => {
+    if (item.unit_price_cents !== lastSyncedCents.current) {
+      setPriceText(centsToBRLInput(item.unit_price_cents));
+      lastSyncedCents.current = item.unit_price_cents;
+    }
+  }, [item.unit_price_cents]);
+
+  // ─── Quantity input controlled (aceita "1,5" e "1.5") ───────────────────
+  const [qtyText, setQtyText] = useState(() => String(item.quantity));
+  const lastSyncedQty = useRef(item.quantity);
+  useEffect(() => {
+    if (item.quantity !== lastSyncedQty.current) {
+      setQtyText(String(item.quantity));
+      lastSyncedQty.current = item.quantity;
+    }
+  }, [item.quantity]);
+
+  const lineTotal = Math.round(item.quantity * item.unit_price_cents);
   const canSaveToCatalog =
     item.description.trim().length >= 2 && !item.catalog_item_id && !disabled;
 
@@ -95,24 +128,23 @@ export function ItemRow({
           />
         </div>
 
-        {/* Quantidade */}
+        {/* Quantidade (aceita "1,5" notação BR) */}
         <div>
           <Label className="text-xs md:sr-only" htmlFor={`qty-${item.key}`}>
             Qtd
           </Label>
           <Input
             id={`qty-${item.key}`}
-            type="number"
+            type="text"
             inputMode="decimal"
-            step="any"
-            min={0}
-            value={item.quantity}
-            onChange={(e) =>
-              onChange({
-                ...item,
-                quantity: parseFloat(e.target.value) || 0,
-              })
-            }
+            value={qtyText}
+            onChange={(e) => setQtyText(e.target.value)}
+            onBlur={() => {
+              const qty = parseQuantity(qtyText);
+              lastSyncedQty.current = qty;
+              setQtyText(String(qty));
+              onChange({ ...item, quantity: qty });
+            }}
             disabled={disabled}
           />
         </div>
@@ -138,7 +170,7 @@ export function ItemRow({
           </datalist>
         </div>
 
-        {/* Preço unitário */}
+        {/* Preço unitário (controlled — reage a updates do catálogo) */}
         <div>
           <Label className="text-xs md:sr-only" htmlFor={`price-${item.key}`}>
             Preço unitário
@@ -146,15 +178,17 @@ export function ItemRow({
           <Input
             id={`price-${item.key}`}
             inputMode="decimal"
-            defaultValue={centsToBRLInput(item.unit_price_cents)}
-            onBlur={(e) => {
-              const cents = parseBRLToCents(e.target.value);
+            value={priceText}
+            onChange={(e) => setPriceText(e.target.value)}
+            onBlur={() => {
+              const cents = parseBRLToCents(priceText);
               if (cents != null) {
+                lastSyncedCents.current = cents;
+                setPriceText(centsToBRLInput(cents));
                 onChange({ ...item, unit_price_cents: cents });
-                // Re-formata o valor após blur pra padrão BR
-                e.target.value = centsToBRLInput(cents);
               } else {
-                e.target.value = centsToBRLInput(item.unit_price_cents);
+                // Input inválido — restaura último valor válido
+                setPriceText(centsToBRLInput(item.unit_price_cents));
               }
             }}
             placeholder="0,00"

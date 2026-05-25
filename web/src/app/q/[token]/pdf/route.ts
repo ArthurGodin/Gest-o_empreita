@@ -34,12 +34,17 @@ export async function GET(
     return new NextResponse(result.error, { status: 500 });
   }
 
+  // SR-#3: Cache-Control private + no-store pra impedir cache compartilhado.
+  // PDF contém PII (nome, CPF, telefone, endereço, preços) — não pode ficar
+  // em proxies/CDNs intermediários. next.config.mjs aplica o mesmo header
+  // como defense-in-depth.
   return new NextResponse(new Uint8Array(result.buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${q.number}.pdf"`,
-      "Cache-Control": "public, max-age=60",
-      "X-Robots-Tag": "noindex",
+      "Cache-Control": "private, no-store",
+      "X-Robots-Tag": "noindex, nofollow",
+      "Referrer-Policy": "no-referrer",
     },
   });
 }

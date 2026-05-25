@@ -23,7 +23,7 @@ export async function generateQuotePdfBuffer(
       `
       id, number, title, description, valid_until, notes,
       subtotal_cents, discount_cents, total_cents, created_at, updated_at,
-      pdf_storage_path,
+      pdf_storage_path, pdf_generated_at,
       company:companies(name, legal_name, cnpj, phone, email, logo_url, address, city, state),
       customer:customers(name, document, phone, email, address, city, state),
       items:quote_items(description, unit, quantity, unit_price_cents, total_cents, position)
@@ -50,6 +50,7 @@ export async function generateQuotePdfBuffer(
     created_at: string;
     updated_at: string;
     pdf_storage_path: string | null;
+    pdf_generated_at: string | null;
     company: NonNullable<Parameters<typeof QuotePdf>[0]["company"]>;
     customer: NonNullable<Parameters<typeof QuotePdf>[0]["customer"]> | null;
     items: Array<{
@@ -66,13 +67,17 @@ export async function generateQuotePdfBuffer(
     return { ok: false, error: "Orçamento sem cliente vinculado." };
   }
 
-  // Cache check: se pdf existe e foi gerado depois do último update do quote,
-  // reusa do Storage. (Storage não nos dá lastModified facilmente, então usamos
-  // a estratégia "se path está setado, presumimos válido até o próximo save".)
-  if (quote.pdf_storage_path) {
-    const cached = await downloadQuotePdf(quote.pdf_storage_path);
-    if (cached.ok) {
-      return { ok: true, buffer: cached.buffer };
+  // Cache check: PDF é válido só se foi gerado APÓS o último updated_at
+  // do quote. O RPC replace_quote_items limpa pdf_storage_path e
+  // pdf_generated_at ao editar — entrar aqui significa cache válido.
+  // Defense-in-depth: também comparamos timestamps caso pdf_storage_path
+  // sobreviva por algum bug.
+  if (quote.pdf_storage_path && quote.pdf_generated_at) {
+    const generated = new Date(quote.pdf_generated_at).getTime();
+    const updated = new Date(quote.updated_at).getTime();
+    if (generated >= updated) {
+      const cached = await downloadQuotePdf(quote.pdf_storage_path);
+      if (cached.ok) return { ok: true, buffer: cached.buffer };
     }
   }
 
@@ -103,7 +108,10 @@ export async function generateQuotePdfBuffer(
     if (upload.ok) {
       await admin
         .from("quotes")
-        .update({ pdf_storage_path: upload.path })
+        .update({
+          pdf_storage_path: upload.path,
+          pdf_generated_at: new Date().toISOString(),
+        })
         .eq("id", quoteId);
     }
 

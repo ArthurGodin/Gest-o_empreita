@@ -109,12 +109,25 @@ export async function uploadCompanyLogoAction(
     return { ok: false, error: "Arquivo muito grande. Máximo 2MB." };
   }
 
-  // Lê o arquivo e faz resize com sharp pra 256x256 max (fit: inside).
+  // SR-#4: Lê o arquivo, valida magic bytes vs MIME, processa com sharp
+  // (limitInputPixels protege contra decompression bombs).
   const inputBuffer = Buffer.from(await file.arrayBuffer());
+
+  if (!magicBytesMatchMime(inputBuffer, file.type)) {
+    return {
+      ok: false,
+      error: "Esse arquivo não parece ser uma imagem PNG/JPG/WEBP válida.",
+    };
+  }
 
   let processed: Buffer;
   try {
-    processed = await sharp(inputBuffer)
+    processed = await sharp(inputBuffer, {
+      // 25M pixels (~25MP) é mais que suficiente pra logo de empresa e
+      // bloqueia decompression bombs que se expandem pra GBs de RAM.
+      limitInputPixels: 25_000_000,
+      failOn: "warning",
+    })
       .rotate() // honra orientação EXIF
       .resize(256, 256, { fit: "inside", withoutEnlargement: true })
       .png()
@@ -150,4 +163,45 @@ export async function uploadCompanyLogoAction(
 
   revalidatePath("/", "layout");
   return { ok: true, url: urlWithVersion };
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Valida magic bytes do arquivo (4-12 primeiros bytes) contra o MIME type
+ * declarado pelo cliente. Cliente pode mentir no MIME — magic bytes não.
+ */
+function magicBytesMatchMime(buf: Buffer, mime: string): boolean {
+  if (buf.length < 12) return false;
+  const m = mime.toLowerCase();
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  const isPng =
+    buf[0] === 0x89 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x4e &&
+    buf[3] === 0x47 &&
+    buf[4] === 0x0d &&
+    buf[5] === 0x0a &&
+    buf[6] === 0x1a &&
+    buf[7] === 0x0a;
+  if (m === "image/png") return isPng;
+
+  // JPEG: FF D8 FF
+  const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+  if (m === "image/jpeg" || m === "image/jpg") return isJpeg;
+
+  // WEBP: RIFF....WEBP (bytes 0-3 = RIFF, 8-11 = WEBP)
+  const isWebp =
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf[8] === 0x57 &&
+    buf[9] === 0x45 &&
+    buf[10] === 0x42 &&
+    buf[11] === 0x50;
+  if (m === "image/webp") return isWebp;
+
+  return false;
 }

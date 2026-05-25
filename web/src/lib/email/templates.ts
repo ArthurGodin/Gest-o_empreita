@@ -7,7 +7,15 @@ import { formatBRL, formatDateBR } from "@/lib/utils";
  *
  * Funções retornam { subject, html, text }. Text é fallback pra clientes
  * que não renderizam HTML.
+ *
+ * SR-#6 (CRLF injection): subject lines passam por `safeSubject` que
+ * strips \r e \n, truncando em 200 chars — defense-in-depth contra header
+ * injection caso algum SMTP intermediário não saneie.
  */
+
+function safeSubject(s: string): string {
+  return s.replace(/[\r\n\t]/g, " ").trim().slice(0, 200);
+}
 
 interface QuoteContext {
   quoteNumber: string;
@@ -22,7 +30,9 @@ interface QuoteContext {
 }
 
 export function buildQuoteApprovedEmail(ctx: QuoteContext) {
-  const subject = `✓ ${ctx.customerName} aprovou o orçamento ${ctx.quoteNumber}`;
+  const subject = safeSubject(
+    `✓ ${ctx.customerName} aprovou o orçamento ${ctx.quoteNumber}`,
+  );
 
   const text = [
     `Boa notícia!`,
@@ -82,7 +92,9 @@ export function buildQuoteApprovedEmail(ctx: QuoteContext) {
 }
 
 export function buildQuoteRejectedEmail(ctx: QuoteContext) {
-  const subject = `${ctx.customerName} pediu mudanças no orçamento ${ctx.quoteNumber}`;
+  const subject = safeSubject(
+    `${ctx.customerName} pediu mudanças no orçamento ${ctx.quoteNumber}`,
+  );
 
   const reasonBlock = ctx.rejectionReason?.trim()
     ? `Motivo informado: "${ctx.rejectionReason}"\n\n`

@@ -19,7 +19,14 @@ export interface QuoteStatusInput {
 
 /**
  * Calcula o status efetivo considerando expiração.
- * Aceita Date ou ISO string em valid_until.
+ *
+ * valid_until é coluna DATE (formato "YYYY-MM-DD"). Comparamos como STRING
+ * pra evitar quaisquer ambiguidades de timezone — em BR (UTC-3), `new Date("2026-05-25")`
+ * é UTC 00:00 que comparado contra `startOfDay(now)` em horário local resulta
+ * em quote sendo marcado como expirado nas primeiras 3h do dia da validade.
+ *
+ * Hoje no fuso de São Paulo (timezone do produto) é obtido via Intl, com
+ * fallback safe pro fuso do servidor.
  */
 export function effectiveStatus(
   quote: QuoteStatusInput,
@@ -27,18 +34,27 @@ export function effectiveStatus(
 ): EffectiveQuoteStatus {
   if (
     (quote.status === "sent" || quote.status === "viewed") &&
-    quote.valid_until &&
-    new Date(quote.valid_until) < startOfDay(now)
+    quote.valid_until
   ) {
-    return "expired";
+    const today = todayInBrazil(now);
+    // ISO date strings "YYYY-MM-DD" são lexicograficamente comparáveis
+    if (quote.valid_until < today) return "expired";
   }
   return quote.status;
 }
 
-function startOfDay(d: Date): Date {
-  const out = new Date(d);
-  out.setHours(0, 0, 0, 0);
-  return out;
+/**
+ * Hoje no fuso de São Paulo em formato ISO (YYYY-MM-DD).
+ * Independente do TZ do servidor (Vercel pode estar em UTC).
+ */
+function todayInBrazil(now: Date): string {
+  // en-CA dá YYYY-MM-DD direto, sem precisar formatar parts
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
 }
 
 /**

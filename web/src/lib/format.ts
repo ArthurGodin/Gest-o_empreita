@@ -3,6 +3,23 @@
  * helpers visuais (cn) e isso aqui é dado.
  */
 
+// ─── Quantidade (números com vírgula BR) ───────────────────────────────────
+
+/**
+ * Parser de quantidade aceita "1.5" e "1,5" (notação BR). parseFloat() puro
+ * trata "1,5" como 1 (para na vírgula) — bug clássico em UI brasileira.
+ * Negativos viram 0. NaN vira 0.
+ */
+export function parseQuantity(input: string | number): number {
+  if (typeof input === "number") {
+    return Number.isFinite(input) && input >= 0 ? input : 0;
+  }
+  if (!input) return 0;
+  const cleaned = String(input).replace(",", ".").replace(/[^\d.-]/g, "");
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
 // ─── Dinheiro ──────────────────────────────────────────────────────────────
 
 /**
