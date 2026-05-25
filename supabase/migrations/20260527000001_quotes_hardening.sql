@@ -20,6 +20,32 @@
 
 begin;
 
+-- ─── CRITICAL HOTFIX: trigger de share_token (bug detectado no QA) ─────────
+-- A trigger original do migration 0003 não strippa +/= do base64, resultando
+-- em tokens com "/" e "+" no meio — URLs ficam quebradas (/ vira separador
+-- de path). `create or replace function` corrige na re-aplicação.
+create or replace function public.tg_quotes_ensure_share_token()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.share_token is null then
+    new.share_token := translate(
+      encode(gen_random_bytes(32), 'base64'),
+      '+/=',
+      ''
+    );
+  end if;
+  return new;
+end;
+$$;
+
+-- Conserta tokens existentes que tenham +, / ou =
+update public.quotes
+   set share_token = translate(share_token, '+/=', '')
+ where share_token is not null
+   and (share_token ~ '[+/=]');
+
 -- ─── CR-#1: PDF cache timestamp pra detectar staleness ─────────────────────
 alter table public.quotes
   add column if not exists pdf_generated_at timestamptz;
