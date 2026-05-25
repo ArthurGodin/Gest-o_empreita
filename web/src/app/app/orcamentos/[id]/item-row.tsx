@@ -1,0 +1,230 @@
+"use client";
+
+import { useTransition } from "react";
+import { ArrowDown, ArrowUp, Save, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CatalogAutocomplete } from "@/components/catalog-autocomplete";
+import { centsToBRLInput, parseBRLToCents } from "@/lib/format";
+import { formatBRL } from "@/lib/utils";
+import { createCatalogItemAction } from "@/app/app/catalogo/actions";
+import type { CatalogItem } from "@/lib/queries/catalog";
+
+export interface ItemDraft {
+  /** Local-only key pra React render (UUID). Não vai pro DB. */
+  key: string;
+  /** Se veio do catálogo, guarda o id pra incrementar usage_count no save. */
+  catalog_item_id: string | null;
+  description: string;
+  unit: string;
+  quantity: number;
+  unit_price_cents: number;
+}
+
+interface ItemRowProps {
+  index: number;
+  total: number;
+  item: ItemDraft;
+  onChange: (item: ItemDraft) => void;
+  onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onSavedToCatalog: () => void;
+  disabled?: boolean;
+}
+
+export function ItemRow({
+  index,
+  total,
+  item,
+  onChange,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  onSavedToCatalog,
+  disabled,
+}: ItemRowProps) {
+  const [savingCatalog, startSavingCatalog] = useTransition();
+
+  const lineTotal = item.quantity * item.unit_price_cents;
+  const canSaveToCatalog =
+    item.description.trim().length >= 2 && !item.catalog_item_id && !disabled;
+
+  function handleSelectFromCatalog(catItem: CatalogItem) {
+    onChange({
+      ...item,
+      catalog_item_id: catItem.id,
+      description: catItem.description,
+      unit: catItem.unit,
+      unit_price_cents: catItem.default_price_cents,
+    });
+  }
+
+  function handleSaveToCatalog() {
+    startSavingCatalog(async () => {
+      const result = await createCatalogItemAction({
+        description: item.description.trim(),
+        unit: item.unit || "un",
+        default_price_cents: item.unit_price_cents,
+      });
+      if (result.ok) {
+        onChange({ ...item, catalog_item_id: result.id });
+        onSavedToCatalog();
+      }
+      // Se já existir no catálogo (23505) ou outro erro, ignora silenciosamente —
+      // user pode tentar de novo depois ou ajustar a descrição.
+    });
+  }
+
+  return (
+    <li className="rounded-xl border bg-card p-4 md:p-3">
+      {/* Layout responsivo: mobile = stack vertical com labels, desktop = grid */}
+      <div className="space-y-3 md:grid md:grid-cols-[1fr_70px_60px_120px_110px_auto] md:items-end md:gap-2 md:space-y-0">
+        {/* Descrição (com autocomplete) */}
+        <div className="md:col-span-1">
+          <Label className="text-xs md:sr-only">Descrição</Label>
+          <CatalogAutocomplete
+            value={item.description}
+            onValueChange={(v) =>
+              onChange({ ...item, description: v, catalog_item_id: null })
+            }
+            onSelectItem={handleSelectFromCatalog}
+            placeholder="Ex: Telha cerâmica romana"
+            disabled={disabled}
+          />
+        </div>
+
+        {/* Quantidade */}
+        <div>
+          <Label className="text-xs md:sr-only" htmlFor={`qty-${item.key}`}>
+            Qtd
+          </Label>
+          <Input
+            id={`qty-${item.key}`}
+            type="number"
+            inputMode="decimal"
+            step="any"
+            min={0}
+            value={item.quantity}
+            onChange={(e) =>
+              onChange({
+                ...item,
+                quantity: parseFloat(e.target.value) || 0,
+              })
+            }
+            disabled={disabled}
+          />
+        </div>
+
+        {/* Unidade */}
+        <div>
+          <Label className="text-xs md:sr-only" htmlFor={`unit-${item.key}`}>
+            Un.
+          </Label>
+          <Input
+            id={`unit-${item.key}`}
+            value={item.unit}
+            onChange={(e) => onChange({ ...item, unit: e.target.value })}
+            placeholder="un"
+            maxLength={10}
+            list="common-units-editor"
+            disabled={disabled}
+          />
+          <datalist id="common-units-editor">
+            {["un", "m²", "m", "kg", "h", "dia", "saco"].map((u) => (
+              <option key={u} value={u} />
+            ))}
+          </datalist>
+        </div>
+
+        {/* Preço unitário */}
+        <div>
+          <Label className="text-xs md:sr-only" htmlFor={`price-${item.key}`}>
+            Preço unitário
+          </Label>
+          <Input
+            id={`price-${item.key}`}
+            inputMode="decimal"
+            defaultValue={centsToBRLInput(item.unit_price_cents)}
+            onBlur={(e) => {
+              const cents = parseBRLToCents(e.target.value);
+              if (cents != null) {
+                onChange({ ...item, unit_price_cents: cents });
+                // Re-formata o valor após blur pra padrão BR
+                e.target.value = centsToBRLInput(cents);
+              } else {
+                e.target.value = centsToBRLInput(item.unit_price_cents);
+              }
+            }}
+            placeholder="0,00"
+            disabled={disabled}
+          />
+        </div>
+
+        {/* Total da linha (read-only) */}
+        <div>
+          <Label className="text-xs md:sr-only">Total</Label>
+          <div className="flex h-11 items-center justify-end rounded-md border border-transparent px-3 text-base font-semibold md:text-sm">
+            {formatBRL(lineTotal / 100)}
+          </div>
+        </div>
+
+        {/* Ações: salvar no catálogo, mover, remover */}
+        <div className="flex items-center justify-end gap-1">
+          {canSaveToCatalog && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleSaveToCatalog}
+              disabled={savingCatalog}
+              aria-label="Salvar no meu catálogo"
+              title="Salvar no meu catálogo"
+              className="text-primary hover:text-primary"
+            >
+              <Save className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onMoveUp}
+            disabled={index === 0 || disabled}
+            aria-label="Mover pra cima"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onMoveDown}
+            disabled={index === total - 1 || disabled}
+            aria-label="Mover pra baixo"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onRemove}
+            disabled={disabled}
+            aria-label="Remover item"
+            className="text-destructive hover:text-destructive"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {item.catalog_item_id && (
+        <div className="mt-2 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary md:mt-1">
+          ✓ Salvo no catálogo
+        </div>
+      )}
+    </li>
+  );
+}
