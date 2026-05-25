@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin, MessageCircle, Phone, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { formatPhone, whatsappLink } from "@/lib/format";
+import { formatDocument, formatPhone, whatsappLink } from "@/lib/format";
 import type { Customer } from "@/lib/queries/customers";
 
 interface CustomerListProps {
@@ -72,22 +72,28 @@ export function CustomerList({ customers }: CustomerListProps) {
 
 function CustomerCard({ customer }: { customer: Customer }) {
   const phoneFormatted = formatPhone(customer.phone);
+  const documentFormatted = formatDocument(customer.document);
   const waLink = whatsappLink(customer.phone);
 
+  // "Stretched link" pattern com pointer-events:
+  //  - O card inteiro é a área de tap (a:after preenche o card via absolute inset-0).
+  //  - O conteúdo NÃO captura clicks (pointer-events-none), exceto o link interno do Zap
+  //    que opta-in via pointer-events-auto.
+  //  - Resultado: tap em qualquer lugar do card abre /app/clientes/[id], menos o botão Zap
+  //    que abre wa.me.
   return (
-    <div className="group relative rounded-xl border bg-card p-4 transition-colors hover:border-primary/40">
-      {/* Card inteiro clicável vai pra edição */}
+    <div className="group relative rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 focus-within:border-primary/40">
       <Link
         href={`/app/clientes/${customer.id}`}
-        className="absolute inset-0 z-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={`Abrir ${customer.name}`}
+        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       />
 
-      <div className="relative z-10 space-y-2">
+      <div className="pointer-events-none relative space-y-2">
         <div>
           <h3 className="font-semibold leading-tight">{customer.name}</h3>
-          {customer.document && (
-            <p className="text-xs text-muted-foreground">{customer.document}</p>
+          {documentFormatted && (
+            <p className="text-xs text-muted-foreground">{documentFormatted}</p>
           )}
         </div>
 
@@ -100,8 +106,7 @@ function CustomerCard({ customer }: { customer: Customer }) {
                 href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="relative z-20 ml-auto inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/15"
+                className="pointer-events-auto relative ml-auto inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/15"
                 aria-label="Abrir conversa no WhatsApp"
               >
                 <MessageCircle className="h-3 w-3" />

@@ -8,24 +8,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/app-shell/page-header";
 
 export default function DashboardPage() {
   return (
-    <div className="container py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Início</h1>
-          <p className="text-sm text-muted-foreground">
-            Bem-vindo. Por onde quer começar hoje?
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/app/orcamentos/novo">
-            <Plus className="h-4 w-4" />
-            Novo orçamento
-          </Link>
-        </Button>
-      </div>
+    <div className="container space-y-6 py-6">
+      <PageHeader
+        title="Início"
+        description="Bem-vindo. Por onde quer começar hoje?"
+        actions={
+          <Button asChild>
+            <Link href="/app/orcamentos/novo">
+              <Plus className="h-4 w-4" />
+              Novo orçamento
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Quick actions */}
       <div className="grid gap-4 md:grid-cols-3">
