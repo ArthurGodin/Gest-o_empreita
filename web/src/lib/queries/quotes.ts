@@ -52,6 +52,14 @@ export interface QuoteListItem extends Quote {
   effective_status: EffectiveQuoteStatus;
 }
 
+export interface QuoteApprovalRecord {
+  id: string;
+  action: "approved" | "rejected";
+  signer_name: string;
+  rejection_reason: string | null;
+  created_at: string;
+}
+
 /** Quote com tudo necessário pra renderizar editor/detalhe. */
 export interface QuoteWithRelations extends Quote {
   customer: {
@@ -63,6 +71,7 @@ export interface QuoteWithRelations extends Quote {
     state: string | null;
   } | null;
   items: QuoteItem[];
+  approvals: QuoteApprovalRecord[];
   effective_status: EffectiveQuoteStatus;
 }
 
@@ -92,7 +101,8 @@ export const getQuoteWithRelations = cache(
         `
         *,
         customer:customers(id, name, phone, email, city, state),
-        items:quote_items(*)
+        items:quote_items(*),
+        approvals:quote_approvals(id, action, signer_name, rejection_reason, created_at)
       `,
       )
       .eq("id", id)
@@ -104,12 +114,18 @@ export const getQuoteWithRelations = cache(
     const quote = data as unknown as Quote & {
       customer: QuoteWithRelations["customer"];
       items: QuoteItem[];
+      approvals: QuoteApprovalRecord[];
     };
     const items = (quote.items ?? []).sort((a, b) => a.position - b.position);
+    const approvals = (quote.approvals ?? []).sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
 
     return {
       ...quote,
       items,
+      approvals,
       effective_status: effectiveStatus(quote),
     };
   },

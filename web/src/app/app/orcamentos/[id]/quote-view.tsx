@@ -1,8 +1,9 @@
-import { Calendar, Mail, MapPin, Phone, User } from "lucide-react";
+import { Calendar, CheckCircle2, Mail, MapPin, Phone, User, XCircle } from "lucide-react";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone } from "@/lib/format";
 import { STATUS_LABEL } from "@/lib/quote-status";
 import type { QuoteWithRelations } from "@/lib/queries/quotes";
+import { ShareLinkCard } from "./share-link-card";
 
 /**
  * Modo read-only do orçamento (quando status != draft).
@@ -11,9 +12,51 @@ import type { QuoteWithRelations } from "@/lib/queries/quotes";
  */
 export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
   const total = quote.total_cents;
+  const lastApproval = quote.approvals[quote.approvals.length - 1];
 
   return (
     <div className="space-y-6">
+      {/* ── Banner de aprovação/rejeição (quando aplicável) ─────── */}
+      {quote.effective_status === "approved" && lastApproval && (
+        <div className="rounded-xl border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/40">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700 dark:text-green-400" />
+            <div className="text-sm">
+              <div className="font-semibold text-green-900 dark:text-green-100">
+                Aprovado por {lastApproval.signer_name}
+              </div>
+              <div className="text-green-800/80 dark:text-green-200/80">
+                {formatDateBR(lastApproval.created_at)} · Próximo passo: clique em &quot;Virar obra&quot; pra começar.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {quote.effective_status === "rejected" && lastApproval && (
+        <div className="rounded-xl border bg-muted/50 p-4">
+          <div className="flex items-start gap-3">
+            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+            <div className="text-sm">
+              <div className="font-semibold">
+                {lastApproval.signer_name} pediu mudanças
+              </div>
+              <div className="text-muted-foreground">
+                {formatDateBR(lastApproval.created_at)}
+              </div>
+              {lastApproval.rejection_reason && (
+                <div className="mt-2 rounded-md bg-background/80 p-3">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Motivo
+                  </div>
+                  <div className="mt-1">{lastApproval.rejection_reason}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Status banner ──────────────────────────────────────── */}
       <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm">
         Status atual:{" "}
@@ -25,12 +68,17 @@ export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
             · Enviado em {formatDateBR(quote.sent_at)}
           </span>
         )}
-        {quote.approved_at && (
+        {quote.viewed_at && (
           <span className="ml-2 text-muted-foreground">
-            · Aprovado em {formatDateBR(quote.approved_at)}
+            · Visto em {formatDateBR(quote.viewed_at)}
           </span>
         )}
       </div>
+
+      {/* ── Link público (compartilhar) ────────────────────────── */}
+      {quote.share_token && (
+        <ShareLinkCard quoteId={quote.id} shareToken={quote.share_token} />
+      )}
 
       {/* ── Cliente + validade ──────────────────────────────────── */}
       <section className="rounded-xl border bg-card p-5">

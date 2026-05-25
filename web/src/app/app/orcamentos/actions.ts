@@ -5,6 +5,9 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
+import { generateShareToken } from "@/lib/quote-token";
+import { env } from "@/lib/env";
+import { checkSendReadiness } from "@/lib/quote-status";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -345,6 +348,145 @@ export async function duplicateQuoteAction(
 
   revalidatePath("/app/orcamentos");
   return { ok: true, id: created.id as string };
+}
+
+// ─── Send (draft → sent) ────────────────────────────────────────────────────
+
+export type SendQuoteResult =
+  | { ok: true; url: string; share_token: string }
+  | { ok: false; error: string; blockers?: string[] };
+
+/**
+ * Marca o orçamento como "sent" e retorna a URL pública pra empreiteiro
+ * compartilhar com o cliente.
+ *
+ * Pre-flight: cliente, validade, ≥1 item, total > 0.
+ * Status atual: draft. Se já está sent, retorna a URL existente (idempotente).
+ */
+export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const supabase = createClient();
+
+  const { data: quote, error: fetchError } = await supabase
+    .from("quotes")
+    .select("*, items:quote_items(id)")
+    .eq("id", id)
+    .eq("company_id", company.company_id)
+    .maybeSingle();
+
+  if (fetchError) {
+    logServerError("quotes.send.fetch", fetchError);
+    return { ok: false, error: clientErrorFor(fetchError) };
+  }
+  if (!quote) return { ok: false, error: "Orçamento não encontrado." };
+
+  const q = quote as unknown as {
+    status: string;
+    title: string;
+    customer_id: string | null;
+    valid_until: string | null;
+    total_cents: number;
+    share_token: string | null;
+    items: Array<{ id: string }>;
+  };
+
+  // Idempotente: já está enviado → só retorna URL
+  if (q.status !== "draft") {
+    if (!q.share_token) {
+      return { ok: false, error: "Orçamento sem link compartilhável." };
+    }
+    return {
+      ok: true,
+      share_token: q.share_token,
+      url: `${env.NEXT_PUBLIC_APP_URL}/q/${q.share_token}`,
+    };
+  }
+
+  // Pre-flight
+  const readiness = checkSendReadiness({
+    title: q.title,
+    customer_id: q.customer_id,
+    valid_until: q.valid_until,
+    itemsCount: q.items.length,
+    total_cents: q.total_cents,
+  });
+  if (!readiness.ready) {
+    return {
+      ok: false,
+      error: "Orçamento incompleto. Ajuste antes de enviar.",
+      blockers: readiness.blockers,
+    };
+  }
+
+  // Marca como enviado. share_token já foi gerado pelo trigger no insert.
+  const { data: updated, error: updateError } = await supabase
+    .from("quotes")
+    .update({
+      status: "sent",
+      sent_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("company_id", company.company_id)
+    .select("share_token")
+    .single();
+
+  if (updateError || !updated) {
+    logServerError("quotes.send.update", updateError);
+    return { ok: false, error: clientErrorFor(updateError) };
+  }
+
+  const token = (updated as { share_token: string | null }).share_token;
+  if (!token) {
+    return { ok: false, error: "Falha ao gerar link compartilhável." };
+  }
+
+  revalidatePath("/app/orcamentos");
+  revalidatePath(`/app/orcamentos/${id}`);
+  return {
+    ok: true,
+    share_token: token,
+    url: `${env.NEXT_PUBLIC_APP_URL}/q/${token}`,
+  };
+}
+
+// ─── Revoke share token (gera novo) ────────────────────────────────────────
+
+export async function revokeShareTokenAction(id: string): Promise<SendQuoteResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const supabase = createClient();
+  const newToken = generateShareToken();
+
+  const { data, error } = await supabase
+    .from("quotes")
+    .update({ share_token: newToken })
+    .eq("id", id)
+    .eq("company_id", company.company_id)
+    .select("share_token")
+    .maybeSingle();
+
+  if (error) {
+    logServerError("quotes.revoke-token", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+  if (!data) return { ok: false, error: "Orçamento não encontrado." };
+
+  const token = (data as { share_token: string }).share_token;
+  revalidatePath(`/app/orcamentos/${id}`);
+  return {
+    ok: true,
+    share_token: token,
+    url: `${env.NEXT_PUBLIC_APP_URL}/q/${token}`,
+  };
 }
 
 // ─── Delete (só draft) ─────────────────────────────────────────────────────

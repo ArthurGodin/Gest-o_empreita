@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatBRL } from "@/lib/utils";
 import { updateQuoteAction } from "../actions";
 import { ItemRow, type ItemDraft } from "./item-row";
+import { SendQuoteButton } from "./send-quote-button";
 import type { Customer } from "@/lib/queries/customers";
 import type { QuoteWithRelations } from "@/lib/queries/quotes";
 
@@ -84,38 +85,47 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
     });
   }
 
-  function onSave() {
+  /**
+   * Salva o draft de forma assíncrona. Retorna true se salvou OK, false se
+   * teve erro. Pode ser usada tanto pelo botão "Salvar" quanto pelo
+   * "Salvar e enviar" (via SendQuoteButton.onBeforeSend).
+   */
+  async function doSave(): Promise<boolean> {
     setError(null);
 
-    // Validação client-side leve antes de mandar pro server
     const filledItems = items.filter((it) => it.description.trim());
     if (filledItems.length === 0) {
       setError("Adicione ao menos um item com descrição.");
-      return;
+      return false;
     }
 
+    const result = await updateQuoteAction(quote.id, {
+      title,
+      description,
+      customer_id: customerId,
+      valid_until: validUntil || undefined,
+      notes,
+      items: filledItems.map((it) => ({
+        description: it.description.trim(),
+        unit: it.unit.trim() || "un",
+        quantity: it.quantity,
+        unit_price_cents: it.unit_price_cents,
+        catalog_item_id: it.catalog_item_id ?? null,
+      })),
+    });
+
+    if (!result.ok) {
+      setError(result.error);
+      return false;
+    }
+
+    router.refresh();
+    return true;
+  }
+
+  function onSave() {
     startTransition(async () => {
-      const result = await updateQuoteAction(quote.id, {
-        title,
-        description,
-        customer_id: customerId,
-        valid_until: validUntil || undefined,
-        notes,
-        items: filledItems.map((it) => ({
-          description: it.description.trim(),
-          unit: it.unit.trim() || "un",
-          quantity: it.quantity,
-          unit_price_cents: it.unit_price_cents,
-          catalog_item_id: it.catalog_item_id ?? null,
-        })),
-      });
-
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-
-      router.refresh();
+      await doSave();
     });
   }
 
@@ -269,11 +279,18 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-4 flex items-center justify-end gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-        <Button type="button" onClick={onSave} disabled={pending}>
+      <div className="sticky bottom-0 -mx-4 flex flex-col-reverse items-stretch gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-end md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+        <Button type="button" variant="outline" onClick={onSave} disabled={pending}>
           <Save className="h-4 w-4" />
-          {pending ? "Salvando..." : "Salvar"}
+          {pending ? "Salvando..." : "Salvar rascunho"}
         </Button>
+        <SendQuoteButton
+          quoteId={quote.id}
+          customerPhone={quote.customer?.phone}
+          onBeforeSend={doSave}
+          disabled={pending}
+          label="Salvar e enviar pro cliente"
+        />
       </div>
     </div>
   );

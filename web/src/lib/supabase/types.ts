@@ -176,6 +176,8 @@ export interface Database {
           approved_at: string | null;
           rejected_at: string | null;
           notes: string | null;
+          pdf_storage_path: string | null;
+          notification_sent_at: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -199,6 +201,8 @@ export interface Database {
           approved_at?: string | null;
           rejected_at?: string | null;
           notes?: string | null;
+          pdf_storage_path?: string | null;
+          notification_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
