@@ -6,9 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
-import type { Database, StageStatus } from "@/lib/supabase/types";
+import type { CostCategory, Database, StageStatus } from "@/lib/supabase/types";
 
 type StageUpdate = Database["public"]["Tables"]["project_stages"]["Update"];
+type CostUpdate = Database["public"]["Tables"]["project_costs"]["Update"];
 
 export type StageActionResult =
   | { ok: true; id: string }
@@ -544,6 +545,180 @@ export async function deleteDiaryEntryAction(
   }
 
   revalidatePath(`/app/obras/${e.project_id}`);
+  return { ok: true };
+}
+
+// ─── Custos ────────────────────────────────────────────────────────────────
+
+const COST_CATEGORIES = ["material", "labor", "freight", "other"] as const;
+
+const costSchema = z.object({
+  category: z.enum(COST_CATEGORIES),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Descrição vazia")
+    .max(200, "Descrição muito longa (máx 200 caracteres)"),
+  amount_cents: z
+    .number()
+    .int()
+    .min(1, "Valor deve ser maior que zero")
+    .max(100_000_000, "Valor muito alto"),
+  stage_id: z.string().uuid().optional().nullable(),
+  incurred_on: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida")
+    .optional(),
+});
+
+export type CostActionResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function addCostAction(
+  projectId: string,
+  payload: {
+    category: CostCategory;
+    description: string;
+    amount_cents: number;
+    stage_id?: string | null;
+    incurred_on?: string;
+  },
+): Promise<CostActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const parsed = costSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Dados inválidos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = createClient();
+  if (!(await ensureProjectInCompany(supabase, projectId, auth.companyId))) {
+    return { ok: false, error: "Obra não encontrada." };
+  }
+
+  // Se stage_id, valida que pertence ao mesmo projeto + tenant
+  if (parsed.data.stage_id) {
+    const { data: stage } = await supabase
+      .from("project_stages")
+      .select("project_id")
+      .eq("id", parsed.data.stage_id)
+      .eq("company_id", auth.companyId)
+      .maybeSingle();
+    if (!stage || stage.project_id !== projectId) {
+      return { ok: false, error: "Etapa inválida pra essa obra." };
+    }
+  }
+
+  const user = await getCurrentUser();
+
+  const { data, error } = await supabase
+    .from("project_costs")
+    .insert({
+      project_id: projectId,
+      company_id: auth.companyId,
+      stage_id: parsed.data.stage_id ?? null,
+      category: parsed.data.category,
+      description: parsed.data.description,
+      amount_cents: parsed.data.amount_cents,
+      incurred_on: parsed.data.incurred_on ?? todayBR(),
+      created_by: user?.id ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    logServerError("obras.costs.add", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${projectId}`);
+  return { ok: true, id: data.id as string };
+}
+
+const updateCostSchema = costSchema.partial();
+
+export async function updateCostAction(
+  costId: string,
+  patch: Partial<{
+    category: CostCategory;
+    description: string;
+    amount_cents: number;
+    stage_id: string | null;
+    incurred_on: string;
+  }>,
+): Promise<SimpleActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const parsed = updateCostSchema.safeParse(patch);
+  if (!parsed.success) return { ok: false, error: "Dados inválidos." };
+
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("project_costs")
+    .select("project_id")
+    .eq("id", costId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+  if (!existing) return { ok: false, error: "Gasto não encontrado." };
+
+  const update: CostUpdate = {};
+  if (parsed.data.category !== undefined) update.category = parsed.data.category;
+  if (parsed.data.description !== undefined) update.description = parsed.data.description;
+  if (parsed.data.amount_cents !== undefined) update.amount_cents = parsed.data.amount_cents;
+  if (parsed.data.stage_id !== undefined) update.stage_id = parsed.data.stage_id;
+  if (parsed.data.incurred_on !== undefined) update.incurred_on = parsed.data.incurred_on;
+
+  if (Object.keys(update).length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("project_costs")
+    .update(update)
+    .eq("id", costId)
+    .eq("company_id", auth.companyId);
+
+  if (error) {
+    logServerError("obras.costs.update", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${existing.project_id}`);
+  return { ok: true };
+}
+
+export async function deleteCostAction(
+  costId: string,
+): Promise<SimpleActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("project_costs")
+    .select("project_id")
+    .eq("id", costId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+  if (!existing) return { ok: false, error: "Gasto não encontrado." };
+
+  const { error } = await supabase
+    .from("project_costs")
+    .delete()
+    .eq("id", costId)
+    .eq("company_id", auth.companyId);
+
+  if (error) {
+    logServerError("obras.costs.delete", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${existing.project_id}`);
   return { ok: true };
 }
 

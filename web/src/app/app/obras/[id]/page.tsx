@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { Coins, Timer } from "lucide-react";
+import { Timer } from "lucide-react";
 import { getProjectWithRelations } from "@/lib/queries/projects";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { ProjectHeader } from "./project-header";
 import { StagesSection } from "./stages-section";
 import { DiarySection } from "./diary-section";
+import { CostsSection } from "./costs-section";
 
 export async function generateMetadata({
   params,
@@ -41,17 +42,17 @@ export default async function ProjectDetailPage({
         templates={templates}
       />
 
-      {/* Placeholders — implementados nos PRs 4, 5 */}
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <DiarySection
           projectId={project.id}
           entries={project.diary}
           total={project.diary_total}
         />
-        <PlaceholderCard
-          icon={<Coins className="h-6 w-6 text-muted-foreground" />}
-          title="Custos da obra"
-          description="Lançar materiais e ver margem real-time vem em seguida."
+        <CostsSection
+          projectId={project.id}
+          costs={project.costs}
+          summary={project.cost_summary}
+          stages={project.stages}
         />
       </div>
 
