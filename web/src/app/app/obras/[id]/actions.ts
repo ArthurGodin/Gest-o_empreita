@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
+import { deleteDiaryPhotos } from "@/lib/supabase/storage";
 import type { Database, StageStatus } from "@/lib/supabase/types";
 
 type StageUpdate = Database["public"]["Tables"]["project_stages"]["Update"];
@@ -417,6 +418,133 @@ export async function applyTemplateAction(
 
   revalidatePath(`/app/obras/${projectId}`);
   return { ok: true, inserted: (data as number) ?? 0 };
+}
+
+// ─── createDiaryEntry ──────────────────────────────────────────────────────
+
+const diaryPhotoSchema = z.object({
+  storage_path: z.string().min(1).max(500),
+  width: z.number().int().min(1).max(10000).optional().nullable(),
+  height: z.number().int().min(1).max(10000).optional().nullable(),
+  size_bytes: z.number().int().min(1).max(5_242_880),
+  position: z.number().int().min(0).max(100).optional(),
+});
+
+const createDiarySchema = z.object({
+  body: z
+    .string()
+    .trim()
+    .max(2000, "Texto muito longo (máx 2000 caracteres)")
+    .optional()
+    .or(z.literal("")),
+  photos: z.array(diaryPhotoSchema).max(20, "Máximo 20 fotos por entrada"),
+});
+
+export type DiaryActionResult =
+  | { ok: true; entry_id: string }
+  | { ok: false; error: string };
+
+export async function createDiaryEntryAction(
+  projectId: string,
+  body: string,
+  photos: Array<{
+    storage_path: string;
+    width?: number | null;
+    height?: number | null;
+    size_bytes: number;
+    position?: number;
+  }>,
+): Promise<DiaryActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const parsed = createDiarySchema.safeParse({ body, photos });
+  if (!parsed.success) {
+    return { ok: false, error: "Dados inválidos." };
+  }
+
+  const trimmedBody = (parsed.data.body ?? "").trim();
+  if (trimmedBody.length === 0 && parsed.data.photos.length === 0) {
+    return {
+      ok: false,
+      error: "Adicione texto ou pelo menos uma foto.",
+    };
+  }
+
+  const supabase = createClient();
+
+  if (!(await ensureProjectInCompany(supabase, projectId, auth.companyId))) {
+    return { ok: false, error: "Obra não encontrada." };
+  }
+
+  const { data, error } = await supabase.rpc("insert_diary_entry", {
+    p_project_id: projectId,
+    p_company_id: auth.companyId,
+    p_body: trimmedBody,
+    p_photos: parsed.data.photos,
+  });
+
+  if (error) {
+    logServerError("obras.diary.create", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${projectId}`);
+  return { ok: true, entry_id: data as string };
+}
+
+// ─── deleteDiaryEntry ──────────────────────────────────────────────────────
+
+export async function deleteDiaryEntryAction(
+  entryId: string,
+): Promise<SimpleActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data: entry, error: fetchErr } = await supabase
+    .from("diary_entries")
+    .select("project_id, photos:diary_photos(storage_path)")
+    .eq("id", entryId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+
+  if (fetchErr) {
+    logServerError("obras.diary.delete.fetch", fetchErr);
+    return { ok: false, error: clientErrorFor(fetchErr) };
+  }
+  if (!entry) return { ok: false, error: "Entrada não encontrada." };
+
+  const e = entry as unknown as {
+    project_id: string;
+    photos: { storage_path: string }[];
+  };
+  const paths = (e.photos ?? []).map((p) => p.storage_path);
+
+  // Apaga DB primeiro (CASCADE em diary_photos) — Storage é cleanup
+  const { error: delErr } = await supabase
+    .from("diary_entries")
+    .delete()
+    .eq("id", entryId)
+    .eq("company_id", auth.companyId);
+
+  if (delErr) {
+    logServerError("obras.diary.delete.row", delErr);
+    return { ok: false, error: clientErrorFor(delErr) };
+  }
+
+  // Cleanup do Storage com admin client (silent fail — vira lixo se falhar,
+  // mas o registro do DB já foi). Cron de limpeza pega depois.
+  if (paths.length > 0) {
+    try {
+      await deleteDiaryPhotos(paths);
+    } catch (storageErr) {
+      logServerError("obras.diary.delete.storage", storageErr);
+    }
+  }
+
+  revalidatePath(`/app/obras/${e.project_id}`);
+  return { ok: true };
 }
 
 // ─── Helpers locais ────────────────────────────────────────────────────────
