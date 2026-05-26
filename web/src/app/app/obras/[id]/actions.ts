@@ -10,6 +10,7 @@ import type { CostCategory, Database, StageStatus } from "@/lib/supabase/types";
 
 type StageUpdate = Database["public"]["Tables"]["project_stages"]["Update"];
 type CostUpdate = Database["public"]["Tables"]["project_costs"]["Update"];
+type TimeUpdate = Database["public"]["Tables"]["time_entries"]["Update"];
 
 export type StageActionResult =
   | { ok: true; id: string }
@@ -720,6 +721,246 @@ export async function deleteCostAction(
 
   revalidatePath(`/app/obras/${existing.project_id}`);
   return { ok: true };
+}
+
+// ─── Ponto (time_entries) ──────────────────────────────────────────────────
+
+const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+const timeEntrySchema = z.object({
+  worker_name: z
+    .string()
+    .trim()
+    .min(1, "Nome do peão é obrigatório")
+    .max(100, "Nome muito longo"),
+  worker_role: z
+    .string()
+    .trim()
+    .max(50)
+    .optional()
+    .or(z.literal("")),
+  started_at: z.string().regex(timeRegex, "Hora de entrada inválida (HH:MM)"),
+  ended_at: z
+    .string()
+    .regex(timeRegex, "Hora de saída inválida (HH:MM)")
+    .optional()
+    .or(z.literal("")),
+  worked_on: z
+    .string()
+    .regex(dateRegex, "Data inválida")
+    .optional(),
+  gps_lat: z.number().min(-90).max(90).optional().nullable(),
+  gps_lng: z.number().min(-180).max(180).optional().nullable(),
+  gps_accuracy_m: z.number().int().min(0).max(100_000).optional().nullable(),
+  notes: z
+    .string()
+    .trim()
+    .max(500, "Notas muito longas (máx 500 caracteres)")
+    .optional()
+    .or(z.literal("")),
+});
+
+function calcHoursWorked(started: string, ended: string): number {
+  const [h1, m1] = started.split(":").map(Number) as [number, number];
+  const [h2, m2] = ended.split(":").map(Number) as [number, number];
+  const mins = h2 * 60 + m2 - (h1 * 60 + m1);
+  if (mins <= 0) return 0;
+  return Math.round((mins / 60) * 100) / 100;
+}
+
+export type TimeActionResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
+
+export async function addTimeEntryAction(
+  projectId: string,
+  payload: {
+    worker_name: string;
+    worker_role?: string;
+    started_at: string;
+    ended_at?: string;
+    worked_on?: string;
+    gps_lat?: number | null;
+    gps_lng?: number | null;
+    gps_accuracy_m?: number | null;
+    notes?: string;
+  },
+): Promise<TimeActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const parsed = timeEntrySchema.safeParse(payload);
+  if (!parsed.success) {
+    const first = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { ok: false, error: first ?? "Dados inválidos." };
+  }
+
+  const supabase = createClient();
+  if (!(await ensureProjectInCompany(supabase, projectId, auth.companyId))) {
+    return { ok: false, error: "Obra não encontrada." };
+  }
+
+  const endedAt = parsed.data.ended_at === "" ? null : parsed.data.ended_at;
+  const hours =
+    endedAt && parsed.data.started_at
+      ? calcHoursWorked(parsed.data.started_at, endedAt)
+      : null;
+
+  const user = await getCurrentUser();
+
+  const { data, error } = await supabase
+    .from("time_entries")
+    .insert({
+      project_id: projectId,
+      company_id: auth.companyId,
+      worker_name: parsed.data.worker_name,
+      worker_role: (parsed.data.worker_role ?? "") === "" ? null : parsed.data.worker_role!,
+      worked_on: parsed.data.worked_on ?? todayBR(),
+      started_at: parsed.data.started_at,
+      ended_at: endedAt,
+      hours_worked: hours,
+      gps_lat: parsed.data.gps_lat ?? null,
+      gps_lng: parsed.data.gps_lng ?? null,
+      gps_accuracy_m: parsed.data.gps_accuracy_m ?? null,
+      notes: (parsed.data.notes ?? "") === "" ? null : parsed.data.notes!,
+      created_by: user?.id ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    logServerError("obras.time.add", error);
+    if (error?.code === "23505") {
+      return {
+        ok: false,
+        error: `Já existe um ponto fechado de ${parsed.data.worker_name} nessa data. Edite o existente em vez de criar outro.`,
+      };
+    }
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${projectId}`);
+  return { ok: true, id: data.id as string };
+}
+
+export async function endTimeEntryAction(
+  timeId: string,
+  endedAt: string,
+): Promise<SimpleActionResult> {
+  if (!timeRegex.test(endedAt)) {
+    return { ok: false, error: "Hora de saída inválida." };
+  }
+
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("time_entries")
+    .select("project_id, started_at, ended_at")
+    .eq("id", timeId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+
+  if (!existing) return { ok: false, error: "Ponto não encontrado." };
+  const e = existing as { project_id: string; started_at: string; ended_at: string | null };
+  if (e.ended_at) {
+    return { ok: false, error: "Esse ponto já está fechado." };
+  }
+
+  const hours = calcHoursWorked(e.started_at.slice(0, 5), endedAt);
+
+  const { error } = await supabase
+    .from("time_entries")
+    .update({
+      ended_at: endedAt,
+      hours_worked: hours,
+    } satisfies TimeUpdate)
+    .eq("id", timeId)
+    .eq("company_id", auth.companyId);
+
+  if (error) {
+    logServerError("obras.time.end", error);
+    if (error.code === "23505") {
+      return {
+        ok: false,
+        error: "Já existe outro ponto fechado desse peão nessa data.",
+      };
+    }
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${e.project_id}`);
+  return { ok: true };
+}
+
+export async function deleteTimeEntryAction(
+  timeId: string,
+): Promise<SimpleActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data: existing } = await supabase
+    .from("time_entries")
+    .select("project_id")
+    .eq("id", timeId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+
+  if (!existing) return { ok: false, error: "Ponto não encontrado." };
+
+  const { error } = await supabase
+    .from("time_entries")
+    .delete()
+    .eq("id", timeId)
+    .eq("company_id", auth.companyId);
+
+  if (error) {
+    logServerError("obras.time.delete", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath(`/app/obras/${existing.project_id}`);
+  return { ok: true };
+}
+
+/**
+ * Autocomplete de nomes de peões já usados pela empresa.
+ * Server action chamada do client com debounce.
+ */
+export async function workerNamesAutocompleteAction(
+  query: string,
+): Promise<string[]> {
+  const auth = await requireCompany();
+  if (!auth.ok) return [];
+
+  const cleaned = query.trim();
+  if (cleaned.length === 0) return [];
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("time_entries")
+    .select("worker_name")
+    .eq("company_id", auth.companyId)
+    .ilike("worker_name", `%${cleaned}%`)
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error || !data) return [];
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const row of data) {
+    const name = (row as { worker_name: string }).worker_name;
+    if (!seen.has(name.toLowerCase())) {
+      seen.add(name.toLowerCase());
+      out.push(name);
+      if (out.length >= 10) break;
+    }
+  }
+  return out;
 }
 
 // ─── Helpers locais ────────────────────────────────────────────────────────
