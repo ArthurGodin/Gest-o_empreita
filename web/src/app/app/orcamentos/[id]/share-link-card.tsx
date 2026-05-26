@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Link as LinkIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,14 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const url = `${env.NEXT_PUBLIC_APP_URL}/q/${currentToken}`;
+  // Em runtime client, preferir o origin real do browser; cai pro env (SSR
+  // primeiro render) só pra evitar hydration mismatch.
+  const [origin, setOrigin] = useState(env.NEXT_PUBLIC_APP_URL);
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+
+  const url = `${origin}/q/${currentToken}`;
 
   async function onCopy() {
     try {

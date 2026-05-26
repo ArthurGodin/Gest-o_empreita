@@ -7,6 +7,7 @@ import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
 import { canTransitionStatus } from "@/lib/project-status";
+import { todayBR } from "@/lib/dates";
 import type {
   CostCategory,
   Database,
@@ -1036,10 +1037,3 @@ export async function updateProjectStatusAction(
   return { ok: true };
 }
 
-// ─── Helpers locais ────────────────────────────────────────────────────────
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}

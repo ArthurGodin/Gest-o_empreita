@@ -1,11 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { todayBR } from "@/lib/dates";
 import type { TimeEntry } from "@/lib/queries/projects";
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 export async function listTimeToday(projectId: string): Promise<TimeEntry[]> {
   const supabase = createClient();

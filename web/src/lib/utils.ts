@@ -13,7 +13,15 @@ export function formatBRL(value: number): string {
 }
 
 export function formatDateBR(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  let d: Date;
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    // Date-only ISO: parse como local midnight pra evitar UTC drift
+    // que mostra dia anterior em servidores não-UTC.
+    const [y, m, day] = date.split("-").map(Number) as [number, number, number];
+    d = new Date(y, m - 1, day);
+  } else {
+    d = typeof date === "string" ? new Date(date) : date;
+  }
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "2-digit",

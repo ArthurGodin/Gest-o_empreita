@@ -7,14 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDateBR } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/queries/projects";
+import { todayBR } from "@/lib/dates";
 import { TimeForm } from "./time-form";
 import { deleteTimeEntryAction, endTimeEntryAction } from "./actions";
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 function hhmm(t: string | null): string {
   if (!t) return "—";

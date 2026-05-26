@@ -8,6 +8,7 @@ import { clientErrorFor, logServerError } from "@/lib/log";
 import { generateShareToken } from "@/lib/quote-token";
 import { env } from "@/lib/env";
 import { checkSendReadiness } from "@/lib/quote-status";
+import { addDaysBR, todayBR } from "@/lib/dates";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -112,9 +113,7 @@ export async function createQuoteAction(
     return { ok: false, error: clientErrorFor(numberError) };
   }
 
-  const validUntil = new Date();
-  validUntil.setDate(validUntil.getDate() + 15);
-  const validUntilStr = validUntil.toISOString().slice(0, 10);
+  const validUntilStr = addDaysBR(15);
 
   const { data, error } = await supabase
     .from("quotes")
@@ -291,9 +290,6 @@ export async function duplicateQuoteAction(
     return { ok: false, error: clientErrorFor(numberError) };
   }
 
-  const validUntil = new Date();
-  validUntil.setDate(validUntil.getDate() + 15);
-
   const subtotal = orig.items.reduce((s, it) => s + it.total_cents, 0);
 
   const { data: created, error: createError } = await supabase
@@ -305,7 +301,7 @@ export async function duplicateQuoteAction(
       title: `${orig.title} (cópia)`,
       description: orig.description,
       status: "draft",
-      valid_until: validUntil.toISOString().slice(0, 10),
+      valid_until: addDaysBR(15),
       notes: orig.notes,
       subtotal_cents: subtotal,
       total_cents: subtotal,
@@ -552,7 +548,7 @@ export async function convertToProjectAction(
       name: q.title,
       address: q.customer?.address ?? null,
       status: "planning",
-      starts_on: new Date().toISOString().slice(0, 10),
+      starts_on: todayBR(),
       budget_cents: q.total_cents,
       created_by: user.id,
     })

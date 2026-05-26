@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import type { CostCategory } from "@/lib/supabase/types";
 import type { ProjectStage } from "@/lib/queries/projects";
+import { todayBR } from "@/lib/dates";
 import { addCostAction } from "./actions";
 
 const CATEGORY_OPTIONS: { value: CostCategory; label: string }[] = [
@@ -22,12 +23,6 @@ const CATEGORY_OPTIONS: { value: CostCategory; label: string }[] = [
   { value: "freight", label: "Frete" },
   { value: "other", label: "Outros" },
 ];
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 function parseBRLToCents(input: string): number | null {
   // Aceita "1.234,56" ou "1234,56" ou "1234.56" ou "1234"

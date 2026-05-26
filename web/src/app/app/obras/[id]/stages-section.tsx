@@ -50,9 +50,15 @@ export function StagesSection({
       .filter((s) => s.status !== "done")
       .reduce((acc, s) => acc + (s.est_days ?? 0), 0);
     if (pendingDays === 0) return null;
-    const d = new Date(startsOn + "T12:00:00");
+    // Parse YYYY-MM-DD como local midnight, soma dias, formata de volta como local YYYY-MM-DD
+    const m = startsOn.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     d.setDate(d.getDate() + pendingDays);
-    return d.toISOString().slice(0, 10);
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${mo}-${day}`;
   }, [sortedStages, startsOn]);
 
   function move(stageId: string, direction: "up" | "down") {

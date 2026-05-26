@@ -13,16 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { todayBR } from "@/lib/dates";
 import {
   addTimeEntryAction,
   workerNamesAutocompleteAction,
 } from "./actions";
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 function nowHHMM(): string {
   const d = new Date();

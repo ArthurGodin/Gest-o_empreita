@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { todayBR } from "@/lib/dates";
 import type {
   CostCategory,
   ProjectStatus,
@@ -136,12 +137,6 @@ export const getProject = cache(
 
 const DIARY_PREVIEW_LIMIT = 5;
 const COST_LIST_LIMIT = 200;
-
-function todayBR(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
 
 /**
  * Busca o projeto + 6 relações em paralelo. Retorna null se o projeto
