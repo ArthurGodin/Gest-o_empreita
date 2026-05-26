@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
 import { formatDateBR } from "@/lib/utils";
 import type { ProjectListItem } from "@/lib/queries/projects";
+import { StatusMenu } from "./status-menu";
 
 const STATUS_PILL: Record<string, string> = {
   planning: "bg-muted text-muted-foreground",
@@ -31,7 +32,8 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
         Voltar para obras
       </Link>
 
-      <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {project.name}
         </h1>
@@ -52,6 +54,8 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
             {PROJECT_STATUS_LABEL[project.status]}
           </span>
         </div>
+        </div>
+        <StatusMenu projectId={project.id} current={project.status} />
       </div>
     </div>
   );

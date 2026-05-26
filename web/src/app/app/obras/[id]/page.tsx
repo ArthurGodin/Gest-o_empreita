@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import { getProjectWithRelations } from "@/lib/queries/projects";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { ProjectHeader } from "./project-header";
+import { StatusSuggestion } from "./status-suggestion";
 import { StagesSection } from "./stages-section";
 import { DiarySection } from "./diary-section";
 import { CostsSection } from "./costs-section";
 import { TimeSection } from "./time-section";
+import { PublicLinkCallout } from "./public-link-callout";
 
 export async function generateMetadata({
   params,
@@ -34,6 +36,12 @@ export default async function ProjectDetailPage({
     <div className="container max-w-4xl space-y-4 py-6">
       <ProjectHeader project={project} />
 
+      <StatusSuggestion
+        projectId={project.id}
+        current={project.status}
+        stages={project.stages}
+      />
+
       <StagesSection
         projectId={project.id}
         stages={project.stages}
@@ -61,6 +69,8 @@ export default async function ProjectDetailPage({
         today={project.time_today}
         historyCount={project.time_history_count}
       />
+
+      <PublicLinkCallout shareToken={project.share_token} />
     </div>
   );
 }

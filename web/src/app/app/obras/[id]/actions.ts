@@ -6,7 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
-import type { CostCategory, Database, StageStatus } from "@/lib/supabase/types";
+import { canTransitionStatus } from "@/lib/project-status";
+import type {
+  CostCategory,
+  Database,
+  ProjectStatus,
+  StageStatus,
+} from "@/lib/supabase/types";
 
 type StageUpdate = Database["public"]["Tables"]["project_stages"]["Update"];
 type CostUpdate = Database["public"]["Tables"]["project_costs"]["Update"];
@@ -961,6 +967,73 @@ export async function workerNamesAutocompleteAction(
     }
   }
   return out;
+}
+
+// ─── Project status ────────────────────────────────────────────────────────
+
+const PROJECT_STATUSES = [
+  "planning",
+  "in_progress",
+  "paused",
+  "completed",
+  "cancelled",
+] as const;
+
+export async function updateProjectStatusAction(
+  projectId: string,
+  to: ProjectStatus,
+  reason?: string,
+): Promise<SimpleActionResult> {
+  if (!PROJECT_STATUSES.includes(to)) {
+    return { ok: false, error: "Status inválido." };
+  }
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("status")
+    .eq("id", projectId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+  if (!project) return { ok: false, error: "Obra não encontrada." };
+
+  const from = (project as { status: ProjectStatus }).status;
+  if (from === to) return { ok: true };
+  if (!canTransitionStatus(from, to)) {
+    return {
+      ok: false,
+      error: `Não dá pra ir de "${from}" pra "${to}" diretamente.`,
+    };
+  }
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ status: to })
+    .eq("id", projectId)
+    .eq("company_id", auth.companyId);
+
+  if (error) {
+    logServerError("obras.status.update", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  // Quando vira paused, cria entrada de diário com motivo (se houver)
+  const cleanReason = (reason ?? "").trim();
+  if (to === "paused" && cleanReason.length > 0) {
+    const user = await getCurrentUser();
+    await supabase.from("diary_entries").insert({
+      project_id: projectId,
+      company_id: auth.companyId,
+      author_id: user?.id ?? null,
+      body: `Obra pausada: ${cleanReason.slice(0, 1900)}`,
+    });
+  }
+
+  revalidatePath(`/app/obras/${projectId}`);
+  revalidatePath(`/app/obras`);
+  return { ok: true };
 }
 
 // ─── Helpers locais ────────────────────────────────────────────────────────

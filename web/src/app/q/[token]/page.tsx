@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { effectiveStatus } from "@/lib/quote-status";
-import { PublicQuoteView } from "./public-quote-view";
-import type { QuoteStatus } from "@/lib/supabase/types";
+import { PublicToggle } from "./public-toggle";
+import type { PublicProjectView } from "./andamento-view";
+import type { ProjectStatus, QuoteStatus, StageStatus } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,6 +15,7 @@ interface PublicQuoteData {
   description: string | null;
   status: QuoteStatus;
   share_token: string;
+  project_id: string | null;
   valid_until: string | null;
   sent_at: string | null;
   viewed_at: string | null;
@@ -60,8 +62,8 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
     .from("quotes")
     .select(
       `
-      id, number, title, description, status, share_token, valid_until,
-      sent_at, viewed_at, approved_at, rejected_at, notes,
+      id, number, title, description, status, share_token, project_id,
+      valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
       company:companies(name, phone, email, logo_url, city, state),
       customer:customers(name, city, state),
@@ -77,6 +79,83 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
   const quote = data as unknown as PublicQuoteData;
   quote.items = (quote.items ?? []).sort((a, b) => a.position - b.position);
   return quote;
+}
+
+const DIARY_PREVIEW_LIMIT = 10;
+
+/**
+ * Carrega a versão pública (segura) do projeto vinculado a este quote.
+ * EXPLICITAMENTE NÃO inclui custos, ponto, endereço completo nem autor
+ * de diário. TypeScript garante que vazamento é caught em compile-time.
+ */
+async function loadPublicProjectView(
+  projectId: string,
+): Promise<PublicProjectView | null> {
+  const admin = createAdminClient();
+
+  const [projectRes, stagesRes, diaryRes, diaryCountRes] = await Promise.all([
+    admin
+      .from("projects")
+      .select(
+        "id, name, status, starts_on, progress_pct, last_diary_at, customer:customers(city, state)",
+      )
+      .eq("id", projectId)
+      .maybeSingle(),
+    admin
+      .from("project_stages")
+      .select("id, position, name, status, est_days, started_on, completed_on")
+      .eq("project_id", projectId)
+      .order("position", { ascending: true }),
+    admin
+      .from("diary_entries")
+      .select("id, body, created_at, photos:diary_photos(id, position)")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false })
+      .limit(DIARY_PREVIEW_LIMIT),
+    admin
+      .from("diary_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", projectId),
+  ]);
+
+  if (!projectRes.data) return null;
+
+  const p = projectRes.data as unknown as {
+    id: string;
+    name: string;
+    status: ProjectStatus;
+    starts_on: string | null;
+    progress_pct: number | null;
+    last_diary_at: string | null;
+    customer: { city: string | null; state: string | null } | null;
+  };
+
+  return {
+    id: p.id,
+    name: p.name,
+    status: p.status,
+    starts_on: p.starts_on,
+    city: p.customer?.city ?? null,
+    state: p.customer?.state ?? null,
+    progress_pct: p.progress_pct,
+    last_diary_at: p.last_diary_at,
+    stages: (stagesRes.data ?? []) as Array<{
+      id: string;
+      position: number;
+      name: string;
+      status: StageStatus;
+      est_days: number | null;
+      started_on: string | null;
+      completed_on: string | null;
+    }>,
+    diary: (diaryRes.data ?? []) as unknown as Array<{
+      id: string;
+      body: string;
+      created_at: string;
+      photos: Array<{ id: string; position: number }>;
+    }>,
+    diary_total: diaryCountRes.count ?? 0,
+  };
 }
 
 /**
@@ -126,5 +205,16 @@ export default async function PublicQuotePage({
     valid_until: quote.valid_until,
   });
 
-  return <PublicQuoteView quote={quote} status={status} />;
+  const project = quote.project_id
+    ? await loadPublicProjectView(quote.project_id)
+    : null;
+
+  return (
+    <PublicToggle
+      quote={quote}
+      status={status}
+      project={project}
+      shareToken={quote.share_token}
+    />
+  );
 }

@@ -106,6 +106,7 @@ export interface ProjectWithRelations extends ProjectListItem {
   cost_summary: CostSummary;
   time_today: TimeEntry[];
   time_history_count: number;
+  share_token: string | null;
 }
 
 export const getProjects = cache(async (): Promise<ProjectListItem[]> => {
@@ -197,10 +198,9 @@ export const getProjectWithRelations = cache(
         .limit(COST_LIST_LIMIT),
       supabase
         .from("quotes")
-        .select("total_cents,status")
+        .select("total_cents,status,share_token,approved_at")
         .eq("project_id", id)
-        .eq("status", "approved")
-        .order("approved_at", { ascending: false })
+        .order("approved_at", { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle(),
       supabase
@@ -226,7 +226,16 @@ export const getProjectWithRelations = cache(
     const stages = (stagesRes.data ?? []) as ProjectStage[];
     const diary = (diaryRes.data ?? []) as unknown as DiaryEntry[];
     const costs = (costsRes.data ?? []) as ProjectCost[];
-    const revenueCents = revenueRes.data?.total_cents ?? null;
+    const quoteRow = revenueRes.data as
+      | {
+          total_cents: number | null;
+          status: string | null;
+          share_token: string | null;
+        }
+      | null;
+    // Revenue só conta se quote estiver aprovado (não cancela margem em draft)
+    const revenueCents =
+      quoteRow?.status === "approved" ? quoteRow?.total_cents ?? null : null;
 
     const costSummary = summarizeCosts(costs, revenueCents);
 
@@ -239,6 +248,7 @@ export const getProjectWithRelations = cache(
       cost_summary: costSummary,
       time_today: (timeTodayRes.data ?? []) as TimeEntry[],
       time_history_count: timeHistoryRes.count ?? 0,
+      share_token: quoteRow?.share_token ?? null,
     };
   },
 );
