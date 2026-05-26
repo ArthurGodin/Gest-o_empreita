@@ -5,14 +5,20 @@ import { formatPhone } from "@/lib/format";
 import { STATUS_LABEL } from "@/lib/quote-status";
 import type { QuoteWithRelations } from "@/lib/queries/quotes";
 import { ShareLinkCard } from "./share-link-card";
-import { ConvertToProject } from "./convert-to-project";
+import { ConvertToProject, type TemplateOption } from "./convert-to-project";
 
 /**
  * Modo read-only do orçamento (quando status != draft).
  * Mostra cliente, validade, itens, total, observações e status atual.
  * Empreiteiro precisa duplicar pra editar.
  */
-export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
+export function QuoteView({
+  quote,
+  templates,
+}: {
+  quote: QuoteWithRelations;
+  templates: TemplateOption[];
+}) {
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
 
@@ -36,7 +42,11 @@ export function QuoteView({ quote }: { quote: QuoteWithRelations }) {
               </div>
             </div>
             {!quote.project_id && (
-              <ConvertToProject quoteId={quote.id} quoteTitle={quote.title} />
+              <ConvertToProject
+                quoteId={quote.id}
+                quoteTitle={quote.title}
+                templates={templates}
+              />
             )}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getCustomers } from "@/lib/queries/customers";
 import { getQuoteWithRelations } from "@/lib/queries/quotes";
+import { listTemplates } from "@/lib/queries/stage-templates";
 import { isEditable, STATUS_LABEL } from "@/lib/quote-status";
 import { QuoteEditor } from "./quote-editor";
 import { QuoteView } from "./quote-view";
@@ -32,7 +33,12 @@ export default async function QuoteDetailPage({
   if (!quote) notFound();
 
   const editable = isEditable(quote.status);
-  const customers = editable ? await getCustomers() : [];
+  const showConvert =
+    quote.effective_status === "approved" && !quote.project_id;
+  const [customers, templates] = await Promise.all([
+    editable ? getCustomers() : Promise.resolve([]),
+    showConvert ? listTemplates() : Promise.resolve([]),
+  ]);
 
   return (
     <div className="container max-w-5xl space-y-6 py-6">
@@ -64,7 +70,7 @@ export default async function QuoteDetailPage({
       {editable ? (
         <QuoteEditor quote={quote} customers={customers} />
       ) : (
-        <QuoteView quote={quote} />
+        <QuoteView quote={quote} templates={templates} />
       )}
     </div>
   );

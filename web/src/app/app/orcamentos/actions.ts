@@ -494,12 +494,17 @@ export type ConvertToProjectResult =
  */
 export async function convertToProjectAction(
   quoteId: string,
+  templateId?: string | null,
 ): Promise<ConvertToProjectResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Sessão expirada." };
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  if (templateId && !/^[0-9a-fA-F-]{36}$/.test(templateId)) {
+    return { ok: false, error: "Template inválido." };
+  }
 
   const supabase = createClient();
 
@@ -592,6 +597,23 @@ export async function convertToProjectAction(
     const winnerId = (winner as { project_id: string | null } | null)?.project_id;
     if (winnerId) return { ok: true, project_id: winnerId };
     return { ok: false, error: "Não foi possível criar a obra. Tente novamente." };
+  }
+
+  // Instancia etapas do template (se informado). Falha aqui NÃO desfaz o
+  // projeto — o usuário pode aplicar template manualmente depois.
+  if (templateId) {
+    const { error: tplErr } = await supabase.rpc(
+      "instantiate_template_stages",
+      {
+        p_project_id: projectId,
+        p_company_id: company.company_id,
+        p_template_id: templateId,
+      },
+    );
+    if (tplErr) {
+      logServerError("quotes.convert.apply-template", tplErr);
+      // Segue mesmo assim — usuário aplica depois
+    }
   }
 
   revalidatePath("/app/orcamentos");
