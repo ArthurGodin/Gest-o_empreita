@@ -1,15 +1,28 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Link as LinkIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { revokeShareTokenAction } from "../actions";
 import { env } from "@/lib/env";
+import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
 
 interface ShareLinkCardProps {
   quoteId: string;
   shareToken: string;
+}
+
+function subscribeOrigin() {
+  return () => {};
+}
+
+function getBrowserOrigin() {
+  return window.location.origin;
+}
+
+function getServerOrigin() {
+  return env.NEXT_PUBLIC_APP_URL;
 }
 
 export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
@@ -21,14 +34,16 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
 
   // Em runtime client, preferir o origin real do browser; cai pro env (SSR
   // primeiro render) só pra evitar hydration mismatch.
-  const [origin, setOrigin] = useState(env.NEXT_PUBLIC_APP_URL);
-  useEffect(() => {
-    if (typeof window !== "undefined") setOrigin(window.location.origin);
-  }, []);
-
-  const url = `${origin}/q/${currentToken}`;
+  const origin = useSyncExternalStore(
+    subscribeOrigin,
+    getBrowserOrigin,
+    getServerOrigin,
+  );
+  const tokenIsSafe = isShareTokenUrlSafe(currentToken);
+  const url = tokenIsSafe ? `${origin}/q/${currentToken}` : "";
 
   async function onCopy() {
+    if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -70,15 +85,28 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
         <input
           type="text"
           readOnly
-          value={url}
+          value={url || "Link antigo inválido. Gere um novo link."}
           className="flex-1 rounded-md border border-input bg-muted px-3 py-2 font-mono text-xs"
           onFocus={(e) => e.currentTarget.select()}
         />
-        <Button type="button" onClick={onCopy} variant="outline" size="sm">
+        <Button
+          type="button"
+          onClick={onCopy}
+          variant="outline"
+          size="sm"
+          disabled={!tokenIsSafe}
+        >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {copied ? "Copiado" : "Copiar"}
         </Button>
       </div>
+
+      {!tokenIsSafe && (
+        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          Este orçamento tem um link antigo que quebra no navegador. Gere um
+          link novo antes de mandar para o cliente.
+        </div>
+      )}
 
       {error && (
         <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -99,7 +127,11 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
           className="text-xs"
         >
           <RefreshCw className="h-3 w-3" />
-          {pending ? "Gerando..." : "Gerar link novo"}
+          {pending
+            ? "Gerando..."
+            : tokenIsSafe
+              ? "Gerar link novo"
+              : "Corrigir link"}
         </Button>
       </div>
     </section>

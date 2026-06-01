@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const photoId = params.id;
+  const { id: photoId } = await params;
   if (!/^[0-9a-fA-F-]{36}$/.test(photoId)) {
     return new NextResponse("not found", { status: 404 });
   }

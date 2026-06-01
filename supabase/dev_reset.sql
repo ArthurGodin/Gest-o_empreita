@@ -22,7 +22,7 @@ drop table if exists public.customers       cascade;
 drop table if exists public.company_members cascade;
 drop table if exists public.companies       cascade;
 
--- Funções
+-- Funções'
 drop function if exists public.user_role_in(uuid)  cascade;
 drop function if exists public.user_company_ids()  cascade;
 drop function if exists public.tg_set_updated_at() cascade;

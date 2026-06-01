@@ -38,8 +38,8 @@ export type PublicActionResult =
 
 // ─── Helpers internos ──────────────────────────────────────────────────────
 
-function clientMeta() {
-  const h = headers();
+async function clientMeta() {
+  const h = await headers();
   const ip =
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     h.get("x-real-ip") ||
@@ -126,7 +126,7 @@ export async function approveQuoteAction(input: {
   }
 
   const admin = createAdminClient();
-  const { ip, userAgent } = clientMeta();
+  const { ip, userAgent } = await clientMeta();
   const approvedAt = new Date();
 
   // Update quote com STATUS GUARD atômico — só faz a transição se status ainda
@@ -260,7 +260,7 @@ export async function rejectQuoteAction(input: {
   }
 
   const admin = createAdminClient();
-  const { ip, userAgent } = clientMeta();
+  const { ip, userAgent } = await clientMeta();
   const rejectedAt = new Date();
   const reason = parsed.data.reason?.trim() || null;
 

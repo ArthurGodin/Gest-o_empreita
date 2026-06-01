@@ -8,12 +8,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { token: string; id: string } },
+  { params }: { params: Promise<{ token: string; id: string }> },
 ) {
-  if (!/^[0-9a-fA-F-]{36}$/.test(params.id)) {
+  const { token, id } = await params;
+  if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
     return new NextResponse("not found", { status: 404 });
   }
-  if (!params.token || params.token.length < 32) {
+  if (!token || token.length < 32) {
     return new NextResponse("not found", { status: 404 });
   }
 
@@ -22,7 +23,7 @@ export async function GET(
   const { data: photo } = await admin
     .from("diary_photos")
     .select("storage_path, project_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if (!photo) {
@@ -36,7 +37,7 @@ export async function GET(
     .eq("project_id", photo.project_id)
     .maybeSingle();
 
-  if (!quote?.share_token || !tokensMatch(quote.share_token, params.token)) {
+  if (!quote?.share_token || !tokensMatch(quote.share_token, token)) {
     return new NextResponse("not found", { status: 404 });
   }
 

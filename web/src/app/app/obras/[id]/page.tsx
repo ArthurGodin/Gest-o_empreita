@@ -12,9 +12,10 @@ import { PublicLinkCallout } from "./public-link-callout";
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const project = await getProjectWithRelations(params.id);
+  const { id } = await params;
+  const project = await getProjectWithRelations(id);
   return {
     title: project ? `${project.name} — Obras` : "Obra não encontrada",
   };
@@ -23,10 +24,11 @@ export async function generateMetadata({
 export default async function ProjectDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [project, templates] = await Promise.all([
-    getProjectWithRelations(params.id),
+    getProjectWithRelations(id),
     listTemplates(),
   ]);
 

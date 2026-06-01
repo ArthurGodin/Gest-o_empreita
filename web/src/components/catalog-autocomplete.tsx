@@ -50,11 +50,7 @@ export function CatalogAutocomplete({
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     const q = value.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setOpen(false);
-      return;
-    }
+    if (q.length < 2) return;
 
     debounceRef.current = setTimeout(() => {
       startTransition(async () => {
@@ -70,6 +66,8 @@ export function CatalogAutocomplete({
     };
   }, [value]);
 
+  const visibleSuggestions = value.trim().length >= 2 ? suggestions : [];
+
   function pick(item: CatalogItem) {
     onValueChange(item.description);
     onSelectItem(item);
@@ -78,17 +76,17 @@ export function CatalogAutocomplete({
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!open || suggestions.length === 0) return;
+    if (!open || visibleSuggestions.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlight((h) => Math.min(h + 1, suggestions.length - 1));
+      setHighlight((h) => Math.min(h + 1, visibleSuggestions.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlight((h) => Math.max(h - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const item = suggestions[highlight];
+      const item = visibleSuggestions[highlight];
       if (item) pick(item);
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -103,7 +101,7 @@ export function CatalogAutocomplete({
         onChange={(e) => onValueChange(e.target.value)}
         onFocus={() => {
           if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
-          if (suggestions.length > 0) setOpen(true);
+          if (visibleSuggestions.length > 0) setOpen(true);
         }}
         onBlur={() => {
           // Delay pra permitir click numa sugestão antes de fechar
@@ -119,12 +117,12 @@ export function CatalogAutocomplete({
         role="combobox"
       />
 
-      {open && suggestions.length > 0 && (
+      {open && visibleSuggestions.length > 0 && (
         <ul
           role="listbox"
           className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-auto rounded-md border bg-popover shadow-md"
         >
-          {suggestions.map((item, idx) => (
+          {visibleSuggestions.map((item, idx) => (
             <li
               key={item.id}
               role="option"

@@ -9,9 +9,10 @@ import { DeleteCustomer } from "./delete-customer";
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const customer = await getCustomer(params.id);
+  const { id } = await params;
+  const customer = await getCustomer(id);
   return {
     title: customer
       ? `${customer.name} — Clientes`
@@ -22,9 +23,10 @@ export async function generateMetadata({
 export default async function CustomerDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const customer = await getCustomer(params.id);
+  const { id } = await params;
+  const customer = await getCustomer(id);
   if (!customer) notFound();
 
   return (

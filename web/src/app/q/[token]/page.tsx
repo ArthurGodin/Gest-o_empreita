@@ -179,9 +179,10 @@ async function recordViewIfNeeded(quote: PublicQuoteData) {
 export async function generateMetadata({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
-  const quote = await loadByToken(params.token);
+  const { token } = await params;
+  const quote = await loadByToken(token);
   if (!quote) return { title: "Orçamento" };
   return {
     title: `${quote.title} — ${quote.company.name}`,
@@ -193,9 +194,10 @@ export async function generateMetadata({
 export default async function PublicQuotePage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
-  const quote = await loadByToken(params.token);
+  const { token } = await params;
+  const quote = await loadByToken(token);
   if (!quote) notFound();
 
   await recordViewIfNeeded(quote);
@@ -215,6 +217,7 @@ export default async function PublicQuotePage({
       status={status}
       project={project}
       shareToken={quote.share_token}
+      nowMs={new Date().getTime()}
     />
   );
 }

@@ -29,21 +29,18 @@ const STORAGE_KEY = (id: string) => `diary-draft-${id}`;
 
 export function DiaryComposer({ projectId }: DiaryComposerProps) {
   const router = useRouter();
-  const [body, setBody] = useState("");
+  const [body, setBody] = useState(() => {
+    try {
+      return sessionStorage.getItem(STORAGE_KEY(projectId)) ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [posting, startPost] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Recupera rascunho do body do sessionStorage
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(STORAGE_KEY(projectId));
-      if (saved) setBody(saved);
-    } catch {
-      // ignore
-    }
-  }, [projectId]);
+  const photosRef = useRef<PendingPhoto[]>([]);
 
   // Persiste rascunho do body
   useEffect(() => {
@@ -55,12 +52,15 @@ export function DiaryComposer({ projectId }: DiaryComposerProps) {
     }
   }, [body, projectId]);
 
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+
   // Limpa previewUrls ao desmontar
   useEffect(() => {
     return () => {
-      for (const p of photos) URL.revokeObjectURL(p.previewUrl);
+      for (const p of photosRef.current) URL.revokeObjectURL(p.previewUrl);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function uploadOne(photo: PendingPhoto) {
@@ -69,9 +69,12 @@ export function DiaryComposer({ projectId }: DiaryComposerProps) {
     fd.append("file", photo.file);
 
     const maxAttempts = 3;
-    let attempt = photo.attempt;
-    while (attempt < maxAttempts) {
-      attempt += 1;
+    const attempts = Array.from(
+      { length: maxAttempts - photo.attempt },
+      (_, index) => photo.attempt + index + 1,
+    );
+
+    for (const attempt of attempts) {
       try {
         const res = await fetch("/api/diary/upload", {
           method: "POST",

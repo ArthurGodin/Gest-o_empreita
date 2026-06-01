@@ -5,7 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
-import { generateShareToken } from "@/lib/quote-token";
+import { generateShareToken, isShareTokenUrlSafe } from "@/lib/quote-token";
 import { env } from "@/lib/env";
 import { checkSendReadiness } from "@/lib/quote-status";
 import { addDaysBR, todayBR } from "@/lib/dates";
@@ -58,6 +58,10 @@ const updateQuoteSchema = z.object({
 export type QuoteActionResult =
   | { ok: true; id: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+function publicQuoteUrl(token: string) {
+  return `${env.NEXT_PUBLIC_APP_URL}/q/${token}`;
+}
 
 // ─── Create ────────────────────────────────────────────────────────────────
 
@@ -124,6 +128,7 @@ export async function createQuoteAction(
       title: parsed.data.title ?? "Novo orçamento",
       status: "draft",
       valid_until: validUntilStr,
+      share_token: generateShareToken(),
       created_by: user.id,
     })
     .select("id")
@@ -345,6 +350,37 @@ export type SendQuoteResult =
   | { ok: true; url: string; share_token: string }
   | { ok: false; error: string; blockers?: string[] };
 
+async function replaceShareToken(
+  supabase: ReturnType<typeof createClient>,
+  id: string,
+  companyId: string,
+): Promise<SendQuoteResult> {
+  const nextToken = generateShareToken();
+  const { data, error } = await supabase
+    .from("quotes")
+    .update({ share_token: nextToken })
+    .eq("id", id)
+    .eq("company_id", companyId)
+    .select("share_token")
+    .maybeSingle();
+
+  if (error || !data) {
+    logServerError("quotes.share-token.replace", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  const token = (data as { share_token: string | null }).share_token;
+  if (!isShareTokenUrlSafe(token)) {
+    return { ok: false, error: "Falha ao gerar link compartilhável." };
+  }
+
+  return {
+    ok: true,
+    share_token: token,
+    url: publicQuoteUrl(token),
+  };
+}
+
 /**
  * Marca o orçamento como "sent" e retorna a URL pública pra empreiteiro
  * compartilhar com o cliente.
@@ -386,13 +422,13 @@ export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
 
   // Idempotente: já está enviado → só retorna URL
   if (q.status !== "draft") {
-    if (!q.share_token) {
-      return { ok: false, error: "Orçamento sem link compartilhável." };
+    if (!isShareTokenUrlSafe(q.share_token)) {
+      return replaceShareToken(supabase, id, company.company_id);
     }
     return {
       ok: true,
       share_token: q.share_token,
-      url: `${env.NEXT_PUBLIC_APP_URL}/q/${q.share_token}`,
+      url: publicQuoteUrl(q.share_token),
     };
   }
 
@@ -412,12 +448,18 @@ export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
     };
   }
 
-  // Marca como enviado. share_token já foi gerado pelo trigger no insert.
+  const shareToken = isShareTokenUrlSafe(q.share_token)
+    ? q.share_token
+    : generateShareToken();
+
+  // Marca como enviado e garante share_token URL-safe mesmo se o DB local
+  // ainda estiver com default legado em base64.
   const { data: updated, error: updateError } = await supabase
     .from("quotes")
     .update({
       status: "sent",
       sent_at: new Date().toISOString(),
+      share_token: shareToken,
     })
     .eq("id", id)
     .eq("company_id", company.company_id)
@@ -430,7 +472,7 @@ export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
   }
 
   const token = (updated as { share_token: string | null }).share_token;
-  if (!token) {
+  if (!isShareTokenUrlSafe(token)) {
     return { ok: false, error: "Falha ao gerar link compartilhável." };
   }
 
@@ -439,7 +481,7 @@ export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
   return {
     ok: true,
     share_token: token,
-    url: `${env.NEXT_PUBLIC_APP_URL}/q/${token}`,
+    url: publicQuoteUrl(token),
   };
 }
 
@@ -474,7 +516,7 @@ export async function revokeShareTokenAction(id: string): Promise<SendQuoteResul
   return {
     ok: true,
     share_token: token,
-    url: `${env.NEXT_PUBLIC_APP_URL}/q/${token}`,
+    url: publicQuoteUrl(token),
   };
 }
 

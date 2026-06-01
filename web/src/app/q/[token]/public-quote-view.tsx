@@ -48,13 +48,15 @@ interface PublicQuoteData {
 export function PublicQuoteView({
   quote,
   status,
+  nowMs,
 }: {
   quote: PublicQuoteData;
   status: EffectiveQuoteStatus;
+  nowMs: number;
 }) {
   const daysUntilExpiry = quote.valid_until
     ? Math.ceil(
-        (new Date(quote.valid_until).getTime() - Date.now()) /
+        (new Date(quote.valid_until).getTime() - nowMs) /
           (1000 * 60 * 60 * 24),
       )
     : null;

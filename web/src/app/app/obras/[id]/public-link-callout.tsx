@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Check, Copy, Eye, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
 
 interface PublicLinkCalloutProps {
   shareToken: string | null;
   baseUrl?: string;
+}
+
+function subscribeOrigin() {
+  return () => {};
+}
+
+function getBrowserOrigin() {
+  return window.location.origin;
 }
 
 export function PublicLinkCallout({
@@ -14,6 +23,11 @@ export function PublicLinkCallout({
   baseUrl,
 }: PublicLinkCalloutProps) {
   const [copied, setCopied] = useState(false);
+  const origin = useSyncExternalStore(
+    subscribeOrigin,
+    getBrowserOrigin,
+    () => baseUrl ?? "",
+  );
 
   if (!shareToken) {
     return (
@@ -24,13 +38,11 @@ export function PublicLinkCallout({
     );
   }
 
-  // Em SSR não temos window; o caller pode passar baseUrl, mas funciona
-  // no client onde o componente roda
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : baseUrl ?? "";
-  const url = `${origin}/q/${shareToken}`;
+  const tokenIsSafe = isShareTokenUrlSafe(shareToken);
+  const url = tokenIsSafe ? `${origin}/q/${shareToken}` : "";
 
   function copy() {
+    if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -51,9 +63,16 @@ export function PublicLinkCallout({
       </p>
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-1 min-w-0 items-center rounded-md border bg-muted/30 px-3 py-2 font-mono text-xs">
-          <span className="truncate">{url}</span>
+          <span className="truncate">
+            {url || "Link antigo inválido. Corrija no orçamento original."}
+          </span>
         </div>
-        <Button size="sm" variant="outline" onClick={copy}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={copy}
+          disabled={!tokenIsSafe}
+        >
           {copied ? (
             <>
               <Check className="h-3.5 w-3.5" />
@@ -66,12 +85,14 @@ export function PublicLinkCallout({
             </>
           )}
         </Button>
-        <Button size="sm" variant="outline" asChild>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <Eye className="h-3.5 w-3.5" />
-            Visualizar
-          </a>
-        </Button>
+        {tokenIsSafe && (
+          <Button size="sm" variant="outline" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <Eye className="h-3.5 w-3.5" />
+              Visualizar
+            </a>
+          </Button>
+        )}
       </div>
     </section>
   );

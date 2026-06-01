@@ -9,8 +9,9 @@ import { generateQuotePdfBuffer } from "@/lib/pdf/generate";
  */
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
@@ -22,13 +23,13 @@ export async function GET(
   const { data: quote } = await supabase
     .from("quotes")
     .select("id, number")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("company_id", company.company_id)
     .maybeSingle();
 
   if (!quote) return new NextResponse("Not found", { status: 404 });
 
-  const result = await generateQuotePdfBuffer(params.id);
+  const result = await generateQuotePdfBuffer(id);
   if (!result.ok) {
     return new NextResponse(result.error, { status: 500 });
   }

@@ -55,15 +55,15 @@ export function TimeForm({ projectId, triggerLabel = "Bater ponto" }: TimeFormPr
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleSuggestions =
+    showSuggestions && workerName.trim().length >= 2 ? suggestions : [];
 
   // Debounced autocomplete
   useEffect(() => {
     const q = workerName.trim();
-    if (q.length < 2 || !showSuggestions) {
-      setSuggestions([]);
-      return;
-    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.length < 2 || !showSuggestions) return;
+
     debounceRef.current = setTimeout(async () => {
       const names = await workerNamesAutocompleteAction(q);
       setSuggestions(names.filter((n) => n.toLowerCase() !== q.toLowerCase()));
@@ -176,9 +176,9 @@ export function TimeForm({ projectId, triggerLabel = "Bater ponto" }: TimeFormPr
                 maxLength={100}
                 disabled={pending}
               />
-              {showSuggestions && suggestions.length > 0 && (
+              {visibleSuggestions.length > 0 && (
                 <div className="absolute left-0 right-0 top-full z-10 mt-1 rounded-md border bg-popover shadow-md">
-                  {suggestions.map((s) => (
+                  {visibleSuggestions.map((s) => (
                     <button
                       key={s}
                       type="button"

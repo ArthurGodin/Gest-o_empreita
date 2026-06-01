@@ -12,6 +12,7 @@ interface PublicToggleProps {
   status: EffectiveQuoteStatus;
   project: PublicProjectView | null;
   shareToken: string;
+  nowMs: number;
 }
 
 export function PublicToggle({
@@ -19,6 +20,7 @@ export function PublicToggle({
   status,
   project,
   shareToken,
+  nowMs,
 }: PublicToggleProps) {
   const hasProject = project !== null;
   const [view, setView] = useState<"orcamento" | "andamento">(
@@ -26,7 +28,7 @@ export function PublicToggle({
   );
 
   if (!hasProject) {
-    return <PublicQuoteView quote={quote} status={status} />;
+    return <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />;
   }
 
   return (
@@ -61,7 +63,7 @@ export function PublicToggle({
       {view === "andamento" ? (
         <AndamentoView view={project} shareToken={shareToken} />
       ) : (
-        <PublicQuoteView quote={quote} status={status} />
+        <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
       )}
     </div>
   );

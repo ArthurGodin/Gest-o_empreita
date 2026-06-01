@@ -9,9 +9,10 @@ import { generateQuotePdfBuffer } from "@/lib/pdf/generate";
  */
 export async function GET(
   _req: Request,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
-  if (params.token.length < 32) {
+  const { token } = await params;
+  if (token.length < 32) {
     return new NextResponse("Invalid token", { status: 404 });
   }
 
@@ -19,13 +20,13 @@ export async function GET(
   const { data: quote } = await admin
     .from("quotes")
     .select("id, share_token, number")
-    .eq("share_token", params.token)
+    .eq("share_token", token)
     .maybeSingle();
 
   if (!quote) return new NextResponse("Not found", { status: 404 });
 
   const q = quote as { id: string; share_token: string; number: string };
-  if (!tokensMatch(q.share_token, params.token)) {
+  if (!tokensMatch(q.share_token, token)) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 

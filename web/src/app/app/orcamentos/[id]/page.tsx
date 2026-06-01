@@ -14,9 +14,10 @@ import { DuplicateButton } from "./duplicate-button";
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const quote = await getQuoteWithRelations(params.id);
+  const { id } = await params;
+  const quote = await getQuoteWithRelations(id);
   return {
     title: quote
       ? `${quote.number} ${quote.title} — Orçamentos`
@@ -27,9 +28,10 @@ export async function generateMetadata({
 export default async function QuoteDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const quote = await getQuoteWithRelations(params.id);
+  const { id } = await params;
+  const quote = await getQuoteWithRelations(id);
   if (!quote) notFound();
 
   const editable = isEditable(quote.status);

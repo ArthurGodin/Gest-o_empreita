@@ -19,9 +19,10 @@ interface ApprovedData {
 export default async function ApprovedPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
-  if (params.token.length < 32) notFound();
+  const { token } = await params;
+  if (token.length < 32) notFound();
 
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -33,7 +34,7 @@ export default async function ApprovedPage({
       approvals:quote_approvals(signer_name, created_at, action)
     `,
     )
-    .eq("share_token", params.token)
+    .eq("share_token", token)
     .maybeSingle();
 
   if (error || !data) notFound();
@@ -89,7 +90,7 @@ export default async function ApprovedPage({
         </p>
 
         <Link
-          href={`/q/${params.token}`}
+          href={`/q/${token}`}
           className="inline-block text-sm text-primary underline-offset-4 hover:underline"
         >
           Ver detalhes do orçamento
