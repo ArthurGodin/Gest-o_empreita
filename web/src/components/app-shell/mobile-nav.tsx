@@ -10,7 +10,7 @@ const navItems = [
   { href: "/app/orcamentos", label: "Orçam.", icon: FileText },
   { href: "/app/obras", label: "Obras", icon: HardHat },
   { href: "/app/clientes", label: "Clientes", icon: Users },
-  { href: "/app/financeiro", label: "Caixa", icon: Wallet },
+  { href: "/app/financeiro", label: "Finan.", icon: Wallet },
 ] as const;
 
 export function MobileNav() {

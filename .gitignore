@@ -23,6 +23,9 @@ Thumbs.db
 **/yarn-error.log*
 **/.pnpm-debug.log*
 
+# generated QA artifacts
+screenshots/
+
 # local env files
 .env
 .env*.local

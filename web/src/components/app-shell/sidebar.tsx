@@ -6,14 +6,14 @@ import {
   FileText,
   HardHat,
   Home,
+  LogOut,
   Package,
+  Settings,
   Users,
   Wallet,
-  Settings,
-  LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { signoutAction } from "@/app/(auth)/actions";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/app", label: "Início", icon: Home },
