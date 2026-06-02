@@ -1,13 +1,13 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDaysBR } from "@/lib/dates";
 import { createAsaasCustomer } from "@/lib/asaas/customers";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createPixPayment, getPixQrCode } from "@/lib/asaas/payments";
-import type { createClient } from "@/lib/supabase/server";
-import type { ChargeKind } from "@/lib/supabase/types";
+import type { ChargeKind, Database } from "@/lib/supabase/types";
 
-type SupabaseServer = ReturnType<typeof createClient>;
+type SupabaseServer = SupabaseClient<Database>;
 
 export interface BillingCustomer {
   id: string;

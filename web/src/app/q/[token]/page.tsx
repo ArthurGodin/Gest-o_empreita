@@ -93,11 +93,12 @@ async function loadPublicProjectView(
 ): Promise<PublicProjectView | null> {
   const admin = createAdminClient();
 
-  const [projectRes, stagesRes, diaryRes, diaryCountRes] = await Promise.all([
+  const [projectRes, stagesRes, diaryRes, diaryCountRes, chargesRes] =
+    await Promise.all([
     admin
       .from("projects")
       .select(
-        "id, name, status, starts_on, progress_pct, last_diary_at, customer:customers(city, state)",
+        "id, name, status, starts_on, progress_pct, last_diary_at, delivery_approved_at, customer:customers(city, state)",
       )
       .eq("id", projectId)
       .maybeSingle(),
@@ -116,6 +117,13 @@ async function loadPublicProjectView(
       .from("diary_entries")
       .select("id", { count: "exact", head: true })
       .eq("project_id", projectId),
+    admin
+      .from("billing_charges")
+      .select(
+        "id, kind, status, amount_cents, pix_qr_code, invoice_url, due_date, paid_at, released_at",
+      )
+      .eq("project_id", projectId)
+      .order("kind", { ascending: true }),
   ]);
 
   if (!projectRes.data) return null;
@@ -127,6 +135,7 @@ async function loadPublicProjectView(
     starts_on: string | null;
     progress_pct: number | null;
     last_diary_at: string | null;
+    delivery_approved_at: string | null;
     customer: { city: string | null; state: string | null } | null;
   };
 
@@ -139,6 +148,8 @@ async function loadPublicProjectView(
     state: p.customer?.state ?? null,
     progress_pct: p.progress_pct,
     last_diary_at: p.last_diary_at,
+    delivery_approved_at: p.delivery_approved_at,
+    charges: (chargesRes.data ?? []) as PublicProjectView["charges"],
     stages: (stagesRes.data ?? []) as Array<{
       id: string;
       position: number;

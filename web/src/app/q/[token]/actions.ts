@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { clientErrorFor, logServerError } from "@/lib/log";
@@ -12,6 +13,7 @@ import {
   buildQuoteRejectedEmail,
 } from "@/lib/email/templates";
 import { env } from "@/lib/env";
+import { generatePixForCharge } from "@/lib/billing/asaas";
 
 /**
  * Server actions chamadas pelo link público /q/[token]. Não passam pelo auth
@@ -32,8 +34,17 @@ const rejectSchema = z.object({
   reason: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
+const deliverySchema = z.object({
+  token: tokenSchema,
+  signer_name: z.string().trim().min(2, "Digite seu nome (mínimo 2 letras)"),
+});
+
 export type PublicActionResult =
   | { ok: true; redirectTo: string }
+  | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export type PublicDeliveryActionResult =
+  | { ok: true }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 // ─── Helpers internos ──────────────────────────────────────────────────────
@@ -54,10 +65,10 @@ async function loadQuoteByToken(token: string) {
     .from("quotes")
     .select(
       `
-      id, company_id, status, share_token, valid_until, sent_at,
+      id, company_id, project_id, customer_id, status, share_token, valid_until, sent_at,
       title, total_cents, notification_sent_at,
       number,
-      customer:customers(name)
+      customer:customers(id, name, document, phone, email)
       `,
     )
     .eq("share_token", token)
@@ -67,6 +78,8 @@ async function loadQuoteByToken(token: string) {
   return data as unknown as {
     id: string;
     company_id: string;
+    project_id: string | null;
+    customer_id: string | null;
     status: "draft" | "sent" | "viewed" | "approved" | "rejected" | "expired";
     share_token: string;
     valid_until: string | null;
@@ -75,7 +88,13 @@ async function loadQuoteByToken(token: string) {
     number: string;
     total_cents: number;
     notification_sent_at: string | null;
-    customer: { name: string } | null;
+    customer: {
+      id: string;
+      name: string;
+      document: string | null;
+      phone: string | null;
+      email: string | null;
+    } | null;
   };
 }
 
@@ -321,4 +340,126 @@ export async function rejectQuoteAction(input: {
   });
 
   return { ok: true, redirectTo: `/q/${parsed.data.token}` };
+}
+
+// --- Delivery approval ------------------------------------------------------
+
+export async function approveDeliveryAction(input: {
+  token: string;
+  signer_name: string;
+}): Promise<PublicDeliveryActionResult> {
+  const parsed = deliverySchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Confira os campos.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const quote = await loadQuoteByToken(parsed.data.token);
+  if (!quote || !quote.project_id) {
+    return { ok: false, error: "Link inválido ou obra não encontrada." };
+  }
+  if (!tokensMatch(quote.share_token, parsed.data.token)) {
+    return { ok: false, error: "Link inválido." };
+  }
+  if (!quote.customer) {
+    return { ok: false, error: "Cliente não encontrado." };
+  }
+
+  const admin = createAdminClient();
+  const { data: project, error: projectError } = await admin
+    .from("projects")
+    .select("id, company_id, status, delivery_approved_at")
+    .eq("id", quote.project_id)
+    .eq("company_id", quote.company_id)
+    .maybeSingle();
+
+  if (projectError) {
+    logServerError("public.delivery.fetch-project", projectError);
+    return { ok: false, error: clientErrorFor(projectError) };
+  }
+  if (!project) return { ok: false, error: "Obra não encontrada." };
+  if (project.status !== "completed") {
+    return {
+      ok: false,
+      error: "A entrega só pode ser confirmada quando a obra estiver concluída.",
+    };
+  }
+
+  const approvedAt = project.delivery_approved_at ?? new Date().toISOString();
+  if (!project.delivery_approved_at) {
+    const { error: approveError } = await admin
+      .from("projects")
+      .update({
+        delivery_approved_at: approvedAt,
+        delivery_approved_token: parsed.data.token,
+      })
+      .eq("id", quote.project_id)
+      .eq("company_id", quote.company_id)
+      .is("delivery_approved_at", null);
+
+    if (approveError) {
+      logServerError("public.delivery.approve", approveError);
+      return { ok: false, error: clientErrorFor(approveError) };
+    }
+  }
+
+  const { data: saldoCharge, error: chargeError } = await admin
+    .from("billing_charges")
+    .select("id, status, released_at")
+    .eq("project_id", quote.project_id)
+    .eq("company_id", quote.company_id)
+    .eq("kind", "saldo")
+    .maybeSingle();
+
+  if (chargeError) {
+    logServerError("public.delivery.fetch-saldo", chargeError);
+    return { ok: false, error: clientErrorFor(chargeError) };
+  }
+  if (!saldoCharge) {
+    revalidateDeliveryPaths(parsed.data.token, quote.project_id);
+    return { ok: true };
+  }
+
+  if (!saldoCharge.released_at) {
+    const { error: releaseError } = await admin
+      .from("billing_charges")
+      .update({
+        released_at: approvedAt,
+        released_by_token: parsed.data.token,
+      })
+      .eq("id", saldoCharge.id)
+      .eq("company_id", quote.company_id);
+
+    if (releaseError) {
+      logServerError("public.delivery.release-saldo", releaseError);
+      return { ok: false, error: clientErrorFor(releaseError) };
+    }
+  }
+
+  if (saldoCharge.status === "draft") {
+    try {
+      const result = await generatePixForCharge(admin, {
+        chargeId: saldoCharge.id,
+        companyId: quote.company_id,
+        customer: quote.customer,
+        description: `Saldo - ${quote.title}`,
+      });
+      if (result.warning) return { ok: false, error: result.warning };
+    } catch (billingError) {
+      logServerError("public.delivery.generate-saldo-pix", billingError);
+      return { ok: false, error: clientErrorFor(billingError) };
+    }
+  }
+
+  revalidateDeliveryPaths(parsed.data.token, quote.project_id);
+  return { ok: true };
+}
+
+function revalidateDeliveryPaths(token: string, projectId: string) {
+  revalidatePath(`/q/${token}`);
+  revalidatePath(`/app/obras/${projectId}`);
+  revalidatePath("/app/financeiro");
 }

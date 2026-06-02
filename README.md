@@ -13,7 +13,8 @@ dinheiro na execução da obra**.
 - Clientes: cadastro, lista, detalhe, edição e exclusão.
 - Catálogo: itens recorrentes para montar orçamento mais rápido.
 - Orçamentos: criação, editor de itens, status, duplicação, PDF e link público.
-- Link público `/q/[token]`: cliente vê orçamento, aprova ou rejeita sem login.
+- Link público `/q/[token]`: cliente vê orçamento, aprova/rejeita, acompanha
+  andamento, paga cobrança e confirma entrega sem login.
 - Obras: conversão de orçamento aprovado, etapas, templates, diário com fotos,
   custos, ponto da equipe e link público de andamento.
 - Financeiro: cobranças Pix Asaas, recebido, pendente, atrasado, gastos por
@@ -78,18 +79,19 @@ npm run build
 
 ## Próxima Grande Entrega
 
-**Fechar a experiência pública de cobrança.**
+**Validar cobrança em ambiente real e instrumentar venda.**
 
 A base operacional do Asaas já existe: converter orçamento aprovado em obra cria
 parcelas, gera Pix de entrada, mostra cobrança no painel da obra, processa
-webhook e reflete recebido/pendente/atrasado no financeiro.
+webhook, mostra cobrança no link público, libera saldo na confirmação de entrega
+e reflete recebido/pendente/atrasado no financeiro.
 
 O próximo passo para vender com segurança:
 
-1. Mostrar cobrança no link público `/q/[token]` para o cliente pagar sem login.
-2. Adicionar confirmação pública de entrega para liberar o saldo.
-3. Validar Asaas sandbox ponta a ponta com webhook real.
-4. Adicionar monitoramento de erro e analytics de funil.
+1. Validar Asaas sandbox ponta a ponta com webhook real.
+2. Adicionar monitoramento de erro e analytics de funil.
+3. Criar dados demo realistas para pitch e piloto.
+4. Rodar um piloto controlado com 1 a 3 empreiteiros.
 
 O desenho completo está em:
 `docs/superpowers/specs/2026-05-25-fase-1-4-cobranca-asaas-design.md`.

@@ -4,7 +4,24 @@ import { useEffect, useState } from "react";
 import { Check, CheckCircle2, ClipboardList, MapPin, Pause, X } from "lucide-react";
 import { formatDateBR } from "@/lib/utils";
 import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
-import type { ProjectStatus, StageStatus } from "@/lib/supabase/types";
+import type {
+  ChargeKind,
+  ChargeStatus,
+  ProjectStatus,
+  StageStatus,
+} from "@/lib/supabase/types";
+
+export interface PublicBillingCharge {
+  id: string;
+  kind: ChargeKind;
+  status: ChargeStatus;
+  amount_cents: number;
+  pix_qr_code: string | null;
+  invoice_url: string | null;
+  due_date: string | null;
+  paid_at: string | null;
+  released_at: string | null;
+}
 
 export interface PublicProjectView {
   id: string;
@@ -15,6 +32,8 @@ export interface PublicProjectView {
   state: string | null;
   progress_pct: number | null;
   last_diary_at: string | null;
+  delivery_approved_at: string | null;
+  charges: PublicBillingCharge[];
   stages: Array<{
     id: string;
     position: number;

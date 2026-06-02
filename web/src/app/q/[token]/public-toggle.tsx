@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, FileText } from "lucide-react";
+import { ClipboardList, FileText, WalletCards } from "lucide-react";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import { PublicQuoteView } from "./public-quote-view";
 import { AndamentoView, type PublicProjectView } from "./andamento-view";
+import { PublicBillingView } from "./public-billing-view";
 
 interface PublicToggleProps {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -23,7 +24,7 @@ export function PublicToggle({
   nowMs,
 }: PublicToggleProps) {
   const hasProject = project !== null;
-  const [view, setView] = useState<"orcamento" | "andamento">(
+  const [view, setView] = useState<"orcamento" | "andamento" | "cobranca">(
     hasProject ? "andamento" : "orcamento",
   );
 
@@ -33,7 +34,7 @@ export function PublicToggle({
 
   return (
     <div>
-      <div className="mx-auto mb-4 flex max-w-md gap-2 rounded-lg border bg-card p-1 shadow-sm">
+      <div className="mx-auto mb-4 flex max-w-2xl gap-2 rounded-lg border bg-card p-1 shadow-sm">
         <button
           type="button"
           onClick={() => setView("andamento")}
@@ -45,6 +46,18 @@ export function PublicToggle({
         >
           <ClipboardList className="h-4 w-4" />
           Andamento da obra
+        </button>
+        <button
+          type="button"
+          onClick={() => setView("cobranca")}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            view === "cobranca"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          <WalletCards className="h-4 w-4" />
+          Cobrança
         </button>
         <button
           type="button"
@@ -62,6 +75,13 @@ export function PublicToggle({
 
       {view === "andamento" ? (
         <AndamentoView view={project} shareToken={shareToken} />
+      ) : view === "cobranca" ? (
+        <PublicBillingView
+          charges={project.charges}
+          projectStatus={project.status}
+          deliveryApprovedAt={project.delivery_approved_at}
+          shareToken={shareToken}
+        />
       ) : (
         <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
       )}
