@@ -32,6 +32,14 @@ export type QuoteStatus =
 export type QuoteApprovalAction = "approved" | "rejected";
 export type StageStatus = "todo" | "in_progress" | "done";
 export type CostCategory = "material" | "labor" | "freight" | "other";
+export type ChargeKind = "entrada" | "saldo";
+export type ChargeStatus =
+  | "draft"
+  | "pending"
+  | "overdue"
+  | "received"
+  | "confirmed"
+  | "cancelled";
 
 export interface Database {
   public: {
@@ -139,6 +147,9 @@ export interface Database {
           template_id: string | null;
           progress_pct: number | null;
           last_diary_at: string | null;
+          entry_pct: number | null;
+          delivery_approved_at: string | null;
+          delivery_approved_token: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -157,6 +168,9 @@ export interface Database {
           template_id?: string | null;
           progress_pct?: number | null;
           last_diary_at?: string | null;
+          entry_pct?: number | null;
+          delivery_approved_at?: string | null;
+          delivery_approved_token?: string | null;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -528,6 +542,100 @@ export interface Database {
         >;
         Relationships: [];
       };
+      customer_billing_profiles: {
+        Row: {
+          id: string;
+          customer_id: string;
+          company_id: string;
+          asaas_customer_id: string;
+          cpf_cnpj: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          company_id: string;
+          asaas_customer_id: string;
+          cpf_cnpj: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["customer_billing_profiles"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      billing_charges: {
+        Row: {
+          id: string;
+          project_id: string;
+          company_id: string;
+          customer_id: string;
+          kind: ChargeKind;
+          status: ChargeStatus;
+          amount_cents: number;
+          asaas_payment_id: string | null;
+          pix_qr_code: string | null;
+          pix_qr_image_b64: string | null;
+          invoice_url: string | null;
+          due_date: string | null;
+          paid_at: string | null;
+          released_at: string | null;
+          released_by_token: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          company_id: string;
+          customer_id: string;
+          kind: ChargeKind;
+          status?: ChargeStatus;
+          amount_cents: number;
+          asaas_payment_id?: string | null;
+          pix_qr_code?: string | null;
+          pix_qr_image_b64?: string | null;
+          invoice_url?: string | null;
+          due_date?: string | null;
+          paid_at?: string | null;
+          released_at?: string | null;
+          released_by_token?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["billing_charges"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      billing_webhook_events: {
+        Row: {
+          id: string;
+          asaas_event_id: string;
+          event_type: string;
+          asaas_payment_id: string | null;
+          raw_payload: Json;
+          processed_at: string | null;
+          processing_error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          asaas_event_id: string;
+          event_type: string;
+          asaas_payment_id?: string | null;
+          raw_payload: Json;
+          processed_at?: string | null;
+          processing_error?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["billing_webhook_events"]["Insert"]
+        >;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -581,6 +689,8 @@ export interface Database {
       quote_approval_action: QuoteApprovalAction;
       stage_status: StageStatus;
       cost_category: CostCategory;
+      charge_kind: ChargeKind;
+      charge_status: ChargeStatus;
     };
     CompositeTypes: Record<string, never>;
   };

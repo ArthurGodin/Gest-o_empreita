@@ -1,0 +1,53 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2, QrCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { generateChargePixAction } from "./actions";
+
+interface GenerateChargeButtonProps {
+  chargeId: string;
+  label?: string;
+}
+
+export function GenerateChargeButton({
+  chargeId,
+  label = "Gerar Pix",
+}: GenerateChargeButtonProps) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function generate() {
+    setError(null);
+    startTransition(async () => {
+      const result = await generateChargePixAction(chargeId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="space-y-1">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={generate}
+        disabled={pending}
+      >
+        {pending ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <QrCode className="h-3.5 w-3.5" />
+        )}
+        {pending ? "Gerando..." : label}
+      </Button>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}

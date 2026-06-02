@@ -2,6 +2,8 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { todayBR } from "@/lib/dates";
 import type {
+  ChargeKind,
+  ChargeStatus,
   CostCategory,
   ProjectStatus,
   StageStatus,
@@ -21,6 +23,9 @@ export interface Project {
   template_id: string | null;
   progress_pct: number | null;
   last_diary_at: string | null;
+  entry_pct: number | null;
+  delivery_approved_at: string | null;
+  delivery_approved_token: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -99,6 +104,24 @@ export interface TimeEntry {
   notes: string | null;
 }
 
+export interface BillingCharge {
+  id: string;
+  project_id: string;
+  customer_id: string;
+  kind: ChargeKind;
+  status: ChargeStatus;
+  amount_cents: number;
+  asaas_payment_id: string | null;
+  pix_qr_code: string | null;
+  pix_qr_image_b64: string | null;
+  invoice_url: string | null;
+  due_date: string | null;
+  paid_at: string | null;
+  released_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ProjectWithRelations extends ProjectListItem {
   stages: ProjectStage[];
   diary: DiaryEntry[];
@@ -107,6 +130,7 @@ export interface ProjectWithRelations extends ProjectListItem {
   cost_summary: CostSummary;
   time_today: TimeEntry[];
   time_history_count: number;
+  charges: BillingCharge[];
   share_token: string | null;
 }
 
@@ -166,6 +190,7 @@ export const getProjectWithRelations = cache(
       diaryRes,
       diaryCountRes,
       costsRes,
+      chargesRes,
       revenueRes,
       timeTodayRes,
       timeHistoryRes,
@@ -192,6 +217,11 @@ export const getProjectWithRelations = cache(
         .order("incurred_on", { ascending: false })
         .limit(COST_LIST_LIMIT),
       supabase
+        .from("billing_charges")
+        .select("*")
+        .eq("project_id", id)
+        .order("kind", { ascending: true }),
+      supabase
         .from("quotes")
         .select("total_cents,status,share_token,approved_at")
         .eq("project_id", id)
@@ -214,6 +244,7 @@ export const getProjectWithRelations = cache(
     if (diaryRes.error) throw diaryRes.error;
     if (diaryCountRes.error) throw diaryCountRes.error;
     if (costsRes.error) throw costsRes.error;
+    if (chargesRes.error) throw chargesRes.error;
     if (revenueRes.error) throw revenueRes.error;
     if (timeTodayRes.error) throw timeTodayRes.error;
     if (timeHistoryRes.error) throw timeHistoryRes.error;
@@ -243,6 +274,7 @@ export const getProjectWithRelations = cache(
       cost_summary: costSummary,
       time_today: (timeTodayRes.data ?? []) as TimeEntry[],
       time_history_count: timeHistoryRes.count ?? 0,
+      charges: (chargesRes.data ?? []) as BillingCharge[],
       share_token: quoteRow?.share_token ?? null,
     };
   },

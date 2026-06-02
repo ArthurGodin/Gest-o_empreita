@@ -8,6 +8,7 @@ import { clientErrorFor, logServerError } from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
 import { canTransitionStatus } from "@/lib/project-status";
 import { todayBR } from "@/lib/dates";
+import { generatePixForCharge } from "@/lib/billing/asaas";
 import type {
   CostCategory,
   Database,
@@ -1037,3 +1038,102 @@ export async function updateProjectStatusAction(
   return { ok: true };
 }
 
+// --- Billing ---------------------------------------------------------------
+
+export async function generateChargePixAction(
+  chargeId: string,
+): Promise<SimpleActionResult> {
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("billing_charges")
+    .select(
+      "id, project_id, company_id, customer_id, kind, status, released_at, project:projects(name), customer:customers(id, name, document, phone, email)",
+    )
+    .eq("id", chargeId)
+    .eq("company_id", auth.companyId)
+    .maybeSingle();
+
+  if (error) {
+    logServerError("obras.billing.fetch-charge", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+  if (!data) return { ok: false, error: "Cobranca nao encontrada." };
+
+  const charge = data as unknown as {
+    id: string;
+    project_id: string;
+    company_id: string;
+    kind: "entrada" | "saldo";
+    status: string;
+    released_at: string | null;
+    project: { name: string } | { name: string }[] | null;
+    customer:
+      | {
+          id: string;
+          name: string;
+          document: string | null;
+          phone: string | null;
+          email: string | null;
+        }
+      | Array<{
+          id: string;
+          name: string;
+          document: string | null;
+          phone: string | null;
+          email: string | null;
+        }>
+      | null;
+  };
+
+  if (["received", "confirmed", "cancelled"].includes(charge.status)) {
+    return { ok: false, error: "Essa cobranca nao pode mais gerar Pix." };
+  }
+
+  const customer = Array.isArray(charge.customer)
+    ? charge.customer[0]
+    : charge.customer;
+  if (!customer) return { ok: false, error: "Cliente nao encontrado." };
+
+  const project = Array.isArray(charge.project)
+    ? charge.project[0]
+    : charge.project;
+  const kindLabel = charge.kind === "entrada" ? "Entrada" : "Saldo";
+
+  try {
+    const result = await generatePixForCharge(supabase, {
+      chargeId: charge.id,
+      companyId: auth.companyId,
+      customer,
+      description: `${kindLabel} - ${project?.name ?? "Obra"}`,
+    });
+
+    if (result.warning) return { ok: false, error: result.warning };
+
+    if (charge.kind === "saldo" && !charge.released_at) {
+      const releasedAt = new Date().toISOString();
+      await Promise.all([
+        supabase
+          .from("billing_charges")
+          .update({ released_at: releasedAt })
+          .eq("id", charge.id)
+          .eq("company_id", auth.companyId),
+        supabase
+          .from("projects")
+          .update({ delivery_approved_at: releasedAt })
+          .eq("id", charge.project_id)
+          .eq("company_id", auth.companyId)
+          .is("delivery_approved_at", null),
+      ]);
+    }
+  } catch (billingError) {
+    logServerError("obras.billing.generate-pix", billingError);
+    return { ok: false, error: clientErrorFor(billingError) };
+  }
+
+  revalidatePath(`/app/obras/${charge.project_id}`);
+  revalidatePath("/app/financeiro");
+  return { ok: true };
+}

@@ -8,6 +8,7 @@ import { DiarySection } from "./diary-section";
 import { CostsSection } from "./costs-section";
 import { TimeSection } from "./time-section";
 import { PublicLinkCallout } from "./public-link-callout";
+import { BillingSection } from "./billing-section";
 
 export async function generateMetadata({
   params,
@@ -50,6 +51,13 @@ export default async function ProjectDetailPage({
         progressPct={project.progress_pct}
         startsOn={project.starts_on}
         templates={templates}
+      />
+
+      <BillingSection
+        charges={project.charges}
+        projectStatus={project.status}
+        budgetCents={project.budget_cents}
+        deliveryApprovedAt={project.delivery_approved_at}
       />
 
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">

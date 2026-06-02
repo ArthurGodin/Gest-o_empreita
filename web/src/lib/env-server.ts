@@ -2,16 +2,15 @@ import "server-only";
 import { z } from "zod";
 
 /**
- * Env exclusivamente server-side. Importar em client component dispara
- * erro de build pelo `server-only`. Contém segredos que NUNCA podem
- * vazar para o bundle do navegador.
+ * Env exclusivamente server-side. Nunca importe em Client Components.
+ * Segredos ficam fora do bundle do navegador.
  */
 const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-
-  // Email transacional (Resend). Optional em dev/local — sem chave,
-  // notificações ficam só logadas. Em produção, configurar.
   RESEND_API_KEY: z.string().min(1).optional(),
+  ASAAS_API_KEY: z.string().min(1).optional(),
+  ASAAS_API_URL: z.string().url().default("https://api-sandbox.asaas.com/v3"),
+  ASAAS_WEBHOOK_TOKEN: z.string().min(32).optional(),
 });
 
 const SKIP = process.env.SKIP_ENV_VALIDATION === "true";
@@ -21,11 +20,14 @@ const parsed = SKIP
   : serverEnvSchema.safeParse({
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
       RESEND_API_KEY: process.env.RESEND_API_KEY,
+      ASAAS_API_KEY: process.env.ASAAS_API_KEY,
+      ASAAS_API_URL: process.env.ASAAS_API_URL,
+      ASAAS_WEBHOOK_TOKEN: process.env.ASAAS_WEBHOOK_TOKEN,
     });
 
 if (!parsed.success) {
   console.error(
-    "❌ Variáveis de ambiente server-side inválidas:",
+    "Variaveis de ambiente server-side invalidas:",
     parsed.error.flatten().fieldErrors,
   );
   throw new Error(

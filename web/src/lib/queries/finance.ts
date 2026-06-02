@@ -2,7 +2,12 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getProjects, type ProjectListItem } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
-import type { CostCategory, ProjectStatus } from "@/lib/supabase/types";
+import type {
+  ChargeKind,
+  ChargeStatus,
+  CostCategory,
+  ProjectStatus,
+} from "@/lib/supabase/types";
 
 export interface FinanceCost {
   id: string;
@@ -27,6 +32,19 @@ export interface FinanceProjectRow {
   updated_at: string;
 }
 
+export interface FinanceChargeRow {
+  id: string;
+  project_id: string;
+  project_name: string | null;
+  customer_name: string | null;
+  kind: ChargeKind;
+  status: ChargeStatus;
+  amount_cents: number;
+  due_date: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
 export interface FinanceOverview {
   approved_revenue_cents: number;
   open_budget_cents: number;
@@ -34,8 +52,12 @@ export interface FinanceOverview {
   margin_cents: number;
   pending_quote_cents: number;
   approved_without_project_cents: number;
+  received_charge_cents: number;
+  pending_charge_cents: number;
+  overdue_charge_cents: number;
   costs_by_category: Record<CostCategory, number>;
   project_rows: FinanceProjectRow[];
+  charge_rows: FinanceChargeRow[];
   recent_costs: Array<
     FinanceCost & {
       project_name: string | null;
@@ -48,7 +70,7 @@ const OPEN_STATUSES: ProjectStatus[] = ["planning", "in_progress", "paused"];
 export const getFinanceOverview = cache(
   async (): Promise<FinanceOverview> => {
     const supabase = createClient();
-    const [projects, quotes, costsRes] = await Promise.all([
+    const [projects, quotes, costsRes, chargesRes] = await Promise.all([
       getProjects(),
       getQuotes(),
       supabase
@@ -56,11 +78,31 @@ export const getFinanceOverview = cache(
         .select("id, project_id, category, description, amount_cents, incurred_on, created_at")
         .order("incurred_on", { ascending: false })
         .limit(500),
+      supabase
+        .from("billing_charges")
+        .select(
+          "id, project_id, kind, status, amount_cents, due_date, paid_at, created_at, project:projects(id, name), customer:customers(id, name)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100),
     ]);
 
     if (costsRes.error) throw costsRes.error;
+    if (chargesRes.error) throw chargesRes.error;
 
     const costs = (costsRes.data ?? []) as FinanceCost[];
+    const charges = (chargesRes.data ?? []) as unknown as Array<{
+      id: string;
+      project_id: string;
+      kind: ChargeKind;
+      status: ChargeStatus;
+      amount_cents: number;
+      due_date: string | null;
+      paid_at: string | null;
+      created_at: string;
+      project: { id: string; name: string } | { id: string; name: string }[] | null;
+      customer: { id: string; name: string } | { id: string; name: string }[] | null;
+    }>;
     const costsByProject = new Map<string, number>();
     const projectById = new Map(projects.map((project) => [project.id, project]));
     const approvedRevenueByProject = new Map<string, number>();
@@ -111,6 +153,15 @@ export const getFinanceOverview = cache(
     const openBudgetCents = projects
       .filter((project) => OPEN_STATUSES.includes(project.status))
       .reduce((sum, project) => sum + (project.budget_cents ?? 0), 0);
+    const receivedChargeCents = charges
+      .filter((charge) => charge.status === "received" || charge.status === "confirmed")
+      .reduce((sum, charge) => sum + charge.amount_cents, 0);
+    const pendingChargeCents = charges
+      .filter((charge) => charge.status === "pending" || charge.status === "draft")
+      .reduce((sum, charge) => sum + charge.amount_cents, 0);
+    const overdueChargeCents = charges
+      .filter((charge) => charge.status === "overdue")
+      .reduce((sum, charge) => sum + charge.amount_cents, 0);
 
     return {
       approved_revenue_cents: approvedRevenueCents,
@@ -119,8 +170,32 @@ export const getFinanceOverview = cache(
       margin_cents: approvedRevenueCents - costCents,
       pending_quote_cents: pendingQuoteCents,
       approved_without_project_cents: approvedWithoutProjectCents,
+      received_charge_cents: receivedChargeCents,
+      pending_charge_cents: pendingChargeCents,
+      overdue_charge_cents: overdueChargeCents,
       costs_by_category: costsByCategory,
       project_rows: buildProjectRows(projects, costsByProject, approvedRevenueByProject),
+      charge_rows: charges.map((charge) => {
+        const project = Array.isArray(charge.project)
+          ? charge.project[0]
+          : charge.project;
+        const customer = Array.isArray(charge.customer)
+          ? charge.customer[0]
+          : charge.customer;
+
+        return {
+          id: charge.id,
+          project_id: charge.project_id,
+          project_name: project?.name ?? null,
+          customer_name: customer?.name ?? null,
+          kind: charge.kind,
+          status: charge.status,
+          amount_cents: charge.amount_cents,
+          due_date: charge.due_date,
+          paid_at: charge.paid_at,
+          created_at: charge.created_at,
+        };
+      }),
       recent_costs: costs.slice(0, 8).map((cost) => ({
         ...cost,
         project_name: projectById.get(cost.project_id)?.name ?? null,

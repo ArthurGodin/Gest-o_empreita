@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatBRL } from "@/lib/utils";
 import { convertToProjectAction } from "../actions";
 
 export interface TemplateOption {
@@ -23,6 +26,7 @@ export interface TemplateOption {
 interface ConvertToProjectProps {
   quoteId: string;
   quoteTitle: string;
+  quoteTotalCents: number;
   templates: TemplateOption[];
 }
 
@@ -31,6 +35,7 @@ const NO_TEMPLATE = "__none__";
 export function ConvertToProject({
   quoteId,
   quoteTitle,
+  quoteTotalCents,
   templates,
 }: ConvertToProjectProps) {
   const router = useRouter();
@@ -42,13 +47,29 @@ export function ConvertToProject({
   const defaultTemplate =
     templates.find((t) => t.is_system)?.id ?? NO_TEMPLATE;
   const [templateId, setTemplateId] = useState(defaultTemplate);
+  const [entryPct, setEntryPct] = useState("30");
+  const [cpfCnpj, setCpfCnpj] = useState("");
+
+  const parsedEntryPct = Number(entryPct.replace(",", "."));
+  const entryCents = Number.isFinite(parsedEntryPct)
+    ? Math.round((quoteTotalCents * parsedEntryPct) / 100)
+    : 0;
+  const saldoCents = Math.max(quoteTotalCents - entryCents, 0);
 
   function onConfirm() {
     setError(null);
     const tpl = templateId === NO_TEMPLATE ? null : templateId;
+    if (!Number.isFinite(parsedEntryPct) || parsedEntryPct < 0 || parsedEntryPct > 100) {
+      setError("Entrada deve ficar entre 0% e 100%.");
+      return;
+    }
     startTransition(async () => {
       try {
-        const result = await convertToProjectAction(quoteId, tpl);
+        const result = await convertToProjectAction(quoteId, {
+          templateId: tpl,
+          entryPct: parsedEntryPct,
+          cpfCnpj,
+        });
         if (!result.ok) {
           setError(result.error);
           return;
@@ -81,12 +102,12 @@ export function ConvertToProject({
           </DialogHeader>
 
           <div className="space-y-2">
-            <label
+            <Label
               htmlFor="template-select"
               className="text-sm font-medium text-foreground"
             >
               Etapas pré-prontas?
-            </label>
+            </Label>
             <select
               id="template-select"
               value={templateId}
@@ -107,6 +128,37 @@ export function ConvertToProject({
             <p className="text-xs text-muted-foreground">
               Você pode editar, adicionar ou apagar etapas depois.
             </p>
+          </div>
+
+          <div className="grid gap-3 rounded-lg border bg-muted/20 p-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="entry-pct">Entrada agora (%)</Label>
+              <Input
+                id="entry-pct"
+                inputMode="decimal"
+                value={entryPct}
+                onChange={(e) => setEntryPct(e.target.value)}
+                disabled={pending}
+                placeholder="30"
+              />
+              <p className="text-xs text-muted-foreground">
+                Entrada: {formatBRL(entryCents / 100)} · Saldo:{" "}
+                {formatBRL(saldoCents / 100)}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cpf-cnpj">CPF/CNPJ do cliente</Label>
+              <Input
+                id="cpf-cnpj"
+                value={cpfCnpj}
+                onChange={(e) => setCpfCnpj(e.target.value)}
+                disabled={pending}
+                placeholder="Somente números"
+              />
+              <p className="text-xs text-muted-foreground">
+                Necessário para emitir a cobrança Pix no Asaas.
+              </p>
+            </div>
           </div>
 
           {error && (

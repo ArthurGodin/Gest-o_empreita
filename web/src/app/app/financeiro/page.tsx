@@ -6,7 +6,6 @@ import {
   Banknote,
   FileCheck2,
   HardHat,
-  ReceiptText,
   TrendingUp,
 } from "lucide-react";
 import { PageHeader } from "@/components/app-shell/page-header";
@@ -14,7 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getFinanceOverview } from "@/lib/queries/finance";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import type { CostCategory, ProjectStatus } from "@/lib/supabase/types";
+import type {
+  ChargeKind,
+  ChargeStatus,
+  CostCategory,
+  ProjectStatus,
+} from "@/lib/supabase/types";
 
 const CATEGORY_LABEL: Record<CostCategory, string> = {
   material: "Material",
@@ -28,6 +32,20 @@ const STATUS_LABEL: Record<ProjectStatus, string> = {
   in_progress: "Em execução",
   paused: "Pausada",
   completed: "Concluída",
+  cancelled: "Cancelada",
+};
+
+const CHARGE_KIND_LABEL: Record<ChargeKind, string> = {
+  entrada: "Entrada",
+  saldo: "Saldo",
+};
+
+const CHARGE_STATUS_LABEL: Record<ChargeStatus, string> = {
+  draft: "Pix nao gerado",
+  pending: "Pendente",
+  overdue: "Atrasada",
+  received: "Recebida",
+  confirmed: "Confirmada",
   cancelled: "Cancelada",
 };
 
@@ -62,17 +80,17 @@ export default async function FinanceiroPage() {
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <FinanceMetric
           icon={<FileCheck2 className="h-4 w-4" />}
-          label="Aprovado"
-          value={formatBRL(overview.approved_revenue_cents / 100)}
-          hint="Orçamentos aprovados pelos clientes"
+          label="Recebido Pix"
+          value={formatBRL(overview.received_charge_cents / 100)}
+          hint="Cobranças recebidas ou confirmadas"
           tone="green"
         />
         <FinanceMetric
-          icon={<ReceiptText className="h-4 w-4" />}
-          label="Gastos lançados"
-          value={formatBRL(overview.cost_cents / 100)}
-          hint="Material, mão de obra, frete e outros"
-          tone="amber"
+          icon={<Banknote className="h-4 w-4" />}
+          label="A receber"
+          value={formatBRL(overview.pending_charge_cents / 100)}
+          hint="Pix pendente ou ainda nao gerado"
+          tone="blue"
         />
         <FinanceMetric
           icon={<TrendingUp className="h-4 w-4" />}
@@ -83,14 +101,14 @@ export default async function FinanceiroPage() {
               ? "Aparece quando houver aprovados"
               : `${marginPct.toLocaleString("pt-BR")}% sobre aprovados`
           }
-          tone={overview.margin_cents < 0 ? "red" : "blue"}
+          tone={overview.margin_cents < 0 ? "red" : "amber"}
         />
         <FinanceMetric
-          icon={<Banknote className="h-4 w-4" />}
-          label="Em negociação"
-          value={formatBRL(overview.pending_quote_cents / 100)}
-          hint="Orçamentos enviados ou vistos"
-          tone="neutral"
+          icon={<AlertTriangle className="h-4 w-4" />}
+          label="Atrasado"
+          value={formatBRL(overview.overdue_charge_cents / 100)}
+          hint="Cobranças vencidas sem baixa"
+          tone={overview.overdue_charge_cents > 0 ? "red" : "neutral"}
         />
       </section>
 
@@ -109,6 +127,60 @@ export default async function FinanceiroPage() {
           </div>
         </div>
       ) : null}
+
+      <Card className="rounded-lg">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">Cobranças recentes</CardTitle>
+          <span className="text-xs text-muted-foreground">
+            {overview.charge_rows.length} registro
+            {overview.charge_rows.length === 1 ? "" : "s"}
+          </span>
+        </CardHeader>
+        <CardContent>
+          {overview.charge_rows.length === 0 ? (
+            <div className="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
+              Nenhuma cobrança criada ainda. Quando um orçamento aprovado virar
+              obra, as parcelas aparecem aqui.
+            </div>
+          ) : (
+            <div className="divide-y rounded-lg border">
+              {overview.charge_rows.slice(0, 10).map((charge) => (
+                <Link
+                  key={charge.id}
+                  href={`/app/obras/${charge.project_id}`}
+                  className="grid gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {CHARGE_KIND_LABEL[charge.kind]}
+                      </span>
+                      <span className="truncate font-medium">
+                        {charge.project_name ?? "Obra sem nome"}
+                      </span>
+                      <span className={chargeStatusClass(charge.status)}>
+                        {CHARGE_STATUS_LABEL[charge.status]}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {charge.customer_name ?? "Cliente nao informado"}
+                      {charge.due_date ? (
+                        <span> - vence em {formatDateBR(charge.due_date)}</span>
+                      ) : null}
+                      {charge.paid_at ? (
+                        <span> - pago em {formatDateBR(charge.paid_at)}</span>
+                      ) : null}
+                    </p>
+                  </div>
+                  <div className="text-right text-sm font-semibold md:min-w-32">
+                    {formatBRL(charge.amount_cents / 100)}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <Card className="rounded-lg">
@@ -279,6 +351,20 @@ function FinanceMetric({
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
   );
+}
+
+function chargeStatusClass(status: ChargeStatus) {
+  const base = "rounded-md px-2 py-1 text-xs";
+  if (status === "received" || status === "confirmed") {
+    return `${base} bg-emerald-50 text-emerald-700`;
+  }
+  if (status === "overdue") {
+    return `${base} bg-red-50 text-red-700`;
+  }
+  if (status === "pending") {
+    return `${base} bg-sky-50 text-sky-700`;
+  }
+  return `${base} bg-muted text-muted-foreground`;
 }
 
 function MoneyColumn({

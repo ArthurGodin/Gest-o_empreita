@@ -16,8 +16,8 @@ dinheiro na execução da obra**.
 - Link público `/q/[token]`: cliente vê orçamento, aprova ou rejeita sem login.
 - Obras: conversão de orçamento aprovado, etapas, templates, diário com fotos,
   custos, ponto da equipe e link público de andamento.
-- Financeiro básico: aprovado, gastos, margem estimada, gastos por categoria e
-  margem por obra.
+- Financeiro: cobranças Pix Asaas, recebido, pendente, atrasado, gastos por
+  categoria e margem por obra.
 - CI: lint, typecheck, testes e build.
 
 ## Stack
@@ -27,6 +27,7 @@ dinheiro na execução da obra**.
 - TypeScript strict
 - Tailwind CSS + shadcn/ui base
 - Supabase Auth, Postgres, Storage e RLS
+- Asaas para cobrança Pix
 - Resend para email transacional opcional
 - React PDF para geração de orçamento em PDF
 - Vitest para testes unitários
@@ -51,6 +52,20 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
+Para gerar cobranças Pix:
+
+```env
+ASAAS_API_KEY=
+ASAAS_API_URL=https://api-sandbox.asaas.com/v3
+ASAAS_WEBHOOK_TOKEN=
+```
+
+Configure no Asaas o webhook:
+`https://SEU-DOMINIO/api/asaas/webhook`
+
+Header esperado:
+`asaas-access-token: <ASAAS_WEBHOOK_TOKEN>`
+
 ## Checks
 
 ```bash
@@ -63,17 +78,18 @@ npm run build
 
 ## Próxima Grande Entrega
 
-**Cobrança Pix com Asaas.**
+**Fechar a experiência pública de cobrança.**
 
-Essa é a próxima peça que transforma o app de ferramenta operacional em produto
-que captura dinheiro:
+A base operacional do Asaas já existe: converter orçamento aprovado em obra cria
+parcelas, gera Pix de entrada, mostra cobrança no painel da obra, processa
+webhook e reflete recebido/pendente/atrasado no financeiro.
 
-1. Criar cobrança de entrada ao converter orçamento aprovado em obra.
-2. Mostrar cobrança no painel da obra e no link público do cliente.
-3. Receber webhook do Asaas e atualizar status.
-4. Liberar saldo na entrega.
-5. Evoluir `/app/financeiro` de margem estimada para contas recebidas,
-   pendentes e atrasadas.
+O próximo passo para vender com segurança:
+
+1. Mostrar cobrança no link público `/q/[token]` para o cliente pagar sem login.
+2. Adicionar confirmação pública de entrega para liberar o saldo.
+3. Validar Asaas sandbox ponta a ponta com webhook real.
+4. Adicionar monitoramento de erro e analytics de funil.
 
 O desenho completo está em:
 `docs/superpowers/specs/2026-05-25-fase-1-4-cobranca-asaas-design.md`.

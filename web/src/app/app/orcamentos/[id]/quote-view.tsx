@@ -45,6 +45,7 @@ export function QuoteView({
               <ConvertToProject
                 quoteId={quote.id}
                 quoteTitle={quote.title}
+                quoteTotalCents={quote.total_cents}
                 templates={templates}
               />
             )}
