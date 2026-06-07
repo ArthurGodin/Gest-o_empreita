@@ -10,7 +10,7 @@ interface AsaasErrorBody {
 
 export class AsaasConfigError extends Error {
   constructor() {
-    super("Asaas nao configurado. Preencha ASAAS_API_KEY e ASAAS_API_URL.");
+    super("Asaas não configurado. Preencha ASAAS_API_KEY e ASAAS_API_URL.");
     this.name = "AsaasConfigError";
   }
 }

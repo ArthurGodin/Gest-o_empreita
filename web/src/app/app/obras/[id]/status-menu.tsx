@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -75,40 +76,63 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
   }
 
   return (
-    <div className="relative">
+    <>
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         disabled={pending}
       >
         Mudar status
         <ChevronDown className="h-3.5 w-3.5" />
       </Button>
 
-      {open && (
-        <div
-          className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border bg-popover p-1 text-sm shadow-md"
-          onMouseLeave={() => setOpen(false)}
-        >
-          {options.map((to) => (
-            <button
-              key={to}
-              type="button"
-              onClick={() => go(to)}
-              disabled={pending || !canTransitionStatus(current, to)}
-              className="block w-full rounded px-2 py-1.5 text-left hover:bg-muted disabled:opacity-50"
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mudar status da obra</DialogTitle>
+            <DialogDescription>
+              Escolha o próximo status permitido para esta obra.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            {options.map((to) => (
+              <Button
+                key={to}
+                type="button"
+                variant="outline"
+                className="justify-start"
+                onClick={() => go(to)}
+                disabled={pending || !canTransitionStatus(current, to)}
+              >
+                {PROJECT_STATUS_LABEL[to]}
+              </Button>
+            ))}
+          </div>
+          {error && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={pending}
             >
-              {PROJECT_STATUS_LABEL[to]}
-            </button>
-          ))}
-        </div>
-      )}
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={pauseOpen} onOpenChange={setPauseOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Pausar obra</DialogTitle>
+            <DialogDescription>
+              Informe o motivo da pausa se quiser registrar no diário da obra.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <label className="text-sm font-medium">
@@ -160,6 +184,9 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
                 ? "Cancelar obra?"
                 : "Marcar obra como concluída?"}
             </DialogTitle>
+            <DialogDescription>
+              Confirme a mudança de status antes de atualizar o andamento da obra.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
             {confirmOpen === "cancelled" ? (
@@ -203,6 +230,6 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

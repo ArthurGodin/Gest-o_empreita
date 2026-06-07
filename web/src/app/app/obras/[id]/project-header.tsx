@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
@@ -34,26 +36,26 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {project.name}
-        </h1>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          {project.address && (
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              {project.address}
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {project.name}
+          </h1>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            {project.address && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                {project.address}
+              </span>
+            )}
+            {project.customer && (
+              <span>Cliente: {project.customer.name}</span>
+            )}
+            {startedFmt && <span>Iniciada {startedFmt}</span>}
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${pillClass}`}
+            >
+              {PROJECT_STATUS_LABEL[project.status]}
             </span>
-          )}
-          {project.customer && (
-            <span>Cliente: {project.customer.name}</span>
-          )}
-          {startedFmt && <span>Iniciada {startedFmt}</span>}
-          <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${pillClass}`}
-          >
-            {PROJECT_STATUS_LABEL[project.status]}
-          </span>
-        </div>
+          </div>
         </div>
         <StatusMenu projectId={project.id} current={project.status} />
       </div>

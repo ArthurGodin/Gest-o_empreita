@@ -24,7 +24,7 @@ const STATUS_COPY: Record<
   { label: string; tone: string; icon: "paid" | "warning" | "clock" }
 > = {
   draft: {
-    label: "Pix nao gerado",
+    label: "Pix não gerado",
     tone: "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100",
     icon: "warning",
   },
@@ -86,7 +86,7 @@ export function BillingSection({
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Cobranca
+            Cobrança
           </div>
           <h2 className="mt-1 text-lg font-semibold">Entrada e saldo da obra</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -106,7 +106,7 @@ export function BillingSection({
         <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            Entrada ainda nao paga. Voce pode seguir, mas confirme antes de
+            Entrada ainda não paga. Você pode seguir, mas confirme antes de
             comprar material pesado.
           </p>
         </div>
@@ -114,8 +114,8 @@ export function BillingSection({
 
       {ordered.length === 0 ? (
         <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
-          Esta obra ainda nao tem parcelas configuradas. O fluxo automatico
-          aparece quando um orcamento aprovado vira obra.
+          Esta obra ainda não tem parcelas configuradas. O fluxo automático
+          aparece quando um orçamento aprovado vira obra.
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -177,7 +177,7 @@ function ChargePanel({
         ) : null}
         {isSaldoBlocked ? (
           <div className="rounded-md bg-muted/30 p-2 text-xs text-muted-foreground">
-            Sera liberado quando a entrega for confirmada ou quando voce gerar
+            Será liberado quando a entrega for confirmada ou quando você gerar
             manualmente.
           </div>
         ) : null}
@@ -209,7 +209,7 @@ function ChargePanel({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Abrir cobranca
+              Abrir cobrança
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </Button>

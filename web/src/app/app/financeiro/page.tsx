@@ -41,7 +41,7 @@ const CHARGE_KIND_LABEL: Record<ChargeKind, string> = {
 };
 
 const CHARGE_STATUS_LABEL: Record<ChargeStatus, string> = {
-  draft: "Pix nao gerado",
+  draft: "Pix não gerado",
   pending: "Pendente",
   overdue: "Atrasada",
   received: "Recebida",
@@ -89,7 +89,7 @@ export default async function FinanceiroPage() {
           icon={<Banknote className="h-4 w-4" />}
           label="A receber"
           value={formatBRL(overview.pending_charge_cents / 100)}
-          hint="Pix pendente ou ainda nao gerado"
+          hint="Pix pendente ou ainda não gerado"
           tone="blue"
         />
         <FinanceMetric
@@ -163,7 +163,7 @@ export default async function FinanceiroPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {charge.customer_name ?? "Cliente nao informado"}
+                      {charge.customer_name ?? "Cliente não informado"}
                       {charge.due_date ? (
                         <span> - vence em {formatDateBR(charge.due_date)}</span>
                       ) : null}

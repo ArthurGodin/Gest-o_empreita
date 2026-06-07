@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -98,6 +99,9 @@ export function CostForm({ projectId, stages }: CostFormProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Lançar gasto</DialogTitle>
+          <DialogDescription>
+            Registre materiais, mão de obra, frete ou outros custos da obra.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">

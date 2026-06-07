@@ -58,7 +58,7 @@ export async function ensureBillingProfile(
 
   const cpfCnpj = normalizeCpfCnpj(cpfCnpjOverride || customer.document);
   if (!isValidCpfCnpjLength(cpfCnpj)) {
-    throw new Error("CPF/CNPJ obrigatorio para gerar cobranca Pix.");
+    throw new Error("CPF/CNPJ obrigatório para gerar cobrança Pix.");
   }
 
   const asaasCustomer = await createAsaasCustomer({
@@ -97,7 +97,7 @@ export async function ensureBillingProfile(
     if (afterRace?.asaas_customer_id) return afterRace.asaas_customer_id;
   }
 
-  throw insertError ?? new Error("Nao foi possivel criar cliente no Asaas.");
+  throw insertError ?? new Error("Não foi possível criar cliente no Asaas.");
 }
 
 export async function createLocalCharges(
@@ -148,7 +148,7 @@ export async function generatePixForCharge(
     .maybeSingle();
 
   if (chargeError) throw chargeError;
-  if (!charge) throw new Error("Cobranca nao encontrada.");
+  if (!charge) throw new Error("Cobrança não encontrada.");
 
   if (charge.asaas_payment_id && charge.status !== "draft") {
     return { ok: true, chargeId: charge.id };
@@ -191,7 +191,7 @@ export async function generatePixForCharge(
       return {
         ok: true,
         chargeId: charge.id,
-        warning: "Asaas ainda nao configurado. A cobranca ficou como rascunho.",
+        warning: "Asaas ainda não configurado. A cobrança ficou como rascunho.",
       };
     }
     throw error;

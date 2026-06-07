@@ -254,6 +254,19 @@ export async function setStageStatusAction(
     return { ok: false, error: clientErrorFor(error) };
   }
 
+  if (status === "in_progress" || status === "done") {
+    const { error: projectStatusError } = await supabase
+      .from("projects")
+      .update({ status: "in_progress" })
+      .eq("id", existing.project_id)
+      .eq("company_id", auth.companyId)
+      .eq("status", "planning");
+
+    if (projectStatusError) {
+      logServerError("obras.stages.auto-project-status", projectStatusError);
+    }
+  }
+
   revalidatePath(`/app/obras/${existing.project_id}`);
   return { ok: true };
 }
@@ -1060,7 +1073,7 @@ export async function generateChargePixAction(
     logServerError("obras.billing.fetch-charge", error);
     return { ok: false, error: clientErrorFor(error) };
   }
-  if (!data) return { ok: false, error: "Cobranca nao encontrada." };
+  if (!data) return { ok: false, error: "Cobrança não encontrada." };
 
   const charge = data as unknown as {
     id: string;
@@ -1089,13 +1102,13 @@ export async function generateChargePixAction(
   };
 
   if (["received", "confirmed", "cancelled"].includes(charge.status)) {
-    return { ok: false, error: "Essa cobranca nao pode mais gerar Pix." };
+    return { ok: false, error: "Essa cobrança não pode mais gerar Pix." };
   }
 
   const customer = Array.isArray(charge.customer)
     ? charge.customer[0]
     : charge.customer;
-  if (!customer) return { ok: false, error: "Cliente nao encontrado." };
+  if (!customer) return { ok: false, error: "Cliente não encontrado." };
 
   const project = Array.isArray(charge.project)
     ? charge.project[0]

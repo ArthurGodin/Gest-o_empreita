@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -157,6 +158,9 @@ export function TimeForm({ projectId, triggerLabel = "Bater ponto" }: TimeFormPr
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Bater ponto</DialogTitle>
+          <DialogDescription>
+            Registre horário, função e localização opcional da equipe na obra.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
