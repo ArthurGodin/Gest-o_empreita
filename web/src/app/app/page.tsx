@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   ArrowRight,
   CheckCircle2,
+  Circle,
   Clock3,
   FileText,
   HardHat,
@@ -80,6 +81,11 @@ export default async function DashboardPage() {
     approvedWithoutProject,
     openProjects,
   });
+  const firstMoneySteps = buildFirstMoneySteps({
+    customersCount: customers.length,
+    quotes,
+    projects,
+  });
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
@@ -95,6 +101,8 @@ export default async function DashboardPage() {
           </Button>
         }
       />
+
+      <FirstMoneyGuide steps={firstMoneySteps} />
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <MetricTile
@@ -150,10 +158,10 @@ export default async function DashboardPage() {
                     {action.icon}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">
+                    <span className="block text-sm font-medium leading-5">
                       {action.title}
                     </span>
-                    <span className="block truncate text-xs text-muted-foreground">
+                    <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
                       {action.detail}
                     </span>
                   </span>
@@ -258,6 +266,71 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+interface FirstMoneyStep {
+  title: string;
+  detail: string;
+  href: string;
+  action: string;
+  done: boolean;
+}
+
+function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
+  const doneCount = steps.filter((step) => step.done).length;
+  const nextStep = steps.find((step) => !step.done) ?? steps.at(-1);
+
+  if (!nextStep) return null;
+
+  return (
+    <section className="rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-base font-semibold">Seu primeiro dinheiro no app</p>
+            <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              {doneCount}/{steps.length} passos
+            </span>
+          </div>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Siga o caminho mais curto: cliente, orçamento, link no WhatsApp,
+            aprovação e cobrança da entrada.
+          </p>
+        </div>
+        <Button asChild className="w-full shrink-0 lg:w-auto">
+          <Link href={nextStep.href}>{nextStep.action}</Link>
+        </Button>
+      </div>
+
+      <div className="mt-4 grid gap-2 md:grid-cols-5">
+        {steps.map((step) => (
+          <Link
+            key={step.title}
+            href={step.href}
+            className={`rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
+              step.done ? "bg-primary/5" : "bg-background"
+            }`}
+          >
+            <span className="flex items-start gap-2">
+              {step.done ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+              ) : (
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              )}
+              <span className="min-w-0">
+                <span className="block text-sm font-medium leading-5">
+                  {step.title}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {step.detail}
+                </span>
+              </span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -403,6 +476,95 @@ function buildNextActions({
   }
 
   return actions.slice(0, 4);
+}
+
+function buildFirstMoneySteps({
+  customersCount,
+  quotes,
+  projects,
+}: {
+  customersCount: number;
+  quotes: Array<{
+    id: string;
+    title: string;
+    status: string;
+    effective_status: string;
+    project_id: string | null;
+    sent_at: string | null;
+    viewed_at: string | null;
+    approved_at: string | null;
+  }>;
+  projects: Array<{ id: string }>;
+}): FirstMoneyStep[] {
+  const firstQuote = quotes[0];
+  const firstDraft = quotes.find((quote) => quote.status === "draft");
+  const firstShared = quotes.find(
+    (quote) =>
+      quote.sent_at ||
+      quote.viewed_at ||
+      quote.approved_at ||
+      quote.effective_status === "sent" ||
+      quote.effective_status === "viewed" ||
+      quote.effective_status === "approved",
+  );
+  const firstApproved = quotes.find(
+    (quote) => quote.effective_status === "approved",
+  );
+  const firstProject = projects[0];
+
+  return [
+    {
+      title: "Cliente",
+      detail: "Tenha quem receberá a proposta.",
+      href: customersCount > 0 ? "/app/clientes" : "/app/clientes/novo",
+      action: "Cadastrar cliente",
+      done: customersCount > 0,
+    },
+    {
+      title: "Orçamento",
+      detail: "Monte a proposta com valor claro.",
+      href: firstQuote ? `/app/orcamentos/${firstQuote.id}` : "/app/orcamentos/novo",
+      action: firstDraft
+        ? "Finalizar orçamento"
+        : firstQuote
+          ? "Abrir orçamento"
+          : "Criar orçamento",
+      done: quotes.length > 0,
+    },
+    {
+      title: "Link",
+      detail: "Envie para o cliente aprovar.",
+      href: firstShared
+        ? `/app/orcamentos/${firstShared.id}`
+        : firstQuote
+          ? `/app/orcamentos/${firstQuote.id}`
+          : "/app/orcamentos/novo",
+      action: "Enviar link ao cliente",
+      done: Boolean(firstShared),
+    },
+    {
+      title: "Aprovação",
+      detail: "Cliente aprovou sem ligação.",
+      href: firstApproved
+        ? `/app/orcamentos/${firstApproved.id}`
+        : firstShared
+          ? `/app/orcamentos/${firstShared.id}`
+          : "/app/orcamentos",
+      action: "Acompanhar aprovação",
+      done: Boolean(firstApproved),
+    },
+    {
+      title: "Entrada",
+      detail: "Vire obra e cobre o Pix.",
+      href: firstProject
+        ? `/app/obras/${firstProject.id}`
+        : firstApproved
+          ? `/app/orcamentos/${firstApproved.id}`
+          : "/app/orcamentos",
+      action: firstProject ? "Cobrar entrada" : "Transformar em obra",
+      done: Boolean(firstProject),
+    },
+  ];
 }
 
 function isSameBrazilMonth(value: string): boolean {

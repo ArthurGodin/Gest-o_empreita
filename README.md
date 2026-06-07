@@ -67,6 +67,29 @@ Configure no Asaas o webhook:
 Header esperado:
 `asaas-access-token: <ASAAS_WEBHOOK_TOKEN>`
 
+## Modo Primeira Venda Sem Custo
+
+Para vender antes de comprar dominio, use o fluxo principal por WhatsApp:
+
+1. Crie o orçamento.
+2. Copie o link público.
+3. Envie manualmente pelo WhatsApp.
+4. O cliente aprova pelo link.
+5. O painel mostra o orçamento aprovado.
+6. Converta em obra.
+7. Gere Pix Asaas e envie o link de pagamento.
+
+Email transacional é opcional nesse modo. Sem `EMAIL_FROM`, o app não tenta
+enviar notificações automáticas por Resend, evitando bloqueios do
+`onboarding@resend.dev`. Depois da primeira venda, configure um domínio no
+Resend e defina:
+
+```env
+EMAIL_FROM=Gestao Empreita <contato@mail.seudominio.com.br>
+```
+
+Guia operacional: `docs/primeira-venda-zero-custo.md`.
+
 ## Checks
 
 ```bash

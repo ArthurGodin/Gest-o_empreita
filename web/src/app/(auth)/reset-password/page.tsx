@@ -12,16 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginAction } from "../actions";
+import { updatePasswordAction } from "../actions";
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function onSubmit(formData: FormData) {
     setError(null);
     startTransition(async () => {
-      const result = await loginAction(formData);
+      const result = await updatePasswordAction(formData);
       if (!result.ok) setError(result.error);
     });
   }
@@ -29,41 +29,35 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Entrar</CardTitle>
+        <CardTitle className="text-2xl">Nova senha</CardTitle>
         <CardDescription>
-          Bem-vindo de volta. Acesse seus orçamentos e obras.
+          Crie uma senha forte para voltar ao painel da sua empreiteira.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              placeholder="voce@empresa.com.br"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <Label htmlFor="password">Senha</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                Esqueci minha senha
-              </Link>
-            </div>
+            <Label htmlFor="password">Nova senha</Label>
             <Input
               id="password"
               name="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
-              placeholder="••••••••"
+              minLength={8}
+              placeholder="Mínimo 8 caracteres"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmar senha</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="Digite a senha novamente"
             />
           </div>
           {error && (
@@ -72,12 +66,15 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Entrando..." : "Entrar"}
+            {pending ? "Salvando..." : "Salvar nova senha"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
-            Ainda não tem conta?{" "}
-            <Link href="/signup" className="font-medium text-primary hover:underline">
-              Comece grátis
+            Link expirado?{" "}
+            <Link
+              href="/forgot-password"
+              className="font-medium text-primary hover:underline"
+            >
+              Pedir outro link
             </Link>
           </p>
         </form>

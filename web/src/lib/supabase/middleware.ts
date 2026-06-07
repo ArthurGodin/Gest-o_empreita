@@ -3,7 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import type { Database } from "@/lib/supabase/types";
 
-const PUBLIC_PATHS = ["/", "/login", "/signup", "/forgot-password", "/auth"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/auth",
+];
 const APP_PATHS = ["/app", "/dashboard"];
 
 export async function updateSession(request: NextRequest) {

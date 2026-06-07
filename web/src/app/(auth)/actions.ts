@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { env } from "@/lib/env";
 import { logServerError } from "@/lib/log";
 
 const loginSchema = z.object({
@@ -16,6 +17,20 @@ const signupSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
 });
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Email inválido"),
+});
+
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
+    confirmPassword: z.string().min(8, "Confirme sua nova senha"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não conferem",
+    path: ["confirmPassword"],
+  });
 
 export type AuthResult =
   | { ok: true }
@@ -83,6 +98,69 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
 
   revalidatePath("/", "layout");
   redirect("/onboarding");
+}
+
+export async function requestPasswordResetAction(
+  formData: FormData,
+): Promise<AuthResult> {
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Informe um email válido.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = createClient();
+  const appUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${appUrl}/auth/callback?next=/reset-password`,
+  });
+
+  if (error) {
+    logServerError("auth.password-reset.request", error);
+  }
+
+  // Sempre retorna sucesso para evitar enumeração de emails cadastrados.
+  return { ok: true };
+}
+
+export async function updatePasswordAction(
+  formData: FormData,
+): Promise<AuthResult> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Confira a nova senha.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    logServerError("auth.password-reset.update", error);
+    return {
+      ok: false,
+      error:
+        "Link expirado ou sessão inválida. Peça um novo link de recuperação.",
+    };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/app");
 }
 
 export async function signoutAction() {

@@ -21,4 +21,9 @@ export function getResendClient(): Resend | null {
 }
 
 /** Remetente padrão. Sem domínio próprio, usa o default do Resend (dev). */
-export const DEFAULT_FROM = "Gestão Empreita <onboarding@resend.dev>";
+export const DEFAULT_FROM =
+  serverEnv.EMAIL_FROM ?? "Gestão Empreita <onboarding@resend.dev>";
+
+export const TRANSACTIONAL_EMAIL_ENABLED = Boolean(
+  serverEnv.RESEND_API_KEY && serverEnv.EMAIL_FROM,
+);

@@ -8,6 +8,7 @@ import { z } from "zod";
 const serverEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(3).optional(),
   ASAAS_API_KEY: z.string().min(1).optional(),
   ASAAS_API_URL: z.string().url().default("https://api-sandbox.asaas.com/v3"),
   ASAAS_WEBHOOK_TOKEN: z.string().min(32).optional(),
@@ -20,6 +21,7 @@ const parsed = SKIP
   : serverEnvSchema.safeParse({
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
       RESEND_API_KEY: process.env.RESEND_API_KEY,
+      EMAIL_FROM: process.env.EMAIL_FROM,
       ASAAS_API_KEY: process.env.ASAAS_API_KEY,
       ASAAS_API_URL: process.env.ASAAS_API_URL,
       ASAAS_WEBHOOK_TOKEN: process.env.ASAAS_WEBHOOK_TOKEN,

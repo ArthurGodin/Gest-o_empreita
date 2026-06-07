@@ -85,8 +85,8 @@ export default async function ApprovedPage({
         </div>
 
         <p className="text-sm text-muted-foreground">
-          <strong>{quote.company.name}</strong> recebeu uma notificação por
-          email e vai entrar em contato pra acertar os detalhes da obra.
+          <strong>{quote.company.name}</strong> já consegue ver sua aprovação
+          no painel e vai entrar em contato pra acertar os detalhes da obra.
         </p>
 
         <Link

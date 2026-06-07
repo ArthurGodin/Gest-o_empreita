@@ -19,9 +19,9 @@ interface QuoteEditorProps {
   customers: Customer[];
 }
 
-function newDraft(): ItemDraft {
+function newDraft(key = crypto.randomUUID()): ItemDraft {
   return {
-    key: crypto.randomUUID(),
+    key,
     catalog_item_id: null,
     description: "",
     unit: "un",
@@ -44,7 +44,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
 
   // Items state — começa do quote ou com 1 item vazio se nenhum
   const [items, setItems] = useState<ItemDraft[]>(() => {
-    if (quote.items.length === 0) return [newDraft()];
+    if (quote.items.length === 0) return [newDraft("initial-empty-item")];
     return quote.items.map((it) => ({
       key: it.id,
       catalog_item_id: null,

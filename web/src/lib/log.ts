@@ -13,6 +13,7 @@ export interface LoggableError {
   message?: string | null;
   name?: string | null;
   details?: string | null;
+  status?: number | null;
 }
 
 export function logServerError(scope: string, error: LoggableError | unknown) {
@@ -31,6 +32,26 @@ export function logServerError(scope: string, error: LoggableError | unknown) {
  */
 export function clientErrorFor(error: LoggableError | unknown): string {
   const e = (error ?? {}) as LoggableError;
+  const message = (e.message ?? "").toLowerCase();
+
+  if (e.name === "AsaasConfigError") {
+    return "Asaas ainda não está configurado. Preencha a API Key e a URL da API antes de gerar Pix.";
+  }
+
+  if (e.name === "AsaasApiError") {
+    if (e.status === 401 || e.status === 403) {
+      return "Asaas recusou a chave configurada. Atualize a API Key do Asaas nas variáveis de ambiente e reinicie o deploy.";
+    }
+    if (e.status === 400) {
+      return "Asaas recusou os dados da cobrança. Confira CPF/CNPJ do cliente e tente gerar o Pix novamente.";
+    }
+    return "Asaas não concluiu a geração do Pix agora. Tente novamente em instantes.";
+  }
+
+  if (message.includes("cpf/cnpj")) {
+    return "Informe um CPF/CNPJ válido no cliente antes de gerar a cobrança Pix.";
+  }
+
   switch (e.code) {
     case "23505": // unique_violation
       return "Já existe um registro com esses dados.";

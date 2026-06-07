@@ -1,6 +1,10 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_FROM, getResendClient } from "@/lib/email/client";
+import {
+  DEFAULT_FROM,
+  TRANSACTIONAL_EMAIL_ENABLED,
+  getResendClient,
+} from "@/lib/email/client";
 import { logServerError } from "@/lib/log";
 
 /**
@@ -45,9 +49,19 @@ export async function notifyCompanyOwner(
     return { sent: false, error: "Nenhum email de owner encontrado." };
   }
 
+  if (!TRANSACTIONAL_EMAIL_ENABLED) {
+    console.log(
+      `[email] (modo zero custo, sem EMAIL_FROM verificado) Mandaria pra ${ownerEmails.join(", ")}:`,
+      email.subject,
+    );
+    return {
+      sent: false,
+      error: "Email transacional desativado até configurar EMAIL_FROM.",
+    };
+  }
+
   const resend = getResendClient();
   if (!resend) {
-    // Modo dev sem chave: loga e finge sucesso pra não bloquear o fluxo
     console.log(
       `[email] (dev mode, sem Resend) Mandaria pra ${ownerEmails.join(", ")}:`,
       email.subject,

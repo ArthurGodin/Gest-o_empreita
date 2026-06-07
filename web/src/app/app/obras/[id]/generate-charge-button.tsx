@@ -47,7 +47,11 @@ export function GenerateChargeButton({
         )}
         {pending ? "Gerando..." : label}
       </Button>
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {error ? (
+        <p className="max-w-sm text-xs leading-5 text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

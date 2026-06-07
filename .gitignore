@@ -25,6 +25,7 @@ Thumbs.db
 
 # generated QA artifacts
 screenshots/
+dogfood-output/
 
 # local env files
 .env

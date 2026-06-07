@@ -16,15 +16,19 @@ const included = [
   "Orçamentos ilimitados com PDF",
   "Link público para aprovação do cliente",
   "Conversão de aprovado em obra",
+  "Cobrança Pix Asaas integrada",
+  "Financeiro com recebidos, pendentes e atrasados",
   "Etapas, diário com fotos e ponto da equipe",
   "Custos por obra e margem estimada",
   "Suporte direto na implantação inicial",
 ];
 
 const roadmap = [
-  "Cobrança Pix Asaas integrada",
-  "Financeiro com recebidos, pendentes e atrasados",
   "PWA/offline para uso em campo",
+  "Assinatura recorrente e cobrança automática",
+  "Relatórios de margem por tipo de obra",
+  "Equipe com permissões por função",
+  "Templates avançados de proposta",
 ];
 
 export const metadata = {

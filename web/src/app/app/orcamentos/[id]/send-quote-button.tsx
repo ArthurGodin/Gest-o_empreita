@@ -101,10 +101,10 @@ export function SendQuoteButton({
           {shareUrl ? (
             <>
               <DialogHeader>
-                <DialogTitle>Pronto! Link gerado 🎉</DialogTitle>
+                <DialogTitle>Link pronto para enviar</DialogTitle>
                 <DialogDescription>
-                  Copie o link abaixo e cole no WhatsApp do cliente. Quando ele
-                  abrir e aprovar, você recebe um email.
+                  Copie o link abaixo e mande no WhatsApp do cliente. Quando ele
+                  aprovar, o orçamento aparece como aprovado no painel.
                 </DialogDescription>
               </DialogHeader>
 
