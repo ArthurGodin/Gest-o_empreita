@@ -6,10 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { suggestCatalogItems, type CatalogItem } from "@/lib/queries/catalog";
 import { clientErrorFor, logServerError } from "@/lib/log";
+import { normalizeQuoteUnit } from "@/lib/format";
 
 const itemSchema = z.object({
   description: z.string().trim().min(2, "Descrição precisa ter pelo menos 2 caracteres"),
-  unit: z.string().trim().min(1, "Informe a unidade").max(10, "Unidade até 10 caracteres"),
+  unit: z.string().trim().max(10, "Unidade até 10 caracteres").transform(normalizeQuoteUnit),
   default_price_cents: z
     .number()
     .int()

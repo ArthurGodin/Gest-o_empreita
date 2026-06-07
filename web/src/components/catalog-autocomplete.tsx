@@ -41,6 +41,7 @@ export function CatalogAutocomplete({
 }: CatalogAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<CatalogItem[]>([]);
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const [, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -56,7 +57,7 @@ export function CatalogAutocomplete({
       startTransition(async () => {
         const results = await suggestCatalogAction(q);
         setSuggestions(results);
-        setOpen(results.length > 0);
+        setOpen(focused && results.length > 0);
         setHighlight(0);
       });
     }, 200);
@@ -64,7 +65,7 @@ export function CatalogAutocomplete({
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [value]);
+  }, [value, focused]);
 
   const visibleSuggestions = value.trim().length >= 2 ? suggestions : [];
 
@@ -100,12 +101,16 @@ export function CatalogAutocomplete({
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
         onFocus={() => {
+          setFocused(true);
           if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
           if (visibleSuggestions.length > 0) setOpen(true);
         }}
         onBlur={() => {
           // Delay pra permitir click numa sugestão antes de fechar
-          blurTimeoutRef.current = setTimeout(() => setOpen(false), 150);
+          blurTimeoutRef.current = setTimeout(() => {
+            setFocused(false);
+            setOpen(false);
+          }, 150);
         }}
         onKeyDown={onKeyDown}
         placeholder={placeholder}

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin, MessageCircle, Phone, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { formatDocument, formatPhone, whatsappLink } from "@/lib/format";
+import { formatDocumentMasked, formatPhone, whatsappLink } from "@/lib/format";
 import type { Customer } from "@/lib/queries/customers";
 
 interface CustomerListProps {
@@ -72,7 +72,7 @@ export function CustomerList({ customers }: CustomerListProps) {
 
 function CustomerCard({ customer }: { customer: Customer }) {
   const phoneFormatted = formatPhone(customer.phone);
-  const documentFormatted = formatDocument(customer.document);
+  const documentFormatted = formatDocumentMasked(customer.document);
   const waLink = whatsappLink(customer.phone);
 
   // "Stretched link" pattern com pointer-events:

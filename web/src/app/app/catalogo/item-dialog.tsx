@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { centsToBRLInput, parseBRLToCents } from "@/lib/format";
+import { centsToBRLInput, normalizeQuoteUnit, parseBRLToCents } from "@/lib/format";
 import {
   createCatalogItemAction,
   updateCatalogItemAction,
@@ -106,6 +106,7 @@ export function ItemDialog({ item, open, onOpenChange }: ItemDialogProps) {
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
+                onBlur={() => setUnit(normalizeQuoteUnit(unit))}
                 list="common-units"
                 placeholder="un"
               />
