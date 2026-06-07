@@ -29,6 +29,7 @@ dinheiro na execução da obra**.
 - Tailwind CSS + shadcn/ui base
 - Supabase Auth, Postgres, Storage e RLS
 - Asaas para cobrança Pix
+- Vercel Analytics e Speed Insights para métricas de uso e performance
 - Resend para email transacional opcional
 - React PDF para geração de orçamento em PDF
 - Vitest para testes unitários
@@ -149,7 +150,7 @@ Antes de vender para mais de 5 pilotos:
 - Build limpo em produção.
 - Fluxo demo completo com dados realistas.
 - Landing sem prometer feature inexistente.
-- Sentry ou monitoramento equivalente.
+- Vercel Analytics/Speed Insights ativos e monitoramento de erro externo definido.
 - Analytics mínimo de funil.
 - Termos de uso e política de privacidade.
 - Cobrança Asaas em sandbox validada ponta a ponta.
