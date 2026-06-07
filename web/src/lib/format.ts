@@ -20,6 +20,19 @@ export function parseQuantity(input: string | number): number {
   return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
+export function normalizeQuoteUnit(unit: string | null | undefined): string {
+  const cleaned = (unit ?? "").trim();
+  if (!cleaned) return "un";
+  if (/^-?\d+(?:[,.]\d+)?$/.test(cleaned)) return "un";
+  return cleaned;
+}
+
+export function formatQuantityBR(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    maximumFractionDigits: 3,
+  }).format(Number.isFinite(value) ? value : 0);
+}
+
 // ─── Dinheiro ──────────────────────────────────────────────────────────────
 
 /**
@@ -108,6 +121,18 @@ export function formatDocument(raw: string | null | undefined): string | null {
   return raw;
 }
 
+export function formatDocumentMasked(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `***.${digits.slice(3, 6)}.${digits.slice(6, 9)}-**`;
+  }
+  if (digits.length === 14) {
+    return `**.***.${digits.slice(5, 8)}/${digits.slice(8, 12)}-**`;
+  }
+  return "Documento cadastrado";
+}
+
 /**
  * Monta link wa.me, normalizando para o formato 55 + DDD + número.
  *
@@ -136,4 +161,15 @@ export function whatsappLink(phone: string | null | undefined): string | null {
   }
 
   return null;
+}
+
+export function whatsappShareLink({
+  phone,
+  message,
+}: {
+  phone?: string | null;
+  message: string;
+}): string {
+  const base = whatsappLink(phone) ?? "https://wa.me/";
+  return `${base}?text=${encodeURIComponent(message)}`;
 }

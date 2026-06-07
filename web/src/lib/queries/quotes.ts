@@ -65,6 +65,7 @@ export interface QuoteWithRelations extends Quote {
   customer: {
     id: string;
     name: string;
+    document: string | null;
     phone: string | null;
     email: string | null;
     city: string | null;
@@ -100,7 +101,7 @@ export const getQuoteWithRelations = cache(
       .select(
         `
         *,
-        customer:customers(id, name, phone, email, city, state),
+        customer:customers(id, name, document, phone, email, city, state),
         items:quote_items(*),
         approvals:quote_approvals(id, action, signer_name, rejection_reason, created_at)
       `,

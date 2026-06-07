@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { CatalogAutocomplete } from "@/components/catalog-autocomplete";
 import {
   centsToBRLInput,
+  normalizeQuoteUnit,
   parseBRLToCents,
   parseQuantity,
 } from "@/lib/format";
@@ -98,7 +99,7 @@ export function ItemRow({
     startSavingCatalog(async () => {
       const result = await createCatalogItemAction({
         description: item.description.trim(),
-        unit: item.unit || "un",
+        unit: normalizeQuoteUnit(item.unit),
         default_price_cents: item.unit_price_cents,
       });
       if (result.ok) {
@@ -113,7 +114,7 @@ export function ItemRow({
   return (
     <li className="rounded-xl border bg-card p-4 md:p-3">
       {/* Layout responsivo: mobile = stack vertical com labels, desktop = grid */}
-      <div className="space-y-3 md:grid md:grid-cols-[1fr_70px_60px_120px_110px_auto] md:items-end md:gap-2 md:space-y-0">
+      <div className="space-y-3 md:grid md:grid-cols-[1fr_84px_78px_132px_118px_auto] md:items-end md:gap-2 md:space-y-0">
         {/* Descrição (com autocomplete) */}
         <div className="md:col-span-1">
           <Label className="text-xs md:sr-only">Descrição</Label>
@@ -158,6 +159,7 @@ export function ItemRow({
             id={`unit-${item.key}`}
             value={item.unit}
             onChange={(e) => onChange({ ...item, unit: e.target.value })}
+            onBlur={() => onChange({ ...item, unit: normalizeQuoteUnit(item.unit) })}
             placeholder="un"
             maxLength={10}
             list="common-units-editor"

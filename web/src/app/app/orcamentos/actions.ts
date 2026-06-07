@@ -9,6 +9,7 @@ import { generateShareToken, isShareTokenUrlSafe } from "@/lib/quote-token";
 import { env } from "@/lib/env";
 import { checkSendReadiness } from "@/lib/quote-status";
 import { addDaysBR, todayBR } from "@/lib/dates";
+import { normalizeQuoteUnit } from "@/lib/format";
 import {
   createLocalCharges,
   generatePixForCharge,
@@ -24,7 +25,7 @@ const itemDraftSchema = z.object({
     .trim()
     .min(1, "Descrição vazia")
     .max(500, "Descrição muito longa (máx 500 caracteres)"),
-  unit: z.string().trim().min(1, "Unidade vazia").max(10),
+  unit: z.string().trim().max(10).transform(normalizeQuoteUnit),
   quantity: z
     .number()
     .finite()
@@ -230,7 +231,7 @@ export async function updateQuoteAction(
     p_notes: parsed.data.notes || null,
     p_items: parsed.data.items.map((it) => ({
       description: it.description,
-      unit: it.unit || "un",
+      unit: it.unit,
       quantity: it.quantity,
       unit_price_cents: it.unit_price_cents,
     })),
@@ -334,7 +335,7 @@ export async function duplicateQuoteAction(
         company_id: company.company_id,
         position: idx,
         description: it.description,
-        unit: it.unit,
+        unit: normalizeQuoteUnit(it.unit),
         quantity: it.quantity,
         unit_price_cents: it.unit_price_cents,
         total_cents: it.total_cents,

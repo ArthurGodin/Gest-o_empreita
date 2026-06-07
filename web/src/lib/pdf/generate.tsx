@@ -1,9 +1,19 @@
 import "server-only";
+import { createRequire } from "node:module";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadQuotePdf, downloadQuotePdf } from "@/lib/supabase/storage";
 import { logServerError } from "@/lib/log";
 import { QuotePdf } from "./quote-pdf";
+
+const nodeRequire = createRequire(import.meta.url);
+const reactPackageName = process.env.PDF_REACT_PACKAGE_NAME || "react";
+// Turbopack rewrites direct require("react") in app routes to the RSC React.
+// React PDF needs the real React package so its reconciler accepts the elements.
+const reactModule = Reflect.apply(nodeRequire, undefined, [
+  reactPackageName,
+]) as typeof import("react");
+const { createElement } = reactModule;
 
 /**
  * Carrega quote completo e gera o PDF. Caching: se quote.pdf_storage_path
@@ -84,11 +94,10 @@ export async function generateQuotePdfBuffer(
   const items = quote.items.sort((a, b) => a.position - b.position);
 
   try {
-    const buffer = await renderToBuffer(
-      <QuotePdf
-        company={quote.company}
-        customer={quote.customer}
-        quote={{
+    const document = createElement(QuotePdf, {
+      company: quote.company,
+      customer: quote.customer,
+      quote: {
           number: quote.number,
           title: quote.title,
           description: quote.description,
@@ -98,9 +107,12 @@ export async function generateQuotePdfBuffer(
           discount_cents: quote.discount_cents,
           total_cents: quote.total_cents,
           created_at: quote.created_at,
-        }}
-        items={items}
-      />,
+      },
+      items,
+    });
+
+    const buffer = await renderToBuffer(
+      document as unknown as Parameters<typeof renderToBuffer>[0],
     );
 
     // Upload pra Storage (best-effort — não falha se Storage estiver fora)

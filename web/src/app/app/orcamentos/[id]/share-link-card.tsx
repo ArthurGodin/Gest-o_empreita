@@ -6,6 +6,7 @@ import {
   Check,
   Copy,
   Link as LinkIcon,
+  MessageCircle,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -20,11 +21,16 @@ import {
 } from "@/components/ui/dialog";
 import { revokeShareTokenAction } from "../actions";
 import { env } from "@/lib/env";
+import { whatsappShareLink } from "@/lib/format";
 import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
 
 interface ShareLinkCardProps {
   quoteId: string;
   shareToken: string;
+  quoteNumber?: string | null;
+  quoteTitle?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
 }
 
 function subscribeOrigin() {
@@ -39,7 +45,14 @@ function getServerOrigin() {
   return env.NEXT_PUBLIC_APP_URL;
 }
 
-export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
+export function ShareLinkCard({
+  quoteId,
+  shareToken,
+  quoteNumber,
+  quoteTitle,
+  customerName,
+  customerPhone,
+}: ShareLinkCardProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentToken, setCurrentToken] = useState(shareToken);
@@ -57,6 +70,16 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
   );
   const tokenIsSafe = isShareTokenUrlSafe(currentToken);
   const url = tokenIsSafe ? `${origin}/q/${currentToken}` : "";
+  const whatsappUrl = tokenIsSafe
+    ? whatsappShareLink({
+        phone: customerPhone,
+        message: [
+          `Olá${customerName ? `, ${customerName}` : ""}!`,
+          `Segue o orçamento${quoteNumber ? ` ${quoteNumber}` : ""}${quoteTitle ? ` - ${quoteTitle}` : ""} para você avaliar:`,
+          url,
+        ].join(" "),
+      })
+    : null;
 
   async function onCopy() {
     if (!url) return;
@@ -94,11 +117,11 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
       </div>
 
       <p className="mt-1 text-sm text-muted-foreground">
-        Copie e mande no WhatsApp do cliente. Quando ele aprovar, o status
-        aparece aqui no painel.
+        Envie no WhatsApp ou copie o link. Quando o cliente aprovar ou pedir
+        mudanças, o status aparece aqui no painel.
       </p>
 
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
         <input
           ref={inputRef}
           type="text"
@@ -118,6 +141,14 @@ export function ShareLinkCard({ quoteId, shareToken }: ShareLinkCardProps) {
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {copied ? "Copiado" : "Copiar"}
         </Button>
+        {whatsappUrl && (
+          <Button asChild size="sm" className="min-h-10 bg-green-600 hover:bg-green-700">
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="h-4 w-4" />
+              WhatsApp
+            </a>
+          </Button>
+        )}
       </div>
 
       {!tokenIsSafe && (

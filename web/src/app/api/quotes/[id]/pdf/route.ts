@@ -3,6 +3,8 @@ import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { createClient } from "@/lib/supabase/server";
 import { generateQuotePdfBuffer } from "@/lib/pdf/generate";
 
+export const runtime = "nodejs";
+
 /**
  * Route handler que streama o PDF do orçamento pra empreiteiro autenticado.
  * Verifica que o quote pertence à empresa ativa antes de servir.

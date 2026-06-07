@@ -59,7 +59,9 @@ export default async function QuoteDetailPage({
         description={
           editable
             ? "Monte o orçamento, salve, e quando estiver pronto clique em Enviar pro cliente."
-            : `Esse orçamento está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
+            : quote.effective_status === "rejected"
+              ? "O cliente pediu mudanças. Duplique para ajustar sem perder o histórico da recusa."
+              : `Esse orçamento está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
         }
         actions={
           <div className="flex items-center gap-2">

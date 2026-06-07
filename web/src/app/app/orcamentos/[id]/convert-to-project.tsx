@@ -27,6 +27,7 @@ interface ConvertToProjectProps {
   quoteId: string;
   quoteTitle: string;
   quoteTotalCents: number;
+  customerDocument?: string | null;
   templates: TemplateOption[];
 }
 
@@ -36,6 +37,7 @@ export function ConvertToProject({
   quoteId,
   quoteTitle,
   quoteTotalCents,
+  customerDocument,
   templates,
 }: ConvertToProjectProps) {
   const router = useRouter();
@@ -48,7 +50,7 @@ export function ConvertToProject({
     templates.find((t) => t.is_system)?.id ?? NO_TEMPLATE;
   const [templateId, setTemplateId] = useState(defaultTemplate);
   const [entryPct, setEntryPct] = useState("30");
-  const [cpfCnpj, setCpfCnpj] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState(customerDocument ?? "");
 
   const parsedEntryPct = Number(entryPct.replace(",", "."));
   const entryCents = Number.isFinite(parsedEntryPct)
@@ -68,7 +70,7 @@ export function ConvertToProject({
         const result = await convertToProjectAction(quoteId, {
           templateId: tpl,
           entryPct: parsedEntryPct,
-          cpfCnpj,
+          cpfCnpj: cpfCnpj.trim(),
         });
         if (!result.ok) {
           setError(result.error);

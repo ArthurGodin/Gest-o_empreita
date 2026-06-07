@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   centsToBRLInput,
   formatDocument,
+  formatDocumentMasked,
   formatPhone,
+  formatQuantityBR,
+  normalizeQuoteUnit,
   parseBRLToCents,
   parseQuantity,
   whatsappLink,
+  whatsappShareLink,
 } from "./format";
 
 describe("format helpers", () => {
@@ -32,10 +36,21 @@ describe("format helpers", () => {
     expect(parseQuantity(-1)).toBe(0);
   });
 
+  it("normalizes quote units for client-facing item lines", () => {
+    expect(normalizeQuoteUnit("un")).toBe("un");
+    expect(normalizeQuoteUnit("m²")).toBe("m²");
+    expect(normalizeQuoteUnit("3")).toBe("un");
+    expect(normalizeQuoteUnit("-5")).toBe("un");
+    expect(normalizeQuoteUnit("")).toBe("un");
+    expect(formatQuantityBR(1.5)).toBe("1,5");
+  });
+
   it("formats Brazilian phone and document values", () => {
     expect(formatPhone("11987654321")).toBe("(11) 98765-4321");
     expect(formatDocument("12345678901")).toBe("123.456.789-01");
     expect(formatDocument("12345678000190")).toBe("12.345.678/0001-90");
+    expect(formatDocumentMasked("12345678901")).toBe("***.456.789-**");
+    expect(formatDocumentMasked("12345678000190")).toBe("**.***.678/0001-**");
   });
 
   it("builds WhatsApp links only for valid Brazilian numbers", () => {
@@ -44,5 +59,8 @@ describe("format helpers", () => {
     );
     expect(whatsappLink("5511987654321")).toBe("https://wa.me/5511987654321");
     expect(whatsappLink("123")).toBeNull();
+    expect(whatsappShareLink({ phone: "11987654321", message: "Olá" })).toBe(
+      "https://wa.me/5511987654321?text=Ol%C3%A1",
+    );
   });
 });

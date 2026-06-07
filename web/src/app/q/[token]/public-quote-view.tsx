@@ -1,7 +1,7 @@
 import { CalendarDays, CheckCircle2, Clock, Download, MessageSquare, Phone, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import { formatPhone } from "@/lib/format";
+import { formatPhone, formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import { ApprovalForm } from "./approval-form";
 
@@ -222,7 +222,8 @@ export function PublicQuoteView({
                     {item.description}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {item.quantity} {item.unit} × {formatBRL(item.unit_price_cents / 100)}
+                    {formatQuantityBR(item.quantity)} {normalizeQuoteUnit(item.unit)} ×{" "}
+                    {formatBRL(item.unit_price_cents / 100)}
                   </div>
                 </div>
                 <div className="text-sm font-semibold">

@@ -1,5 +1,8 @@
+/** @jsxRuntime classic */
+/** @jsx createElement */
 import "server-only";
 /* eslint-disable jsx-a11y/alt-text -- @react-pdf/renderer Image is not an HTML img and has no alt prop. */
+import { createRequire } from "node:module";
 import {
   Document,
   Image,
@@ -9,6 +12,15 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { env } from "@/lib/env";
+import { formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
+
+const nodeRequire = createRequire(import.meta.url);
+const reactPackageName = process.env.PDF_REACT_PACKAGE_NAME || "react";
+// Keep JSX output compatible with @react-pdf/renderer inside Next app routes.
+const reactModule = Reflect.apply(nodeRequire, undefined, [
+  reactPackageName,
+]) as typeof import("react");
+const { createElement } = reactModule;
 
 /**
  * SR-#6 (SSRF guard): só permitimos URLs de logo apontando pro Supabase
@@ -374,8 +386,8 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
           {items.map((item, idx) => (
             <View key={idx} style={styles.itemRow}>
               <Text style={styles.itemDescCol}>{item.description}</Text>
-              <Text style={styles.itemQtyCol}>{item.quantity}</Text>
-              <Text style={styles.itemUnitCol}>{item.unit}</Text>
+              <Text style={styles.itemQtyCol}>{formatQuantityBR(item.quantity)}</Text>
+              <Text style={styles.itemUnitCol}>{normalizeQuoteUnit(item.unit)}</Text>
               <Text style={styles.itemPriceCol}>
                 {formatBRL(item.unit_price_cents)}
               </Text>

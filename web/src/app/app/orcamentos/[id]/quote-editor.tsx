@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { normalizeQuoteUnit } from "@/lib/format";
 import { formatBRL } from "@/lib/utils";
 import { updateQuoteAction } from "../actions";
 import { ItemRow, type ItemDraft } from "./item-row";
@@ -34,6 +35,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   // Header state
   const [title, setTitle] = useState(quote.title);
@@ -92,6 +94,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
    */
   async function doSave(): Promise<boolean> {
     setError(null);
+    setSaved(false);
 
     const filledItems = items.filter((it) => it.description.trim());
     if (filledItems.length === 0) {
@@ -107,7 +110,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
       notes,
       items: filledItems.map((it) => ({
         description: it.description.trim(),
-        unit: it.unit.trim() || "un",
+        unit: normalizeQuoteUnit(it.unit),
         quantity: it.quantity,
         unit_price_cents: it.unit_price_cents,
         catalog_item_id: it.catalog_item_id ?? null,
@@ -120,6 +123,8 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
     }
 
     router.refresh();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
     return true;
   }
 
@@ -210,7 +215,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
         </div>
 
         {/* Header de colunas no desktop */}
-        <div className="hidden md:grid md:grid-cols-[1fr_70px_60px_120px_110px_auto] md:gap-2 md:px-3 md:pb-2 md:text-[10px] md:font-medium md:uppercase md:tracking-wider md:text-muted-foreground">
+        <div className="hidden md:grid md:grid-cols-[1fr_84px_78px_132px_118px_auto] md:gap-2 md:px-3 md:pb-2 md:text-[10px] md:font-medium md:uppercase md:tracking-wider md:text-muted-foreground">
           <span>Descrição</span>
           <span>Qtd</span>
           <span>Un.</span>
@@ -276,6 +281,11 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
       {error && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+      {saved && (
+        <div className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-900 dark:bg-green-950/40 dark:text-green-100">
+          Rascunho salvo.
         </div>
       )}
 

@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { tokensMatch } from "@/lib/quote-token";
 import { generateQuotePdfBuffer } from "@/lib/pdf/generate";
 
+export const runtime = "nodejs";
+
 /**
  * Route handler público (sem auth) que streama o PDF do orçamento.
  * Autorização: token recebido bate com share_token armazenado.

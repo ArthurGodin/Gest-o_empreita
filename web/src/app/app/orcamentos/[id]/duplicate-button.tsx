@@ -6,7 +6,13 @@ import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { duplicateQuoteAction } from "../actions";
 
-export function DuplicateButton({ id }: { id: string }) {
+export function DuplicateButton({
+  id,
+  label = "Duplicar",
+}: {
+  id: string;
+  label?: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +34,7 @@ export function DuplicateButton({ id }: { id: string }) {
     <>
       <Button variant="outline" onClick={onClick} disabled={pending}>
         <Copy className="h-4 w-4" />
-        {pending ? "Duplicando..." : "Duplicar"}
+        {pending ? "Duplicando..." : label}
       </Button>
       {error && (
         <div className="absolute mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">

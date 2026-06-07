@@ -1,11 +1,12 @@
 import { Calendar, CheckCircle2, Download, Mail, MapPin, Phone, User, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import { formatPhone } from "@/lib/format";
+import { formatPhone, formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
 import { STATUS_LABEL } from "@/lib/quote-status";
 import type { QuoteWithRelations } from "@/lib/queries/quotes";
 import { ShareLinkCard } from "./share-link-card";
 import { ConvertToProject, type TemplateOption } from "./convert-to-project";
+import { DuplicateButton } from "./duplicate-button";
 
 /**
  * Modo read-only do orçamento (quando status != draft).
@@ -46,6 +47,7 @@ export function QuoteView({
                 quoteId={quote.id}
                 quoteTitle={quote.title}
                 quoteTotalCents={quote.total_cents}
+                customerDocument={quote.customer?.document}
                 templates={templates}
               />
             )}
@@ -55,24 +57,31 @@ export function QuoteView({
 
       {quote.effective_status === "rejected" && lastApproval && (
         <div className="rounded-xl border bg-muted/50 p-4">
-          <div className="flex items-start gap-3">
-            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
-            <div className="text-sm">
-              <div className="font-semibold">
-                {lastApproval.signer_name} pediu mudanças
-              </div>
-              <div className="text-muted-foreground">
-                {formatDateBR(lastApproval.created_at)}
-              </div>
-              {lastApproval.rejection_reason && (
-                <div className="mt-2 rounded-md bg-background/80 p-3">
-                  <div className="text-xs font-medium text-muted-foreground">
-                    Motivo
-                  </div>
-                  <div className="mt-1">{lastApproval.rejection_reason}</div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
+              <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <div className="text-sm">
+                <div className="font-semibold">
+                  {lastApproval.signer_name} pediu mudanças
                 </div>
-              )}
+                <div className="text-muted-foreground">
+                  {formatDateBR(lastApproval.created_at)}
+                </div>
+                {lastApproval.rejection_reason && (
+                  <div className="mt-2 rounded-md bg-background/80 p-3">
+                    <div className="text-xs font-medium text-muted-foreground">
+                      Motivo
+                    </div>
+                    <div className="mt-1">{lastApproval.rejection_reason}</div>
+                  </div>
+                )}
+                <p className="mt-3 text-muted-foreground">
+                  Duplique o orçamento para ajustar sem perder o histórico da
+                  recusa. Depois envie o novo link pelo WhatsApp.
+                </p>
+              </div>
             </div>
+            <DuplicateButton id={quote.id} label="Duplicar e ajustar" />
           </div>
         </div>
       )}
@@ -97,7 +106,14 @@ export function QuoteView({
 
       {/* ── Link público (compartilhar) ────────────────────────── */}
       {quote.share_token && (
-        <ShareLinkCard quoteId={quote.id} shareToken={quote.share_token} />
+        <ShareLinkCard
+          quoteId={quote.id}
+          shareToken={quote.share_token}
+          quoteNumber={quote.number}
+          quoteTitle={quote.title}
+          customerName={quote.customer?.name}
+          customerPhone={quote.customer?.phone}
+        />
       )}
 
       {/* ── Download PDF ────────────────────────────────────────── */}
@@ -164,7 +180,8 @@ export function QuoteView({
               <div className="flex-1">
                 <div className="font-medium">{item.description}</div>
                 <div className="text-sm text-muted-foreground">
-                  {item.quantity} {item.unit} × {formatBRL(item.unit_price_cents / 100)}
+                  {formatQuantityBR(item.quantity)} {normalizeQuoteUnit(item.unit)} ×{" "}
+                  {formatBRL(item.unit_price_cents / 100)}
                 </div>
               </div>
               <div className="font-semibold">
