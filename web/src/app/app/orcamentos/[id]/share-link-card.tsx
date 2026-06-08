@@ -22,6 +22,7 @@ import {
 import { revokeShareTokenAction } from "../actions";
 import { env } from "@/lib/env";
 import { whatsappShareLink } from "@/lib/format";
+import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
 
 interface ShareLinkCardProps {
@@ -29,6 +30,7 @@ interface ShareLinkCardProps {
   shareToken: string;
   quoteNumber?: string | null;
   quoteTitle?: string | null;
+  quoteTotalCents?: number | null;
   customerName?: string | null;
   customerPhone?: string | null;
 }
@@ -50,6 +52,7 @@ export function ShareLinkCard({
   shareToken,
   quoteNumber,
   quoteTitle,
+  quoteTotalCents,
   customerName,
   customerPhone,
 }: ShareLinkCardProps) {
@@ -73,11 +76,13 @@ export function ShareLinkCard({
   const whatsappUrl = tokenIsSafe
     ? whatsappShareLink({
         phone: customerPhone,
-        message: [
-          `Olá${customerName ? `, ${customerName}` : ""}!`,
-          `Segue o orçamento${quoteNumber ? ` ${quoteNumber}` : ""}${quoteTitle ? ` - ${quoteTitle}` : ""} para você avaliar:`,
+        message: buildQuoteWhatsappMessage({
+          customerName,
+          quoteNumber,
+          quoteTitle,
+          totalCents: quoteTotalCents,
           url,
-        ].join(" "),
+        }),
       })
     : null;
 
@@ -145,7 +150,7 @@ export function ShareLinkCard({
           <Button asChild size="sm" className="min-h-10 bg-green-600 hover:bg-green-700">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <MessageCircle className="h-4 w-4" />
-              WhatsApp
+              Enviar no WhatsApp
             </a>
           </Button>
         )}

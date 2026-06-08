@@ -13,7 +13,7 @@ interface ApprovalFormProps {
   token: string;
 }
 
-type Mode = "idle" | "approving" | "rejecting";
+type Mode = "idle" | "rejecting" | "rejected";
 
 export function ApprovalForm({ token }: ApprovalFormProps) {
   const router = useRouter();
@@ -66,7 +66,7 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
           setError(result.error);
           return;
         }
-        router.push(result.redirectTo);
+        setMode("rejected");
         router.refresh();
       } catch (e) {
         console.error("[reject] action threw:", e);
@@ -195,6 +195,21 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
             >
               Voltar
             </Button>
+          </div>
+        </div>
+      )}
+
+      {mode === "rejected" && (
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+          <div className="flex items-start gap-3">
+            <MessageCircle className="mt-0.5 h-5 w-5 shrink-0" />
+            <div>
+              <div className="font-semibold">Pedido de mudança enviado</div>
+              <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
+                O prestador recebeu sua solicitação e pode reenviar uma versão
+                revisada do orçamento pelo WhatsApp.
+              </p>
+            </div>
           </div>
         </div>
       )}

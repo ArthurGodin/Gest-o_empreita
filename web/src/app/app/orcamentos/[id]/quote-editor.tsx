@@ -65,6 +65,8 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
       ),
     [items],
   );
+  const selectedCustomer =
+    customers.find((customer) => customer.id === customerId) ?? quote.customer;
 
   function updateItem(idx: number, next: ItemDraft) {
     setItems((curr) => curr.map((it, i) => (i === idx ? next : it)));
@@ -296,7 +298,11 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
         </Button>
         <SendQuoteButton
           quoteId={quote.id}
-          customerPhone={quote.customer?.phone}
+          quoteNumber={quote.number}
+          quoteTitle={title}
+          quoteTotalCents={total}
+          customerName={selectedCustomer?.name}
+          customerPhone={selectedCustomer?.phone}
           onBeforeSend={doSave}
           disabled={pending}
           label="Salvar e enviar pro cliente"

@@ -255,6 +255,7 @@ export async function updateQuoteAction(
  */
 export async function duplicateQuoteAction(
   id: string,
+  options: { intent?: "copy" | "revision" } = {},
 ): Promise<QuoteActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Sessão expirada." };
@@ -303,6 +304,10 @@ export async function duplicateQuoteAction(
   }
 
   const subtotal = orig.items.reduce((s, it) => s + it.total_cents, 0);
+  const nextTitle =
+    options.intent === "revision"
+      ? revisionQuoteTitle(orig.title)
+      : copyQuoteTitle(orig.title);
 
   const { data: created, error: createError } = await supabase
     .from("quotes")
@@ -310,7 +315,7 @@ export async function duplicateQuoteAction(
       company_id: company.company_id,
       customer_id: orig.customer_id,
       number: numberData as string,
-      title: `${orig.title} (cópia)`,
+      title: nextTitle,
       description: orig.description,
       status: "draft",
       valid_until: addDaysBR(15),
@@ -349,6 +354,19 @@ export async function duplicateQuoteAction(
 
   revalidatePath("/app/orcamentos");
   return { ok: true, id: created.id as string };
+}
+
+function copyQuoteTitle(title: string): string {
+  const clean = title.trim() || "Orçamento";
+  return clean.endsWith("(cópia)") ? clean : `${clean} (cópia)`;
+}
+
+function revisionQuoteTitle(title: string): string {
+  const clean = title
+    .replace(/\s+\(c[óo]pia\)$/i, "")
+    .replace(/\s+-\s+revis[aã]o$/i, "")
+    .trim();
+  return `${clean || "Orçamento"} - revisão`;
 }
 
 // ─── Send (draft → sent) ────────────────────────────────────────────────────

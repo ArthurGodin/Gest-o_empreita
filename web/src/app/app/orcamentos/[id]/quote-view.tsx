@@ -76,12 +76,16 @@ export function QuoteView({
                   </div>
                 )}
                 <p className="mt-3 text-muted-foreground">
-                  Duplique o orçamento para ajustar sem perder o histórico da
-                  recusa. Depois envie o novo link pelo WhatsApp.
+                  Crie uma revisão para ajustar o rascunho mantendo este pedido
+                  de mudança como histórico.
                 </p>
               </div>
             </div>
-            <DuplicateButton id={quote.id} label="Duplicar e ajustar" />
+            <DuplicateButton
+              id={quote.id}
+              intent="revision"
+              label="Criar revisão"
+            />
           </div>
         </div>
       )}
@@ -111,6 +115,7 @@ export function QuoteView({
           shareToken={quote.share_token}
           quoteNumber={quote.number}
           quoteTitle={quote.title}
+          quoteTotalCents={quote.total_cents}
           customerName={quote.customer?.name}
           customerPhone={quote.customer?.phone}
         />

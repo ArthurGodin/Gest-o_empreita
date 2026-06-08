@@ -13,10 +13,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { whatsappShareLink } from "@/lib/format";
+import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { sendQuoteAction } from "../actions";
 
 interface SendQuoteButtonProps {
   quoteId: string;
+  quoteNumber?: string | null;
+  quoteTitle?: string | null;
+  quoteTotalCents?: number | null;
+  customerName?: string | null;
   /** Telefone do cliente pra montar wa.me link. */
   customerPhone?: string | null;
   /** Disabled enquanto outra ação, como salvar, está rolando. */
@@ -32,6 +37,10 @@ interface SendQuoteButtonProps {
 
 export function SendQuoteButton({
   quoteId,
+  quoteNumber,
+  quoteTitle,
+  quoteTotalCents,
+  customerName,
   customerPhone,
   disabled,
   onBeforeSend,
@@ -94,7 +103,13 @@ export function SendQuoteButton({
   const waLink = shareUrl
     ? whatsappShareLink({
         phone: customerPhone,
-        message: `Olá! Aqui está o orçamento que combinamos: ${shareUrl}`,
+        message: buildQuoteWhatsappMessage({
+          customerName,
+          quoteNumber,
+          quoteTitle,
+          totalCents: quoteTotalCents,
+          url: shareUrl,
+        }),
       })
     : null;
 
@@ -142,7 +157,7 @@ export function SendQuoteButton({
                   <Button asChild className="w-full bg-green-600 hover:bg-green-700">
                     <a href={waLink} target="_blank" rel="noopener noreferrer">
                       <MessageCircle className="h-4 w-4" />
-                      Abrir no WhatsApp
+                      Enviar no WhatsApp
                     </a>
                   </Button>
                 )}
