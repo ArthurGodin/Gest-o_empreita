@@ -11,7 +11,7 @@ const serverEnvSchema = z.object({
   EMAIL_FROM: z.string().min(3).optional(),
   ASAAS_API_KEY: z.string().min(1).optional(),
   ASAAS_API_URL: z.string().url().default("https://api-sandbox.asaas.com/v3"),
-  ASAAS_WEBHOOK_TOKEN: z.string().min(32).optional(),
+  ASAAS_WEBHOOK_TOKEN: z.string().min(32),
 });
 
 const SKIP = process.env.SKIP_ENV_VALIDATION === "true";
