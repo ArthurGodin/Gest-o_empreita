@@ -55,3 +55,4 @@ dogfood-output/
 # OS
 *.log
 .superpowers/
+.codex/
