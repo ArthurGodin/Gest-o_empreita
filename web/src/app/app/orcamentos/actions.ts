@@ -16,6 +16,7 @@ import {
   isValidCpfCnpjLength,
   normalizeCpfCnpj,
 } from "@/lib/billing/asaas";
+import { isValidEntryPercent } from "@/lib/billing/entry-percent";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -760,7 +761,7 @@ export async function convertToProjectAction(
   if (templateId && !/^[0-9a-fA-F-]{36}$/.test(templateId)) {
     return { ok: false, error: "Template inválido." };
   }
-  if (!Number.isFinite(entryPct) || entryPct < 0 || entryPct > 100) {
+  if (!isValidEntryPercent(entryPct)) {
     return { ok: false, error: "Entrada deve ficar entre 0% e 100%." };
   }
 

@@ -15,6 +15,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/utils";
+import {
+  calculateEntrySplit,
+  entryPercentValidationMessage,
+  parseEntryPercentInput,
+} from "@/lib/billing/entry-percent";
 import { convertToProjectAction } from "../actions";
 
 export interface TemplateOption {
@@ -52,24 +57,25 @@ export function ConvertToProject({
   const [entryPct, setEntryPct] = useState("30");
   const [cpfCnpj, setCpfCnpj] = useState(customerDocument ?? "");
 
-  const parsedEntryPct = Number(entryPct.replace(",", "."));
-  const entryCents = Number.isFinite(parsedEntryPct)
-    ? Math.round((quoteTotalCents * parsedEntryPct) / 100)
-    : 0;
-  const saldoCents = Math.max(quoteTotalCents - entryCents, 0);
+  const parsedEntryPct = parseEntryPercentInput(entryPct);
+  const entryPctError = entryPercentValidationMessage(parsedEntryPct);
+  const validEntryPct = entryPctError ? null : parsedEntryPct;
+  const { entryCents, saldoCents } = validEntryPct === null
+    ? { entryCents: 0, saldoCents: quoteTotalCents }
+    : calculateEntrySplit(quoteTotalCents, validEntryPct);
 
   function onConfirm() {
     setError(null);
     const tpl = templateId === NO_TEMPLATE ? null : templateId;
-    if (!Number.isFinite(parsedEntryPct) || parsedEntryPct < 0 || parsedEntryPct > 100) {
-      setError("Entrada deve ficar entre 0% e 100%.");
+    if (entryPctError || validEntryPct === null) {
+      setError(entryPctError ?? "Entrada deve ficar entre 0% e 100%.");
       return;
     }
     startTransition(async () => {
       try {
         const result = await convertToProjectAction(quoteId, {
           templateId: tpl,
-          entryPct: parsedEntryPct,
+          entryPct: validEntryPct,
           cpfCnpj: cpfCnpj.trim(),
         });
         if (!result.ok) {
@@ -142,10 +148,25 @@ export function ConvertToProject({
                 onChange={(e) => setEntryPct(e.target.value)}
                 disabled={pending}
                 placeholder="30"
+                aria-invalid={Boolean(entryPctError)}
+                aria-describedby="entry-pct-help"
               />
-              <p className="text-xs text-muted-foreground">
-                Entrada: {formatBRL(entryCents / 100)} · Saldo:{" "}
-                {formatBRL(saldoCents / 100)}
+              <p
+                id="entry-pct-help"
+                className={
+                  entryPctError
+                    ? "text-xs text-destructive"
+                    : "text-xs text-muted-foreground"
+                }
+              >
+                {entryPctError ? (
+                  entryPctError
+                ) : (
+                  <>
+                    Entrada: {formatBRL(entryCents / 100)} · Saldo:{" "}
+                    {formatBRL(saldoCents / 100)}
+                  </>
+                )}
               </p>
             </div>
             <div className="space-y-2">
@@ -177,7 +198,10 @@ export function ConvertToProject({
             >
               Cancelar
             </Button>
-            <Button onClick={onConfirm} disabled={pending}>
+            <Button
+              onClick={onConfirm}
+              disabled={pending || Boolean(entryPctError)}
+            >
               {pending ? "Criando obra..." : "Confirmar e criar obra"}
             </Button>
           </DialogFooter>

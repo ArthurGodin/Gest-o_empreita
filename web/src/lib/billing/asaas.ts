@@ -6,6 +6,7 @@ import { createAsaasCustomer } from "@/lib/asaas/customers";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createPixPayment, getPixQrCode } from "@/lib/asaas/payments";
 import type { ChargeKind, Database } from "@/lib/supabase/types";
+import { calculateEntrySplit } from "./entry-percent";
 
 type SupabaseServer = SupabaseClient<Database>;
 
@@ -104,8 +105,10 @@ export async function createLocalCharges(
   supabase: SupabaseServer,
   input: LocalChargeInput,
 ): Promise<{ entryChargeId: string | null; saldoChargeId: string | null }> {
-  const entryCents = Math.round((input.totalCents * input.entryPct) / 100);
-  const saldoCents = input.totalCents - entryCents;
+  const { entryCents, saldoCents } = calculateEntrySplit(
+    input.totalCents,
+    input.entryPct,
+  );
   let entryChargeId: string | null = null;
   let saldoChargeId: string | null = null;
 
