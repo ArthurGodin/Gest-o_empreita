@@ -23,7 +23,10 @@ import {
 import { revokeShareTokenAction } from "../actions";
 import { env } from "@/lib/env";
 import { whatsappShareLink } from "@/lib/format";
-import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
+import {
+  buildQuoteWhatsappMessage,
+  type QuoteShareMessageMode,
+} from "@/lib/quote-share-message";
 import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
 
 interface ShareLinkCardProps {
@@ -34,6 +37,7 @@ interface ShareLinkCardProps {
   quoteTotalCents?: number | null;
   customerName?: string | null;
   customerPhone?: string | null;
+  messageMode?: QuoteShareMessageMode;
 }
 
 function subscribeOrigin() {
@@ -56,6 +60,7 @@ export function ShareLinkCard({
   quoteTotalCents,
   customerName,
   customerPhone,
+  messageMode = "quote",
 }: ShareLinkCardProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +79,10 @@ export function ShareLinkCard({
   );
   const tokenIsSafe = isShareTokenUrlSafe(currentToken);
   const url = tokenIsSafe ? `${origin}/q/${currentToken}` : "";
+  const helperText =
+    messageMode === "revision"
+      ? "Envie a revisão no WhatsApp ou copie o link. Quando o cliente aprovar ou pedir outro ajuste, o status aparece aqui."
+      : "Envie no WhatsApp ou copie o link. Quando o cliente aprovar ou pedir mudanças, o status aparece aqui no painel.";
   const whatsappUrl = tokenIsSafe
     ? whatsappShareLink({
         phone: customerPhone,
@@ -83,6 +92,7 @@ export function ShareLinkCard({
           quoteTitle,
           totalCents: quoteTotalCents,
           url,
+          mode: messageMode,
         }),
       })
     : null;
@@ -144,10 +154,7 @@ export function ShareLinkCard({
         Link público do orçamento
       </div>
 
-      <p className="mt-1 text-sm text-muted-foreground">
-        Envie no WhatsApp ou copie o link. Quando o cliente aprovar ou pedir
-        mudanças, o status aparece aqui no painel.
-      </p>
+      <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
         <input

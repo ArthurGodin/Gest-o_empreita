@@ -44,14 +44,27 @@ export function DuplicateButton({
             ? "Ajuste o rascunho e envie novamente para o cliente."
             : "O novo rascunho já está pronto para edição.",
       });
-      router.push(`/app/orcamentos/${result.id}`);
+      const nextUrl =
+        intent === "revision"
+          ? `/app/orcamentos/${result.id}?revisao=${id}`
+          : `/app/orcamentos/${result.id}`;
+      router.push(nextUrl);
       router.refresh();
     });
   }
 
   return (
     <>
-      <Button variant="outline" onClick={onClick} disabled={pending}>
+      <Button
+        variant={intent === "revision" ? "default" : "outline"}
+        onClick={onClick}
+        disabled={pending}
+        className={
+          intent === "revision"
+            ? "bg-amber-600 text-white hover:bg-amber-700"
+            : undefined
+        }
+      >
         {intent === "revision" ? (
           <Pencil className="h-4 w-4" />
         ) : (

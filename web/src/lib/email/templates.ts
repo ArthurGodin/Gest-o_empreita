@@ -104,7 +104,7 @@ export function buildQuoteRejectedEmail(ctx: QuoteContext) {
     `${ctx.signerName} pediu mudanças no orçamento ${ctx.quoteNumber} ("${ctx.quoteTitle}") em ${formatDateBR(ctx.signedAt.toISOString())}.`,
     ``,
     reasonBlock,
-    `Próximo passo: abra o orçamento, ajuste o que precisar (use "Duplicar" pra criar uma nova versão) e mande de novo.`,
+    `Próximo passo: abra o orçamento, clique em "Ajustar e reenviar", ajuste o que precisar e mande de novo.`,
     ``,
     `${ctx.detailUrl}`,
   ].join("\n");
@@ -130,7 +130,7 @@ export function buildQuoteRejectedEmail(ctx: QuoteContext) {
         }
 
         <p style="margin: 16px 0;">
-          Ajuste o orçamento (use <strong>Duplicar</strong> pra criar uma nova versão sem perder o original) e mande de novo.
+          Clique em <strong>Ajustar e reenviar</strong>, ajuste o orçamento sem perder o original e mande de novo.
         </p>
 
         <div style="text-align: center; margin: 24px 0 8px;">

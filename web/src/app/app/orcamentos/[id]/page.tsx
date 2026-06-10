@@ -27,10 +27,13 @@ export async function generateMetadata({
 
 export default async function QuoteDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ revisao?: string }>;
 }) {
   const { id } = await params;
+  const query = searchParams ? await searchParams : {};
   const quote = await getQuoteWithRelations(id);
   if (!quote) notFound();
 
@@ -41,6 +44,15 @@ export default async function QuoteDetailPage({
     editable ? getCustomers() : Promise.resolve([]),
     showConvert ? listTemplates() : Promise.resolve([]),
   ]);
+  const revisionSource =
+    editable && query.revisao && query.revisao !== quote.id
+      ? await getQuoteWithRelations(query.revisao)
+      : null;
+  const validRevisionSource =
+    revisionSource?.effective_status === "rejected" &&
+    revisionSource.customer_id === quote.customer_id
+      ? revisionSource
+      : null;
 
   return (
     <div className="container max-w-5xl space-y-6 py-6">
@@ -57,7 +69,9 @@ export default async function QuoteDetailPage({
       <PageHeader
         title={`${quote.number} · ${quote.title}`}
         description={
-          editable
+          validRevisionSource
+            ? `Revisão em edição a partir do pedido de mudanças em ${validRevisionSource.number}. Ajuste, salve e envie novamente.`
+            : editable
             ? "Monte o orçamento, salve, e quando estiver pronto clique em Enviar pro cliente."
             : quote.effective_status === "rejected"
               ? "O cliente pediu mudanças. Crie uma revisão para ajustar sem perder o histórico da recusa."
@@ -70,7 +84,7 @@ export default async function QuoteDetailPage({
               intent={quote.effective_status === "rejected" ? "revision" : "copy"}
               label={
                 quote.effective_status === "rejected"
-                  ? "Criar revisão"
+                  ? "Ajustar e reenviar"
                   : "Duplicar"
               }
             />
@@ -80,7 +94,11 @@ export default async function QuoteDetailPage({
       />
 
       {editable ? (
-        <QuoteEditor quote={quote} customers={customers} />
+        <QuoteEditor
+          quote={quote}
+          customers={customers}
+          revisionSource={validRevisionSource}
+        />
       ) : (
         <QuoteView quote={quote} templates={templates} />
       )}

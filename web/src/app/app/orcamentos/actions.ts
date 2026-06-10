@@ -281,6 +281,7 @@ export async function duplicateQuoteAction(
   if (!original) return { ok: false, error: "Orçamento não encontrado." };
 
   const orig = original as unknown as {
+    status: string;
     title: string;
     description: string | null;
     customer_id: string;
@@ -293,6 +294,13 @@ export async function duplicateQuoteAction(
       total_cents: number;
     }>;
   };
+
+  if (options.intent === "revision" && orig.status !== "rejected") {
+    return {
+      ok: false,
+      error: "Só dá para criar revisão de orçamento recusado pelo cliente.",
+    };
+  }
 
   // Numero novo
   const { data: numberData, error: numberError } = await supabase.rpc(
@@ -320,6 +328,7 @@ export async function duplicateQuoteAction(
       description: orig.description,
       status: "draft",
       valid_until: addDaysBR(15),
+      share_token: generateShareToken(),
       notes: orig.notes,
       subtotal_cents: subtotal,
       total_cents: subtotal,

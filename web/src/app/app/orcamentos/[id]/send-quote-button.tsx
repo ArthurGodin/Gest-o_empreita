@@ -34,6 +34,7 @@ interface SendQuoteButtonProps {
   onBeforeSend?: () => Promise<boolean>;
   /** Label customizável, como "Salvar e enviar pro cliente" no editor. */
   label?: string;
+  messageMode?: "quote" | "revision";
 }
 
 export function SendQuoteButton({
@@ -46,6 +47,7 @@ export function SendQuoteButton({
   disabled,
   onBeforeSend,
   label = "Enviar pro cliente",
+  messageMode = "quote",
 }: SendQuoteButtonProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,11 +80,14 @@ export function SendQuoteButton({
         setOpen(true);
         return;
       }
-      setShareUrl(result.url);
+      setShareUrl(withCurrentOrigin(result.url));
       toast({
         variant: "success",
-        title: "Link pronto",
-        description: "Envie pelo WhatsApp ou copie o link para o cliente.",
+        title: messageMode === "revision" ? "Revisão pronta" : "Link pronto",
+        description:
+          messageMode === "revision"
+            ? "Envie a versão revisada pelo WhatsApp ou copie o link."
+            : "Envie pelo WhatsApp ou copie o link para o cliente.",
       });
       setOpen(true);
     });
@@ -130,9 +135,18 @@ export function SendQuoteButton({
           quoteTitle,
           totalCents: quoteTotalCents,
           url: shareUrl,
+          mode: messageMode,
         }),
       })
     : null;
+  const dialogTitle =
+    messageMode === "revision"
+      ? "Revisão pronta para enviar"
+      : "Link pronto para enviar";
+  const dialogDescription =
+    messageMode === "revision"
+      ? "Envie a versão revisada pelo WhatsApp ou copie o link abaixo. O orçamento original continua preservado no histórico."
+      : "Envie pelo WhatsApp ou copie o link abaixo. Quando o cliente aprovar ou pedir mudanças, o status aparece no painel.";
 
   return (
     <>
@@ -151,11 +165,8 @@ export function SendQuoteButton({
           {shareUrl ? (
             <>
               <DialogHeader>
-                <DialogTitle>Link pronto para enviar</DialogTitle>
-                <DialogDescription>
-                  Envie pelo WhatsApp ou copie o link abaixo. Quando o cliente
-                  aprovar ou pedir mudanças, o status aparece no painel.
-                </DialogDescription>
+                <DialogTitle>{dialogTitle}</DialogTitle>
+                <DialogDescription>{dialogDescription}</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-3">
@@ -225,4 +236,13 @@ export function SendQuoteButton({
       </Dialog>
     </>
   );
+}
+
+function withCurrentOrigin(url: string): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return url;
+  }
 }

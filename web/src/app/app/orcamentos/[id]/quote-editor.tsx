@@ -1,15 +1,23 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Save } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  ClipboardCheck,
+  Copy,
+  Plus,
+  Save,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { normalizeQuoteUnit } from "@/lib/format";
-import { formatBRL } from "@/lib/utils";
+import { formatBRL, formatDateBR } from "@/lib/utils";
 import { updateQuoteAction } from "../actions";
 import { ItemRow, type ItemDraft } from "./item-row";
 import { SendQuoteButton } from "./send-quote-button";
@@ -19,6 +27,7 @@ import type { QuoteWithRelations } from "@/lib/queries/quotes";
 interface QuoteEditorProps {
   quote: QuoteWithRelations;
   customers: Customer[];
+  revisionSource?: QuoteWithRelations | null;
 }
 
 function newDraft(key = crypto.randomUUID()): ItemDraft {
@@ -32,10 +41,17 @@ function newDraft(key = crypto.randomUUID()): ItemDraft {
   };
 }
 
-export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
+export function QuoteEditor({
+  quote,
+  customers,
+  revisionSource,
+}: QuoteEditorProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const revisionRequest = revisionSource?.approvals
+    .filter((approval) => approval.action === "rejected")
+    .at(-1);
 
   // Header state
   const [title, setTitle] = useState(quote.title);
@@ -153,6 +169,17 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
 
   return (
     <div className="space-y-6">
+      {revisionSource && revisionRequest && (
+        <RevisionBriefing
+          sourceId={revisionSource.id}
+          sourceNumber={revisionSource.number}
+          sourceTitle={revisionSource.title}
+          signerName={revisionRequest.signer_name}
+          requestedAt={revisionRequest.created_at}
+          reason={revisionRequest.rejection_reason}
+        />
+      )}
+
       {/* ── Header ─────────────────────────────────────────────── */}
       <section className="rounded-xl border bg-card p-5">
         <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
@@ -314,9 +341,135 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
           customerPhone={selectedCustomer?.phone}
           onBeforeSend={() => doSave({ quiet: true })}
           disabled={pending}
-          label="Salvar e enviar pro cliente"
+          label={
+            revisionSource
+              ? "Salvar e enviar revisão"
+              : "Salvar e enviar pro cliente"
+          }
+          messageMode={revisionSource ? "revision" : "quote"}
         />
       </div>
     </div>
+  );
+}
+
+function RevisionBriefing({
+  sourceId,
+  sourceNumber,
+  sourceTitle,
+  signerName,
+  requestedAt,
+  reason,
+}: {
+  sourceId: string;
+  sourceNumber: string;
+  sourceTitle: string;
+  signerName: string;
+  requestedAt: string;
+  reason: string | null;
+}) {
+  const [copied, setCopied] = useState(false);
+  const cleanedReason =
+    reason?.trim() || "Cliente pediu ajustes sem detalhar o motivo.";
+
+  async function copyReason() {
+    try {
+      await navigator.clipboard.writeText(cleanedReason);
+      setCopied(true);
+      toast({
+        variant: "success",
+        title: "Pedido copiado",
+        description: "Use como referência enquanto ajusta a revisão.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Não foi possível copiar",
+        description: "Selecione o texto do pedido manualmente.",
+      });
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 shadow-sm">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+        <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-800">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-bold">
+                Revisão criada a partir de uma recusa
+              </div>
+              <p className="mt-1 text-sm leading-6 text-amber-900/80">
+                {signerName} pediu mudanças em {formatDateBR(requestedAt)} no
+                orçamento{" "}
+                <Link
+                  href={`/app/orcamentos/${sourceId}`}
+                  className="font-mono font-semibold underline-offset-4 hover:underline"
+                >
+                  {sourceNumber}
+                </Link>
+                . Ajuste esta versão e envie um novo link para o cliente.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-amber-200 bg-white/75 p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold uppercase text-amber-900/70">
+                  Pedido do cliente
+                </div>
+                <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">
+                  {cleanedReason}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={copyReason}
+                className="h-10 shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+              >
+                {copied ? (
+                  <ClipboardCheck className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                {copied ? "Copiado" : "Copiar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-amber-200 bg-white/75 p-3">
+          <div className="text-xs font-semibold uppercase text-amber-900/70">
+            Roteiro de reenvio
+          </div>
+          <ol className="mt-2 space-y-2 text-sm leading-6">
+            <li>1. Ajuste descrição, itens, valores ou observações.</li>
+            <li>2. Clique em salvar e enviar revisão.</li>
+            <li>3. Envie o novo link pelo WhatsApp.</li>
+          </ol>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="mt-3 h-10 w-full border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+          >
+            <Link href={`/app/orcamentos/${sourceId}`}>
+              Ver orçamento original
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div className="mt-3 truncate font-mono text-xs text-amber-900/70">
+            {sourceNumber} · {sourceTitle}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

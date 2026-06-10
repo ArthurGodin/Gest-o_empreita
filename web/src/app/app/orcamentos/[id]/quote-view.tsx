@@ -22,6 +22,9 @@ export function QuoteView({
 }) {
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
+  const messageMode = quote.title.toLocaleLowerCase("pt-BR").includes("revis")
+    ? "revision"
+    : "quote";
 
   return (
     <div className="space-y-6">
@@ -56,35 +59,35 @@ export function QuoteView({
       )}
 
       {quote.effective_status === "rejected" && lastApproval && (
-        <div className="rounded-xl border bg-muted/50 p-4">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
-              <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
               <div className="text-sm">
                 <div className="font-semibold">
                   {lastApproval.signer_name} pediu mudanças
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-amber-900/70">
                   {formatDateBR(lastApproval.created_at)}
                 </div>
                 {lastApproval.rejection_reason && (
-                  <div className="mt-2 rounded-md bg-background/80 p-3">
-                    <div className="text-xs font-medium text-muted-foreground">
+                  <div className="mt-2 rounded-md border border-amber-200 bg-white/75 p-3">
+                    <div className="text-xs font-medium text-amber-900/70">
                       Motivo
                     </div>
                     <div className="mt-1">{lastApproval.rejection_reason}</div>
                   </div>
                 )}
-                <p className="mt-3 text-muted-foreground">
-                  Crie uma revisão para ajustar o rascunho mantendo este pedido
-                  de mudança como histórico.
+                <p className="mt-3 text-amber-900/80">
+                  Crie uma revisão editável, ajuste o que foi pedido e envie um
+                  novo link para o cliente sem apagar este histórico.
                 </p>
               </div>
             </div>
             <DuplicateButton
               id={quote.id}
               intent="revision"
-              label="Criar revisão"
+              label="Ajustar e reenviar"
             />
           </div>
         </div>
@@ -118,6 +121,7 @@ export function QuoteView({
           quoteTotalCents={quote.total_cents}
           customerName={quote.customer?.name}
           customerPhone={quote.customer?.phone}
+          messageMode={messageMode}
         />
       )}
 
