@@ -1,44 +1,55 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn, formatBRL } from "@/lib/utils";
-import { formatDateBR } from "@/lib/utils";
+import { cn, formatBRL, formatDateBR } from "@/lib/utils";
 import {
   STATUS_COLOR,
   STATUS_LABEL,
   type EffectiveQuoteStatus,
 } from "@/lib/quote-status";
+import {
+  countQuotesByStatus,
+  filterQuotes,
+  parseQuoteListStatusFilter,
+  QUOTE_LIST_STATUS_FILTERS,
+  type QuoteListStatusFilter,
+} from "@/lib/quote-list-filter";
 import type { QuoteListItem } from "@/lib/queries/quotes";
 
 interface QuoteListProps {
   quotes: QuoteListItem[];
 }
 
-type StatusFilter = "all" | EffectiveQuoteStatus;
-
-const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "Todos" },
-  { value: "draft", label: "Rascunho" },
-  { value: "sent", label: "Enviados" },
-  { value: "viewed", label: "Vistos" },
-  { value: "approved", label: "Aprovados" },
-  { value: "rejected", label: "Recusados" },
-  { value: "expired", label: "Expirados" },
-];
-
 const COLOR_CLASSES: Record<
   ReturnType<typeof colorOf>,
   { bg: string; text: string }
 > = {
   neutral: { bg: "bg-muted", text: "text-muted-foreground" },
-  blue: { bg: "bg-blue-100 dark:bg-blue-900/40", text: "text-blue-800 dark:text-blue-200" },
-  amber: { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-800 dark:text-amber-200" },
-  green: { bg: "bg-green-100 dark:bg-green-900/40", text: "text-green-800 dark:text-green-200" },
-  red: { bg: "bg-red-100 dark:bg-red-900/40", text: "text-red-800 dark:text-red-200" },
-  gray: { bg: "bg-gray-100 dark:bg-gray-800", text: "text-gray-700 dark:text-gray-300" },
+  blue: {
+    bg: "bg-blue-100 dark:bg-blue-900/40",
+    text: "text-blue-800 dark:text-blue-200",
+  },
+  amber: {
+    bg: "bg-amber-100 dark:bg-amber-900/40",
+    text: "text-amber-800 dark:text-amber-200",
+  },
+  green: {
+    bg: "bg-green-100 dark:bg-green-900/40",
+    text: "text-green-800 dark:text-green-200",
+  },
+  red: {
+    bg: "bg-red-100 dark:bg-red-900/40",
+    text: "text-red-800 dark:text-red-200",
+  },
+  gray: {
+    bg: "bg-gray-100 dark:bg-gray-800",
+    text: "text-gray-700 dark:text-gray-300",
+  },
 };
 
 function colorOf(status: EffectiveQuoteStatus) {
@@ -46,25 +57,58 @@ function colorOf(status: EffectiveQuoteStatus) {
 }
 
 export function QuoteList({ quotes }: QuoteListProps) {
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [statusFilter, setStatusFilter] = useState<QuoteListStatusFilter>(() =>
+    parseQuoteListStatusFilter(searchParams.get("status")),
+  );
 
-  const filtered = useMemo(() => {
-    let out = quotes;
-    if (statusFilter !== "all") {
-      out = out.filter((q) => q.effective_status === statusFilter);
-    }
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
-      out = out.filter(
-        (it) =>
-          it.title.toLowerCase().includes(q) ||
-          it.number.toLowerCase().includes(q) ||
-          it.customer?.name.toLowerCase().includes(q),
-      );
-    }
-    return out;
-  }, [quotes, query, statusFilter]);
+  const counts = useMemo(() => countQuotesByStatus(quotes), [quotes]);
+  const filtered = useMemo(
+    () => filterQuotes(quotes, { query, status: statusFilter }),
+    [quotes, query, statusFilter],
+  );
+
+  const hasActiveFilters = statusFilter !== "all" || query.trim().length > 0;
+  const activeStatusLabel =
+    QUOTE_LIST_STATUS_FILTERS.find((filter) => filter.value === statusFilter)
+      ?.label ?? "Todos";
+
+  function updateUrl(next: { query?: string; status?: QuoteListStatusFilter }) {
+    const nextQuery = next.query ?? query;
+    const nextStatus = next.status ?? statusFilter;
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextQuery.trim()) params.set("q", nextQuery.trim());
+    else params.delete("q");
+
+    if (nextStatus !== "all") params.set("status", nextStatus);
+    else params.delete("status");
+
+    const href = params.toString() ? `${pathname}?${params}` : pathname;
+    startTransition(() => {
+      router.replace(href, { scroll: false });
+    });
+  }
+
+  function onQueryChange(value: string) {
+    setQuery(value);
+    updateUrl({ query: value });
+  }
+
+  function onStatusChange(value: QuoteListStatusFilter) {
+    setStatusFilter(value);
+    updateUrl({ status: value });
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setStatusFilter("all");
+    updateUrl({ query: "", status: "all" });
+  }
 
   return (
     <div className="space-y-4">
@@ -75,43 +119,77 @@ export function QuoteList({ quotes }: QuoteListProps) {
             type="search"
             inputMode="search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => onQueryChange(e.target.value)}
             placeholder="Buscar por número, título ou cliente..."
             className="pl-9"
           />
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {FILTER_OPTIONS.map((opt) => {
+          {QUOTE_LIST_STATUS_FILTERS.map((opt) => {
             const active = statusFilter === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setStatusFilter(opt.value)}
+                aria-pressed={active}
+                onClick={() => onStatusChange(opt.value)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   active
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input hover:bg-accent",
+                    : "border-input bg-background hover:bg-accent",
                 )}
               >
-                {opt.label}
+                <span>{opt.label}</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 font-mono text-[11px]",
+                    active
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {counts[opt.value]}
+                </span>
               </button>
             );
           })}
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          {filtered.length === quotes.length
-            ? `${quotes.length} ${quotes.length === 1 ? "orçamento" : "orçamentos"}`
-            : `${filtered.length} de ${quotes.length}`}
-        </p>
+        <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p aria-live="polite">
+            {filtered.length === quotes.length && !hasActiveFilters
+              ? `${quotes.length} ${quotes.length === 1 ? "orçamento" : "orçamentos"}`
+              : `${filtered.length} de ${quotes.length} em ${activeStatusLabel.toLocaleLowerCase("pt-BR")}`}
+            {isPending ? " · atualizando..." : ""}
+          </p>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="self-start font-medium text-primary underline-offset-4 hover:underline sm:self-auto"
+            >
+              Limpar filtros
+            </button>
+          )}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-card py-10 text-center text-sm text-muted-foreground">
-          Nenhum orçamento bate com os filtros.
+        <div className="rounded-xl border border-dashed bg-card px-4 py-10 text-center">
+          <div className="mx-auto max-w-sm space-y-3">
+            <div className="text-sm font-medium text-foreground">
+              Nenhum orçamento encontrado
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Não há orçamento em {activeStatusLabel.toLocaleLowerCase("pt-BR")}
+              {query.trim() ? ` com "${query.trim()}".` : "."}
+            </p>
+            <Button type="button" variant="outline" onClick={clearFilters}>
+              Ver todos os orçamentos
+            </Button>
+          </div>
         </div>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
