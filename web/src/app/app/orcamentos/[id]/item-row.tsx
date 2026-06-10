@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 import { CatalogAutocomplete } from "@/components/catalog-autocomplete";
 import {
   centsToBRLInput,
@@ -13,7 +14,10 @@ import {
   parseQuantity,
 } from "@/lib/format";
 import { formatBRL } from "@/lib/utils";
-import { createCatalogItemAction } from "@/app/app/catalogo/actions";
+import {
+  createCatalogItemAction,
+  recordCatalogUsageAction,
+} from "@/app/app/catalogo/actions";
 import type { CatalogItem } from "@/lib/queries/catalog";
 
 export interface ItemDraft {
@@ -51,6 +55,7 @@ export function ItemRow({
   disabled,
 }: ItemRowProps) {
   const [savingCatalog, startSavingCatalog] = useTransition();
+  const [, startRecordingUsage] = useTransition();
 
   // ─── Price input controlled, sincronizado com unit_price_cents do parent ──
   // Cenário-bug: usuário digita "500,00" sem dar blur, depois clica uma
@@ -93,6 +98,9 @@ export function ItemRow({
       unit: catItem.unit,
       unit_price_cents: catItem.default_price_cents,
     });
+    startRecordingUsage(() => {
+      void recordCatalogUsageAction(catItem.id);
+    });
   }
 
   function handleSaveToCatalog() {
@@ -105,9 +113,18 @@ export function ItemRow({
       if (result.ok) {
         onChange({ ...item, catalog_item_id: result.id });
         onSavedToCatalog();
+        toast({
+          variant: "success",
+          title: "Item salvo no catálogo",
+          description: "Ele já pode ser reaproveitado em outros orçamentos.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Não foi possível salvar no catálogo",
+          description: result.error,
+        });
       }
-      // Se já existir no catálogo (23505) ou outro erro, ignora silenciosamente —
-      // user pode tentar de novo depois ou ajustar a descrição.
     });
   }
 
@@ -117,8 +134,14 @@ export function ItemRow({
       <div className="space-y-3 md:grid md:grid-cols-[1fr_84px_78px_132px_118px_auto] md:items-end md:gap-2 md:space-y-0">
         {/* Descrição (com autocomplete) */}
         <div className="md:col-span-1">
-          <Label className="text-xs md:sr-only">Descrição</Label>
+          <Label
+            className="text-xs md:sr-only"
+            htmlFor={`description-${item.key}`}
+          >
+            Descrição
+          </Label>
           <CatalogAutocomplete
+            id={`description-${item.key}`}
             value={item.description}
             onValueChange={(v) =>
               onChange({ ...item, description: v, catalog_item_id: null })
