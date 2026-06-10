@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, MessageCircle } from "lucide-react";
+import { CheckCircle2, MessageCircle, PencilLine, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,13 @@ import { approveQuoteAction, rejectQuoteAction } from "./actions";
 
 interface ApprovalFormProps {
   token: string;
+  companyName: string;
+  contactUrl: string | null;
 }
 
 type Mode = "idle" | "rejecting" | "rejected";
 
-export function ApprovalForm({ token }: ApprovalFormProps) {
+export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("idle");
   const [signerName, setSignerName] = useState("");
@@ -53,6 +55,10 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
       setError("Digite seu nome (mínimo 2 letras).");
       return;
     }
+    if (reason.trim().length < 5) {
+      setError("Descreva rapidamente o que precisa mudar.");
+      return;
+    }
     setError(null);
 
     startTransition(async () => {
@@ -76,18 +82,27 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
   }
 
   return (
-    <section className="rounded-xl border bg-card p-5">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        ✍ Aprovar este orçamento
+    <section className="rounded-xl border bg-card p-5 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
+          <CheckCircle2 className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Decisão do cliente
+          </div>
+          <h2 className="mt-1 text-lg font-bold tracking-tight">
+            Aprovar ou pedir ajuste
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Sua resposta fica registrada para {companyName}. Você não precisa
+            criar conta.
+          </p>
+        </div>
       </div>
 
       {mode === "idle" && (
-        <div className="mt-3 space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Digite seu nome para confirmar a aprovação. Fica registrado a data,
-            hora e seu nome.
-          </p>
-
+        <div className="mt-5 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="signer-name">Seu nome completo</Label>
             <Input
@@ -100,10 +115,16 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
               disabled={pending}
               className="h-12 text-base"
             />
+            <p className="text-xs text-muted-foreground">
+              Usado apenas para registrar quem aprovou ou pediu alteração.
+            </p>
           </div>
 
           {error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
               {error}
             </div>
           )}
@@ -116,7 +137,7 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
               className="h-12 w-full bg-green-600 text-base font-bold text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
             >
               <CheckCircle2 className="h-5 w-5" />
-              {pending ? "Aprovando..." : "Aprovar orçamento"}
+              {pending ? "Aprovando..." : "Aprovar e autorizar contato"}
             </Button>
             <Button
               type="button"
@@ -125,9 +146,25 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
               disabled={pending}
               className="h-12 w-full text-base"
             >
-              <MessageCircle className="h-5 w-5" />
+              <PencilLine className="h-5 w-5" />
               Pedir mudanças
             </Button>
+            {contactUrl && (
+              <Button asChild variant="ghost" className="h-11 w-full">
+                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4" />
+                  Falar no WhatsApp
+                </a>
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-start gap-2 rounded-md bg-muted/60 px-3 py-2 text-xs leading-5 text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Ao aprovar, {companyName} recebe o aviso no painel e pode seguir
+              para combinar início, pagamento e execução.
+            </span>
           </div>
         </div>
       )}
@@ -135,8 +172,8 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
       {mode === "rejecting" && (
         <div className="mt-3 space-y-4">
           <p className="text-sm text-muted-foreground">
-            Diga em poucas palavras o que precisa mudar — o empreiteiro vai ler
-            isso e ajustar o orçamento.
+            Escreva o ajuste que você quer. Isso ajuda {companyName} a reenviar
+            uma versão melhor sem perder contexto no WhatsApp.
           </p>
 
           <div className="space-y-2">
@@ -154,7 +191,7 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reason">Motivo (opcional)</Label>
+            <Label htmlFor="reason">O que precisa mudar?</Label>
             <Textarea
               id="reason"
               value={reason}
@@ -162,12 +199,20 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
               placeholder="Ex: O preço da mão de obra ficou alto. Posso pagar até R$ 6.000."
               rows={3}
               maxLength={1000}
+              required
               disabled={pending}
             />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Seja direto: preço, prazo, item ou condição.</span>
+              <span>{reason.length}/1000</span>
+            </div>
           </div>
 
           {error && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
               {error}
             </div>
           )}
@@ -180,8 +225,16 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
               variant="outline"
               className="h-12 w-full text-base"
             >
-              {pending ? "Enviando..." : "Enviar pedido de mudança"}
+              {pending ? "Enviando..." : "Enviar pedido de ajuste"}
             </Button>
+            {contactUrl && (
+              <Button asChild variant="ghost" className="h-10 w-full">
+                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-4 w-4" />
+                  Conversar antes no WhatsApp
+                </a>
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -206,9 +259,17 @@ export function ApprovalForm({ token }: ApprovalFormProps) {
             <div>
               <div className="font-semibold">Pedido de mudança enviado</div>
               <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-                O prestador recebeu sua solicitação e pode reenviar uma versão
-                revisada do orçamento pelo WhatsApp.
+                {companyName} recebeu sua solicitação e pode reenviar uma versão
+                revisada do orçamento.
               </p>
+              {contactUrl && (
+                <Button asChild variant="outline" className="mt-3 h-9 bg-white/70">
+                  <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4" />
+                    Chamar no WhatsApp
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
         </div>
