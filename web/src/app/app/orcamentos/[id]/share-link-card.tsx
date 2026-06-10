@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -92,11 +93,23 @@ export function ShareLinkCard({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      toast({
+        variant: "success",
+        title: "Link copiado",
+        description: "Cole no WhatsApp do cliente quando quiser reenviar.",
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       inputRef.current?.focus();
       inputRef.current?.select();
-      setError("Não consegui copiar automaticamente. Selecione o link e copie manualmente.");
+      const message =
+        "Não consegui copiar automaticamente. Selecione o link e copie manualmente.";
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Cópia automática falhou",
+        description: message,
+      });
     }
   }
 
@@ -107,9 +120,19 @@ export function ShareLinkCard({
       const result = await revokeShareTokenAction(quoteId);
       if (!result.ok) {
         setError(result.error);
+        toast({
+          variant: "destructive",
+          title: "Não foi possível gerar link",
+          description: result.error,
+        });
         return;
       }
       setCurrentToken(result.share_token);
+      toast({
+        variant: "success",
+        title: "Novo link gerado",
+        description: "O link antigo foi invalidado. Envie o novo para o cliente.",
+      });
       router.refresh();
     });
   }

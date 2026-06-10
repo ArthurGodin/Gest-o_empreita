@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { duplicateQuoteAction } from "../actions";
 
 export function DuplicateButton({
@@ -25,8 +26,24 @@ export function DuplicateButton({
       const result = await duplicateQuoteAction(id, { intent });
       if (!result.ok) {
         setError(result.error);
+        toast({
+          variant: "destructive",
+          title:
+            intent === "revision"
+              ? "Não foi possível criar revisão"
+              : "Não foi possível duplicar",
+          description: result.error,
+        });
         return;
       }
+      toast({
+        variant: "success",
+        title: intent === "revision" ? "Revisão criada" : "Orçamento duplicado",
+        description:
+          intent === "revision"
+            ? "Ajuste o rascunho e envie novamente para o cliente."
+            : "O novo rascunho já está pronto para edição.",
+      });
       router.push(`/app/orcamentos/${result.id}`);
       router.refresh();
     });

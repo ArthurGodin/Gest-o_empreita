@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 import { normalizeQuoteUnit } from "@/lib/format";
 import { formatBRL } from "@/lib/utils";
 import { updateQuoteAction } from "../actions";
@@ -35,7 +36,6 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   // Header state
   const [title, setTitle] = useState(quote.title);
@@ -94,13 +94,18 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
    * teve erro. Pode ser usada tanto pelo botão "Salvar" quanto pelo
    * "Salvar e enviar" (via SendQuoteButton.onBeforeSend).
    */
-  async function doSave(): Promise<boolean> {
+  async function doSave(options: { quiet?: boolean } = {}): Promise<boolean> {
     setError(null);
-    setSaved(false);
 
     const filledItems = items.filter((it) => it.description.trim());
     if (filledItems.length === 0) {
-      setError("Adicione ao menos um item com descrição.");
+      const message = "Adicione ao menos um item com descrição.";
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Orçamento incompleto",
+        description: message,
+      });
       return false;
     }
 
@@ -121,12 +126,22 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
 
     if (!result.ok) {
       setError(result.error);
+      toast({
+        variant: "destructive",
+        title: "Não foi possível salvar",
+        description: result.error,
+      });
       return false;
     }
 
     router.refresh();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    if (!options.quiet) {
+      toast({
+        variant: "success",
+        title: "Rascunho salvo",
+        description: "As alterações do orçamento foram gravadas.",
+      });
+    }
     return true;
   }
 
@@ -285,12 +300,6 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
           {error}
         </div>
       )}
-      {saved && (
-        <div className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-900 dark:bg-green-950/40 dark:text-green-100">
-          Rascunho salvo.
-        </div>
-      )}
-
       <div className="sticky bottom-0 -mx-4 flex flex-col-reverse items-stretch gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-end md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <Button type="button" variant="outline" onClick={onSave} disabled={pending}>
           <Save className="h-4 w-4" />
@@ -303,7 +312,7 @@ export function QuoteEditor({ quote, customers }: QuoteEditorProps) {
           quoteTotalCents={total}
           customerName={selectedCustomer?.name}
           customerPhone={selectedCustomer?.phone}
-          onBeforeSend={doSave}
+          onBeforeSend={() => doSave({ quiet: true })}
           disabled={pending}
           label="Salvar e enviar pro cliente"
         />

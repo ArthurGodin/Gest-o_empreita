@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -69,10 +70,20 @@ export function SendQuoteButton({
       if (!result.ok) {
         setError(result.error);
         setBlockers(result.blockers ?? []);
+        toast({
+          variant: "destructive",
+          title: "Não foi possível enviar",
+          description: result.error,
+        });
         setOpen(true);
         return;
       }
       setShareUrl(result.url);
+      toast({
+        variant: "success",
+        title: "Link pronto",
+        description: "Envie pelo WhatsApp ou copie o link para o cliente.",
+      });
       setOpen(true);
     });
   }
@@ -90,13 +101,23 @@ export function SendQuoteButton({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+      toast({
+        variant: "success",
+        title: "Link copiado",
+        description: "Agora é só colar no WhatsApp do cliente.",
+      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       inputRef.current?.focus();
       inputRef.current?.select();
-      setCopyError(
-        "Não consegui copiar automaticamente. Selecione o link e copie manualmente.",
-      );
+      const message =
+        "Não consegui copiar automaticamente. Selecione o link e copie manualmente.";
+      setCopyError(message);
+      toast({
+        variant: "destructive",
+        title: "Cópia automática falhou",
+        description: message,
+      });
     }
   }
 
