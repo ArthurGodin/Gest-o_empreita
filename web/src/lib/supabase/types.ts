@@ -184,6 +184,7 @@ export interface Database {
           company_id: string;
           customer_id: string;
           project_id: string | null;
+          revision_source_id: string | null;
           number: string;
           title: string;
           description: string | null;
@@ -210,6 +211,7 @@ export interface Database {
           company_id: string;
           customer_id: string;
           project_id?: string | null;
+          revision_source_id?: string | null;
           number: string;
           title: string;
           description?: string | null;

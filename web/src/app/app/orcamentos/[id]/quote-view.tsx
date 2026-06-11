@@ -1,9 +1,23 @@
-import { Calendar, CheckCircle2, Download, Mail, MapPin, Phone, User, XCircle } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  Download,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone, formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
 import { STATUS_LABEL } from "@/lib/quote-status";
-import type { QuoteWithRelations } from "@/lib/queries/quotes";
+import type {
+  QuoteRevisionSummary,
+  QuoteWithRelations,
+} from "@/lib/queries/quotes";
 import { ShareLinkCard } from "./share-link-card";
 import { ConvertToProject, type TemplateOption } from "./convert-to-project";
 import { DuplicateButton } from "./duplicate-button";
@@ -15,14 +29,19 @@ import { DuplicateButton } from "./duplicate-button";
  */
 export function QuoteView({
   quote,
+  revisions,
   templates,
 }: {
   quote: QuoteWithRelations;
+  revisions: QuoteRevisionSummary[];
   templates: TemplateOption[];
 }) {
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
-  const messageMode = quote.title.toLocaleLowerCase("pt-BR").includes("revis")
+  const latestRevision = revisions[0] ?? null;
+  const messageMode =
+    quote.revision_source_id ||
+    quote.title.toLocaleLowerCase("pt-BR").includes("revis")
     ? "revision"
     : "quote";
 
@@ -78,17 +97,49 @@ export function QuoteView({
                     <div className="mt-1">{lastApproval.rejection_reason}</div>
                   </div>
                 )}
-                <p className="mt-3 text-amber-900/80">
-                  Crie uma revisão editável, ajuste o que foi pedido e envie um
-                  novo link para o cliente sem apagar este histórico.
-                </p>
+                {latestRevision ? (
+                  <p className="mt-3 text-amber-900/80">
+                    Já existe uma revisão ligada a esta recusa. Continue nela para
+                    manter a negociação organizada e evitar versões soltas.
+                  </p>
+                ) : (
+                  <p className="mt-3 text-amber-900/80">
+                    Crie uma revisão editável, ajuste o que foi pedido e envie um
+                    novo link para o cliente sem apagar este histórico.
+                  </p>
+                )}
               </div>
             </div>
-            <DuplicateButton
-              id={quote.id}
-              intent="revision"
-              label="Ajustar e reenviar"
-            />
+            {latestRevision ? (
+              <div className="min-w-0 rounded-lg border border-amber-200 bg-white/75 p-3 text-sm sm:w-72">
+                <div className="text-xs font-semibold uppercase text-amber-900/70">
+                  Revisão mais recente
+                </div>
+                <div className="mt-1 truncate font-semibold">
+                  {latestRevision.number} · {latestRevision.title}
+                </div>
+                <div className="mt-1 text-amber-900/70">
+                  {STATUS_LABEL[latestRevision.effective_status]} ·{" "}
+                  {formatDateBR(latestRevision.created_at)}
+                </div>
+                <Button
+                  asChild
+                  size="sm"
+                  className="mt-3 w-full bg-amber-600 text-white hover:bg-amber-700"
+                >
+                  <Link href={`/app/orcamentos/${latestRevision.id}`}>
+                    Abrir revisão
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <DuplicateButton
+                id={quote.id}
+                intent="revision"
+                label="Ajustar e reenviar"
+              />
+            )}
           </div>
         </div>
       )}

@@ -67,6 +67,16 @@ function publicQuoteUrl(token: string) {
   return `${env.NEXT_PUBLIC_APP_URL}/q/${token}`;
 }
 
+function isMissingRevisionColumn(error: unknown) {
+  const err = error as { code?: string; message?: string; details?: string };
+  const text = `${err?.message ?? ""} ${err?.details ?? ""}`;
+  return (
+    err?.code === "42703" ||
+    err?.code === "PGRST204" ||
+    text.includes("revision_source_id")
+  );
+}
+
 // ─── Create ────────────────────────────────────────────────────────────────
 
 const createSchema = z.object({
@@ -314,24 +324,44 @@ export async function duplicateQuoteAction(
       ? revisionQuoteTitle(orig.title)
       : copyQuoteTitle(orig.title);
 
-  const { data: created, error: createError } = await supabase
+  const baseInsert = {
+    company_id: company.company_id,
+    customer_id: orig.customer_id,
+    number: numberData as string,
+    title: nextTitle,
+    description: orig.description,
+    status: "draft",
+    valid_until: addDaysBR(15),
+    share_token: generateShareToken(),
+    notes: orig.notes,
+    subtotal_cents: subtotal,
+    total_cents: subtotal,
+    created_by: user.id,
+  } as const;
+  const insertPayload =
+    options.intent === "revision"
+      ? { ...baseInsert, revision_source_id: id }
+      : baseInsert;
+
+  let { data: created, error: createError } = await supabase
     .from("quotes")
-    .insert({
-      company_id: company.company_id,
-      customer_id: orig.customer_id,
-      number: numberData as string,
-      title: nextTitle,
-      description: orig.description,
-      status: "draft",
-      valid_until: addDaysBR(15),
-      share_token: generateShareToken(),
-      notes: orig.notes,
-      subtotal_cents: subtotal,
-      total_cents: subtotal,
-      created_by: user.id,
-    })
+    .insert(insertPayload)
     .select("id")
     .single();
+
+  if (
+    createError &&
+    options.intent === "revision" &&
+    isMissingRevisionColumn(createError)
+  ) {
+    const retry = await supabase
+      .from("quotes")
+      .insert(baseInsert)
+      .select("id")
+      .single();
+    created = retry.data;
+    createError = retry.error;
+  }
 
   if (createError || !created) {
     logServerError("quotes.duplicate.create", createError);
@@ -359,6 +389,7 @@ export async function duplicateQuoteAction(
   }
 
   revalidatePath("/app/orcamentos");
+  revalidatePath(`/app/orcamentos/${id}`);
   return { ok: true, id: created.id as string };
 }
 

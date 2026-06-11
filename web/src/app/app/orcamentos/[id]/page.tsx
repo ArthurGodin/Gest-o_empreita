@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/app-shell/page-header";
+import { Button } from "@/components/ui/button";
 import { getCustomers } from "@/lib/queries/customers";
-import { getQuoteWithRelations } from "@/lib/queries/quotes";
+import { getQuoteRevisions, getQuoteWithRelations } from "@/lib/queries/quotes";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { isEditable, STATUS_LABEL } from "@/lib/quote-status";
 import { QuoteEditor } from "./quote-editor";
@@ -40,19 +41,29 @@ export default async function QuoteDetailPage({
   const editable = isEditable(quote.status);
   const showConvert =
     quote.effective_status === "approved" && !quote.project_id;
-  const [customers, templates] = await Promise.all([
+  const queryRevisionSourceId =
+    typeof query.revisao === "string" ? query.revisao : null;
+  const persistedRevisionSourceId = quote.revision_source_id ?? null;
+  const revisionSourceId = editable
+    ? persistedRevisionSourceId ?? queryRevisionSourceId
+    : null;
+
+  const [customers, templates, revisionSource, revisions] = await Promise.all([
     editable ? getCustomers() : Promise.resolve([]),
     showConvert ? listTemplates() : Promise.resolve([]),
+    revisionSourceId && revisionSourceId !== quote.id
+      ? getQuoteWithRelations(revisionSourceId)
+      : Promise.resolve(null),
+    quote.effective_status === "rejected"
+      ? getQuoteRevisions(quote.id)
+      : Promise.resolve([]),
   ]);
-  const revisionSource =
-    editable && query.revisao && query.revisao !== quote.id
-      ? await getQuoteWithRelations(query.revisao)
-      : null;
   const validRevisionSource =
     revisionSource?.effective_status === "rejected" &&
     revisionSource.customer_id === quote.customer_id
       ? revisionSource
       : null;
+  const latestRevision = revisions[0] ?? null;
 
   return (
     <div className="container max-w-5xl space-y-6 py-6">
@@ -79,15 +90,27 @@ export default async function QuoteDetailPage({
         }
         actions={
           <div className="flex items-center gap-2">
-            <DuplicateButton
-              id={quote.id}
-              intent={quote.effective_status === "rejected" ? "revision" : "copy"}
-              label={
-                quote.effective_status === "rejected"
-                  ? "Ajustar e reenviar"
-                  : "Duplicar"
-              }
-            />
+            {latestRevision && quote.effective_status === "rejected" && (
+              <Button asChild>
+                <Link href={`/app/orcamentos/${latestRevision.id}`}>
+                  Abrir revisão
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {!(latestRevision && quote.effective_status === "rejected") && (
+              <DuplicateButton
+                id={quote.id}
+                intent={
+                  quote.effective_status === "rejected" ? "revision" : "copy"
+                }
+                label={
+                  quote.effective_status === "rejected"
+                    ? "Ajustar e reenviar"
+                    : "Duplicar"
+                }
+              />
+            )}
             {editable && <DeleteQuoteButton id={quote.id} number={quote.number} />}
           </div>
         }
@@ -100,7 +123,7 @@ export default async function QuoteDetailPage({
           revisionSource={validRevisionSource}
         />
       ) : (
-        <QuoteView quote={quote} templates={templates} />
+        <QuoteView quote={quote} revisions={revisions} templates={templates} />
       )}
     </div>
   );
