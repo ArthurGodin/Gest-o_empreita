@@ -39,11 +39,7 @@ export function QuoteView({
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
   const latestRevision = revisions[0] ?? null;
-  const messageMode =
-    quote.revision_source_id ||
-    quote.title.toLocaleLowerCase("pt-BR").includes("revis")
-    ? "revision"
-    : "quote";
+  const messageMode = quote.revision_source_id ? "revision" : "quote";
 
   return (
     <div className="space-y-6">
