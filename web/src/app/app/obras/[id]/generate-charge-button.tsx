@@ -26,6 +26,11 @@ export function GenerateChargeButton({
       const result = await generateChargePixAction(chargeId);
       if (!result.ok) {
         setError(result.error);
+        toast({
+          variant: "destructive",
+          title: "Pix não gerado",
+          description: result.error,
+        });
         return;
       }
       toast({

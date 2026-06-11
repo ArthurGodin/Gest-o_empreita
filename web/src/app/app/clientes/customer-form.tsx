@@ -113,7 +113,11 @@ export function CustomerForm({
             inputMode="numeric"
             defaultValue={customer?.document ?? ""}
             placeholder="000.000.000-00 ou 00.000.000/0000-00"
+            aria-invalid={Boolean(fieldErrors.document)}
           />
+          {fieldErrors.document && (
+            <p className="text-sm text-destructive">{fieldErrors.document[0]}</p>
+          )}
         </div>
       </fieldset>
 

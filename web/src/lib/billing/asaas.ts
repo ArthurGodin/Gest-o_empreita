@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDaysBR } from "@/lib/dates";
+import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
 import { createAsaasCustomer } from "@/lib/asaas/customers";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createPixPayment, getPixQrCode } from "@/lib/asaas/payments";
@@ -32,15 +33,6 @@ export interface CreateChargeResult {
   warning?: string;
 }
 
-export function normalizeCpfCnpj(value: string | null | undefined): string {
-  return (value ?? "").replace(/\D/g, "");
-}
-
-export function isValidCpfCnpjLength(value: string | null | undefined): boolean {
-  const digits = normalizeCpfCnpj(value);
-  return digits.length === 11 || digits.length === 14;
-}
-
 export async function ensureBillingProfile(
   supabase: SupabaseServer,
   companyId: string,
@@ -58,8 +50,11 @@ export async function ensureBillingProfile(
   if (existing?.asaas_customer_id) return existing.asaas_customer_id;
 
   const cpfCnpj = normalizeCpfCnpj(cpfCnpjOverride || customer.document);
-  if (!isValidCpfCnpjLength(cpfCnpj)) {
+  if (!cpfCnpj) {
     throw new Error("CPF/CNPJ obrigatório para gerar cobrança Pix.");
+  }
+  if (!isValidCpfCnpj(cpfCnpj)) {
+    throw new Error("CPF/CNPJ inválido para gerar cobrança Pix.");
   }
 
   const asaasCustomer = await createAsaasCustomer({

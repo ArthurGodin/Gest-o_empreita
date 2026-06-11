@@ -10,12 +10,8 @@ import { env } from "@/lib/env";
 import { checkSendReadiness } from "@/lib/quote-status";
 import { addDaysBR, todayBR } from "@/lib/dates";
 import { normalizeQuoteUnit } from "@/lib/format";
-import {
-  createLocalCharges,
-  generatePixForCharge,
-  isValidCpfCnpjLength,
-  normalizeCpfCnpj,
-} from "@/lib/billing/asaas";
+import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
+import { createLocalCharges, generatePixForCharge } from "@/lib/billing/asaas";
 import { isValidEntryPercent } from "@/lib/billing/entry-percent";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
@@ -816,10 +812,17 @@ export async function convertToProjectAction(
   if (q.project_id) return { ok: true, project_id: q.project_id };
   if (!q.customer) return { ok: false, error: "Cliente não encontrado." };
 
-  if (entryPct > 0 && !isValidCpfCnpjLength(cpfCnpj || q.customer.document)) {
+  const billingDocument = normalizeCpfCnpj(cpfCnpj || q.customer.document);
+  if (entryPct > 0 && !billingDocument) {
     return {
       ok: false,
       error: "Informe CPF/CNPJ do cliente para gerar a cobrança Pix.",
+    };
+  }
+  if (entryPct > 0 && !isValidCpfCnpj(billingDocument)) {
+    return {
+      ok: false,
+      error: "CPF/CNPJ do cliente é inválido. Corrija antes de gerar cobrança Pix.",
     };
   }
 
@@ -884,7 +887,7 @@ export async function convertToProjectAction(
 
   let billingWarning: string | undefined;
   try {
-    if (cpfCnpj && !q.customer.document) {
+    if (cpfCnpj && normalizeCpfCnpj(q.customer.document) !== cpfCnpj) {
       await supabase
         .from("customers")
         .update({ document: cpfCnpj })

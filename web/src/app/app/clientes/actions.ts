@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
 
-const customerSchema = z.object({
+const customerBaseSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome do cliente"),
   document: z.string().trim().optional().or(z.literal("")),
   phone: z.string().trim().optional().or(z.literal("")),
@@ -21,6 +22,17 @@ const customerSchema = z.object({
   state: z.string().trim().max(2, "UF tem 2 letras").optional().or(z.literal("")),
   zip_code: z.string().trim().optional().or(z.literal("")),
   notes: z.string().trim().optional().or(z.literal("")),
+});
+
+const customerSchema = customerBaseSchema.superRefine((data, ctx) => {
+  const document = normalizeCpfCnpj(data.document);
+  if (document && !isValidCpfCnpj(document)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["document"],
+      message: "Informe um CPF ou CNPJ válido.",
+    });
+  }
 });
 
 export type CustomerActionResult =
@@ -40,6 +52,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 function normalizeData(data: z.infer<typeof customerSchema>) {
   return emptyToNull({
     ...data,
+    document: data.document ? normalizeCpfCnpj(data.document) : data.document,
     state: data.state ? data.state.toUpperCase() : data.state,
   });
 }
