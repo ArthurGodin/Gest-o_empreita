@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { whatsappShareLink } from "@/lib/format";
+import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { sendQuoteAction } from "../actions";
 
@@ -46,7 +46,7 @@ export function SendQuoteButton({
   customerPhone,
   disabled,
   onBeforeSend,
-  label = "Enviar pro cliente",
+  label = "Enviar no WhatsApp",
   messageMode = "quote",
 }: SendQuoteButtonProps) {
   const router = useRouter();
@@ -58,6 +58,7 @@ export function SendQuoteButton({
   const [copyError, setCopyError] = useState<string | null>(null);
   const [blockers, setBlockers] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState(false);
 
   function onSend() {
     setError(null);
@@ -83,11 +84,14 @@ export function SendQuoteButton({
       setShareUrl(withCurrentOrigin(result.url));
       toast({
         variant: "success",
-        title: messageMode === "revision" ? "Revisão pronta" : "Link pronto",
+        title:
+          messageMode === "revision"
+            ? "Revisão pronta para WhatsApp"
+            : "Orçamento pronto para WhatsApp",
         description:
           messageMode === "revision"
-            ? "Envie a versão revisada pelo WhatsApp ou copie o link."
-            : "Envie pelo WhatsApp ou copie o link para o cliente.",
+            ? "Abra a conversa do cliente com a mensagem revisada pronta."
+            : "Abra a conversa do cliente com a mensagem pronta.",
       });
       setOpen(true);
     });
@@ -126,27 +130,52 @@ export function SendQuoteButton({
     }
   }
 
-  const waLink = shareUrl
-    ? whatsappShareLink({
-        phone: customerPhone,
-        message: buildQuoteWhatsappMessage({
-          customerName,
-          quoteNumber,
-          quoteTitle,
-          totalCents: quoteTotalCents,
-          url: shareUrl,
-          mode: messageMode,
-        }),
+  async function onCopyMessage() {
+    if (!whatsappMessage) return;
+    setCopyError(null);
+    try {
+      await navigator.clipboard.writeText(whatsappMessage);
+      setCopiedMessage(true);
+      toast({
+        variant: "success",
+        title: "Mensagem copiada",
+        description: "Cole no WhatsApp do cliente se preferir enviar manualmente.",
+      });
+      setTimeout(() => setCopiedMessage(false), 2000);
+    } catch {
+      const message = "Não consegui copiar a mensagem automaticamente.";
+      setCopyError(message);
+      toast({
+        variant: "destructive",
+        title: "Cópia automática falhou",
+        description: message,
+      });
+    }
+  }
+
+  const whatsappMessage = shareUrl
+    ? buildQuoteWhatsappMessage({
+        customerName,
+        quoteNumber,
+        quoteTitle,
+        totalCents: quoteTotalCents,
+        url: shareUrl,
+        mode: messageMode,
       })
     : null;
+  const waLink = whatsappMessage
+    ? whatsappShareLink({ phone: customerPhone, message: whatsappMessage })
+    : null;
+  const directWhatsapp = Boolean(whatsappLink(customerPhone));
+  const phoneLabel = formatPhone(customerPhone);
   const dialogTitle =
     messageMode === "revision"
-      ? "Revisão pronta para enviar"
-      : "Link pronto para enviar";
+      ? "Enviar revisão pelo WhatsApp"
+      : "Enviar orçamento pelo WhatsApp";
   const dialogDescription =
     messageMode === "revision"
-      ? "Envie a versão revisada pelo WhatsApp ou copie o link abaixo. O orçamento original continua preservado no histórico."
-      : "Envie pelo WhatsApp ou copie o link abaixo. Quando o cliente aprovar ou pedir mudanças, o status aparece no painel.";
+      ? "A mensagem já inclui o novo link da revisão. O orçamento original continua preservado no histórico."
+      : "A mensagem já inclui o link de aprovação. Quando o cliente aprovar ou pedir ajuste, o status aparece no painel.";
 
   return (
     <>
@@ -169,30 +198,72 @@ export function SendQuoteButton({
                 <DialogDescription>{dialogDescription}</DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-3">
-                <div className="flex items-stretch gap-2">
+              <div className="space-y-4">
+                {waLink && whatsappMessage && (
+                  <div className="space-y-3">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="h-12 w-full bg-green-600 text-base hover:bg-green-700"
+                    >
+                      <a href={waLink} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-5 w-5" />
+                        {directWhatsapp && phoneLabel
+                          ? `Abrir WhatsApp de ${phoneLabel}`
+                          : "Abrir WhatsApp e escolher contato"}
+                      </a>
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      {directWhatsapp && phoneLabel
+                        ? "O WhatsApp abre direto na conversa do cliente com a mensagem preenchida."
+                        : "O cliente não tem telefone válido cadastrado. O WhatsApp abre com a mensagem pronta para você escolher o contato."}
+                    </p>
+                    <div className="space-y-1.5">
+                      <div className="text-xs font-medium text-muted-foreground">
+                        Mensagem pronta
+                      </div>
+                      <textarea
+                        readOnly
+                        value={whatsappMessage}
+                        rows={7}
+                        className="w-full resize-none rounded-md border border-input bg-muted px-3 py-2 text-sm leading-5"
+                        onFocus={(event) => event.currentTarget.select()}
+                      />
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Button type="button" onClick={onCopyMessage} variant="outline">
+                        {copiedMessage ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copiedMessage ? "Mensagem copiada" : "Copiar mensagem"}
+                      </Button>
+                      <Button type="button" onClick={onCopy} variant="outline">
+                        {copied ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        {copied ? "Link copiado" : "Copiar link"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    Link público
+                  </div>
                   <input
                     ref={inputRef}
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="flex-1 rounded-md border border-input bg-muted px-3 py-2 font-mono text-sm"
+                    className="w-full rounded-md border border-input bg-muted px-3 py-2 font-mono text-sm"
                     onFocus={(e) => e.currentTarget.select()}
                   />
-                  <Button type="button" onClick={onCopy} variant="outline">
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    {copied ? "Copiado" : "Copiar"}
-                  </Button>
                 </div>
-
-                {waLink && (
-                  <Button asChild className="w-full bg-green-600 hover:bg-green-700">
-                    <a href={waLink} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="h-4 w-4" />
-                      Enviar no WhatsApp
-                    </a>
-                  </Button>
-                )}
 
                 {copyError && (
                   <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">

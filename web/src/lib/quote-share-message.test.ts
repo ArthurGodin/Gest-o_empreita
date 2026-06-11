@@ -12,7 +12,13 @@ describe("quote share message", () => {
         url: "https://app.test/q/token",
       }),
     ).toBe(
-      "Olá, Maria! Segue o orçamento ORC-2026-0001 - Cobertura para você avaliar. Valor: R$\u00a0260,00. Você pode ver, aprovar ou pedir mudanças pelo link: https://app.test/q/token",
+      [
+        "Olá, Maria!",
+        "Segue o orçamento ORC-2026-0001 - Cobertura para sua avaliação.\nValor: R$\u00a0260,00.",
+        "Acesse o link para ver os detalhes, aprovar ou pedir ajustes:",
+        "https://app.test/q/token",
+        "Qualquer dúvida, fico à disposição.",
+      ].join("\n\n"),
     );
   });
 
@@ -27,7 +33,13 @@ describe("quote share message", () => {
         mode: "revision",
       }),
     ).toBe(
-      "Olá, Maria! Segue a versão revisada do orçamento ORC-2026-0002 - Cobertura revisada para você avaliar. Valor: R$\u00a0280,00. Você pode revisar, aprovar ou pedir um novo ajuste pelo link: https://app.test/q/revision",
+      [
+        "Olá, Maria!",
+        "Segue a versão revisada do orçamento ORC-2026-0002 - Cobertura revisada para sua avaliação.\nValor: R$\u00a0280,00.",
+        "Acesse o link para revisar, aprovar ou pedir um novo ajuste:",
+        "https://app.test/q/revision",
+        "Qualquer dúvida, fico à disposição.",
+      ].join("\n\n"),
     );
   });
 
@@ -37,7 +49,13 @@ describe("quote share message", () => {
         url: "https://app.test/q/token",
       }),
     ).toBe(
-      "Olá! Segue o orçamento para você avaliar. Você pode ver, aprovar ou pedir mudanças pelo link: https://app.test/q/token",
+      [
+        "Olá!",
+        "Segue o orçamento para sua avaliação.",
+        "Acesse o link para ver os detalhes, aprovar ou pedir ajustes:",
+        "https://app.test/q/token",
+        "Qualquer dúvida, fico à disposição.",
+      ].join("\n\n"),
     );
   });
 });

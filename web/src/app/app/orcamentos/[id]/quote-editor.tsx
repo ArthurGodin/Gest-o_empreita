@@ -343,8 +343,8 @@ export function QuoteEditor({
           disabled={pending}
           label={
             revisionSource
-              ? "Salvar e enviar revisão"
-              : "Salvar e enviar pro cliente"
+              ? "Salvar e enviar revisão no WhatsApp"
+              : "Salvar e enviar no WhatsApp"
           }
           messageMode={revisionSource ? "revision" : "quote"}
         />
@@ -451,8 +451,8 @@ function RevisionBriefing({
           </div>
           <ol className="mt-2 space-y-2 text-sm leading-6">
             <li>1. Ajuste descrição, itens, valores ou observações.</li>
-            <li>2. Clique em salvar e enviar revisão.</li>
-            <li>3. Envie o novo link pelo WhatsApp.</li>
+            <li>2. Clique em salvar e enviar revisão no WhatsApp.</li>
+            <li>3. Envie a mensagem pronta pelo WhatsApp.</li>
           </ol>
           <Button
             asChild

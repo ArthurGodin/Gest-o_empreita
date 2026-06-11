@@ -32,12 +32,15 @@ export function buildQuoteWhatsappMessage({
       : null;
   const lead =
     mode === "revision"
-      ? `Segue a versão revisada do orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para você avaliar.`
-      : `Segue o orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para você avaliar.`;
+      ? `Segue a versão revisada do orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`
+      : `Segue o orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`;
   const action =
     mode === "revision"
-      ? "Você pode revisar, aprovar ou pedir um novo ajuste pelo link:"
-      : "Você pode ver, aprovar ou pedir mudanças pelo link:";
+      ? "Acesse o link para revisar, aprovar ou pedir um novo ajuste:"
+      : "Acesse o link para ver os detalhes, aprovar ou pedir ajustes:";
+  const closing = "Qualquer dúvida, fico à disposição.";
 
-  return [greeting, lead, amount, action, url].filter(Boolean).join(" ");
+  return [greeting, [lead, amount].filter(Boolean).join("\n"), action, url, closing]
+    .filter(Boolean)
+    .join("\n\n");
 }

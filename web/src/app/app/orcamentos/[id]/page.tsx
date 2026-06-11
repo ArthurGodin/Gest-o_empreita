@@ -72,7 +72,7 @@ export default async function QuoteDetailPage({
           validRevisionSource
             ? `Revisão em edição a partir do pedido de mudanças em ${validRevisionSource.number}. Ajuste, salve e envie novamente.`
             : editable
-            ? "Monte o orçamento, salve, e quando estiver pronto clique em Enviar pro cliente."
+            ? "Monte o orçamento, salve, e quando estiver pronto envie pelo WhatsApp."
             : quote.effective_status === "rejected"
               ? "O cliente pediu mudanças. Crie uma revisão para ajustar sem perder o histórico da recusa."
               : `Esse orçamento está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
