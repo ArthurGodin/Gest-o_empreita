@@ -35,7 +35,7 @@ interface ItemRowProps {
   index: number;
   total: number;
   item: ItemDraft;
-  onChange: (item: ItemDraft) => void;
+  onChange: (buildNext: (current: ItemDraft) => ItemDraft) => void;
   onRemove: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
@@ -91,13 +91,13 @@ export function ItemRow({
     item.description.trim().length >= 2 && !item.catalog_item_id && !disabled;
 
   function handleSelectFromCatalog(catItem: CatalogItem) {
-    onChange({
-      ...item,
+    onChange((current) => ({
+      ...current,
       catalog_item_id: catItem.id,
       description: catItem.description,
       unit: catItem.unit,
       unit_price_cents: catItem.default_price_cents,
-    });
+    }));
     startRecordingUsage(() => {
       void recordCatalogUsageAction(catItem.id);
     });
@@ -111,7 +111,7 @@ export function ItemRow({
         default_price_cents: item.unit_price_cents,
       });
       if (result.ok) {
-        onChange({ ...item, catalog_item_id: result.id });
+        onChange((current) => ({ ...current, catalog_item_id: result.id }));
         onSavedToCatalog();
         toast({
           variant: "success",
@@ -144,7 +144,11 @@ export function ItemRow({
             id={`description-${item.key}`}
             value={item.description}
             onValueChange={(v) =>
-              onChange({ ...item, description: v, catalog_item_id: null })
+              onChange((current) => ({
+                ...current,
+                description: v,
+                catalog_item_id: null,
+              }))
             }
             onSelectItem={handleSelectFromCatalog}
             placeholder="Ex: Telha cerâmica romana"
@@ -162,12 +166,18 @@ export function ItemRow({
             type="text"
             inputMode="decimal"
             value={qtyText}
-            onChange={(e) => setQtyText(e.target.value)}
+            onChange={(e) => {
+              const nextText = e.target.value;
+              const qty = parseQuantity(nextText);
+              setQtyText(nextText);
+              lastSyncedQty.current = qty;
+              onChange((current) => ({ ...current, quantity: qty }));
+            }}
             onBlur={() => {
               const qty = parseQuantity(qtyText);
               lastSyncedQty.current = qty;
               setQtyText(String(qty));
-              onChange({ ...item, quantity: qty });
+              onChange((current) => ({ ...current, quantity: qty }));
             }}
             disabled={disabled}
           />
@@ -181,8 +191,15 @@ export function ItemRow({
           <Input
             id={`unit-${item.key}`}
             value={item.unit}
-            onChange={(e) => onChange({ ...item, unit: e.target.value })}
-            onBlur={() => onChange({ ...item, unit: normalizeQuoteUnit(item.unit) })}
+            onChange={(e) =>
+              onChange((current) => ({ ...current, unit: e.target.value }))
+            }
+            onBlur={() =>
+              onChange((current) => ({
+                ...current,
+                unit: normalizeQuoteUnit(current.unit),
+              }))
+            }
             placeholder="un"
             maxLength={10}
             list="common-units-editor"
@@ -204,13 +221,24 @@ export function ItemRow({
             id={`price-${item.key}`}
             inputMode="decimal"
             value={priceText}
-            onChange={(e) => setPriceText(e.target.value)}
+            onChange={(e) => {
+              const nextText = e.target.value;
+              const cents = parseBRLToCents(nextText);
+              setPriceText(nextText);
+              if (cents != null) {
+                lastSyncedCents.current = cents;
+                onChange((current) => ({ ...current, unit_price_cents: cents }));
+              }
+            }}
             onBlur={() => {
               const cents = parseBRLToCents(priceText);
               if (cents != null) {
                 lastSyncedCents.current = cents;
                 setPriceText(centsToBRLInput(cents));
-                onChange({ ...item, unit_price_cents: cents });
+                onChange((current) => ({
+                  ...current,
+                  unit_price_cents: cents,
+                }));
               } else {
                 // Input inválido — restaura último valor válido
                 setPriceText(centsToBRLInput(item.unit_price_cents));

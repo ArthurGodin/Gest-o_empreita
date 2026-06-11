@@ -84,8 +84,13 @@ export function QuoteEditor({
   const selectedCustomer =
     customers.find((customer) => customer.id === customerId) ?? quote.customer;
 
-  function updateItem(idx: number, next: ItemDraft) {
-    setItems((curr) => curr.map((it, i) => (i === idx ? next : it)));
+  function updateItem(
+    key: string,
+    buildNext: (current: ItemDraft) => ItemDraft,
+  ) {
+    setItems((curr) =>
+      curr.map((it) => (it.key === key ? buildNext(it) : it)),
+    );
   }
   function removeItem(idx: number) {
     setItems((curr) =>
@@ -275,7 +280,7 @@ export function QuoteEditor({
               index={idx}
               total={items.length}
               item={item}
-              onChange={(next) => updateItem(idx, next)}
+              onChange={(buildNext) => updateItem(item.key, buildNext)}
               onRemove={() => removeItem(idx)}
               onMoveUp={() => moveItem(idx, -1)}
               onMoveDown={() => moveItem(idx, 1)}
