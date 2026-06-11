@@ -31,7 +31,11 @@ const approveSchema = z.object({
 const rejectSchema = z.object({
   token: tokenSchema,
   signer_name: z.string().trim().min(2, "Digite seu nome (mínimo 2 letras)"),
-  reason: z.string().trim().max(1000).optional().or(z.literal("")),
+  reason: z
+    .string()
+    .trim()
+    .min(5, "Descreva rapidamente o que precisa mudar.")
+    .max(1000, "Motivo muito longo (máx. 1000 caracteres)"),
 });
 
 const deliverySchema = z.object({

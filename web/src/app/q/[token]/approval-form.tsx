@@ -82,7 +82,10 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
   }
 
   return (
-    <section className="rounded-xl border bg-card p-5 shadow-sm">
+    <section
+      id="decisao"
+      className="scroll-mt-4 rounded-xl border bg-card p-5 shadow-sm"
+    >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
           <CheckCircle2 className="h-5 w-5" />

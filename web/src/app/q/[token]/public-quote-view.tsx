@@ -85,7 +85,7 @@ export function PublicQuoteView({
     : null;
 
   return (
-    <main className="min-h-screen bg-[#fffaf3] text-[#25170f]">
+    <main className="min-h-screen bg-[#fffaf3] pb-24 text-[#25170f] lg:pb-0">
       <div className="mx-auto w-full max-w-5xl px-4 py-4 sm:py-8">
         <header className="flex flex-col gap-3 rounded-xl border border-[#eadcc9] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
@@ -380,6 +380,34 @@ export function PublicQuoteView({
           </div>
         </div>
       </div>
+
+      {isDecidable && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#eadcc9] bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(37,23,15,0.12)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-5xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#6f5a49]">
+                Total da proposta
+              </div>
+              <div className="truncate text-lg font-black text-[#db5b18]">
+                {formatBRL(quote.total_cents / 100)}
+              </div>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="h-11 shrink-0 border-[#eadcc9] px-3"
+            >
+              <a href="#decisao">Ajustar</a>
+            </Button>
+            <Button
+              asChild
+              className="h-11 shrink-0 bg-green-600 px-4 font-bold text-white hover:bg-green-700"
+            >
+              <a href="#decisao">Aprovar</a>
+            </Button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
