@@ -6,6 +6,7 @@ import {
   ExternalLink,
   QrCode,
 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import type { BillingCharge } from "@/lib/queries/projects";
@@ -185,9 +186,21 @@ function ChargePanel({
 
       {charge.pix_qr_code ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
-          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <QrCode className="h-3.5 w-3.5" />
-            Pix copia e cola
+          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <QrCode className="h-3.5 w-3.5" />
+              Pix copia e cola
+            </div>
+            <CopyButton
+              text={charge.pix_qr_code}
+              label="Copiar Pix"
+              copiedLabel="Pix copiado"
+              successTitle="Pix copiado"
+              successDescription="Envie esse código ao cliente ou cole no WhatsApp."
+              size="sm"
+              variant="outline"
+              className="h-11 w-full sm:h-9 sm:w-auto"
+            />
           </div>
           <p className="max-h-20 overflow-hidden break-all font-mono text-[11px] leading-5">
             {charge.pix_qr_code}
@@ -203,7 +216,12 @@ function ChargePanel({
           />
         ) : null}
         {charge.invoice_url ? (
-          <Button asChild size="sm" variant="outline">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          >
             <a
               href={charge.invoice_url}
               target="_blank"

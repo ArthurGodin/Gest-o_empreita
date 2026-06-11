@@ -10,6 +10,7 @@ import {
   Loader2,
   WalletCards,
 } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,7 +56,7 @@ export function PublicBillingView({
               Pagamento da obra
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Acompanhe entrada, saldo e comprovacao de pagamento pelo Asaas.
+              Acompanhe entrada, saldo e comprovação de pagamento pelo Asaas.
             </p>
           </div>
         </div>
@@ -196,15 +197,27 @@ function PublicChargeCard({
         ) : null}
         {waitingDelivery ? (
           <p className="rounded-md bg-muted/30 p-2 text-xs text-muted-foreground">
-            Este saldo sera liberado depois da confirmacao da entrega.
+            Este saldo será liberado depois da confirmação da entrega.
           </p>
         ) : null}
       </div>
 
       {charge.pix_qr_code && !paid ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
-          <div className="mb-2 text-xs font-medium text-muted-foreground">
-            Pix copia e cola
+          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs font-medium text-muted-foreground">
+              Pix copia e cola
+            </div>
+            <CopyButton
+              text={charge.pix_qr_code}
+              label="Copiar Pix"
+              copiedLabel="Pix copiado"
+              successTitle="Pix copiado"
+              successDescription="Cole este código no aplicativo do seu banco."
+              size="sm"
+              variant="outline"
+              className="h-11 w-full sm:h-9 sm:w-auto"
+            />
           </div>
           <p className="max-h-20 overflow-hidden break-all font-mono text-[11px] leading-5">
             {charge.pix_qr_code}
@@ -213,7 +226,7 @@ function PublicChargeCard({
       ) : null}
 
       {charge.invoice_url && !paid ? (
-        <Button asChild className="mt-4 w-full">
+        <Button asChild className="mt-4 h-11 w-full">
           <a href={charge.invoice_url} target="_blank" rel="noopener noreferrer">
             Pagar agora
             <ExternalLink className="h-4 w-4" />

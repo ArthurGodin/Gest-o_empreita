@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { generateChargePixAction } from "./actions";
 
 interface GenerateChargeButtonProps {
@@ -27,6 +28,11 @@ export function GenerateChargeButton({
         setError(result.error);
         return;
       }
+      toast({
+        title: "Pix gerado",
+        description:
+          "A cobrança foi atualizada. Agora você pode copiar o Pix ou abrir o link do Asaas.",
+      });
       router.refresh();
     });
   }
