@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { rankCatalogSuggestions } from "@/lib/catalog-ranking";
 import { createClient } from "@/lib/supabase/server";
 
 export interface CatalogItem {
@@ -58,14 +59,29 @@ export async function suggestCatalogItems(
   if (q.length < 2) return [];
 
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("catalog_items")
-    .select("*")
-    .ilike("description", `%${q}%`)
-    .order("usage_count", { ascending: false })
-    .order("last_used_at", { ascending: false, nullsFirst: false })
-    .limit(limit);
+  const [prefix, substring] = await Promise.all([
+    supabase
+      .from("catalog_items")
+      .select("*")
+      .ilike("description", `${q}%`)
+      .order("usage_count", { ascending: false })
+      .order("last_used_at", { ascending: false, nullsFirst: false })
+      .limit(limit),
+    supabase
+      .from("catalog_items")
+      .select("*")
+      .ilike("description", `%${q}%`)
+      .order("usage_count", { ascending: false })
+      .order("last_used_at", { ascending: false, nullsFirst: false })
+      .limit(limit),
+  ]);
 
-  if (error) throw error;
-  return (data ?? []) as unknown as CatalogItem[];
+  if (prefix.error) throw prefix.error;
+  if (substring.error) throw substring.error;
+
+  return rankCatalogSuggestions(
+    (prefix.data ?? []) as unknown as CatalogItem[],
+    (substring.data ?? []) as unknown as CatalogItem[],
+    limit,
+  );
 }
