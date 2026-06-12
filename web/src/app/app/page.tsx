@@ -8,7 +8,9 @@ import {
   FileText,
   HardHat,
   Plus,
+  Rocket,
   Send,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import {
@@ -280,55 +282,96 @@ interface FirstMoneyStep {
 function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
   const doneCount = steps.filter((step) => step.done).length;
   const nextStep = steps.find((step) => !step.done) ?? steps.at(-1);
+  const progressPct = Math.round((doneCount / steps.length) * 100);
 
   if (!nextStep) return null;
 
   return (
-    <section className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-base font-semibold">Seu primeiro dinheiro no app</p>
-            <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-              {doneCount}/{steps.length} passos
+    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <Rocket className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-base font-semibold">
+                    Roteiro para receber a primeira entrada
+                  </p>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Faça só o que aproxima o cliente da aprovação: cadastro,
+                    proposta, link, aceite e Pix da entrada.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <span className="w-fit rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+              {doneCount}/{steps.length} concluído
             </span>
           </div>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Siga o caminho mais curto: cliente, orçamento, link no WhatsApp,
-            aprovação e cobrança da entrada.
-          </p>
-        </div>
-        <Button asChild className="w-full shrink-0 lg:w-auto">
-          <Link href={nextStep.href}>{nextStep.action}</Link>
-        </Button>
-      </div>
 
-      <div className="mt-4 grid gap-2 md:grid-cols-5">
-        {steps.map((step) => (
-          <Link
-            key={step.title}
-            href={step.href}
-            className={`rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
-              step.done ? "bg-primary/5" : "bg-background"
-            }`}
-          >
-            <span className="flex items-start gap-2">
-              {step.done ? (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-              ) : (
-                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              )}
-              <span className="min-w-0">
-                <span className="block text-sm font-medium leading-5">
-                  {step.title}
+          <div className="mt-4 h-2 rounded-full bg-muted">
+            <div
+              className="h-2 rounded-full bg-primary transition-all"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-2 md:grid-cols-5">
+            {steps.map((step, index) => (
+              <Link
+                key={step.title}
+                href={step.href}
+                className={`rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
+                  step.done ? "bg-primary/5" : "bg-background"
+                }`}
+              >
+                <span className="flex items-start gap-2">
+                  {step.done ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  )}
+                  <span className="min-w-0">
+                    <span className="block text-[11px] font-semibold uppercase leading-4 text-muted-foreground">
+                      Passo {index + 1}
+                    </span>
+                    <span className="block text-sm font-medium leading-5">
+                      {step.title}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {step.detail}
+                    </span>
+                  </span>
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                  {step.detail}
-                </span>
-              </span>
-            </span>
-          </Link>
-        ))}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <aside className="border-t bg-[#fff7ed] p-4 sm:p-5 lg:border-l lg:border-t-0">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
+            <div>
+              <p className="text-sm font-semibold">Próxima melhor ação</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                {nextStep.title}: {nextStep.detail}
+              </p>
+            </div>
+          </div>
+          <Button asChild className="mt-4 w-full">
+            <Link href={nextStep.href}>
+              {nextStep.action}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            Quando esses passos ficam verdes, o app já provou valor: proposta
+            enviada, cliente decidindo e dinheiro controlado.
+          </p>
+        </aside>
       </div>
     </section>
   );
@@ -515,14 +558,14 @@ function buildFirstMoneySteps({
   return [
     {
       title: "Cliente",
-      detail: "Tenha quem receberá a proposta.",
+      detail: "Quem vai receber a proposta.",
       href: customersCount > 0 ? "/app/clientes" : "/app/clientes/novo",
       action: "Cadastrar cliente",
       done: customersCount > 0,
     },
     {
       title: "Orçamento",
-      detail: "Monte a proposta com valor claro.",
+      detail: "Valor, itens e prazo sem dúvida.",
       href: firstQuote ? `/app/orcamentos/${firstQuote.id}` : "/app/orcamentos/novo",
       action: firstDraft
         ? "Finalizar orçamento"
@@ -533,7 +576,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Link",
-      detail: "Envie para o cliente aprovar.",
+      detail: "WhatsApp pronto para decisão.",
       href: firstShared
         ? `/app/orcamentos/${firstShared.id}`
         : firstQuote
@@ -544,7 +587,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Aprovação",
-      detail: "Cliente aprovou sem ligação.",
+      detail: "Aceite registrado e rastreável.",
       href: firstApproved
         ? `/app/orcamentos/${firstApproved.id}`
         : firstShared
@@ -555,7 +598,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Entrada",
-      detail: "Vire obra e cobre o Pix.",
+      detail: "Obra aberta com cobrança Pix.",
       href: firstProject
         ? `/app/obras/${firstProject.id}`
         : firstApproved

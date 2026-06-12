@@ -33,6 +33,10 @@ O risco principal deixou de ser "não existe produto" e virou:
 - não ter processo de piloto com clientes reais;
 - acumular funcionalidades antes de validar disposição de pagamento.
 
+O checklist operacional para colocar Asaas, Resend e Analytics em produção sem
+gasto antecipado está em
+[`docs/checklist-producao-asaas-resend-analytics.md`](./checklist-producao-asaas-resend-analytics.md).
+
 ## Prioridade Máxima
 
 ### 1. Produto vendável sem falsa promessa

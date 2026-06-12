@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Building2, CheckCircle2, HardHat, MapPin, Phone } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  HardHat,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -29,65 +38,88 @@ export function OnboardingForm() {
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
-    <main className="min-h-svh bg-[#f8f4ee]">
-      <div className="mx-auto grid min-h-svh w-full max-w-6xl gap-6 px-4 py-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-8 lg:px-8 lg:py-6">
+    <main className="relative min-h-svh overflow-hidden bg-[#f6f8fb] text-[#17202a]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(31,41,55,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(31,41,55,0.045)_1px,transparent_1px)] bg-[length:32px_32px]"
+      />
+      <div className="relative mx-auto grid min-h-svh w-full max-w-6xl gap-6 px-4 py-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-8 lg:px-8 lg:py-6">
         <section className="space-y-6 lg:space-y-8">
-          <div className="flex items-center gap-2 text-lg font-semibold text-[#20160f]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#ff6a00] text-white shadow-sm">
+          <div className="flex items-center gap-2 text-lg font-semibold text-[#17202a]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#df6b21] text-white shadow-sm">
               <HardHat className="h-5 w-5" />
             </div>
             Gestão Empreita
           </div>
 
           <div className="max-w-xl space-y-4">
-            <p className="w-fit rounded-full border border-[#e7d8c8] bg-white/70 px-3 py-1 text-xs font-medium text-[#7a4a23]">
-              Setup rápido para vender pelo WhatsApp
+            <p className="inline-flex items-center gap-2 rounded-md border border-[#223044] bg-[#17202a] px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Primeira proposta com cara de empresa grande
             </p>
-            <h1 className="text-3xl font-semibold leading-tight tracking-normal text-[#20160f] sm:text-4xl lg:text-5xl">
-              Deixe sua empresa pronta para enviar o primeiro orçamento bonito.
+            <h1 className="text-3xl font-semibold leading-tight tracking-normal text-[#17202a] sm:text-4xl lg:text-5xl">
+              Deixe o painel pronto para vender, aprovar e cobrar sem improviso.
             </h1>
-            <p className="max-w-lg text-base leading-7 text-[#6f5a49]">
-              Agora só precisamos dos dados que aparecem na proposta. Depois você
-              cadastra cliente, monta orçamento e manda o link de aprovação.
+            <p className="max-w-lg text-base leading-7 text-[#52606f]">
+              Esses dados aparecem no orçamento, no link público e no
+              acompanhamento da obra. Preencha o essencial agora; o resto entra
+              quando ajudar a fechar a primeira venda.
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
             {[
               {
-                title: "1. Empresa",
-                detail: "Nome e contato no orçamento.",
+                title: "Marca",
+                detail: "Nome e contato certos no orçamento.",
               },
               {
-                title: "2. Cliente",
-                detail: "Cadastro rápido antes da proposta.",
+                title: "Confiança",
+                detail: "Cliente decide em um link limpo.",
               },
               {
-                title: "3. Link",
-                detail: "WhatsApp com aprovação digital.",
+                title: "Dinheiro",
+                detail: "Aprovou, virou obra e entrada Pix.",
               },
             ].map((step) => (
               <div
                 key={step.title}
-                className="rounded-lg border border-[#eadbcc] bg-white/75 p-3 shadow-sm"
+                className="rounded-lg border border-[#d8e0ea] bg-white p-3 shadow-sm"
               >
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#20160f]">
-                  <CheckCircle2 className="h-4 w-4 text-[#ff6a00]" />
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#17202a]">
+                  <CheckCircle2 className="h-4 w-4 text-[#218653]" />
                   {step.title}
                 </div>
-                <p className="mt-1 text-xs leading-5 text-[#6f5a49]">
+                <p className="mt-1 text-xs leading-5 text-[#52606f]">
                   {step.detail}
                 </p>
               </div>
             ))}
           </div>
+
+          <div className="max-w-xl rounded-lg border border-[#cfe8d7] bg-[#f0fbf4] p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#218653]" />
+              <div>
+                <p className="text-sm font-semibold text-[#17202a]">
+                  Onboarding curto, valor rápido.
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[#486354]">
+                  Logo, CNPJ, endereço completo e modelos de etapa podem ser
+                  refinados depois. Agora o objetivo é chegar rápido ao primeiro
+                  orçamento vendável.
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <Card className="w-full rounded-lg border-[#e5d7c7] bg-white shadow-xl shadow-[#8a4a1f]/10">
+        <Card className="w-full rounded-lg border-[#d8e0ea] bg-white shadow-xl shadow-slate-900/10">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl">Dados da empresa</CardTitle>
+            <CardTitle className="text-2xl">Identidade de venda</CardTitle>
             <CardDescription>
-              Preencha o essencial. Tudo pode ser ajustado depois em Configurações.
+              O mínimo para o cliente reconhecer quem está enviando a proposta.
+              Você pode melhorar tudo depois em Configurações.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,7 +216,14 @@ export function OnboardingForm() {
               )}
 
               <Button type="submit" size="lg" className="w-full" disabled={pending}>
-                {pending ? "Criando empresa..." : "Entrar no painel"}
+                {pending ? (
+                  "Preparando painel..."
+                ) : (
+                  <>
+                    Entrar no painel
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>
