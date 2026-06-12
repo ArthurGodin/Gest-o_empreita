@@ -8,13 +8,15 @@ import {
   Clock3,
   ExternalLink,
   Loader2,
+  QrCode,
+  ShieldCheck,
   WalletCards,
 } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { formatBRL, formatDateBR } from "@/lib/utils";
+import { cn, formatBRL, formatDateBR } from "@/lib/utils";
 import type { ProjectStatus } from "@/lib/supabase/types";
 import type { PublicBillingCharge } from "./andamento-view";
 import { approveDeliveryAction } from "./actions";
@@ -43,6 +45,29 @@ export function PublicBillingView({
     projectStatus === "completed" &&
     !deliveryApprovedAt &&
     saldo?.status === "draft";
+  const totalCents = ordered.reduce(
+    (sum, charge) => sum + charge.amount_cents,
+    0,
+  );
+  const paidCents = ordered
+    .filter((charge) => PAID.has(charge.status))
+    .reduce((sum, charge) => sum + charge.amount_cents, 0);
+  const pendingCents = ordered
+    .filter(
+      (charge) => !PAID.has(charge.status) && charge.status !== "cancelled",
+    )
+    .reduce((sum, charge) => sum + charge.amount_cents, 0);
+  const progressPct =
+    totalCents > 0
+      ? Math.min(100, Math.round((paidCents / totalCents) * 100))
+      : 0;
+  const nextStep = publicNextStep({
+    ordered,
+    shouldApproveDelivery,
+    deliveryApprovedAt,
+    paidCents,
+    pendingCents,
+  });
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -51,13 +76,56 @@ export function PublicBillingView({
           <span className="rounded-md bg-primary/10 p-2 text-primary">
             <WalletCards className="h-5 w-5" />
           </span>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold tracking-tight">
               Pagamento da obra
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Acompanhe entrada, saldo e comprovação de pagamento pelo Asaas.
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              Acompanhe entrada, saldo e comprovante de pagamento em um só
+              lugar.
             </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <PublicMetric label="Pago" value={formatBRL(paidCents / 100)} />
+          <PublicMetric
+            label="Pendente"
+            value={formatBRL(pendingCents / 100)}
+          />
+          <PublicMetric label="Total" value={formatBRL(totalCents / 100)} />
+        </div>
+
+        {totalCents > 0 ? (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Pagamento confirmado</span>
+              <span className="tabular-nums">{progressPct}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div className={cn("mt-4 rounded-lg border px-4 py-3", nextStep.tone)}>
+          <div className="flex items-start gap-3">
+            {nextStep.icon === "paid" ? (
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+            ) : nextStep.icon === "warning" ? (
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+            ) : (
+              <Clock3 className="mt-0.5 h-5 w-5 shrink-0" />
+            )}
+            <div>
+              <strong className="block text-sm">{nextStep.title}</strong>
+              <p className="mt-1 text-sm leading-6 opacity-90">
+                {nextStep.description}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -67,7 +135,7 @@ export function PublicBillingView({
       ) : null}
 
       {ordered.length === 0 ? (
-        <section className="rounded-xl border border-dashed bg-card p-5 text-sm text-muted-foreground">
+        <section className="rounded-xl border border-dashed bg-card p-5 text-sm leading-6 text-muted-foreground">
           A cobrança ainda não foi liberada pela empreiteira.
         </section>
       ) : (
@@ -81,6 +149,15 @@ export function PublicBillingView({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function PublicMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border bg-background p-3">
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
 }
@@ -116,7 +193,8 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
           <div>
             <h3 className="font-semibold">Confirme a entrega da obra</h3>
             <p className="mt-1 text-sm opacity-90">
-              Confirmando a entrega, o saldo fica liberado para pagamento via Pix.
+              Confirmando a entrega, o saldo fica liberado para pagamento via
+              Pix.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -134,7 +212,7 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
               type="button"
               onClick={submit}
               disabled={pending || done}
-              className="self-end"
+              className="h-11 self-end"
             >
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {done ? "Entrega confirmada" : "Confirmar entrega"}
@@ -158,15 +236,16 @@ function PublicChargeCard({
   const title = charge.kind === "entrada" ? "Entrada" : "Saldo";
   const waitingDelivery =
     charge.kind === "saldo" && charge.status === "draft" && !deliveryApprovedAt;
+  const instruction = publicChargeInstruction(charge, deliveryApprovedAt);
 
   return (
     <section className="rounded-xl border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs font-semibold uppercase text-muted-foreground">
             {title}
           </div>
-          <div className="mt-1 text-2xl font-bold">
+          <div className="mt-1 text-2xl font-bold tabular-nums">
             {formatBRL(charge.amount_cents / 100)}
           </div>
         </div>
@@ -180,6 +259,11 @@ function PublicChargeCard({
           )}
           {statusLabel(charge.status)}
         </span>
+      </div>
+
+      <div className="mt-4 rounded-md bg-muted/30 p-3 text-sm leading-6 text-muted-foreground">
+        <strong className="block text-foreground">O que fazer</strong>
+        {instruction}
       </div>
 
       <div className="mt-4 space-y-2 text-sm">
@@ -196,7 +280,8 @@ function PublicChargeCard({
           </div>
         ) : null}
         {waitingDelivery ? (
-          <p className="rounded-md bg-muted/30 p-2 text-xs text-muted-foreground">
+          <p className="flex items-start gap-2 rounded-md border bg-muted/20 p-2 text-xs leading-5 text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             Este saldo será liberado depois da confirmação da entrega.
           </p>
         ) : null}
@@ -205,7 +290,8 @@ function PublicChargeCard({
       {charge.pix_qr_code && !paid ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
           <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <QrCode className="h-3.5 w-3.5" />
               Pix copia e cola
             </div>
             <CopyButton
@@ -235,6 +321,117 @@ function PublicChargeCard({
       ) : null}
     </section>
   );
+}
+
+function publicNextStep({
+  ordered,
+  shouldApproveDelivery,
+  deliveryApprovedAt,
+  paidCents,
+  pendingCents,
+}: {
+  ordered: PublicBillingCharge[];
+  shouldApproveDelivery: boolean;
+  deliveryApprovedAt: string | null;
+  paidCents: number;
+  pendingCents: number;
+}) {
+  const overdue = ordered.find((charge) => charge.status === "overdue");
+  const pending = ordered.find((charge) => charge.status === "pending");
+  const saldo = ordered.find((charge) => charge.kind === "saldo");
+
+  if (ordered.length === 0) {
+    return {
+      icon: "clock" as const,
+      title: "Cobrança ainda não liberada",
+      description:
+        "A empreiteira vai liberar a cobrança quando a próxima etapa financeira estiver pronta.",
+      tone: "border-border bg-muted/20 text-foreground",
+    };
+  }
+
+  if (pendingCents === 0 && paidCents > 0) {
+    return {
+      icon: "paid" as const,
+      title: "Pagamento completo",
+      description:
+        "As parcelas desta obra já aparecem como pagas. Guarde este link para acompanhar o andamento.",
+      tone: "border-green-200 bg-green-50 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100",
+    };
+  }
+
+  if (overdue) {
+    return {
+      icon: "warning" as const,
+      title: "Existe uma cobrança vencida",
+      description:
+        "Abra o link de pagamento ou fale com a empreiteira para regularizar a parcela.",
+      tone: "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100",
+    };
+  }
+
+  if (shouldApproveDelivery) {
+    return {
+      icon: "paid" as const,
+      title: "Confirme a entrega para liberar o saldo",
+      description:
+        "Depois da confirmação, o Pix do saldo pode ser emitido para fechar o pagamento da obra.",
+      tone: "border-green-200 bg-green-50 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100",
+    };
+  }
+
+  if (pending) {
+    return {
+      icon: "clock" as const,
+      title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
+      description:
+        "Use o botão de pagamento ou copie o Pix abaixo. A baixa aparece automaticamente quando o Asaas confirmar.",
+      tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+    };
+  }
+
+  if (saldo?.status === "draft" && !deliveryApprovedAt) {
+    return {
+      icon: "clock" as const,
+      title: "Saldo protegido até a entrega",
+      description:
+        "O saldo final será liberado quando a obra for entregue ou quando a empreiteira liberar manualmente.",
+      tone: "border-border bg-muted/20 text-foreground",
+    };
+  }
+
+  return {
+    icon: "clock" as const,
+    title: "Acompanhe o próximo pagamento",
+    description:
+      "Quando uma nova cobrança for liberada, o botão de pagamento aparecerá aqui.",
+    tone: "border-border bg-muted/20 text-foreground",
+  };
+}
+
+function publicChargeInstruction(
+  charge: PublicBillingCharge,
+  deliveryApprovedAt: string | null,
+) {
+  if (charge.status === "received" || charge.status === "confirmed") {
+    return "Pagamento confirmado. Nenhuma ação é necessária nesta parcela.";
+  }
+  if (charge.status === "overdue") {
+    return "Esta parcela venceu. Abra a cobrança ou fale com a empreiteira para regularizar.";
+  }
+  if (charge.status === "pending") {
+    return "Pague pelo botão abaixo ou copie o Pix para o aplicativo do seu banco.";
+  }
+  if (charge.status === "cancelled") {
+    return "Esta cobrança foi cancelada pela empreiteira.";
+  }
+  if (charge.kind === "saldo" && !deliveryApprovedAt) {
+    return "Saldo final aguardando liberação. Ele aparece para pagamento quando a entrega for confirmada.";
+  }
+  if (charge.kind === "saldo") {
+    return "Saldo pronto para pagamento assim que o Pix for gerado pela empreiteira.";
+  }
+  return "Entrada aguardando emissão do Pix pela empreiteira.";
 }
 
 function statusLabel(status: PublicBillingCharge["status"]) {

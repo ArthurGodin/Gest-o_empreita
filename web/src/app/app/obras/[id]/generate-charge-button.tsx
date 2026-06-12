@@ -3,18 +3,24 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, QrCode } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { generateChargePixAction } from "./actions";
 
 interface GenerateChargeButtonProps {
   chargeId: string;
   label?: string;
+  size?: ButtonProps["size"];
+  variant?: ButtonProps["variant"];
+  className?: string;
 }
 
 export function GenerateChargeButton({
   chargeId,
   label = "Gerar Pix",
+  size = "sm",
+  variant = "outline",
+  className,
 }: GenerateChargeButtonProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -46,8 +52,9 @@ export function GenerateChargeButton({
     <div className="space-y-1">
       <Button
         type="button"
-        size="sm"
-        variant="outline"
+        size={size}
+        variant={variant}
+        className={className}
         onClick={generate}
         disabled={pending}
       >
