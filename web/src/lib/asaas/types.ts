@@ -38,6 +38,7 @@ export interface AsaasWebhookPayment {
   invoiceUrl?: string | null;
   paymentDate?: string | null;
   clientPaymentDate?: string | null;
+  externalReference?: string | null;
 }
 
 export interface AsaasWebhookPayload {

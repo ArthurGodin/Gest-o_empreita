@@ -1,20 +1,16 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import {
+  buildBillingChargeWebhookPatch,
+  chargeStatusForAsaasEvent,
+  safePaymentExternalReference,
+} from "@/lib/asaas/webhook-events";
 import { validateAsaasWebhookToken } from "@/lib/asaas/webhook-verify";
 import type { AsaasWebhookPayload } from "@/lib/asaas/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ChargeStatus, Json } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
-
-const EVENT_STATUS: Partial<Record<string, ChargeStatus>> = {
-  PAYMENT_RECEIVED: "received",
-  PAYMENT_CONFIRMED: "confirmed",
-  PAYMENT_OVERDUE: "overdue",
-  PAYMENT_DELETED: "cancelled",
-};
-
-const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 
 export async function POST(request: Request) {
   if (!validateAsaasWebhookToken(request.headers.get("asaas-access-token"))) {
@@ -57,55 +53,65 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, duplicate: true });
   }
 
-  const localStatus = EVENT_STATUS[eventType] ?? null;
+  const localStatus = chargeStatusForAsaasEvent(eventType);
   if (!localStatus || !asaasPaymentId) {
     await markWebhookEventProcessed(admin, eventRow.id);
     return NextResponse.json({ ok: true, ignored: true });
   }
 
-  const { data: charge, error: chargeError } = await admin
-    .from("billing_charges")
-    .select("id, project_id")
-    .eq("asaas_payment_id", asaasPaymentId)
-    .maybeSingle();
+  const chargeResult = await findChargeForWebhook(
+    admin,
+    asaasPaymentId,
+    safePaymentExternalReference(payload),
+  );
 
-  if (chargeError) {
-    await markWebhookEventFailed(admin, eventRow.id, chargeError.message);
+  if (!chargeResult.ok) {
+    await markWebhookEventFailed(admin, eventRow.id, chargeResult.error);
     return NextResponse.json(
       { ok: false, error: "charge_lookup_failed" },
       { status: 500 },
     );
   }
 
+  const charge = chargeResult.charge;
   if (!charge) {
     await markWebhookEventProcessed(admin, eventRow.id);
     return NextResponse.json({ ok: true, unknown_payment: true });
   }
 
+  const statusPatch = buildBillingChargeWebhookPatch({
+    eventType,
+    payload,
+    current: {
+      status: charge.status,
+      paid_at: charge.paid_at,
+    },
+  });
+
   const patch: {
-    status: ChargeStatus;
+    status?: ChargeStatus;
     paid_at?: string;
     invoice_url?: string | null;
-  } = { status: localStatus };
+    asaas_payment_id?: string;
+  } = statusPatch ? { ...statusPatch } : {};
 
-  if (PAID_EVENTS.has(eventType)) {
-    patch.paid_at = paymentTimestamp(payload);
-  }
-  if (payload.payment?.invoiceUrl !== undefined) {
-    patch.invoice_url = payload.payment.invoiceUrl;
+  if (!charge.asaas_payment_id) {
+    patch.asaas_payment_id = asaasPaymentId;
   }
 
-  const { error: updateError } = await admin
-    .from("billing_charges")
-    .update(patch)
-    .eq("id", charge.id);
+  if (Object.keys(patch).length > 0) {
+    const { error: updateError } = await admin
+      .from("billing_charges")
+      .update(patch)
+      .eq("id", charge.id);
 
-  if (updateError) {
-    await markWebhookEventFailed(admin, eventRow.id, updateError.message);
-    return NextResponse.json(
-      { ok: false, error: "charge_update_failed" },
-      { status: 500 },
-    );
+    if (updateError) {
+      await markWebhookEventFailed(admin, eventRow.id, updateError.message);
+      return NextResponse.json(
+        { ok: false, error: "charge_update_failed" },
+        { status: 500 },
+      );
+    }
   }
 
   await markWebhookEventProcessed(admin, eventRow.id);
@@ -116,6 +122,56 @@ export async function POST(request: Request) {
 }
 
 type AdminClient = ReturnType<typeof createAdminClient>;
+
+interface WebhookCharge {
+  id: string;
+  project_id: string;
+  status: ChargeStatus;
+  paid_at: string | null;
+  asaas_payment_id: string | null;
+}
+
+async function findChargeForWebhook(
+  admin: AdminClient,
+  asaasPaymentId: string,
+  externalReference: string | null,
+): Promise<
+  | { ok: true; charge: WebhookCharge | null }
+  | { ok: false; error: string }
+> {
+  const select = "id, project_id, status, paid_at, asaas_payment_id";
+  const { data: byPaymentId, error: paymentError } = await admin
+    .from("billing_charges")
+    .select(select)
+    .eq("asaas_payment_id", asaasPaymentId)
+    .maybeSingle();
+
+  if (paymentError) return { ok: false, error: paymentError.message };
+  if (byPaymentId) {
+    return { ok: true, charge: byPaymentId as WebhookCharge };
+  }
+
+  if (!externalReference) return { ok: true, charge: null };
+
+  const { data: byExternalRef, error: externalRefError } = await admin
+    .from("billing_charges")
+    .select(select)
+    .eq("id", externalReference)
+    .maybeSingle();
+
+  if (externalRefError) {
+    return { ok: false, error: externalRefError.message };
+  }
+
+  if (
+    byExternalRef?.asaas_payment_id &&
+    byExternalRef.asaas_payment_id !== asaasPaymentId
+  ) {
+    return { ok: true, charge: null };
+  }
+
+  return { ok: true, charge: (byExternalRef as WebhookCharge | null) ?? null };
+}
 
 async function registerWebhookEvent(
   admin: AdminClient,
@@ -186,10 +242,3 @@ async function markWebhookEventFailed(
     .eq("id", id);
 }
 
-function paymentTimestamp(payload: AsaasWebhookPayload): string {
-  const raw =
-    payload.payment?.clientPaymentDate ?? payload.payment?.paymentDate ?? null;
-  if (!raw) return new Date().toISOString();
-  if (raw.includes("T")) return raw;
-  return `${raw}T00:00:00-03:00`;
-}
