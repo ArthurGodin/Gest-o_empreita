@@ -192,8 +192,26 @@ export function PublicQuoteView({
                             ? "(falta 1 dia)"
                             : `(faltam ${daysUntilExpiry} dias)`}
                         </>
-                      )}
+                    )}
                   </span>
+                </div>
+              )}
+
+              {isDecidable && (
+                <div className="mt-4 hidden gap-2 lg:grid lg:grid-cols-2">
+                  <Button
+                    asChild
+                    className="h-11 bg-green-600 font-bold text-white hover:bg-green-700"
+                  >
+                    <a href="#decisao">Aprovar agora</a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 border-[#eadcc9] bg-white"
+                  >
+                    <a href="#decisao">Pedir ajuste</a>
+                  </Button>
                 </div>
               )}
             </div>

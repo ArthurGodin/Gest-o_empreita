@@ -332,27 +332,77 @@ export function QuoteEditor({
           {error}
         </div>
       )}
-      <div className="sticky bottom-0 -mx-4 flex flex-col-reverse items-stretch gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:flex-row sm:items-center sm:justify-end md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-        <Button type="button" variant="outline" onClick={onSave} disabled={pending}>
-          <Save className="h-4 w-4" />
-          {pending ? "Salvando..." : "Salvar rascunho"}
-        </Button>
-        <SendQuoteButton
-          quoteId={quote.id}
-          quoteNumber={quote.number}
-          quoteTitle={title}
-          quoteTotalCents={total}
-          customerName={selectedCustomer?.name}
-          customerPhone={selectedCustomer?.phone}
-          onBeforeSend={() => doSave({ quiet: true })}
-          disabled={pending}
-          label={
-            revisionSource
-              ? "Salvar e enviar revisão no WhatsApp"
-              : "Salvar e enviar no WhatsApp"
-          }
-          messageMode={revisionSource ? "revision" : "quote"}
-        />
+      <div className="sticky bottom-16 z-30 -mx-4 border-t bg-background/95 px-4 py-3 shadow-[0_-16px_36px_rgba(15,23,42,0.10)] backdrop-blur md:bottom-4 md:mx-0 md:rounded-xl md:border md:px-4 md:shadow-lg">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-4 rounded-lg bg-muted/50 px-3 py-2 lg:bg-transparent lg:p-0">
+            <div className="min-w-0">
+              <div className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {revisionSource ? "Revisão pronta para reenvio" : "Próximo passo"}
+              </div>
+              <div className="truncate text-sm font-medium text-foreground">
+                <span className="sm:hidden">WhatsApp pronto</span>
+                <span className="hidden sm:inline">
+                  Salve e abra o WhatsApp com a mensagem pronta.
+                </span>
+              </div>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Total
+              </div>
+              <div className="text-lg font-bold text-primary tabular-nums">
+                {formatBRL(total / 100)}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[0.8fr_1.2fr] items-center gap-2 sm:flex sm:flex-row lg:shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onSave}
+              disabled={pending}
+              className="h-11 px-3"
+            >
+              <Save className="h-4 w-4" />
+              {pending ? (
+                "Salvando..."
+              ) : (
+                <>
+                  <span className="sm:hidden">Salvar</span>
+                  <span className="hidden sm:inline">Salvar rascunho</span>
+                </>
+              )}
+            </Button>
+            <SendQuoteButton
+              quoteId={quote.id}
+              quoteNumber={quote.number}
+              quoteTitle={title}
+              quoteTotalCents={total}
+              customerName={selectedCustomer?.name}
+              customerPhone={selectedCustomer?.phone}
+              onBeforeSend={() => doSave({ quiet: true })}
+              disabled={pending}
+              label={
+                revisionSource ? (
+                  <>
+                    <span className="sm:hidden">Enviar revisão</span>
+                    <span className="hidden sm:inline">Salvar e enviar revisão</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="sm:hidden">Enviar WhatsApp</span>
+                    <span className="hidden sm:inline">
+                      Salvar e enviar no WhatsApp
+                    </span>
+                  </>
+                )
+              }
+              messageMode={revisionSource ? "revision" : "quote"}
+              className="h-11 w-full px-3 sm:w-auto sm:min-w-[240px]"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { type ReactNode, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { sendQuoteAction } from "../actions";
@@ -33,8 +34,9 @@ interface SendQuoteButtonProps {
    */
   onBeforeSend?: () => Promise<boolean>;
   /** Label customizável, como "Salvar e enviar pro cliente" no editor. */
-  label?: string;
+  label?: ReactNode;
   messageMode?: "quote" | "revision";
+  className?: string;
 }
 
 export function SendQuoteButton({
@@ -48,6 +50,7 @@ export function SendQuoteButton({
   onBeforeSend,
   label = "Enviar no WhatsApp",
   messageMode = "quote",
+  className,
 }: SendQuoteButtonProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,7 +186,10 @@ export function SendQuoteButton({
         type="button"
         onClick={onSend}
         disabled={pending || disabled}
-        className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+        className={cn(
+          "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600",
+          className,
+        )}
       >
         <Send className="h-4 w-4" />
         {pending ? "Enviando..." : label}
