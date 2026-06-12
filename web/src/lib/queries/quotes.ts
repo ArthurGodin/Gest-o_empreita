@@ -41,6 +41,7 @@ export interface Quote {
   notes: string | null;
   pdf_storage_path: string | null;
   notification_sent_at: string | null;
+  whatsapp_sent_at: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;

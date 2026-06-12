@@ -381,6 +381,7 @@ export function QuoteEditor({
               quoteTotalCents={total}
               customerName={selectedCustomer?.name}
               customerPhone={selectedCustomer?.phone}
+              whatsappSentAt={quote.whatsapp_sent_at}
               onBeforeSend={() => doSave({ quiet: true })}
               disabled={pending}
               label={

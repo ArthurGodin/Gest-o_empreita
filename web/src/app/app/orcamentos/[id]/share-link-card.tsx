@@ -4,10 +4,12 @@ import { useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Check,
+  Clock3,
   Copy,
   Link as LinkIcon,
   MessageCircle,
   RefreshCw,
+  Send,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,9 +22,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { revokeShareTokenAction } from "../actions";
+import {
+  markQuoteWhatsappSentAction,
+  revokeShareTokenAction,
+} from "../actions";
 import { env } from "@/lib/env";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
+import { formatDateTimeBR } from "@/lib/utils";
 import {
   buildQuoteWhatsappMessage,
   type QuoteShareMessageMode,
@@ -37,6 +43,7 @@ interface ShareLinkCardProps {
   quoteTotalCents?: number | null;
   customerName?: string | null;
   customerPhone?: string | null;
+  whatsappSentAt?: string | null;
   messageMode?: QuoteShareMessageMode;
 }
 
@@ -60,6 +67,7 @@ export function ShareLinkCard({
   quoteTotalCents,
   customerName,
   customerPhone,
+  whatsappSentAt,
   messageMode = "quote",
 }: ShareLinkCardProps) {
   const router = useRouter();
@@ -68,6 +76,7 @@ export function ShareLinkCard({
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState(false);
+  const [lastSentAt, setLastSentAt] = useState(whatsappSentAt);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,6 +108,31 @@ export function ShareLinkCard({
     : null;
   const directWhatsapp = Boolean(whatsappLink(customerPhone));
   const phoneLabel = formatPhone(customerPhone);
+  const lastSentLabel = lastSentAt ? formatDateTimeBR(lastSentAt) : null;
+
+  function onOpenWhatsapp() {
+    if (!whatsappUrl) return;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+    startTransition(async () => {
+      const result = await markQuoteWhatsappSentAction(quoteId);
+      if (!result.ok) {
+        toast({
+          variant: "destructive",
+          title: "Envio aberto, mas sem registro",
+          description: result.error,
+        });
+        return;
+      }
+      setLastSentAt(result.sent_at);
+      toast({
+        variant: "success",
+        title: "Envio registrado",
+        description: "O orçamento ficou marcado como enviado pelo WhatsApp.",
+      });
+      router.refresh();
+    });
+  }
 
   async function onCopy() {
     if (!url) return;
@@ -183,19 +217,33 @@ export function ShareLinkCard({
 
       <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
 
+      {lastSentLabel ? (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-900 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
+          <Clock3 className="h-3.5 w-3.5" />
+          Último envio pelo WhatsApp: {lastSentLabel}
+        </div>
+      ) : (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full border bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
+          <Clock3 className="h-3.5 w-3.5" />
+          Ainda sem envio registrado pelo WhatsApp
+        </div>
+      )}
+
       {whatsappUrl && whatsappMessage && (
         <div className="mt-4 space-y-3">
           <Button
-            asChild
+            type="button"
             size="lg"
+            onClick={onOpenWhatsapp}
+            disabled={pending}
             className="h-12 w-full bg-green-600 text-base hover:bg-green-700"
           >
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="h-5 w-5" />
-              {directWhatsapp && phoneLabel
+            <Send className="h-5 w-5" />
+            {pending
+              ? "Registrando..."
+              : directWhatsapp && phoneLabel
                 ? `Abrir WhatsApp de ${phoneLabel}`
                 : "Abrir WhatsApp e escolher contato"}
-            </a>
           </Button>
           <p className="text-xs text-muted-foreground">
             {directWhatsapp && phoneLabel

@@ -168,6 +168,7 @@ export function QuoteView({
           quoteTotalCents={quote.total_cents}
           customerName={quote.customer?.name}
           customerPhone={quote.customer?.phone}
+          whatsappSentAt={quote.whatsapp_sent_at}
           messageMode={messageMode}
         />
       )}

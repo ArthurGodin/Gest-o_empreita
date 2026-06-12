@@ -2,7 +2,7 @@
 
 import { type ReactNode, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, MessageCircle, Send } from "lucide-react";
+import { Check, Clock3, Copy, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -13,10 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTimeBR } from "@/lib/utils";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
-import { sendQuoteAction } from "../actions";
+import { markQuoteWhatsappSentAction, sendQuoteAction } from "../actions";
 
 interface SendQuoteButtonProps {
   quoteId: string;
@@ -26,6 +26,7 @@ interface SendQuoteButtonProps {
   customerName?: string | null;
   /** Telefone do cliente pra montar wa.me link. */
   customerPhone?: string | null;
+  whatsappSentAt?: string | null;
   /** Disabled enquanto outra ação, como salvar, está rolando. */
   disabled?: boolean;
   /**
@@ -46,6 +47,7 @@ export function SendQuoteButton({
   quoteTotalCents,
   customerName,
   customerPhone,
+  whatsappSentAt,
   disabled,
   onBeforeSend,
   label = "Enviar no WhatsApp",
@@ -62,6 +64,7 @@ export function SendQuoteButton({
   const [blockers, setBlockers] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState(false);
+  const [lastSentAt, setLastSentAt] = useState(whatsappSentAt);
 
   function onSend() {
     setError(null);
@@ -156,6 +159,30 @@ export function SendQuoteButton({
     }
   }
 
+  function onOpenWhatsapp() {
+    if (!waLink) return;
+    window.open(waLink, "_blank", "noopener,noreferrer");
+
+    startTransition(async () => {
+      const result = await markQuoteWhatsappSentAction(quoteId);
+      if (!result.ok) {
+        toast({
+          variant: "destructive",
+          title: "Envio aberto, mas sem registro",
+          description: result.error,
+        });
+        return;
+      }
+      setLastSentAt(result.sent_at);
+      toast({
+        variant: "success",
+        title: "Envio registrado",
+        description: "O orçamento ficou marcado como enviado pelo WhatsApp.",
+      });
+      router.refresh();
+    });
+  }
+
   const whatsappMessage = shareUrl
     ? buildQuoteWhatsappMessage({
         customerName,
@@ -179,6 +206,7 @@ export function SendQuoteButton({
     messageMode === "revision"
       ? "A mensagem já inclui o novo link da revisão. O orçamento original continua preservado no histórico."
       : "A mensagem já inclui o link de aprovação. Quando o cliente aprovar ou pedir ajuste, o status aparece no painel.";
+  const lastSentLabel = lastSentAt ? formatDateTimeBR(lastSentAt) : null;
 
   return (
     <>
@@ -205,19 +233,33 @@ export function SendQuoteButton({
               </DialogHeader>
 
               <div className="space-y-4">
+                {lastSentLabel ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium text-green-900 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    Último envio pelo WhatsApp: {lastSentLabel}
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 rounded-full border bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    Ainda sem envio registrado pelo WhatsApp
+                  </div>
+                )}
+
                 {waLink && whatsappMessage && (
                   <div className="space-y-3">
                     <Button
-                      asChild
+                      type="button"
                       size="lg"
+                      onClick={onOpenWhatsapp}
+                      disabled={pending}
                       className="h-12 w-full bg-green-600 text-base hover:bg-green-700"
                     >
-                      <a href={waLink} target="_blank" rel="noopener noreferrer">
-                        <MessageCircle className="h-5 w-5" />
-                        {directWhatsapp && phoneLabel
+                      <MessageCircle className="h-5 w-5" />
+                      {pending
+                        ? "Registrando..."
+                        : directWhatsapp && phoneLabel
                           ? `Abrir WhatsApp de ${phoneLabel}`
                           : "Abrir WhatsApp e escolher contato"}
-                      </a>
                     </Button>
                     <p className="text-xs text-muted-foreground">
                       {directWhatsapp && phoneLabel
