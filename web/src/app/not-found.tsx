@@ -3,7 +3,7 @@ import { HardHat, Home, LayoutDashboard, LogIn, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Pagina nao encontrada - Gestao Empreita",
+  title: "Página não encontrada — Gestão Empreita",
 };
 
 const recoveryItems = [

@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Link de orcamento indisponivel - Gestao Empreita",
+  title: "Link de orçamento indisponível — Gestão Empreita",
 };
 
 const requestNewLinkHref =

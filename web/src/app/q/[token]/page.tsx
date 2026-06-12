@@ -194,7 +194,15 @@ export async function generateMetadata({
 }) {
   const { token } = await params;
   const quote = await loadByToken(token);
-  if (!quote) return { title: "Orçamento" };
+  if (!quote) {
+    return {
+      title: "Link de orçamento indisponível — Gestão Empreita",
+      description:
+        "O orçamento pode ter sido atualizado, expirado ou substituído por um novo link.",
+      robots: { index: false, follow: false },
+    };
+  }
+
   return {
     title: `${quote.title} — ${quote.company.name}`,
     description: `Orçamento ${quote.number} de ${quote.company.name}`,
