@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,17 +193,19 @@ export function CustomerForm({
 
       {/* ── Ações ─────────────────────────────────────────────────── */}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push(cancelHref)}
-          disabled={pending}
-        >
-          Cancelar
+        <Button asChild variant="outline">
+          <Link
+            href={cancelHref}
+            aria-disabled={pending}
+            className={pending ? "pointer-events-none" : undefined}
+            tabIndex={pending ? -1 : undefined}
+          >
+            Cancelar
+          </Link>
         </Button>
         <Button type="submit" disabled={pending}>
           {pending
-            ? "Salvando..."
+            ? "Salvando…"
             : isEdit
               ? "Salvar alterações"
               : "Cadastrar cliente"}

@@ -67,7 +67,7 @@ export function GenerateChargeButton({
         ) : (
           <QrCode className="h-3.5 w-3.5" />
         )}
-        {pending ? "Gerando..." : label}
+        {pending ? "Gerando…" : label}
       </Button>
       {error ? (
         <p className="max-w-sm text-xs leading-5 text-destructive" role="alert">

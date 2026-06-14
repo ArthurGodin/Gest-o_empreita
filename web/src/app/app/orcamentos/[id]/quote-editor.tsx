@@ -366,7 +366,7 @@ export function QuoteEditor({
             >
               <Save className="h-4 w-4" />
               {pending ? (
-                "Salvando..."
+                "Salvando…"
               ) : (
                 <>
                   <span className="sm:hidden">Salvar</span>

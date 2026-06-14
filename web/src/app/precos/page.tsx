@@ -24,7 +24,7 @@ const included = [
 ];
 
 const roadmap = [
-  "PWA/offline para uso em campo",
+  "PWA/offline para campo após os primeiros pilotos",
   "Assinatura recorrente e cobrança automática",
   "Relatórios de margem por tipo de obra",
   "Equipe com permissões por função",
@@ -37,11 +37,11 @@ export const metadata = {
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-[#fffaf3] text-[#25170f]">
+    <main className="min-h-screen bg-[#f8fafc] text-[#121826]">
       <section className="mx-auto max-w-6xl px-4 py-10">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#6f5a49] hover:text-[#db5b18]"
+          className="inline-flex items-center gap-2 text-sm font-medium text-[#475569] hover:text-[#db5b18]"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar
@@ -49,14 +49,14 @@ export default function PricingPage() {
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#e4c39e] bg-white px-3 py-1 text-sm font-medium text-[#7a3b12]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-white px-3 py-1 text-sm font-medium text-[#9a3412]">
               <ShieldCheck className="h-4 w-4" />
               Plano inicial para empresas de obra
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight tracking-normal md:text-6xl">
               Comece com um plano simples. Venda melhor esta semana.
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#6f5a49]">
+            <p className="mt-5 max-w-xl text-lg leading-8 text-[#475569]">
               O preço inicial é pensado para pequenas empreiteiras que precisam
               sair do orçamento no caderno e controlar a obra sem contratar um
               ERP pesado.
@@ -69,7 +69,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#2a1b12] bg-[#2b1b12] p-3 shadow-2xl">
+          <div className="rounded-2xl border border-[#111827] bg-[#111827] p-3 shadow-2xl">
             <div className="rounded-xl bg-white p-6 md:p-8">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -85,9 +85,9 @@ export default function PricingPage() {
 
               <div className="mt-7 flex items-end gap-2">
                 <span className="text-5xl font-black tracking-normal">R$ 197</span>
-                <span className="pb-2 text-[#6f5a49]">/mês</span>
+                <span className="pb-2 text-[#475569]">/mês</span>
               </div>
-              <p className="mt-2 text-sm text-[#6f5a49]">
+              <p className="mt-2 text-sm text-[#475569]">
                 Sem cartão no teste. Implantação assistida para os primeiros
                 clientes.
               </p>
@@ -107,16 +107,20 @@ export default function PricingPage() {
                 {included.map((item) => (
                   <div key={item} className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
-                    <span className="text-sm text-[#51382a]">{item}</span>
+                    <span className="text-sm text-[#334155]">{item}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-7 rounded-lg border border-[#eadcc9] bg-[#fffaf3] p-4">
-                <p className="text-sm font-bold">Próximas melhorias inclusas</p>
+              <div className="mt-7 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                <p className="text-sm font-bold">Roadmap após os primeiros pilotos</p>
+                <p className="mt-1 text-xs leading-5 text-[#475569]">
+                  O plano atual já cobre orçamento, obra, Pix e financeiro. Os itens
+                  abaixo entram conforme o uso real mostrar prioridade.
+                </p>
                 <div className="mt-3 space-y-2">
                   {roadmap.map((item) => (
-                    <p key={item} className="text-sm text-[#6f5a49]">
+                    <p key={item} className="text-sm text-[#475569]">
                       {item}
                     </p>
                   ))}
@@ -132,7 +136,7 @@ export default function PricingPage() {
 
 function MiniProof({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <div className="rounded-lg border border-[#eadcc9] bg-white p-4">
+    <div className="rounded-lg border border-[#e2e8f0] bg-white p-4">
       <div className="text-[#db5b18]">{icon}</div>
       <p className="mt-3 text-sm font-bold">{label}</p>
     </div>

@@ -51,7 +51,7 @@ export async function notifyCompanyOwner(
 
   if (!TRANSACTIONAL_EMAIL_ENABLED) {
     console.log(
-      `[email] (modo zero custo, sem EMAIL_FROM verificado) Mandaria pra ${ownerEmails.join(", ")}:`,
+      `[email] (modo zero custo, sem EMAIL_FROM verificado) envio suprimido para ${ownerEmails.length} owner(s):`,
       email.subject,
     );
     return {
@@ -63,7 +63,7 @@ export async function notifyCompanyOwner(
   const resend = getResendClient();
   if (!resend) {
     console.log(
-      `[email] (dev mode, sem Resend) Mandaria pra ${ownerEmails.join(", ")}:`,
+      `[email] (dev mode, sem Resend) envio suprimido para ${ownerEmails.length} owner(s):`,
       email.subject,
     );
     return { sent: false, error: "RESEND_API_KEY não configurada." };

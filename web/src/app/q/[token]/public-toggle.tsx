@@ -43,7 +43,21 @@ export function PublicToggle({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasProject = project !== null;
-  const defaultView: PublicView = hasProject ? "andamento" : "orcamento";
+  const deliveryApprovedAt = project?.delivery_approved_at ?? null;
+  const hasActionableCharge =
+    project?.charges.some(
+      (charge) =>
+        charge.status === "pending" ||
+        charge.status === "overdue" ||
+        (charge.kind === "saldo" &&
+          charge.status === "draft" &&
+          Boolean(deliveryApprovedAt)),
+    ) ?? false;
+  const defaultView: PublicView = hasProject
+    ? hasActionableCharge
+      ? "cobranca"
+      : "andamento"
+    : "orcamento";
   const requestedView = searchParams.get("tab");
   const view =
     hasProject && isPublicView(requestedView) ? requestedView : defaultView;
@@ -76,9 +90,11 @@ export function PublicToggle({
           return (
             <button
               key={tab.value}
+              id={`public-tab-${tab.value}`}
               type="button"
               role="tab"
               aria-selected={active}
+              aria-controls={`public-panel-${tab.value}`}
               onClick={() => selectView(tab.value)}
               className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-sm font-medium transition-colors ${
                 active
@@ -86,25 +102,31 @@ export function PublicToggle({
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
               <span className="truncate">{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {view === "andamento" ? (
-        <AndamentoView view={project} shareToken={shareToken} />
-      ) : view === "cobranca" ? (
-        <PublicBillingView
-          charges={project.charges}
-          projectStatus={project.status}
-          deliveryApprovedAt={project.delivery_approved_at}
-          shareToken={shareToken}
-        />
-      ) : (
-        <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
-      )}
+      <div
+        id={`public-panel-${view}`}
+        role="tabpanel"
+        aria-labelledby={`public-tab-${view}`}
+      >
+        {view === "andamento" ? (
+          <AndamentoView view={project} shareToken={shareToken} />
+        ) : view === "cobranca" ? (
+          <PublicBillingView
+            charges={project.charges}
+            projectStatus={project.status}
+            deliveryApprovedAt={project.delivery_approved_at}
+            shareToken={shareToken}
+          />
+        ) : (
+          <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
+        )}
+      </div>
     </div>
   );
 }

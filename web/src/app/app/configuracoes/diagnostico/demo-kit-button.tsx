@@ -62,7 +62,7 @@ export function DemoKitButton() {
         ) : (
           <PlayCircle className="h-4 w-4" />
         )}
-        {isPending ? "Preparando demo..." : "Preparar demo vendável"}
+        {isPending ? "Preparando demo…" : "Preparar demo vendável"}
       </Button>
 
       {demo ? (

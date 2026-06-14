@@ -72,7 +72,7 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Entrando..." : "Entrar"}
+            {pending ? "Entrando…" : "Entrar"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Ainda não tem conta?{" "}

@@ -192,7 +192,7 @@ export function CatalogList({ items }: CatalogListProps) {
               onClick={onConfirmDelete}
               disabled={deletePending}
             >
-              {deletePending ? "Apagando..." : "Sim, apagar"}
+              {deletePending ? "Apagando…" : "Sim, apagar"}
             </Button>
           </DialogFooter>
         </DialogContent>

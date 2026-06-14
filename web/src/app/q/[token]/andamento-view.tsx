@@ -168,7 +168,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full bg-primary transition-all"
+                className="h-full bg-primary transition-[width]"
                 style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
               />
             </div>
@@ -257,13 +257,14 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                         <button
                           key={photo.id}
                           type="button"
+                          aria-label={`Abrir foto ${pi + 1} do diário da obra`}
                           onClick={() => openLightbox(ei, pi)}
                           className="aspect-square overflow-hidden rounded-md bg-muted hover:opacity-90"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={`/q/${shareToken}/photo/${photo.id}`}
-                            alt=""
+                            alt={`Foto ${pi + 1} do diário da obra`}
                             loading="lazy"
                             className="h-full w-full object-cover"
                           />
@@ -317,7 +318,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/q/${shareToken}/photo/${currentPhotoId}`}
-            alt=""
+            alt="Foto ampliada do diário da obra"
             className="max-h-full max-w-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />

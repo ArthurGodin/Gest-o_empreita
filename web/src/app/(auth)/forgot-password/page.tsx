@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
               </p>
             )}
             <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? "Enviando..." : "Enviar link"}
+              {pending ? "Enviando…" : "Enviar link"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Lembrou a senha?{" "}

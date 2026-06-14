@@ -89,7 +89,7 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
               <Upload className="h-4 w-4" />
             )}
             {pending
-              ? "Enviando..."
+              ? "Enviando…"
               : currentLogoUrl
                 ? "Trocar logo"
                 : "Adicionar logo"}

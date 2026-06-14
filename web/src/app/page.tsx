@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 const proofItems = [
   "Orçamento com link de aprovação",
   "Obra com etapas, fotos e gastos",
-  "Margem estimada por projeto",
+  "Pix Asaas e margem por projeto",
 ];
 
 const workflow = [
@@ -37,16 +37,16 @@ const workflow = [
     icon: HardHat,
   },
   {
-    title: "Você enxerga a margem",
-    text: "O financeiro mostra aprovado, gasto lançado e margem estimada.",
+    title: "Você cobra e enxerga a margem",
+    text: "Pix de entrada e saldo, baixa por webhook, gasto lançado e margem estimada.",
     icon: LineChart,
   },
 ];
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#fffaf3] text-[#25170f]">
-      <header className="border-b border-[#eadcc9] bg-[#fffaf3]/90 backdrop-blur">
+    <main className="min-h-screen bg-[#f8fafc] text-[#121826]">
+      <header className="border-b border-[#e2e8f0] bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#db5b18] text-white shadow-sm">
@@ -70,14 +70,14 @@ export default function LandingPage() {
 
       <section className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[1fr_0.9fr] md:items-center md:py-20">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#e4c39e] bg-white px-3 py-1 text-sm font-medium text-[#7a3b12]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-white px-3 py-1 text-sm font-medium text-[#9a3412]">
             <ShieldCheck className="h-4 w-4" />
             Feito para empreiteiro vender e controlar obra sem planilha
           </div>
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.02] tracking-normal md:text-6xl">
             Orçamento bonito, obra no controle e margem na mão.
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#6f5a49]">
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#475569]">
             Um SaaS simples para pequenas empreiteiras criarem orçamento
             profissional, receberem aprovação digital do cliente e acompanharem
             execução, fotos, equipe e gastos no celular.
@@ -98,7 +98,7 @@ export default function LandingPage() {
               asChild
               variant="outline"
               size="lg"
-              className="h-12 border-[#d7b893] bg-white px-6 text-base"
+              className="h-12 border-[#cbd5e1] bg-white px-6 text-base"
             >
               <Link href="/precos">Ver preço</Link>
             </Button>
@@ -108,7 +108,7 @@ export default function LandingPage() {
             {proofItems.map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-[#51382a] shadow-sm ring-1 ring-[#eadcc9]"
+                className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-[#334155] shadow-sm ring-1 ring-[#e2e8f0]"
               >
                 <CheckCircle2 className="h-4 w-4 text-[#2f8f4e]" />
                 {item}
@@ -120,17 +120,17 @@ export default function LandingPage() {
         <ProductPreview />
       </section>
 
-      <section className="border-y border-[#eadcc9] bg-white">
+      <section className="border-y border-[#e2e8f0] bg-white">
         <div className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-4">
           {workflow.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className="rounded-lg border border-[#eadcc9] p-5">
+              <div key={item.title} className="rounded-lg border border-[#e2e8f0] p-5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#fff1df] text-[#db5b18]">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h2 className="mt-4 text-base font-bold">{item.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#6f5a49]">
+                <p className="mt-2 text-sm leading-6 text-[#475569]">
                   {item.text}
                 </p>
               </div>
@@ -159,21 +159,21 @@ export default function LandingPage() {
           />
           <Reason
             title="Mais clareza de margem"
-            text="A tela financeira já mostra aprovado, gasto e margem estimada. A próxima etapa é cobrança Pix integrada."
+            text="A tela financeira mostra aprovado, Pix recebido, pendente, gasto e margem estimada. O dono sabe o que entrou e o que ainda falta cobrar."
           />
         </div>
       </section>
 
-      <section className="bg-[#24160f] px-4 py-14 text-white">
+      <section className="bg-[#0f172a] px-4 py-14 text-white">
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <h2 className="text-3xl font-black tracking-normal">
               Comece pequeno, mas com cara de produto sério.
             </h2>
-            <p className="mt-3 max-w-2xl text-[#dccabd]">
+            <p className="mt-3 max-w-2xl text-[#cbd5e1]">
               O primeiro cliente precisa sair com um orçamento aprovado e uma
-              obra controlada. Depois disso, cobrança Pix e financeiro avançado
-              entram como expansão natural.
+              obra controlada. Depois disso, o Pix de entrada, o saldo e a
+              margem viram o centro do acompanhamento.
             </p>
           </div>
           <Button
@@ -189,8 +189,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#eadcc9] bg-[#fffaf3] px-4 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-[#6f5a49] md:flex-row md:items-center md:justify-between">
+      <footer className="border-t border-[#e2e8f0] bg-white px-4 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-[#475569] md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Gestão Empreita.</p>
           <div className="flex gap-4">
             <Link href="/precos" className="hover:text-[#db5b18]">
@@ -212,10 +212,9 @@ export default function LandingPage() {
 function ProductPreview() {
   return (
     <div className="relative">
-      <div className="absolute -right-4 -top-4 h-28 w-28 rounded-full bg-[#f47721]/20 blur-2xl" />
-      <div className="relative overflow-hidden rounded-xl border border-[#2a1b12] bg-[#2b1b12] p-3 shadow-2xl">
-        <div className="rounded-lg bg-[#fffaf3] p-4">
-          <div className="flex items-center justify-between border-b border-[#eadcc9] pb-3">
+      <div className="relative overflow-hidden rounded-xl border border-[#111827] bg-[#111827] p-3 shadow-2xl">
+        <div className="rounded-lg bg-white p-4">
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#db5b18]">
                 Obra em execução
@@ -241,30 +240,30 @@ function ProductPreview() {
             ].map(([name, status]) => (
               <div
                 key={name}
-                className="flex items-center justify-between rounded-lg border border-[#eadcc9] bg-white px-3 py-3"
+                className="flex items-center justify-between rounded-lg border border-[#e2e8f0] bg-white px-3 py-3"
               >
                 <span className="text-sm font-medium">{name}</span>
-                <span className="text-xs text-[#6f5a49]">{status}</span>
+                <span className="text-xs text-[#475569]">{status}</span>
               </div>
             ))}
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-[#eadcc9] bg-white p-3">
+            <div className="rounded-lg border border-[#e2e8f0] bg-white p-3">
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Camera className="h-4 w-4 text-[#db5b18]" />
                 Diário de hoje
               </div>
-              <p className="mt-2 text-sm text-[#6f5a49]">
+              <p className="mt-2 text-sm text-[#475569]">
                 Equipe finalizou a manta e iniciou telha da lateral esquerda.
               </p>
             </div>
-            <div className="rounded-lg border border-[#eadcc9] bg-white p-3">
+            <div className="rounded-lg border border-[#e2e8f0] bg-white p-3">
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Smartphone className="h-4 w-4 text-[#db5b18]" />
                 Link do cliente
               </div>
-              <p className="mt-2 text-sm text-[#6f5a49]">
+              <p className="mt-2 text-sm text-[#475569]">
                 Cliente acompanha orçamento, aprovação e andamento sem login.
               </p>
             </div>
@@ -285,9 +284,9 @@ function MiniMetric({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-lg bg-white p-3 ring-1 ring-[#eadcc9]">
+    <div className="rounded-lg bg-white p-3 ring-1 ring-[#e2e8f0]">
       <Icon className="h-4 w-4 text-[#db5b18]" />
-      <p className="mt-2 text-xs text-[#6f5a49]">{label}</p>
+      <p className="mt-2 text-xs text-[#475569]">{label}</p>
       <p className="text-sm font-black">{value}</p>
     </div>
   );
@@ -295,9 +294,9 @@ function MiniMetric({
 
 function Reason({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-lg border border-[#eadcc9] bg-white p-5">
+    <div className="rounded-lg border border-[#e2e8f0] bg-white p-5">
       <h3 className="font-bold">{title}</h3>
-      <p className="mt-2 leading-7 text-[#6f5a49]">{text}</p>
+      <p className="mt-2 leading-7 text-[#475569]">{text}</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,16 +94,18 @@ export function NewQuoteForm({ customers }: NewQuoteFormProps) {
       )}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/app/orcamentos")}
-          disabled={pending}
-        >
-          Cancelar
+        <Button asChild variant="outline">
+          <Link
+            href="/app/orcamentos"
+            aria-disabled={pending}
+            className={pending ? "pointer-events-none" : undefined}
+            tabIndex={pending ? -1 : undefined}
+          >
+            Cancelar
+          </Link>
         </Button>
         <Button type="submit" disabled={pending}>
-          {pending ? "Criando..." : "Criar orçamento"}
+          {pending ? "Criando…" : "Criar orçamento"}
         </Button>
       </div>
     </form>

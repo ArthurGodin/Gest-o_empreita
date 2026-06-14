@@ -162,7 +162,7 @@ export function QuoteList({ quotes }: QuoteListProps) {
             {filtered.length === quotes.length && !hasActiveFilters
               ? `${quotes.length} ${quotes.length === 1 ? "orçamento" : "orçamentos"}`
               : `${filtered.length} de ${quotes.length} em ${activeStatusLabel.toLocaleLowerCase("pt-BR")}`}
-            {isPending ? " · atualizando..." : ""}
+            {isPending ? " · atualizando…" : ""}
           </p>
           {hasActiveFilters && (
             <button

@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Salvando..." : "Salvar nova senha"}
+            {pending ? "Salvando…" : "Salvar nova senha"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Link expirado?{" "}

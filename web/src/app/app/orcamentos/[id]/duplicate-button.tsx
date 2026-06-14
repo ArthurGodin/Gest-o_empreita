@@ -72,8 +72,8 @@ export function DuplicateButton({
         )}
         {pending
           ? intent === "revision"
-            ? "Criando..."
-            : "Duplicando..."
+            ? "Criando…"
+            : "Duplicando…"
           : label}
       </Button>
       {error && (

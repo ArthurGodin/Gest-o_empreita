@@ -151,7 +151,7 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
               className="h-12 w-full bg-green-600 text-base font-bold text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
             >
               <CheckCircle2 className="h-5 w-5" />
-              {pending ? "Aprovando..." : "Aprovar e autorizar contato"}
+              {pending ? "Aprovando…" : "Aprovar e autorizar contato"}
             </Button>
             <Button
               type="button"
@@ -254,7 +254,7 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
               variant="outline"
               className="h-12 w-full text-base"
             >
-              {pending ? "Enviando..." : "Enviar pedido de ajuste"}
+              {pending ? "Enviando…" : "Enviar pedido de ajuste"}
             </Button>
             {contactUrl && (
               <Button asChild variant="ghost" className="h-10 w-full">

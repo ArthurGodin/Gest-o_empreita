@@ -90,9 +90,9 @@ export default async function ApprovedPage({
     : null;
 
   return (
-    <main className="min-h-screen bg-[#fffaf3] text-[#25170f]">
+    <main className="min-h-screen bg-[#f8fafc] text-[#121826]">
       <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-4 sm:py-8">
-        <header className="flex flex-col gap-3 border-b border-[#eadcc9] pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-3 border-b border-[#e2e8f0] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             {quote.company.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -108,7 +108,7 @@ export default async function ApprovedPage({
             )}
             <div className="min-w-0">
               <div className="truncate font-semibold">{quote.company.name}</div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6f5a49]">
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#475569]">
                 {quote.company.phone && (
                   <span className="inline-flex items-center gap-1">
                     <Phone className="h-3 w-3" />
@@ -143,15 +143,15 @@ export default async function ApprovedPage({
                   <h1 className="mt-4 break-words text-3xl font-black leading-tight sm:text-4xl">
                     Orçamento aprovado com sucesso.
                   </h1>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6f5a49] sm:text-base">
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-[#475569] sm:text-base">
                     {approval ? (
                       <>
                         Obrigado,{" "}
-                        <strong className="text-[#25170f]">
+                        <strong className="text-[#121826]">
                           {approval.signer_name}
                         </strong>
                         . A aprovação foi registrada em{" "}
-                        <strong className="text-[#25170f]">
+                        <strong className="text-[#121826]">
                           {formatDateBR(approval.created_at)}
                         </strong>{" "}
                         e já aparece para {quote.company.name}.
@@ -168,40 +168,40 @@ export default async function ApprovedPage({
               </div>
             </div>
 
-            <section className="rounded-lg border border-[#eadcc9] bg-white p-5 shadow-sm sm:p-6">
+            <section className="rounded-lg border border-[#e2e8f0] bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
                 <FileText className="mt-0.5 h-5 w-5 shrink-0 text-[#db5b18]" />
                 <div>
                   <h2 className="font-bold">Recibo da aprovação</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#6f5a49]">
+                  <p className="mt-1 text-sm leading-6 text-[#475569]">
                     Guarde esta página como confirmação. O orçamento completo
                     continua disponível pelo link original.
                   </p>
                 </div>
               </div>
 
-              <dl className="mt-5 divide-y divide-[#eadcc9]">
+              <dl className="mt-5 divide-y divide-[#e2e8f0]">
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <dt className="text-sm text-[#6f5a49]">Orçamento</dt>
+                  <dt className="text-sm text-[#475569]">Orçamento</dt>
                   <dd className="min-w-0 font-mono text-sm font-semibold">
                     {quote.number}
                   </dd>
                 </div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <dt className="text-sm text-[#6f5a49]">Título</dt>
+                  <dt className="text-sm text-[#475569]">Título</dt>
                   <dd className="min-w-0 break-words font-semibold">
                     {quote.title}
                   </dd>
                 </div>
                 {quote.customer && (
                   <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                    <dt className="text-sm text-[#6f5a49]">Cliente</dt>
+                    <dt className="text-sm text-[#475569]">Cliente</dt>
                     <dd className="min-w-0">
                       <span className="font-semibold">
                         {quote.customer.name}
                       </span>
                       {customerLocation && (
-                        <span className="text-[#6f5a49]">
+                        <span className="text-[#475569]">
                           {" "}
                           · {customerLocation}
                         </span>
@@ -210,13 +210,13 @@ export default async function ApprovedPage({
                   </div>
                 )}
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <dt className="text-sm text-[#6f5a49]">Data</dt>
+                  <dt className="text-sm text-[#475569]">Data</dt>
                   <dd className="font-semibold">
                     {approvedAt ? formatDateBR(approvedAt) : "Registrada"}
                   </dd>
                 </div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <dt className="text-sm text-[#6f5a49]">Total aprovado</dt>
+                  <dt className="text-sm text-[#475569]">Total aprovado</dt>
                   <dd className="text-2xl font-black text-[#db5b18]">
                     {formatBRL(quote.total_cents / 100)}
                   </dd>
@@ -226,26 +226,26 @@ export default async function ApprovedPage({
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-6">
-            <section className="rounded-lg border border-[#eadcc9] bg-white p-5 shadow-sm">
+            <section className="rounded-lg border border-[#e2e8f0] bg-white p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-[#db5b18]" />
                 <div>
                   <h2 className="font-bold">Próximos passos</h2>
-                  <ol className="mt-3 space-y-3 text-sm leading-6 text-[#6f5a49]">
+                  <ol className="mt-3 space-y-3 text-sm leading-6 text-[#475569]">
                     <li>
-                      <span className="font-semibold text-[#25170f]">
+                      <span className="font-semibold text-[#121826]">
                         1. Confirmação interna:
                       </span>{" "}
                       {quote.company.name} recebe a aprovação no painel.
                     </li>
                     <li>
-                      <span className="font-semibold text-[#25170f]">
+                      <span className="font-semibold text-[#121826]">
                         2. Alinhamento:
                       </span>{" "}
                       combine início, pagamento e detalhes finais da execução.
                     </li>
                     <li>
-                      <span className="font-semibold text-[#25170f]">
+                      <span className="font-semibold text-[#121826]">
                         3. Obra:
                       </span>{" "}
                       o orçamento aprovado pode virar acompanhamento da obra.
@@ -255,7 +255,7 @@ export default async function ApprovedPage({
               </div>
             </section>
 
-            <section className="rounded-lg border border-[#eadcc9] bg-white p-4 shadow-sm">
+            <section className="rounded-lg border border-[#e2e8f0] bg-white p-4 shadow-sm">
               <div className="grid gap-2">
                 {contactUrl && (
                   <Button

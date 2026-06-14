@@ -321,7 +321,7 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
 
           <div className="mt-4 h-2 rounded-full bg-muted">
             <div
-              className="h-2 rounded-full bg-primary transition-all"
+              className="h-2 rounded-full bg-primary transition-[width]"
               style={{ width: `${progressPct}%` }}
             />
           </div>

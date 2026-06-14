@@ -258,7 +258,7 @@ export function ShareLinkCard({
           >
             <Send className="h-5 w-5" />
             {pending
-              ? "Registrando..."
+              ? "Registrando…"
               : directWhatsapp && phoneLabel
                 ? `Abrir WhatsApp de ${phoneLabel}`
                 : "Abrir WhatsApp e escolher contato"}
@@ -348,7 +348,7 @@ export function ShareLinkCard({
         >
           <RefreshCw className="h-3 w-3" />
           {pending
-            ? "Gerando..."
+            ? "Gerando…"
             : tokenIsSafe
               ? "Gerar link novo"
               : "Corrigir link"}
@@ -373,7 +373,7 @@ export function ShareLinkCard({
               Cancelar
             </Button>
             <Button type="button" onClick={onRevoke} disabled={pending}>
-              {pending ? "Gerando..." : "Gerar novo link"}
+              {pending ? "Gerando…" : "Gerar novo link"}
             </Button>
           </DialogFooter>
         </DialogContent>

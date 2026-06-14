@@ -181,7 +181,7 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
       <div className="flex justify-end">
         <Button type="submit" disabled={pending}>
           <Save className="h-4 w-4" />
-          {pending ? "Salvando..." : "Salvar alterações"}
+          {pending ? "Salvando…" : "Salvar alterações"}
         </Button>
       </div>
     </form>

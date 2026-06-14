@@ -76,7 +76,7 @@ export default function SignupPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Criando..." : "Criar minha conta"}
+            {pending ? "Criando…" : "Criar minha conta"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Já tem conta?{" "}

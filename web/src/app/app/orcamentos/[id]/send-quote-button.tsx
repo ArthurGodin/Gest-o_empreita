@@ -240,7 +240,7 @@ export function SendQuoteButton({
         )}
       >
         <Send className="h-4 w-4" />
-        {pending ? "Enviando..." : label}
+        {pending ? "Enviando…" : label}
       </Button>
 
       <Dialog open={open} onOpenChange={onDialogOpenChange}>
@@ -276,7 +276,7 @@ export function SendQuoteButton({
                     >
                       <MessageCircle className="h-5 w-5" />
                       {pending
-                        ? "Registrando..."
+                        ? "Registrando…"
                         : directWhatsapp && phoneLabel
                           ? `Abrir WhatsApp de ${phoneLabel}`
                           : "Abrir WhatsApp e escolher contato"}

@@ -208,7 +208,7 @@ export function ConvertToProject({
               onClick={onConfirm}
               disabled={pending || Boolean(entryPctError)}
             >
-              {pending ? "Criando obra..." : "Confirmar e criar obra"}
+              {pending ? "Criando obra…" : "Confirmar e criar obra"}
             </Button>
           </DialogFooter>
         </DialogContent>

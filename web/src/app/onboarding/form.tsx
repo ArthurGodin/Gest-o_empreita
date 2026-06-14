@@ -217,7 +217,7 @@ export function OnboardingForm() {
 
               <Button type="submit" size="lg" className="w-full" disabled={pending}>
                 {pending ? (
-                  "Preparando painel..."
+                  "Preparando painel…"
                 ) : (
                   <>
                     Entrar no painel

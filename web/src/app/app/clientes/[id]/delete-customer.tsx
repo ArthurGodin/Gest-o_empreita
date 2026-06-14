@@ -84,7 +84,7 @@ export function DeleteCustomer({ id, customerName }: DeleteCustomerProps) {
             onClick={onConfirm}
             disabled={pending}
           >
-            {pending ? "Apagando..." : "Sim, apagar"}
+            {pending ? "Apagando…" : "Sim, apagar"}
           </Button>
         </DialogFooter>
       </DialogContent>

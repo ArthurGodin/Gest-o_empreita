@@ -75,7 +75,7 @@ export function DeleteQuoteButton({ id, number }: DeleteQuoteButtonProps) {
             Cancelar
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={pending}>
-            {pending ? "Apagando..." : "Sim, apagar"}
+            {pending ? "Apagando…" : "Sim, apagar"}
           </Button>
         </DialogFooter>
       </DialogContent>

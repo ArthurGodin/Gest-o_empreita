@@ -190,7 +190,7 @@ export function CatalogAutocomplete({
               aria-selected="false"
               className="px-3 py-2 text-sm text-muted-foreground"
             >
-              Buscando no catálogo...
+              Buscando no catálogo…
             </li>
           )}
           {!loading && visibleSuggestions.length === 0 && (

@@ -86,9 +86,9 @@ export function PublicQuoteView({
     : null;
 
   return (
-    <main className="min-h-screen bg-[#fffaf3] pb-24 text-[#25170f] lg:pb-0">
+    <main className="min-h-screen bg-[#f8fafc] pb-24 text-[#121826] lg:pb-0">
       <div className="mx-auto w-full max-w-5xl px-4 py-4 sm:py-8">
-        <header className="flex flex-col gap-3 rounded-xl border border-[#eadcc9] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-3 rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             {quote.company.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -104,7 +104,7 @@ export function PublicQuoteView({
             )}
             <div className="min-w-0">
               <div className="truncate font-semibold">{quote.company.name}</div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6f5a49]">
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#475569]">
                 {quote.company.phone && (
                   <span className="inline-flex items-center gap-1">
                     <Phone className="h-3 w-3" />
@@ -142,10 +142,10 @@ export function PublicQuoteView({
           )}
         </header>
 
-        <section className="mt-4 rounded-xl border border-[#eadcc9] bg-white p-5 shadow-sm">
+        <section className="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
           <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-md border border-[#eadcc9] bg-[#fff7ed] px-3 py-1.5 text-xs font-semibold text-[#7a3b12]">
+              <div className="inline-flex items-center gap-2 rounded-md border border-[#e2e8f0] bg-[#fff7ed] px-3 py-1.5 text-xs font-semibold text-[#9a3412]">
                 <FileText className="h-4 w-4" />
                 Orçamento {quote.number}
               </div>
@@ -153,9 +153,9 @@ export function PublicQuoteView({
                 {quote.title}
               </h1>
               {quote.customer && (
-                <div className="mt-3 text-sm text-[#6f5a49]">
+                <div className="mt-3 text-sm text-[#475569]">
                   Para{" "}
-                  <span className="font-semibold text-[#25170f]">
+                  <span className="font-semibold text-[#121826]">
                     {quote.customer.name}
                   </span>
                   {(quote.customer.city || quote.customer.state) && (
@@ -169,25 +169,25 @@ export function PublicQuoteView({
                 </div>
               )}
               {quote.description && (
-                <p className="mt-4 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-[#6f5a49]">
+                <p className="mt-4 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-[#475569]">
                   {quote.description}
                 </p>
               )}
             </div>
 
-            <div className="rounded-lg border border-[#eadcc9] bg-[#fffaf3] p-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#6f5a49]">
+            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#475569]">
                 Total da proposta
               </div>
               <div className="mt-2 text-3xl font-black text-[#db5b18]">
                 {formatBRL(quote.total_cents / 100)}
               </div>
               {quote.valid_until && (
-                <div className="mt-3 flex items-start gap-2 text-sm text-[#6f5a49]">
+                <div className="mt-3 flex items-start gap-2 text-sm text-[#475569]">
                   <CalendarDays className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     Válido até{" "}
-                    <strong className="text-[#25170f]">
+                    <strong className="text-[#121826]">
                       {formatDateBR(quote.valid_until)}
                     </strong>
                     {isDecidable &&
@@ -221,7 +221,7 @@ export function PublicQuoteView({
                   <Button
                     asChild
                     variant="outline"
-                    className="h-11 border-[#eadcc9] bg-white"
+                    className="h-11 border-[#e2e8f0] bg-white"
                   >
                     <TrackedAnchor
                       href="#decisao"
@@ -247,12 +247,12 @@ export function PublicQuoteView({
               />
             )}
 
-            <section className="rounded-xl border border-[#eadcc9] bg-white p-4 shadow-sm">
+            <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
                 <div>
                   <div className="font-semibold">Link único e privado</div>
-                  <p className="mt-1 text-sm leading-6 text-[#6f5a49]">
+                  <p className="mt-1 text-sm leading-6 text-[#475569]">
                     Só quem recebeu este link consegue ver, aprovar ou pedir
                     ajuste neste orçamento.
                   </p>
@@ -366,11 +366,11 @@ export function PublicQuoteView({
               </div>
             )}
 
-            <section className="rounded-xl border border-[#eadcc9] bg-white p-4 shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#6f5a49]">
+            <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
                 Itens incluídos
               </div>
-              <ul className="mt-2 divide-y divide-[#eadcc9]">
+              <ul className="mt-2 divide-y divide-[#e2e8f0]">
                 {quote.items.map((item) => (
                   <li
                     key={item.id}
@@ -380,7 +380,7 @@ export function PublicQuoteView({
                       <div className="font-semibold leading-tight">
                         {item.description}
                       </div>
-                      <div className="mt-1 text-xs text-[#6f5a49]">
+                      <div className="mt-1 text-xs text-[#475569]">
                         {formatQuantityBR(item.quantity)}{" "}
                         {normalizeQuoteUnit(item.unit)} ×{" "}
                         {formatBRL(item.unit_price_cents / 100)}
@@ -393,8 +393,8 @@ export function PublicQuoteView({
                 ))}
               </ul>
 
-              <div className="mt-4 flex items-center justify-between border-t border-[#eadcc9] pt-4">
-                <span className="text-sm font-medium text-[#6f5a49]">Total</span>
+              <div className="mt-4 flex items-center justify-between border-t border-[#e2e8f0] pt-4">
+                <span className="text-sm font-medium text-[#475569]">Total</span>
                 <span className="text-2xl font-black text-[#db5b18]">
                   {formatBRL(quote.total_cents / 100)}
                 </span>
@@ -402,8 +402,8 @@ export function PublicQuoteView({
             </section>
 
             {quote.notes && (
-              <section className="rounded-xl border border-[#eadcc9] bg-white p-4 shadow-sm">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#6f5a49]">
+              <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
                   Observações
                 </div>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
@@ -412,9 +412,9 @@ export function PublicQuoteView({
               </section>
             )}
 
-            <footer className="pb-6 pt-2 text-center text-xs text-[#6f5a49]">
+            <footer className="pb-6 pt-2 text-center text-xs text-[#475569]">
               Gerado por{" "}
-              <span className="font-semibold text-[#25170f]">
+              <span className="font-semibold text-[#121826]">
                 Gestão Empreita
               </span>
             </footer>
@@ -423,10 +423,10 @@ export function PublicQuoteView({
       </div>
 
       {isDecidable && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#eadcc9] bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(37,23,15,0.12)] backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e2e8f0] bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#6f5a49]">
+              <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
                 Total da proposta
               </div>
               <div className="truncate text-lg font-black text-[#db5b18]">
@@ -436,7 +436,7 @@ export function PublicQuoteView({
             <Button
               asChild
               variant="outline"
-              className="h-11 shrink-0 border-[#eadcc9] px-3"
+              className="h-11 shrink-0 border-[#e2e8f0] px-3"
             >
               <TrackedAnchor
                 href="#decisao"

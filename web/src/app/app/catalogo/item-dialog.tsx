@@ -145,7 +145,7 @@ export function ItemDialog({ item, open, onOpenChange }: ItemDialogProps) {
             </Button>
             <Button type="submit" disabled={pending}>
               <Save className="h-4 w-4" />
-              {pending ? "Salvando..." : isEdit ? "Salvar" : "Cadastrar"}
+              {pending ? "Salvando…" : isEdit ? "Salvar" : "Cadastrar"}
             </Button>
           </DialogFooter>
         </form>

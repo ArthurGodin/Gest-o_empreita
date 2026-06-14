@@ -128,7 +128,7 @@ export function StagesSection({
       {totalCount > 0 && (
         <div className="mb-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-primary transition-[width]"
             style={{ width: `${pctClamped}%` }}
             role="progressbar"
             aria-valuenow={Math.round(pctClamped)}
