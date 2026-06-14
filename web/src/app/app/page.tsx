@@ -21,6 +21,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app-shell/page-header";
+import {
+  getBillingCharges,
+  type BillingChargeListItem,
+} from "@/lib/queries/billing-charges";
 import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
@@ -34,6 +38,7 @@ const OPEN_PROJECT_STATUSES: ProjectStatus[] = [
   "in_progress",
   "paused",
 ];
+const PAID_CHARGE_STATUSES = new Set(["received", "confirmed"]);
 
 const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
   planning: "Planejada",
@@ -44,10 +49,11 @@ const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 };
 
 export default async function DashboardPage() {
-  const [quotes, projects, customers] = await Promise.all([
+  const [quotes, projects, customers, charges] = await Promise.all([
     getQuotes(),
     getProjects(),
     getCustomers(),
+    getBillingCharges(),
   ]);
 
   const today = todayBR();
@@ -87,6 +93,7 @@ export default async function DashboardPage() {
     customersCount: customers.length,
     quotes,
     projects,
+    charges,
   });
 
   return (
@@ -319,7 +326,7 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
             />
           </div>
 
-          <div className="mt-4 grid gap-2 md:grid-cols-5">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {steps.map((step, index) => (
               <Link
                 key={step.title}
@@ -369,7 +376,7 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
           </Button>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
             Quando esses passos ficam verdes, o app já provou valor: proposta
-            enviada, cliente decidindo e dinheiro controlado.
+            enviada, cliente aprovou e a primeira entrada caiu no controle.
           </p>
         </aside>
       </div>
@@ -525,6 +532,7 @@ function buildFirstMoneySteps({
   customersCount,
   quotes,
   projects,
+  charges,
 }: {
   customersCount: number;
   quotes: Array<{
@@ -538,6 +546,7 @@ function buildFirstMoneySteps({
     approved_at: string | null;
   }>;
   projects: Array<{ id: string }>;
+  charges: BillingChargeListItem[];
 }): FirstMoneyStep[] {
   const firstQuote = quotes[0];
   const firstDraft = quotes.find((quote) => quote.status === "draft");
@@ -553,7 +562,31 @@ function buildFirstMoneySteps({
   const firstApproved = quotes.find(
     (quote) => quote.effective_status === "approved",
   );
-  const firstProject = projects[0];
+  const firstProject =
+    (firstApproved?.project_id
+      ? projects.find((project) => project.id === firstApproved.project_id)
+      : null) ?? projects[0];
+  const entryCharge =
+    (firstProject
+      ? charges.find(
+          (charge) =>
+            charge.project_id === firstProject.id && charge.kind === "entrada",
+        )
+      : null) ?? charges.find((charge) => charge.kind === "entrada");
+  const entryPaid = entryCharge
+    ? PAID_CHARGE_STATUSES.has(entryCharge.status)
+    : false;
+  const entryChargeHref = firstProject
+    ? `/app/obras/${firstProject.id}`
+    : firstApproved
+      ? `/app/orcamentos/${firstApproved.id}`
+      : "/app/orcamentos";
+  const entryStep = buildEntryStep({
+    projectId: firstProject?.id ?? null,
+    charge: entryCharge ?? null,
+    fallbackHref: entryChargeHref,
+    paid: entryPaid,
+  });
 
   return [
     {
@@ -597,17 +630,84 @@ function buildFirstMoneySteps({
       done: Boolean(firstApproved),
     },
     {
-      title: "Entrada",
-      detail: "Obra aberta com cobrança Pix.",
+      title: "Obra",
+      detail: "Execução criada no painel.",
       href: firstProject
         ? `/app/obras/${firstProject.id}`
         : firstApproved
           ? `/app/orcamentos/${firstApproved.id}`
           : "/app/orcamentos",
-      action: firstProject ? "Cobrar entrada" : "Transformar em obra",
+      action: firstProject ? "Abrir obra" : "Transformar em obra",
       done: Boolean(firstProject),
     },
+    {
+      title: "Entrada",
+      detail: entryStep.detail,
+      href: entryStep.href,
+      action: entryStep.action,
+      done: entryPaid,
+    },
   ];
+}
+
+function buildEntryStep({
+  projectId,
+  charge,
+  fallbackHref,
+  paid,
+}: {
+  projectId: string | null;
+  charge: BillingChargeListItem | null;
+  fallbackHref: string;
+  paid: boolean;
+}) {
+  if (!projectId) {
+    return {
+      detail: "Primeiro transforme o aprovado em obra.",
+      href: fallbackHref,
+      action: "Transformar em obra",
+    };
+  }
+
+  const projectHref = `/app/obras/${projectId}`;
+
+  if (!charge || charge.status === "draft") {
+    return {
+      detail: "Gere o Pix e envie no WhatsApp.",
+      href: projectHref,
+      action: "Gerar Pix da entrada",
+    };
+  }
+
+  if (paid) {
+    return {
+      detail: "Pagamento confirmado no financeiro.",
+      href: "/app/financeiro",
+      action: "Ver financeiro",
+    };
+  }
+
+  if (charge.status === "overdue") {
+    return {
+      detail: "Entrada atrasada. Reenvie a cobrança.",
+      href: projectHref,
+      action: "Revisar cobrança",
+    };
+  }
+
+  if (charge.status === "cancelled") {
+    return {
+      detail: "Cobrança cancelada. Gere outra.",
+      href: projectHref,
+      action: "Gerar nova entrada",
+    };
+  }
+
+  return {
+    detail: "Pix gerado, aguardando confirmação.",
+    href: projectHref,
+    action: "Acompanhar cobrança",
+  };
 }
 
 function isSameBrazilMonth(value: string): boolean {

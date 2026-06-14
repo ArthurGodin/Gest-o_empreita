@@ -16,6 +16,25 @@ O domínio próprio fica para depois; por enquanto o app usa
 - Resend configurado para testes e notificações internas.
 - WhatsApp como canal principal de venda, aprovação e cobrança.
 
+## Certificação atual do fluxo financeiro
+
+Validado em produção em 2026-06-14, usando Asaas sandbox:
+
+1. Orçamento aprovado virou obra.
+2. Cobrança Pix de entrada foi criada.
+3. Webhook do Asaas baixou a entrada como recebida.
+4. Eventos duplicados foram ignorados sem duplicar baixa.
+5. Evento atrasado não rebaixou cobrança já paga.
+6. Token inválido retornou 401 e não gravou evento.
+7. Todas as etapas da obra foram concluídas.
+8. Saldo final foi liberado.
+9. Webhook baixou o saldo como recebido.
+10. Painel da obra, financeiro e link público ficaram consistentes.
+
+Conclusão: o ciclo técnico está certificado para demonstração e piloto assistido.
+O que ainda falta para dinheiro real não é código novo; é troca controlada das
+credenciais de sandbox para produção e teste real de baixo valor.
+
 ## Vercel Analytics
 
 ### Já feito
@@ -96,12 +115,31 @@ Checklist de virada:
 1. Conta Asaas produção aprovada.
 2. Chave API de produção criada com nome claro.
 3. Webhook recriado no painel de produção do Asaas.
-4. Token de webhook diferente do sandbox.
+4. Token de webhook forte, diferente do sandbox e diferente da API key.
 5. Variáveis atualizadas na Vercel em `Production`.
 6. Novo deploy de produção.
-7. Cobrança real de baixo valor testada.
-8. Logs da Vercel verificados por 30 minutos.
-9. Webhook verificado no painel do Asaas sem penalização ou fila pausada.
+7. Criar cliente real de teste com dados válidos.
+8. Criar cobrança real de baixo valor.
+9. Confirmar pagamento real.
+10. Conferir se o webhook marcou a cobrança como recebida no Gestão Empreita.
+11. Verificar logs da Vercel por 30 minutos.
+12. Verificar no painel do Asaas se o webhook não ficou penalizado ou pausado.
+13. Registrar o resultado no histórico de QA do projeto.
+
+Regra de segurança:
+
+- não reutilizar token de webhook sandbox;
+- não expor API key em print, commit, documentação ou chat;
+- não testar produção com orçamento de cliente que não autorizou;
+- não fazer várias cobranças reais antes de uma cobrança pequena funcionar;
+- se o webhook falhar, pausar venda e corrigir antes de repetir.
+
+Fontes oficiais usadas como referência operacional:
+
+- A documentação do Asaas orienta webhook com token de autenticação forte e
+  envio do token no header `asaas-access-token`.
+- A documentação do Asaas informa que a documentação interativa aponta para
+  sandbox; produção deve usar credenciais de produção.
 
 ## Resend sem domínio próprio
 
@@ -134,6 +172,13 @@ Depois da primeira venda:
 5. Testar Gmail e Outlook.
 6. Monitorar rejeição, spam e taxa de entrega.
 
+Observação operacional:
+
+- O domínio `resend.dev` é apenas para testes e possui restrições de envio.
+- Para enviar email profissional para clientes, o Resend exige domínio próprio
+  verificado. Portanto, sem domínio próprio, WhatsApp continua sendo o canal
+  principal e correto para venda.
+
 ## Critério para começar piloto pago
 
 Pode abordar cliente piloto quando estes itens estiverem verdes:
@@ -143,11 +188,16 @@ Pode abordar cliente piloto quando estes itens estiverem verdes:
 - revisão preserva histórico;
 - WhatsApp abre com mensagem pronta;
 - obra nasce a partir do orçamento aprovado;
-- Pix sandbox gera cobrança de entrada;
+- Pix sandbox gera cobrança de entrada e saldo;
+- webhooks de entrada e saldo baixam pagamento automaticamente;
 - PDF público baixa sem erro;
 - página 404 pública orienta o cliente;
 - Web Analytics registra visitas;
 - logs de produção não mostram erro 500 recorrente.
+
+Se todos esses itens estiverem verdes, o produto está pronto para venda
+assistida. Para venda com dinheiro real, execute a virada do Asaas produção
+antes de prometer cobrança ativa ao cliente.
 
 ## Rotina antes de cada demonstração
 

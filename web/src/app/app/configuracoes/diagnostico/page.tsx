@@ -104,7 +104,7 @@ export default async function ProductionDiagnosticsPage() {
       title: "Asaas",
       detail: serverEnv.ASAAS_API_KEY
         ? asaasIsSandbox
-          ? "Sandbox configurado. Perfeito para demo; ainda não cobra dinheiro real."
+          ? "Sandbox configurado e ciclo entrada -> saldo certificado. Ainda não cobra dinheiro real."
           : "Produção configurada. Cobranças podem envolver dinheiro real."
         : "API Key do Asaas não configurada. Pix não será gerado.",
       status: serverEnv.ASAAS_API_KEY
@@ -114,15 +114,15 @@ export default async function ProductionDiagnosticsPage() {
         : "blocked",
       action: serverEnv.ASAAS_API_KEY
         ? asaasIsSandbox
-          ? "Usar sandbox para piloto demonstrativo; virar produção só quando for cobrar."
-          : "Fazer teste controlado de baixo valor antes de vender em escala."
+          ? "Usar sandbox em demos; virar produção só quando houver cliente pronto para pagar."
+          : "Fazer teste controlado de baixo valor antes de vender sem acompanhamento."
         : "Configurar ASAAS_API_KEY na Vercel.",
       icon: CreditCard,
     },
     {
       title: "Webhook Asaas",
       detail:
-        "Token de webhook está presente. Sem isso, baixa automática de pagamento fica frágil.",
+        "Token presente. Webhook já foi validado contra duplicidade, token inválido e baixa de entrada/saldo.",
       status: serverEnv.ASAAS_WEBHOOK_TOKEN ? "ready" : "blocked",
       action:
         "Conferir no painel do Asaas se a URL do webhook está ativa e sem fila pausada.",
@@ -142,7 +142,7 @@ export default async function ProductionDiagnosticsPage() {
     {
       title: "PDF de orçamento",
       detail:
-        "A rota de PDF compila no build de produção e segue como documento comercial do cliente.",
+        "PDF público e administrativo fazem parte da apresentação comercial do orçamento.",
       status: "ready",
       action:
         "Antes de cada demo, baixar um PDF real de orçamento para validar runtime.",
@@ -170,6 +170,13 @@ export default async function ProductionDiagnosticsPage() {
     blockedItems.length === 0
       ? "Pronto para demo guiada"
       : "Ajuste bloqueios antes da demo";
+  const financialProof = [
+    "Orçamento aprovado vira obra com cobrança de entrada.",
+    "Webhook baixa pagamento sem duplicar evento.",
+    "Conclusão da obra libera saldo final.",
+    "Entrada e saldo pagos aparecem no financeiro.",
+    "Cliente vê pagamento completo no link público.",
+  ];
 
   return (
     <div className="container max-w-5xl space-y-6 py-6">
@@ -231,6 +238,38 @@ export default async function ProductionDiagnosticsPage() {
         </div>
       </section>
 
+      <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/20">
+        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs font-black uppercase tracking-[0.14em] text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-100">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Ciclo certificado
+            </div>
+            <h2 className="mt-4 text-xl font-black tracking-tight text-emerald-950 dark:text-emerald-50">
+              O dinheiro já fecha ponta a ponta no sandbox
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-emerald-900/80 dark:text-emerald-100/80">
+              O fluxo técnico de cobrança foi validado até o fim: entrada,
+              obra concluída, saldo, webhooks e financeiro. Para cobrar dinheiro
+              real, falta apenas a virada controlada para Asaas produção e um
+              teste real de baixo valor.
+            </p>
+          </div>
+
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {financialProof.map((item) => (
+              <li
+                key={item}
+                className="flex gap-3 rounded-md border border-emerald-200 bg-white/75 px-3 py-2 text-sm text-emerald-950 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-50"
+              >
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                <span className="leading-6">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section className="grid gap-3 md:grid-cols-2">
         {items.map((item) => (
           <ReadinessCard key={item.title} item={item} />
@@ -267,7 +306,7 @@ export default async function ProductionDiagnosticsPage() {
                 "Abra o orçamento e mostre a proposta com itens e PDF.",
                 "Abra o link do cliente como se estivesse no WhatsApp.",
                 "Mostre a obra com etapas, diário, custos e cobranças.",
-                "Explique que o Pix real só entra quando o cliente estiver pronto.",
+                "Mostre entrada e saldo no sandbox; produção real só entra no piloto pago.",
               ].map((step, index) => (
                 <li key={step} className="flex gap-3">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-black text-primary-foreground">
@@ -307,6 +346,7 @@ export default async function ProductionDiagnosticsPage() {
             "Criar revisão e reenviar.",
             "Aprovar como cliente.",
             "Virar obra e gerar Pix sandbox.",
+            "Concluir etapas e liberar saldo sandbox.",
           ].map((step, index) => (
             <li
               key={step}

@@ -1,172 +1,168 @@
 # Direcionamento Executivo - Gestão Empreita
 
-Data: 2026-06-01
+Data: 2026-06-14
 
-## Norte
+## Veredito Atual
 
-Transformar o Gestão Empreita em um produto vendável para pequenas empreiteiras,
-começando pelo fluxo que mais gera valor imediato:
+O Gestão Empreita já é um produto demonstrável e vendável em piloto assistido.
+Ele ainda não deve ser tratado como SaaS self-service de escala, mas está pronto
+para ser apresentado a donos de pequenas empreiteiras com uma promessa clara:
 
-1. Orçamento profissional.
-2. Aprovação digital pelo cliente.
-3. Conversão para obra.
-4. Controle de execução com fotos, etapas, ponto e gastos.
-5. Margem visível.
-6. Cobrança Pix integrada.
+> Criar orçamento profissional, aprovar pelo celular, virar obra e controlar
+> execução, fotos, custos, margem e cobrança Pix sem planilha.
 
-O produto não deve tentar ser um ERP completo neste momento. A promessa precisa
-ser mais afiada:
+O ponto principal mudou. Antes, o risco era não existir fluxo completo. Agora o
+risco é comercial: vender para a pessoa errada, prometer automação demais antes
+da operação real e não acompanhar os primeiros clientes de perto.
 
-> Criar orçamento bonito, aprovar pelo celular e controlar obra sem planilha.
+## O Que Já Está Certificado
 
-## Posição Atual
+Fluxo validado em produção com Vercel, Supabase e Asaas sandbox:
 
-O MVP técnico já passou da fase de esqueleto. Existem módulos funcionais de
-clientes, catálogo, orçamentos, link público, PDF, obras, diário, fotos, custos,
-ponto e financeiro básico.
+1. Criação de cliente.
+2. Criação de orçamento com itens, total, margem e validade.
+3. Envio por link público e WhatsApp.
+4. Visualização do cliente no celular.
+5. Pedido de mudança pelo cliente.
+6. Criação de revisão a partir de orçamento recusado.
+7. Reenvio do orçamento revisado.
+8. Aprovação digital pelo cliente.
+9. Conversão do orçamento aprovado em obra.
+10. Geração de cobrança Pix de entrada.
+11. Baixa automática por webhook idempotente do Asaas.
+12. Execução da obra com etapas.
+13. Conclusão da obra.
+14. Liberação de saldo final.
+15. Baixa automática do saldo por webhook.
+16. Financeiro mostrando recebido, pendente e histórico.
+17. Link público mostrando pagamento completo ao cliente.
 
-O risco principal deixou de ser "não existe produto" e virou:
+Também já foram tratados pontos de confiança importantes: PDF, página pública
+404, onboarding, analytics, textos de produção, diagnóstico interno e checklist
+sem custo fixo antes da primeira venda.
 
-- prometer mais do que a aplicação entrega;
-- não ter cobrança real;
-- não ter observabilidade de produção;
-- não ter processo de piloto com clientes reais;
-- acumular funcionalidades antes de validar disposição de pagamento.
+Documentos operacionais:
 
-O checklist operacional para colocar Asaas, Resend e Analytics em produção sem
-gasto antecipado está em
-[`docs/checklist-producao-asaas-resend-analytics.md`](./checklist-producao-asaas-resend-analytics.md).
+- [`CHECKLIST_LANCAMENTO.md`](./CHECKLIST_LANCAMENTO.md): prontidão antes de
+  colocar clientes reais.
+- [`primeira-venda-zero-custo.md`](./primeira-venda-zero-custo.md): roteiro
+  para vender o primeiro piloto sem gastar antes.
+- [`checklist-producao-asaas-resend-analytics.md`](./checklist-producao-asaas-resend-analytics.md):
+  virada segura de Asaas, Resend e Analytics.
 
-## Prioridade Máxima
+## Nível de Prontidão
 
-### 1. Produto vendável sem falsa promessa
+### Pronto Para Vender Agora
 
-Manter a landing e o discurso comercial focados no que já funciona:
+- Demo guiada com cliente real.
+- Piloto assistido com até 5 empresas.
+- Uso do domínio gratuito `gestao-empreita.vercel.app`.
+- WhatsApp como canal principal de envio, negociação e cobrança.
+- Asaas sandbox para demonstração sem movimentar dinheiro real.
+- Resend apenas para teste, suporte interno e alertas básicos.
 
-- orçamento profissional;
-- link de aprovação;
-- obra controlada;
-- margem estimada.
+### Não Vender Ainda Como Promessa
 
-Não usar "Pix em um clique" como promessa pública até Asaas estar implementado
-e validado.
+- Automação completa de WhatsApp.
+- Email profissional para clientes sem domínio próprio verificado.
+- Multiempresa, white-label ou subcontas Asaas.
+- BI avançado.
+- App nativo.
+- Operação self-service sem acompanhamento.
 
-### 2. Cobrança Asaas
+### Bloqueio Para Cobrar Dinheiro Real
 
-Esta é a próxima entrega de maior impacto. Ela fecha o ciclo de valor:
+O único bloqueio técnico relevante para primeira cobrança real é a virada
+controlada do Asaas sandbox para produção:
 
-orçamento aprovado -> obra -> entrada -> execução -> saldo -> financeiro.
+- conta Asaas de produção aprovada;
+- chave API de produção criada;
+- webhook de produção ativo;
+- variáveis de produção atualizadas na Vercel;
+- uma cobrança real de baixo valor testada e confirmada.
 
-Implementar em quatro cortes:
+Esse passo deve ser feito somente quando houver um cliente piloto disposto a
+pagar ou quando você for fazer um teste real controlado. Antes disso, manter
+sandbox é correto porque preserva caixa.
 
-1. Fundação de schema, env vars e cliente Asaas.
-2. Cobrança de entrada ao converter orçamento em obra.
-3. Webhook idempotente e status de pagamento.
-4. Saldo na entrega + financeiro com recebidos, pendentes e atrasados.
+## Proposta Comercial Inicial
 
-### 3. Observabilidade
+Vender como piloto assistido, não como assinatura anônima.
 
-Antes de clientes pagantes em volume:
+- Oferta: "Eu configuro com você e coloco seu primeiro orçamento rodando hoje."
+- Trial: 14 dias sem cartão.
+- Preço alvo: R$ 197/mês.
+- Primeira meta: 5 empresas pequenas usando de verdade.
+- Condição de sucesso: pelo menos 1 orçamento enviado, 1 aprovação e 1 obra
+  acompanhada com etapa, foto ou custo.
 
-- Sentry ou equivalente para exceções.
-- Eventos de funil: signup, onboarding_done, quote_created, quote_sent,
-  quote_approved, project_created, diary_added, cost_added, payment_created,
-  payment_confirmed.
-- Logs estruturados em server actions e webhooks.
+Se o cliente aceitar pagar depois do piloto, a prioridade passa a ser qualidade
+operacional e suporte, não novas funcionalidades.
 
-### 4. Piloto pago
+## Regra de Produto
 
-Não buscar escala ainda. Buscar 5 empresas pequenas e acompanhar de perto.
+Toda melhoria precisa aumentar pelo menos um destes indicadores:
 
-Critérios de piloto:
+1. tempo até o primeiro orçamento enviado;
+2. taxa de aprovação do orçamento;
+3. confiança do cliente final no link público;
+4. controle de obra pelo prestador;
+5. clareza de margem e dinheiro recebido;
+6. chance de o dono pagar mensalidade.
 
-- O dono cria o primeiro orçamento em menos de 10 minutos.
-- O cliente consegue aprovar sem ajuda.
-- O dono volta no painel da obra durante a execução.
-- Pelo menos uma obra tem custos lançados.
-- O dono aceita pagar R$ 197/mês após o teste.
+Se uma ideia não ajuda nesses pontos, fica fora do ciclo atual.
 
-## Plano de 30 Dias
+## Próximos Alvos
 
-### Semana 1 - Endurecer versão vendável
+### Alvo 1 - Primeira Venda Assistida
 
-- Congelar uma branch/release.
-- Atualizar docs e seed demo.
-- Revisar landing, signup, onboarding e dashboard.
-- Criar checklist manual de QA.
-- Publicar staging e produção.
+Preparar roteiro, demo kit e checklist para apresentar o produto em 20 minutos,
+sem depender de feedback demorado de amigos.
 
-Entrega esperada: produto demonstrável sem vergonha e sem promessa falsa.
+Entrega esperada: uma demonstração repetível que mostra orçamento, link público,
+aprovação, obra, Pix e financeiro sem improviso.
 
-### Semana 2 - Cobrança Pix Asaas
+### Alvo 2 - Virada Asaas Produção
 
-- Implementar schema de cobrança.
-- Criar cliente Asaas a partir do cliente cadastrado.
-- Gerar Pix de entrada ao virar obra.
-- Mostrar cobrança no painel da obra.
-- Rodar sandbox ponta a ponta.
+Quando existir cliente piloto ou teste real autorizado, trocar sandbox por
+produção de forma controlada e registrar o resultado.
 
-Entrega esperada: primeira cobrança Pix criada pelo sistema.
+Entrega esperada: uma cobrança real de baixo valor confirmada no sistema.
 
-### Semana 3 - Webhook + financeiro real
+### Alvo 3 - Confiança de Uso Diário
 
-- Implementar webhook idempotente.
-- Atualizar status de cobrança automaticamente.
-- Criar visão de recebidos, pendentes e atrasados.
-- Expor cobrança no link público do cliente.
-- Adicionar ação de regenerar cobrança.
+Refinar telas que o dono vai abrir toda semana: orçamentos, obra, diário,
+financeiro e clientes.
 
-Entrega esperada: dinheiro pago no Asaas aparece no Gestão Empreita.
+Entrega esperada: menos dúvida, mais feedback visual e menos chance de erro em
+mobile.
 
-### Semana 4 - Piloto assistido
+### Alvo 4 - Operação Comercial
 
-- Instalar com 5 empresas.
-- Observar uso real sem defender o produto.
-- Corrigir atritos de onboarding e mobile.
-- Medir conversão de orçamento enviado para orçamento aprovado.
-- Definir preço final do primeiro plano.
+Criar página curta de venda, roteiro de WhatsApp, FAQ e processo de onboarding
+manual.
 
-Entrega esperada: sinais claros de pagamento e lista curta de melhorias reais.
+Entrega esperada: você conseguir prospectar 20 empresas sem explicar o produto
+do zero toda vez.
 
 ## O Que Não Fazer Agora
 
-- Não criar estoque completo antes de validar cobrança.
-- Não criar BI avançado antes de ter clientes usando financeiro básico.
-- Não construir app nativo antes de testar PWA/offline.
-- Não criar multi-empresa e white-label agora.
-- Não adicionar subcontas Asaas no MVP inicial.
-- Não gastar tempo com automações de WhatsApp pagas antes de provar retenção.
+- Comprar domínio antes da primeira venda.
+- Pagar ferramenta de WhatsApp antes de provar venda manual.
+- Criar planos demais.
+- Construir dashboard executivo antes de uso recorrente.
+- Refatorar módulo inteiro sem ganho direto no funil.
+- Tentar atender construtora grande antes de dominar pequenas empreiteiras.
 
-## Métricas Que Importam
+## Indicador de "Pronto Para Escalar"
 
-- Tempo até primeiro orçamento criado.
-- Orçamentos enviados por empresa por semana.
-- Taxa de aprovação dos orçamentos enviados.
-- Obras criadas a partir de aprovados.
-- Obras com pelo menos um diário/foto.
-- Obras com pelo menos um gasto lançado.
-- Margem média visível por obra.
-- Cobranças Pix criadas e confirmadas.
-- Conversão trial -> pago.
+O produto só deve sair de piloto assistido quando estes sinais existirem:
 
-## Preço Inicial
+- 5 empresas testaram com acompanhamento.
+- 3 empresas criaram orçamento sem você operar por elas.
+- 2 empresas aprovaram obra real com cliente final.
+- 1 empresa pagou pelo menos o primeiro mês.
+- Nenhum erro recorrente em PDF, link público, webhook ou login.
+- O roteiro de onboarding leva menos de 30 minutos.
 
-Começar simples:
-
-- Trial: 14 dias sem cartão.
-- Plano inicial: R$ 197/mês.
-- Desconto anual: 2 meses grátis.
-
-Não lançar três planos no começo. Plano único reduz decisão e acelera venda.
-Planos Pro/Business entram depois que houver padrão de uso real.
-
-## Padrão de Decisão
-
-Quando houver dúvida entre duas funcionalidades, escolher a que:
-
-1. reduz tempo para o primeiro orçamento aprovado;
-2. ajuda o dono enxergar dinheiro ou margem;
-3. reduz retrabalho operacional na obra;
-4. aumenta chance de pagamento mensal.
-
-Todo o resto fica para depois.
+Antes disso, o foco não é escala. É venda assistida, aprendizado real e caixa.

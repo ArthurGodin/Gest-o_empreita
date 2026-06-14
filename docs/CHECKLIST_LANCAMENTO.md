@@ -4,73 +4,96 @@ Use este checklist antes de colocar clientes reais usando a aplicação.
 
 ## 1. Código e Deploy
 
-- [ ] Branch de release criada a partir de uma árvore Git limpa.
-- [ ] `npm run lint` passou.
-- [ ] `npx tsc --noEmit` passou.
-- [ ] `npm test` passou.
-- [ ] `npm run build` passou.
-- [ ] Staging publicado.
-- [ ] Produção publicada.
-- [ ] `NEXT_PUBLIC_APP_URL` aponta para o domínio correto em produção.
+- [x] `npm run lint` passou em 2026-06-14.
+- [x] `npm test` passou em 2026-06-14.
+- [x] `npm run build` passou em 2026-06-14.
+- [x] Produção publicada em `https://gestao-empreita.vercel.app`.
+- [x] `NEXT_PUBLIC_APP_URL` aponta para a URL pública de produção.
+- [ ] Branch/tag de release criada a partir de uma árvore Git limpa.
 
 ## 2. Supabase
 
-- [ ] Todas as migrations aplicadas em staging.
-- [ ] Todas as migrations aplicadas em produção.
-- [ ] RLS habilitado nas tabelas públicas.
-- [ ] Buckets criados: `company-logos`, `quotes-pdf`, `diary-photos`.
-- [ ] Auth configurado com URL de produção e callback.
-- [ ] Seed/demo validado em staging.
+- [x] Migrations principais aplicadas em produção.
+- [x] RLS habilitado nas tabelas públicas do produto.
+- [x] Auth configurado para produção.
+- [x] Buckets usados pelo produto validados no fluxo real.
+- [x] Reload de schema executado após migrations recentes.
+- [ ] Registrar em release note a data exata da última migration aplicada.
 
 ## 3. Fluxo Principal
 
-- [ ] Criar conta.
-- [ ] Fazer onboarding da empresa.
-- [ ] Cadastrar cliente.
-- [ ] Criar orçamento.
-- [ ] Adicionar itens do catálogo.
-- [ ] Enviar orçamento.
-- [ ] Abrir link público em aba anônima/celular.
-- [ ] Aprovar orçamento pelo link público.
-- [ ] Converter orçamento aprovado em obra.
-- [ ] Aplicar template de etapas.
-- [ ] Adicionar diário com foto.
-- [ ] Lançar gasto.
-- [ ] Registrar ponto.
-- [ ] Conferir margem no painel financeiro.
+- [x] Criar conta.
+- [x] Fazer onboarding da empresa.
+- [x] Cadastrar cliente.
+- [x] Criar orçamento.
+- [x] Enviar orçamento.
+- [x] Abrir link público em celular/navegador.
+- [x] Cliente pedir mudança.
+- [x] Criar revisão e reenviar.
+- [x] Aprovar orçamento pelo link público.
+- [x] Converter orçamento aprovado em obra.
+- [x] Criar etapas da obra.
+- [x] Marcar etapas como concluídas.
+- [x] Concluir obra.
+- [x] Liberar saldo.
+- [x] Conferir financeiro.
+- [ ] Rodar uma demo fresca antes de cada reunião comercial.
 
-## 4. Segurança
+## 4. Cobrança Asaas
 
-- [ ] Link público não expõe custos internos.
-- [ ] Link público não expõe ponto/equipe completa.
-- [ ] Foto pública exige token válido.
-- [ ] PDF público exige token válido.
-- [ ] Usuário de uma empresa não enxerga dados de outra.
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` existe só no servidor.
-- [ ] `.env.local` não está versionado.
+- [x] Asaas sandbox configurado.
+- [x] `ASAAS_API_KEY` sandbox configurada.
+- [x] `ASAAS_WEBHOOK_TOKEN` configurado.
+- [x] Cobrança Pix de entrada criada ao virar obra.
+- [x] Webhook Asaas validado com `PAYMENT_CONFIRMED`.
+- [x] Webhook Asaas validado com `PAYMENT_RECEIVED`.
+- [x] Eventos duplicados não duplicam baixa.
+- [x] Token inválido retorna 401.
+- [x] Evento atrasado não rebaixa cobrança já paga.
+- [x] Saldo final gerado e baixado por webhook.
+- [x] Financeiro mostra recebidos, pendentes e histórico.
+- [ ] Conta Asaas produção aprovada.
+- [ ] Chave API de produção configurada na Vercel.
+- [ ] Webhook de produção criado no painel Asaas.
+- [ ] Cobrança real de baixo valor validada.
 
-## 5. Comercial
+## 5. Segurança
 
-- [ ] Landing promete apenas funcionalidades existentes.
-- [ ] Página de preços publicada.
-- [ ] Termos e privacidade acessíveis no rodapé.
-- [ ] Roteiro de demonstração definido.
+- [x] Link público não expõe custos internos.
+- [x] Foto pública exige token válido.
+- [x] PDF público exige token válido.
+- [x] `SUPABASE_SERVICE_ROLE_KEY` fica somente no servidor.
+- [x] `.env.local` não está versionado.
+- [ ] Fazer QA cross-tenant antes de escalar para clientes sem acompanhamento.
+
+## 6. Comercial
+
+- [x] Landing promete funcionalidades existentes.
+- [x] Página de preços publicada.
+- [x] Termos e privacidade acessíveis no rodapé.
+- [x] Roteiro de demonstração definido.
+- [x] Preço inicial definido: R$ 197/mês.
+- [x] Mensagem de venda curta pronta.
+- [x] Estratégia sem custo fixo documentada.
 - [ ] Lista dos 5 primeiros pilotos definida.
-- [ ] Preço inicial definido: R$ 197/mês.
-- [ ] Mensagem de venda curta pronta.
+- [ ] Primeiro piloto pago marcado.
 
-## 6. Próxima Entrega Obrigatória
+## 7. Critério Para Vender Hoje
 
-- [ ] Asaas sandbox criado.
-- [ ] `ASAAS_API_KEY` configurada em staging.
-- [ ] `ASAAS_WEBHOOK_TOKEN` configurado.
-- [ ] Cobrança Pix de entrada criada ao virar obra.
-- [ ] Webhook Asaas recebendo `PAYMENT_CONFIRMED`.
-- [ ] Financeiro mostra recebido, pendente e atrasado.
+Pode vender como piloto assistido se:
+
+- a demo abre no domínio gratuito;
+- o cliente entende orçamento, link público e aprovação;
+- você deixa claro que Asaas está em sandbox até a cobrança real;
+- você acompanha a primeira empresa de perto;
+- você não promete automação completa de WhatsApp nem email profissional.
+
+Não vender ainda como self-service de escala.
 
 ## Mensagem de Venda Recomendada
 
-> Estou abrindo 5 vagas para empreiteiras testarem um sistema que cria orçamento
-> profissional, manda link para o cliente aprovar e organiza a obra com foto,
-> gasto e margem. A ideia é tirar sua empresa do caderno/WhatsApp sem colocar um
-> ERP pesado no caminho.
+```text
+Estou abrindo 5 vagas para empreiteiras testarem um sistema que cria orçamento profissional, manda link para o cliente aprovar pelo celular e organiza a obra com foto, gasto, margem e Pix.
+
+A ideia é tirar sua empresa do caderno/WhatsApp sem colocar um ERP pesado no caminho. Eu configuro com você e coloco seu primeiro orçamento rodando.
+```
