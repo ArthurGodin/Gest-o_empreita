@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import {
+  trackProductEvent,
+  type ProductEventName,
+} from "@/lib/product-analytics";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +17,8 @@ interface CopyButtonProps
   copiedLabel?: string;
   successTitle?: string;
   successDescription?: string;
+  analyticsEvent?: ProductEventName;
+  analyticsProperties?: Record<string, string | number | boolean | null>;
 }
 
 export function CopyButton({
@@ -21,6 +27,8 @@ export function CopyButton({
   copiedLabel = "Copiado",
   successTitle = "Copiado",
   successDescription,
+  analyticsEvent,
+  analyticsProperties,
   className,
   disabled,
   ...props
@@ -33,6 +41,9 @@ export function CopyButton({
     try {
       await copyText(text);
       setCopied(true);
+      if (analyticsEvent) {
+        trackProductEvent(analyticsEvent, analyticsProperties);
+      }
       window.setTimeout(() => setCopied(false), 1800);
       toast({
         title: successTitle,

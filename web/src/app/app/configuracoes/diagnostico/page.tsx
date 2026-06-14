@@ -1,0 +1,340 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import {
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  CreditCard,
+  FileText,
+  Mail,
+  MessageCircle,
+  Rocket,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/app-shell/page-header";
+import { getActiveCompanyFull } from "@/lib/queries/company-settings";
+import { env } from "@/lib/env";
+import { serverEnv } from "@/lib/env-server";
+import { cn } from "@/lib/utils";
+
+export const metadata = {
+  title: "Diagnóstico de produção — Gestão Empreita",
+};
+
+type ReadinessStatus = "ready" | "attention" | "blocked";
+
+interface ReadinessItem {
+  title: string;
+  detail: string;
+  status: ReadinessStatus;
+  action: string;
+  icon: typeof CheckCircle2;
+}
+
+const statusCopy: Record<
+  ReadinessStatus,
+  { label: string; className: string; iconClassName: string }
+> = {
+  ready: {
+    label: "Pronto",
+    className:
+      "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100",
+    iconClassName: "text-emerald-700 dark:text-emerald-300",
+  },
+  attention: {
+    label: "Atenção",
+    className:
+      "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100",
+    iconClassName: "text-amber-700 dark:text-amber-300",
+  },
+  blocked: {
+    label: "Bloqueia venda",
+    className:
+      "border-red-200 bg-red-50 text-red-900 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-100",
+    iconClassName: "text-red-700 dark:text-red-300",
+  },
+};
+
+export default async function ProductionDiagnosticsPage() {
+  const company = await getActiveCompanyFull();
+  if (!company) redirect("/onboarding");
+
+  const asaasIsSandbox = serverEnv.ASAAS_API_URL.includes("sandbox");
+  const appUrlIsProduction =
+    !env.NEXT_PUBLIC_APP_URL.includes("localhost") &&
+    !env.NEXT_PUBLIC_APP_URL.includes("127.0.0.1");
+
+  const items: ReadinessItem[] = [
+    {
+      title: "Identidade da empresa",
+      detail: company.phone
+        ? "Nome e WhatsApp comercial estão prontos para aparecer nos orçamentos."
+        : "Falta WhatsApp comercial. O cliente precisa saber por onde chamar.",
+      status: company.phone ? "ready" : "blocked",
+      action: company.phone
+        ? "Manter dados revisados antes de cada demo."
+        : "Cadastre o telefone em Configurações.",
+      icon: MessageCircle,
+    },
+    {
+      title: "Domínio gratuito de produção",
+      detail: appUrlIsProduction
+        ? "O app está apontando para uma URL pública, sem custo de domínio agora."
+        : "A URL pública parece estar local. Links enviados podem quebrar fora da sua máquina.",
+      status: appUrlIsProduction ? "ready" : "blocked",
+      action: appUrlIsProduction
+        ? "Usar o domínio gratuito até a primeira venda."
+        : "Ajustar NEXT_PUBLIC_APP_URL na Vercel.",
+      icon: Rocket,
+    },
+    {
+      title: "Analytics de funil",
+      detail:
+        "Pageviews, eventos Vercel e logs estruturados cobrem orçamento, WhatsApp, PDF, aprovação, obra e Pix.",
+      status: "ready",
+      action:
+        "Depois do deploy, acompanhar pageviews na Vercel e eventos via logs product_event.",
+      icon: BarChart3,
+    },
+    {
+      title: "Asaas",
+      detail: serverEnv.ASAAS_API_KEY
+        ? asaasIsSandbox
+          ? "Sandbox configurado. Perfeito para demo; ainda não cobra dinheiro real."
+          : "Produção configurada. Cobranças podem envolver dinheiro real."
+        : "API Key do Asaas não configurada. Pix não será gerado.",
+      status: serverEnv.ASAAS_API_KEY
+        ? asaasIsSandbox
+          ? "attention"
+          : "ready"
+        : "blocked",
+      action: serverEnv.ASAAS_API_KEY
+        ? asaasIsSandbox
+          ? "Usar sandbox para piloto demonstrativo; virar produção só quando for cobrar."
+          : "Fazer teste controlado de baixo valor antes de vender em escala."
+        : "Configurar ASAAS_API_KEY na Vercel.",
+      icon: CreditCard,
+    },
+    {
+      title: "Webhook Asaas",
+      detail:
+        "Token de webhook está presente. Sem isso, baixa automática de pagamento fica frágil.",
+      status: serverEnv.ASAAS_WEBHOOK_TOKEN ? "ready" : "blocked",
+      action:
+        "Conferir no painel do Asaas se a URL do webhook está ativa e sem fila pausada.",
+      icon: ShieldCheck,
+    },
+    {
+      title: "Resend",
+      detail: serverEnv.RESEND_API_KEY
+        ? "Envio de email está configurado para suporte interno e notificações básicas."
+        : "Email não está configurado. O app deve depender do WhatsApp neste momento.",
+      status: serverEnv.RESEND_API_KEY ? "ready" : "attention",
+      action: serverEnv.RESEND_API_KEY
+        ? "Manter WhatsApp como canal principal até comprar domínio."
+        : "Configurar RESEND_API_KEY apenas se quiser notificações por email.",
+      icon: Mail,
+    },
+    {
+      title: "PDF de orçamento",
+      detail:
+        "A rota de PDF compila no build de produção e segue como documento comercial do cliente.",
+      status: "ready",
+      action:
+        "Antes de cada demo, baixar um PDF real de orçamento para validar runtime.",
+      icon: FileText,
+    },
+    {
+      title: "Plano sem custo fixo",
+      detail:
+        "Domínio próprio e Speed Insights continuam opcionais até a primeira venda.",
+      status:
+        process.env.NEXT_PUBLIC_ENABLE_SPEED_INSIGHTS === "true"
+          ? "ready"
+          : "attention",
+      action:
+        "Não comprar domínio agora; investir só quando houver cliente pagando.",
+      icon: Wrench,
+    },
+  ];
+
+  const readyCount = items.filter((item) => item.status === "ready").length;
+  const blockedItems = items.filter((item) => item.status === "blocked");
+  const attentionItems = items.filter((item) => item.status === "attention");
+  const score = Math.round((readyCount / items.length) * 100);
+  const pilotStatus =
+    blockedItems.length === 0
+      ? "Pronto para demo guiada"
+      : "Ajuste bloqueios antes da demo";
+
+  return (
+    <div className="container max-w-5xl space-y-6 py-6">
+      <PageHeader
+        title="Diagnóstico de produção"
+        description="Painel objetivo para saber se o Gestão Empreita está pronto para demonstrar, vender e cobrar sem improviso."
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/app/configuracoes">
+              <ChevronRight className="h-4 w-4 rotate-180" />
+              Voltar
+            </Link>
+          </Button>
+        }
+      />
+
+      <section className="grid gap-3 lg:grid-cols-[1fr_18rem]">
+        <div className="rounded-lg border bg-card p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Prontidão comercial
+              </div>
+              <h2 className="mt-2 text-2xl font-black tracking-tight">
+                {pilotStatus}
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                O objetivo aqui é vender com segurança: link público abrindo,
+                WhatsApp funcionando, Pix sob controle e dados suficientes para
+                saber onde o cliente travou.
+              </p>
+            </div>
+            <div className="rounded-md border bg-muted/30 px-4 py-3 text-center">
+              <div className="text-3xl font-black">{score}%</div>
+              <div className="text-xs font-medium text-muted-foreground">
+                do checklist pronto
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <Metric label="Prontos" value={readyCount} tone="ready" />
+            <Metric label="Atenção" value={attentionItems.length} tone="attention" />
+            <Metric label="Bloqueios" value={blockedItems.length} tone="blocked" />
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-[#d8e0ea] bg-[#f7fafc] p-5 shadow-sm dark:bg-muted/20">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div>
+              <h2 className="font-bold">Regra de venda</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Se existir item em “Bloqueia venda”, não faça demo fria. Se
+                houver só “Atenção”, faça demo guiada e explique a limitação.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-2">
+        {items.map((item) => (
+          <ReadinessCard key={item.title} item={item} />
+        ))}
+      </section>
+
+      <section className="rounded-lg border bg-card p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-black tracking-tight">
+              Roteiro de demonstração recomendado
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              Use sempre a mesma sequência para reduzir erro na apresentação e
+              descobrir onde o produto ainda precisa melhorar.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/app/orcamentos/novo">Criar orçamento de demo</Link>
+          </Button>
+        </div>
+
+        <ol className="mt-5 grid gap-2 text-sm md:grid-cols-2">
+          {[
+            "Criar cliente com telefone real.",
+            "Criar orçamento com 2 ou 3 itens.",
+            "Salvar e abrir WhatsApp com mensagem pronta.",
+            "Abrir link público no celular.",
+            "Baixar PDF e pedir ajuste.",
+            "Criar revisão e reenviar.",
+            "Aprovar como cliente.",
+            "Virar obra e gerar Pix sandbox.",
+          ].map((step, index) => (
+            <li
+              key={step}
+              className="flex gap-3 rounded-md border bg-muted/20 px-3 py-2"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: ReadinessStatus;
+}) {
+  const copy = statusCopy[tone];
+
+  return (
+    <div className={cn("rounded-md border px-3 py-2", copy.className)}>
+      <div className="text-2xl font-black">{value}</div>
+      <div className="text-xs font-semibold">{label}</div>
+    </div>
+  );
+}
+
+function ReadinessCard({ item }: { item: ReadinessItem }) {
+  const copy = statusCopy[item.status];
+  const Icon = item.icon;
+  const StatusIcon =
+    item.status === "ready"
+      ? CheckCircle2
+      : item.status === "blocked"
+        ? AlertTriangle
+        : Wrench;
+
+  return (
+    <article className="rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
+            <Icon className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-bold tracking-tight">{item.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {item.detail}
+            </p>
+          </div>
+        </div>
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs font-bold",
+            copy.className,
+          )}
+        >
+          <StatusIcon className={cn("h-3.5 w-3.5", copy.iconClassName)} />
+          {copy.label}
+        </span>
+      </div>
+      <div className="mt-4 rounded-md bg-muted/35 px-3 py-2 text-xs leading-5 text-muted-foreground">
+        {item.action}
+      </div>
+    </article>
+  );
+}

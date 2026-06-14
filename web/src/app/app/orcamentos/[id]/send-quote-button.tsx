@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn, formatDateTimeBR } from "@/lib/utils";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { markQuoteWhatsappSentAction, sendQuoteAction } from "../actions";
 
@@ -88,6 +89,11 @@ export function SendQuoteButton({
         return;
       }
       setShareUrl(withCurrentOrigin(result.url));
+      trackProductEvent("quote_send_prepared", {
+        mode: messageMode,
+        has_customer_phone: Boolean(customerPhone),
+        direct_whatsapp: Boolean(whatsappLink(customerPhone)),
+      });
       toast({
         variant: "success",
         title:
@@ -116,6 +122,10 @@ export function SendQuoteButton({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+      trackProductEvent("quote_public_link_copied", {
+        source: "send_dialog",
+        mode: messageMode,
+      });
       toast({
         variant: "success",
         title: "Link copiado",
@@ -142,6 +152,11 @@ export function SendQuoteButton({
     try {
       await navigator.clipboard.writeText(whatsappMessage);
       setCopiedMessage(true);
+      trackProductEvent("quote_whatsapp_message_copied", {
+        source: "send_dialog",
+        mode: messageMode,
+        direct_whatsapp: directWhatsapp,
+      });
       toast({
         variant: "success",
         title: "Mensagem copiada",
@@ -162,6 +177,11 @@ export function SendQuoteButton({
   function onOpenWhatsapp() {
     if (!waLink) return;
     window.open(waLink, "_blank", "noopener,noreferrer");
+    trackProductEvent("quote_whatsapp_opened", {
+      source: "send_dialog",
+      mode: messageMode,
+      direct_whatsapp: directWhatsapp,
+    });
 
     startTransition(async () => {
       const result = await markQuoteWhatsappSentAction(quoteId);

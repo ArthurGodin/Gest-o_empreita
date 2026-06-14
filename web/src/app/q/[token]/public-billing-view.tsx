@@ -300,6 +300,11 @@ function PublicChargeCard({
               copiedLabel="Pix copiado"
               successTitle="Pix copiado"
               successDescription="Cole este código no aplicativo do seu banco."
+              analyticsEvent="pix_copied"
+              analyticsProperties={{
+                source: "public_billing",
+                kind: charge.kind,
+              }}
               size="sm"
               variant="outline"
               className="h-11 w-full sm:h-9 sm:w-auto"

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createQuoteAction } from "../actions";
 import type { Customer } from "@/lib/queries/customers";
+import { trackProductEvent } from "@/lib/product-analytics";
 
 interface NewQuoteFormProps {
   customers: Customer[];
@@ -39,6 +40,10 @@ export function NewQuoteForm({ customers }: NewQuoteFormProps) {
         return;
       }
 
+      trackProductEvent("quote_created", {
+        has_title: Boolean(title.trim()),
+        customers_available: customers.length,
+      });
       router.push(`/app/orcamentos/${result.id}`);
       router.refresh();
     });

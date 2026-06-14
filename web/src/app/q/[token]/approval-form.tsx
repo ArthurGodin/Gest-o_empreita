@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { approveQuoteAction, rejectQuoteAction } from "./actions";
 
 interface ApprovalFormProps {
@@ -31,6 +32,9 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
       return;
     }
     setError(null);
+    trackProductEvent("quote_approval_started", {
+      has_contact_url: Boolean(contactUrl),
+    });
 
     startTransition(async () => {
       try {
@@ -42,6 +46,9 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
           setError(result.error);
           return;
         }
+        trackProductEvent("quote_approved", {
+          has_contact_url: Boolean(contactUrl),
+        });
         router.push(result.redirectTo);
       } catch (e) {
         console.error("[approve] action threw:", e);
@@ -73,6 +80,10 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
           return;
         }
         setMode("rejected");
+        trackProductEvent("quote_revision_requested", {
+          has_contact_url: Boolean(contactUrl),
+          reason_length: reason.trim().length,
+        });
         router.refresh();
       } catch (e) {
         console.error("[reject] action threw:", e);
@@ -145,7 +156,13 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
             <Button
               type="button"
               variant="outline"
-              onClick={() => setMode("rejecting")}
+              onClick={() => {
+                trackProductEvent("quote_revision_started", {
+                  has_contact_url: Boolean(contactUrl),
+                  source: "open_form",
+                });
+                setMode("rejecting");
+              }}
               disabled={pending}
               className="h-12 w-full text-base"
             >
@@ -154,7 +171,16 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
             </Button>
             {contactUrl && (
               <Button asChild variant="ghost" className="h-11 w-full">
-                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={contactUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() =>
+                    trackProductEvent("quote_contact_whatsapp_clicked", {
+                      source: "approval_idle",
+                    })
+                  }
+                >
                   <MessageCircle className="h-4 w-4" />
                   Falar no WhatsApp
                 </a>
@@ -232,7 +258,16 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
             </Button>
             {contactUrl && (
               <Button asChild variant="ghost" className="h-10 w-full">
-                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={contactUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() =>
+                    trackProductEvent("quote_contact_whatsapp_clicked", {
+                      source: "approval_rejecting",
+                    })
+                  }
+                >
                   <MessageCircle className="h-4 w-4" />
                   Conversar antes no WhatsApp
                 </a>
@@ -267,7 +302,16 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
               </p>
               {contactUrl && (
                 <Button asChild variant="outline" className="mt-3 h-9 bg-white/70">
-                  <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={contactUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() =>
+                      trackProductEvent("quote_contact_whatsapp_clicked", {
+                        source: "approval_rejected",
+                      })
+                    }
+                  >
                     <MessageCircle className="h-4 w-4" />
                     Chamar no WhatsApp
                   </a>

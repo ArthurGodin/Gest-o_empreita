@@ -20,6 +20,7 @@ import {
   entryPercentValidationMessage,
   parseEntryPercentInput,
 } from "@/lib/billing/entry-percent";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { convertToProjectAction } from "../actions";
 
 export interface TemplateOption {
@@ -82,6 +83,11 @@ export function ConvertToProject({
           setError(result.error);
           return;
         }
+        trackProductEvent("project_created_from_quote", {
+          has_template: Boolean(tpl),
+          entry_pct: validEntryPct,
+          has_customer_document: Boolean(cpfCnpj.trim()),
+        });
         router.push(`/app/obras/${result.project_id}`);
         router.refresh();
       } catch (e) {

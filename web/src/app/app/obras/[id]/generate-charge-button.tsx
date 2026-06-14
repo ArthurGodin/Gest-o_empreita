@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, QrCode } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { generateChargePixAction } from "./actions";
 
 interface GenerateChargeButtonProps {
@@ -39,6 +40,9 @@ export function GenerateChargeButton({
         });
         return;
       }
+      trackProductEvent("billing_pix_generated", {
+        label,
+      });
       toast({
         title: "Pix gerado",
         description:

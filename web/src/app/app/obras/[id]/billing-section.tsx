@@ -344,6 +344,11 @@ function ChargePanel({
               copiedLabel="Pix copiado"
               successTitle="Pix copiado"
               successDescription="Envie esse código ao cliente ou cole no WhatsApp."
+              analyticsEvent="pix_copied"
+              analyticsProperties={{
+                source: "project_billing",
+                kind: charge.kind,
+              }}
               size="sm"
               variant="outline"
               className="h-11 w-full sm:h-9 sm:w-auto"

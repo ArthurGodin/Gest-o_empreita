@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TrackedAnchor } from "@/components/tracked-anchor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone, whatsappShareLink } from "@/lib/format";
@@ -261,26 +262,30 @@ export default async function ApprovedPage({
                     asChild
                     className="h-12 bg-green-700 text-white hover:bg-green-800"
                   >
-                    <a
+                    <TrackedAnchor
                       href={contactUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      analyticsEvent="quote_contact_whatsapp_clicked"
+                      analyticsProperties={{ source: "approved_page" }}
                     >
                       <MessageCircle className="h-4 w-4" />
                       Combinar pelo WhatsApp
-                    </a>
+                    </TrackedAnchor>
                   </Button>
                 )}
 
                 <Button asChild variant="outline" className="h-12 bg-white">
-                  <a
+                  <TrackedAnchor
                     href={`/q/${quote.share_token}/pdf`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    analyticsEvent="quote_pdf_clicked"
+                    analyticsProperties={{ source: "approved_page" }}
                   >
                     <Download className="h-4 w-4" />
                     Baixar PDF aprovado
-                  </a>
+                  </TrackedAnchor>
                 </Button>
 
                 <Button asChild variant="outline" className="h-12 bg-white">

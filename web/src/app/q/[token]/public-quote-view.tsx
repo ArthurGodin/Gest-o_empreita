@@ -10,6 +10,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TrackedAnchor } from "@/components/tracked-anchor";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import {
   formatPhone,
@@ -127,10 +128,16 @@ export function PublicQuoteView({
               variant="outline"
               className="h-11 border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
             >
-              <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+              <TrackedAnchor
+                href={contactUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                analyticsEvent="quote_contact_whatsapp_clicked"
+                analyticsProperties={{ source: "public_header" }}
+              >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
-              </a>
+              </TrackedAnchor>
             </Button>
           )}
         </header>
@@ -203,14 +210,26 @@ export function PublicQuoteView({
                     asChild
                     className="h-11 bg-green-600 font-bold text-white hover:bg-green-700"
                   >
-                    <a href="#decisao">Aprovar agora</a>
+                    <TrackedAnchor
+                      href="#decisao"
+                      analyticsEvent="quote_approval_started"
+                      analyticsProperties={{ source: "public_total_card" }}
+                    >
+                      Aprovar agora
+                    </TrackedAnchor>
                   </Button>
                   <Button
                     asChild
                     variant="outline"
                     className="h-11 border-[#eadcc9] bg-white"
                   >
-                    <a href="#decisao">Pedir ajuste</a>
+                    <TrackedAnchor
+                      href="#decisao"
+                      analyticsEvent="quote_revision_started"
+                      analyticsProperties={{ source: "public_total_card" }}
+                    >
+                      Pedir ajuste
+                    </TrackedAnchor>
                   </Button>
                 </div>
               )}
@@ -243,14 +262,16 @@ export function PublicQuoteView({
               <div className="mt-4 grid gap-2">
                 {status !== "expired" && (
                   <Button asChild variant="outline" className="h-11 w-full">
-                    <a
+                    <TrackedAnchor
                       href={`/q/${quote.share_token}/pdf`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      analyticsEvent="quote_pdf_clicked"
+                      analyticsProperties={{ source: "public_quote" }}
                     >
                       <Download className="h-4 w-4" />
                       Baixar PDF
-                    </a>
+                    </TrackedAnchor>
                   </Button>
                 )}
                 {contactUrl && (
@@ -259,14 +280,16 @@ export function PublicQuoteView({
                     variant="outline"
                     className="h-11 w-full border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
                   >
-                    <a
+                    <TrackedAnchor
                       href={contactUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      analyticsEvent="quote_contact_whatsapp_clicked"
+                      analyticsProperties={{ source: "public_security_card" }}
                     >
                       <MessageCircle className="h-4 w-4" />
                       Tirar dúvida no WhatsApp
-                    </a>
+                    </TrackedAnchor>
                   </Button>
                 )}
               </div>
@@ -415,13 +438,25 @@ export function PublicQuoteView({
               variant="outline"
               className="h-11 shrink-0 border-[#eadcc9] px-3"
             >
-              <a href="#decisao">Ajustar</a>
+              <TrackedAnchor
+                href="#decisao"
+                analyticsEvent="quote_revision_started"
+                analyticsProperties={{ source: "public_mobile_bar" }}
+              >
+                Ajustar
+              </TrackedAnchor>
             </Button>
             <Button
               asChild
               className="h-11 shrink-0 bg-green-600 px-4 font-bold text-white hover:bg-green-700"
             >
-              <a href="#decisao">Aprovar</a>
+              <TrackedAnchor
+                href="#decisao"
+                analyticsEvent="quote_approval_started"
+                analyticsProperties={{ source: "public_mobile_bar" }}
+              >
+                Aprovar
+              </TrackedAnchor>
             </Button>
           </div>
         </div>

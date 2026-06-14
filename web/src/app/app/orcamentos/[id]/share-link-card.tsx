@@ -28,6 +28,7 @@ import {
 } from "../actions";
 import { env } from "@/lib/env";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { formatDateTimeBR } from "@/lib/utils";
 import {
   buildQuoteWhatsappMessage,
@@ -113,6 +114,11 @@ export function ShareLinkCard({
   function onOpenWhatsapp() {
     if (!whatsappUrl) return;
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    trackProductEvent("quote_whatsapp_opened", {
+      source: "share_card",
+      mode: messageMode,
+      direct_whatsapp: directWhatsapp,
+    });
 
     startTransition(async () => {
       const result = await markQuoteWhatsappSentAction(quoteId);
@@ -140,6 +146,10 @@ export function ShareLinkCard({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      trackProductEvent("quote_public_link_copied", {
+        source: "share_card",
+        mode: messageMode,
+      });
       toast({
         variant: "success",
         title: "Link copiado",
@@ -166,6 +176,11 @@ export function ShareLinkCard({
     try {
       await navigator.clipboard.writeText(whatsappMessage);
       setCopiedMessage(true);
+      trackProductEvent("quote_whatsapp_message_copied", {
+        source: "share_card",
+        mode: messageMode,
+        direct_whatsapp: directWhatsapp,
+      });
       toast({
         variant: "success",
         title: "Mensagem copiada",
@@ -199,6 +214,9 @@ export function ShareLinkCard({
         return;
       }
       setCurrentToken(result.share_token);
+      trackProductEvent("quote_public_link_regenerated", {
+        previous_link_safe: tokenIsSafe,
+      });
       toast({
         variant: "success",
         title: "Novo link gerado",
