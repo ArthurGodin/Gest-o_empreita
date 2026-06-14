@@ -14,6 +14,7 @@ export const PRODUCT_EVENT_NAMES = [
   "project_created_from_quote",
   "billing_pix_generated",
   "pix_copied",
+  "demo_kit_prepared",
 ] as const;
 
 export type ProductEventName = (typeof PRODUCT_EVENT_NAMES)[number];

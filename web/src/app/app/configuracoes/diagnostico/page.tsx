@@ -19,6 +19,7 @@ import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { env } from "@/lib/env";
 import { serverEnv } from "@/lib/env-server";
 import { cn } from "@/lib/utils";
+import { DemoKitButton } from "./demo-kit-button";
 
 export const metadata = {
   title: "Diagnóstico de produção — Gestão Empreita",
@@ -234,6 +235,50 @@ export default async function ProductionDiagnosticsPage() {
         {items.map((item) => (
           <ReadinessCard key={item.title} item={item} />
         ))}
+      </section>
+
+      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="p-5">
+            <div className="inline-flex items-center gap-2 rounded-md border bg-muted/35 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <Rocket className="h-3.5 w-3.5" />
+              Demo guiada
+            </div>
+            <h2 className="mt-4 text-xl font-black tracking-tight">
+              Kit de demonstração vendável
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Prepara dados realistas para apresentar o produto sem improviso:
+              cliente, orçamento aprovado, link público, obra em andamento,
+              etapas, diário, custos e cobranças locais em rascunho.
+            </p>
+
+            <div className="mt-5">
+              <DemoKitButton />
+            </div>
+          </div>
+
+          <div className="border-t bg-muted/20 p-5 lg:border-l lg:border-t-0">
+            <h3 className="text-sm font-black uppercase tracking-[0.14em] text-muted-foreground">
+              Como usar na venda
+            </h3>
+            <ol className="mt-4 space-y-3 text-sm">
+              {[
+                "Abra o orçamento e mostre a proposta com itens e PDF.",
+                "Abra o link do cliente como se estivesse no WhatsApp.",
+                "Mostre a obra com etapas, diário, custos e cobranças.",
+                "Explique que o Pix real só entra quando o cliente estiver pronto.",
+              ].map((step, index) => (
+                <li key={step} className="flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-black text-primary-foreground">
+                    {index + 1}
+                  </span>
+                  <span className="leading-6 text-muted-foreground">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-lg border bg-card p-5 shadow-sm">
