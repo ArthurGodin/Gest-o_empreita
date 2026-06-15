@@ -7,7 +7,11 @@ import { createAsaasCustomer } from "@/lib/asaas/customers";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createPixPayment, getPixQrCode } from "@/lib/asaas/payments";
 import type { ChargeKind, Database } from "@/lib/supabase/types";
-import { calculateEntrySplit } from "./entry-percent";
+import {
+  asaasChargeAmountValidationMessage,
+  calculateEntrySplit,
+  entryChargeValidationMessage,
+} from "./entry-percent";
 
 type SupabaseServer = SupabaseClient<Database>;
 
@@ -100,6 +104,12 @@ export async function createLocalCharges(
   supabase: SupabaseServer,
   input: LocalChargeInput,
 ): Promise<{ entryChargeId: string | null; saldoChargeId: string | null }> {
+  const splitError = entryChargeValidationMessage(
+    input.totalCents,
+    input.entryPct,
+  );
+  if (splitError) throw new Error(splitError);
+
   const { entryCents, saldoCents } = calculateEntrySplit(
     input.totalCents,
     input.entryPct,
@@ -151,6 +161,9 @@ export async function generatePixForCharge(
   if (charge.asaas_payment_id && charge.status !== "draft") {
     return { ok: true, chargeId: charge.id };
   }
+
+  const amountError = asaasChargeAmountValidationMessage(charge.amount_cents);
+  if (amountError) throw new Error(amountError);
 
   try {
     const asaasCustomerId = await ensureBillingProfile(

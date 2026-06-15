@@ -38,6 +38,10 @@ export function clientErrorFor(error: LoggableError | unknown): string {
     return "Asaas ainda não está configurado. Preencha a API Key e a URL da API antes de gerar Pix.";
   }
 
+  if (message.includes("pelo menos r$ 5,00")) {
+    return "Cobrança Pix precisa ser de pelo menos R$ 5,00.";
+  }
+
   if (e.name === "AsaasApiError") {
     if (e.status === 401 || e.status === 403) {
       return "Asaas recusou a chave configurada. Atualize a API Key do Asaas nas variáveis de ambiente e reinicie o deploy.";

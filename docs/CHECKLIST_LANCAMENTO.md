@@ -7,6 +7,7 @@ Use este checklist antes de colocar clientes reais usando a aplicação.
 - [x] `npm run lint` passou em 2026-06-14.
 - [x] `npm test` passou em 2026-06-14.
 - [x] `npm run build` passou em 2026-06-14.
+- [x] E2E local de orçamento -> aprovação -> obra -> Pix válido passou em 2026-06-15.
 - [x] Produção publicada em `https://gestao-empreita.vercel.app`.
 - [x] `NEXT_PUBLIC_APP_URL` aponta para a URL pública de produção.
 - [ ] Branch/tag de release criada a partir de uma árvore Git limpa.
@@ -45,6 +46,7 @@ Use este checklist antes de colocar clientes reais usando a aplicação.
 - [x] `ASAAS_API_KEY` sandbox configurada.
 - [x] `ASAAS_WEBHOOK_TOKEN` configurado.
 - [x] Cobrança Pix de entrada criada ao virar obra.
+- [x] Cobranças Pix abaixo de R$ 5,00 são bloqueadas antes do Asaas.
 - [x] Webhook Asaas validado com `PAYMENT_CONFIRMED`.
 - [x] Webhook Asaas validado com `PAYMENT_RECEIVED`.
 - [x] Eventos duplicados não duplicam baixa.

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  asaasChargeAmountValidationMessage,
   calculateEntrySplit,
+  entryChargeValidationMessage,
   entryPercentValidationMessage,
   isValidEntryPercent,
   parseEntryPercentInput,
@@ -35,6 +37,27 @@ describe("entry percent helpers", () => {
     });
     expect(() => calculateEntrySplit(45150, 150)).toThrow(
       "Entrada deve ficar entre 0% e 100%.",
+    );
+  });
+
+  it("rejects Asaas Pix charges below the minimum amount", () => {
+    expect(asaasChargeAmountValidationMessage(300)).toBe(
+      "Cobrança Pix precisa ser de pelo menos R$ 5,00.",
+    );
+    expect(asaasChargeAmountValidationMessage(500)).toBeNull();
+  });
+
+  it("validates entry and balance against the Asaas minimum Pix amount", () => {
+    expect(entryChargeValidationMessage(1000, 30)).toBe(
+      "Entrada Pix precisa ser de pelo menos R$ 5,00. Aumente a entrada ou use 0% para cobrar tudo depois.",
+    );
+    expect(entryChargeValidationMessage(1000, 60)).toBe(
+      "Saldo Pix precisa ser de pelo menos R$ 5,00. Reduza a entrada ou use 100% para cobrar tudo agora.",
+    );
+    expect(entryChargeValidationMessage(1000, 0)).toBeNull();
+    expect(entryChargeValidationMessage(1000, 50)).toBeNull();
+    expect(entryChargeValidationMessage(400, 0)).toBe(
+      "Orçamento precisa ter pelo menos R$ 5,00 para gerar Pix pelo Asaas.",
     );
   });
 });

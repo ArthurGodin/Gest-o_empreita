@@ -12,7 +12,7 @@ import { addDaysBR, todayBR } from "@/lib/dates";
 import { normalizeQuoteUnit } from "@/lib/format";
 import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
 import { createLocalCharges, generatePixForCharge } from "@/lib/billing/asaas";
-import { isValidEntryPercent } from "@/lib/billing/entry-percent";
+import { entryChargeValidationMessage } from "@/lib/billing/entry-percent";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -848,8 +848,9 @@ export async function convertToProjectAction(
   if (templateId && !/^[0-9a-fA-F-]{36}$/.test(templateId)) {
     return { ok: false, error: "Template inválido." };
   }
-  if (!isValidEntryPercent(entryPct)) {
-    return { ok: false, error: "Entrada deve ficar entre 0% e 100%." };
+  const entryPercentError = entryChargeValidationMessage(0, entryPct);
+  if (entryPercentError) {
+    return { ok: false, error: entryPercentError };
   }
 
   const supabase = createClient();
@@ -893,6 +894,14 @@ export async function convertToProjectAction(
   }
   if (q.project_id) return { ok: true, project_id: q.project_id };
   if (!q.customer) return { ok: false, error: "Cliente não encontrado." };
+
+  const entryChargeError = entryChargeValidationMessage(
+    q.total_cents,
+    entryPct,
+  );
+  if (entryChargeError) {
+    return { ok: false, error: entryChargeError };
+  }
 
   const billingDocument = normalizeCpfCnpj(cpfCnpj || q.customer.document);
   if (entryPct > 0 && !billingDocument) {

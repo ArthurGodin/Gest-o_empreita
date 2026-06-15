@@ -17,7 +17,8 @@ import {
 import { formatBRL } from "@/lib/utils";
 import {
   calculateEntrySplit,
-  entryPercentValidationMessage,
+  entryChargeValidationMessage,
+  MIN_ASAAS_PIX_CHARGE_LABEL,
   parseEntryPercentInput,
 } from "@/lib/billing/entry-percent";
 import { trackProductEvent } from "@/lib/product-analytics";
@@ -59,7 +60,10 @@ export function ConvertToProject({
   const [cpfCnpj, setCpfCnpj] = useState(customerDocument ?? "");
 
   const parsedEntryPct = parseEntryPercentInput(entryPct);
-  const entryPctError = entryPercentValidationMessage(parsedEntryPct);
+  const entryPctError = entryChargeValidationMessage(
+    quoteTotalCents,
+    parsedEntryPct,
+  );
   const validEntryPct = entryPctError ? null : parsedEntryPct;
   const { entryCents, saldoCents } = validEntryPct === null
     ? { entryCents: 0, saldoCents: quoteTotalCents }
@@ -173,6 +177,10 @@ export function ConvertToProject({
                     {formatBRL(saldoCents / 100)}
                   </>
                 )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Cada Pix no Asaas precisa ter pelo menos{" "}
+                {MIN_ASAAS_PIX_CHARGE_LABEL}.
               </p>
             </div>
             <div className="space-y-2">

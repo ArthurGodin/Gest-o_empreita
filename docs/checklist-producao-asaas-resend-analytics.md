@@ -119,7 +119,7 @@ Checklist de virada:
 5. Variáveis atualizadas na Vercel em `Production`.
 6. Novo deploy de produção.
 7. Criar cliente real de teste com dados válidos.
-8. Criar cobrança real de baixo valor.
+8. Criar cobrança real de baixo valor, sempre com parcela de pelo menos R$ 5,00.
 9. Confirmar pagamento real.
 10. Conferir se o webhook marcou a cobrança como recebida no Gestão Empreita.
 11. Verificar logs da Vercel por 30 minutos.
@@ -132,6 +132,7 @@ Regra de segurança:
 - não expor API key em print, commit, documentação ou chat;
 - não testar produção com orçamento de cliente que não autorizou;
 - não fazer várias cobranças reais antes de uma cobrança pequena funcionar;
+- não gerar cobrança real abaixo de R$ 5,00, pois o Asaas rejeita;
 - se o webhook falhar, pausar venda e corrigir antes de repetir.
 
 Fontes oficiais usadas como referência operacional:
