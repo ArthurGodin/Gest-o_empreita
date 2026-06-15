@@ -84,6 +84,9 @@ export function PublicQuoteView({
         message: `Olá, ${quote.company.name}. Estou vendo o orçamento ${quote.number} (${quote.title}) e quero tirar uma dúvida.`,
       })
     : null;
+  const customerLocation = quote.customer
+    ? [quote.customer.city, quote.customer.state].filter(Boolean).join("/")
+    : "";
 
   return (
     <main className="min-h-screen bg-[#f8fafc] pb-24 text-[#121826] lg:pb-0">
@@ -154,18 +157,11 @@ export function PublicQuoteView({
               </h1>
               {quote.customer && (
                 <div className="mt-3 text-sm text-[#475569]">
-                  Para{" "}
+                  <span>Para </span>
                   <span className="font-semibold text-[#121826]">
                     {quote.customer.name}
                   </span>
-                  {(quote.customer.city || quote.customer.state) && (
-                    <>
-                      {" · "}
-                      {[quote.customer.city, quote.customer.state]
-                        .filter(Boolean)
-                        .join("/")}
-                    </>
-                  )}
+                  {customerLocation ? <span> · {customerLocation}</span> : null}
                 </div>
               )}
               {quote.description && (
@@ -352,9 +348,7 @@ export function PublicQuoteView({
                         {item.description}
                       </div>
                       <div className="mt-1 text-xs text-[#475569]">
-                        {formatQuantityBR(item.quantity)}{" "}
-                        {normalizeQuoteUnit(item.unit)} ×{" "}
-                        {formatBRL(item.unit_price_cents / 100)}
+                        {`${formatQuantityBR(item.quantity)} ${normalizeQuoteUnit(item.unit)} × ${formatBRL(item.unit_price_cents / 100)}`}
                       </div>
                     </div>
                     <div className="shrink-0 text-right text-sm font-bold">
@@ -384,7 +378,7 @@ export function PublicQuoteView({
             )}
 
             <footer className="pb-6 pt-2 text-center text-xs text-[#475569]">
-              Gerado por{" "}
+              <span>Gerado por </span>
               <span className="font-semibold text-[#121826]">
                 Gestão Empreita
               </span>

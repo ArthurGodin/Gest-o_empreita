@@ -25,10 +25,33 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
   const [provider, setProvider] = useState<PaymentProvider>(
     company.payment_provider ?? "asaas",
   );
+  const [pixKeyType, setPixKeyType] = useState<PixKeyType>(
+    company.pix_key_type ?? "random",
+  );
+  const [pixKey, setPixKey] = useState(company.pix_key ?? "");
+  const [pixReceiverName, setPixReceiverName] = useState(
+    company.pix_receiver_name ?? company.name,
+  );
+  const [pixReceiverCity, setPixReceiverCity] = useState(
+    company.pix_receiver_city ?? company.city ?? "",
+  );
+  const [pixInstructions, setPixInstructions] = useState(
+    company.pix_instructions ?? "",
+  );
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [savedSignature, setSavedSignature] = useState(() =>
+    paymentSignature({
+      provider: company.payment_provider ?? "asaas",
+      pixKeyType: company.pix_key_type ?? "random",
+      pixKey: company.pix_key ?? "",
+      pixReceiverName: company.pix_receiver_name ?? company.name,
+      pixReceiverCity: company.pix_receiver_city ?? company.city ?? "",
+      pixInstructions: company.pix_instructions ?? "",
+    }),
+  );
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,18 +59,13 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
     setSuccess(false);
     setFieldErrors({});
 
-    const formData = new FormData(event.currentTarget);
-    const pixKeyType = (formData.get("pix_key_type") as PixKeyType | null) || null;
     const payload = {
       payment_provider: provider,
       pix_key_type: pixKeyType,
-      pix_key: (formData.get("pix_key") as string) ?? "",
-      pix_receiver_name:
-        (formData.get("pix_receiver_name") as string) ?? "",
-      pix_receiver_city:
-        (formData.get("pix_receiver_city") as string) ?? "",
-      pix_instructions:
-        (formData.get("pix_instructions") as string) ?? "",
+      pix_key: pixKey,
+      pix_receiver_name: pixReceiverName,
+      pix_receiver_city: pixReceiverCity,
+      pix_instructions: pixInstructions,
     };
 
     startTransition(async () => {
@@ -58,12 +76,25 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         return;
       }
       setSuccess(true);
+      setSavedSignature(currentSignature);
       router.refresh();
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), 6000);
     });
   }
 
   const manualPix = provider === "manual_pix";
+  const manualPixReady = Boolean(
+    manualPix && pixKeyType && pixKey.trim() && pixReceiverName.trim() && pixReceiverCity.trim(),
+  );
+  const currentSignature = paymentSignature({
+    provider,
+    pixKeyType,
+    pixKey,
+    pixReceiverName,
+    pixReceiverCity,
+    pixInstructions,
+  });
+  const hasUnsavedChanges = currentSignature !== savedSignature;
 
   return (
     <form onSubmit={onSubmit} className="rounded-xl border bg-card p-5">
@@ -117,7 +148,8 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
               <select
                 id="pix_key_type"
                 name="pix_key_type"
-                defaultValue={company.pix_key_type ?? "random"}
+                value={pixKeyType}
+                onChange={(event) => setPixKeyType(event.target.value as PixKeyType)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {PIX_KEY_TYPES.map((type) => (
@@ -133,7 +165,8 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
               <Input
                 id="pix_key"
                 name="pix_key"
-                defaultValue={company.pix_key ?? ""}
+                value={pixKey}
+                onChange={(event) => setPixKey(event.target.value)}
                 placeholder="CPF, CNPJ, telefone, e-mail ou chave aleatória"
               />
               <FieldError errors={fieldErrors.pix_key} />
@@ -146,7 +179,8 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
               <Input
                 id="pix_receiver_name"
                 name="pix_receiver_name"
-                defaultValue={company.pix_receiver_name ?? company.name}
+                value={pixReceiverName}
+                onChange={(event) => setPixReceiverName(event.target.value)}
                 placeholder="Ex.: Coberturas do Léo"
               />
               <p className="text-xs text-muted-foreground">
@@ -159,7 +193,8 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
               <Input
                 id="pix_receiver_city"
                 name="pix_receiver_city"
-                defaultValue={company.pix_receiver_city ?? company.city ?? ""}
+                value={pixReceiverCity}
+                onChange={(event) => setPixReceiverCity(event.target.value)}
                 placeholder="Ex.: Timon"
               />
               <p className="text-xs text-muted-foreground">
@@ -174,11 +209,34 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
             <Textarea
               id="pix_instructions"
               name="pix_instructions"
-              defaultValue={company.pix_instructions ?? ""}
+              value={pixInstructions}
+              onChange={(event) => setPixInstructions(event.target.value)}
               placeholder="Ex.: Depois de pagar, envie o comprovante no WhatsApp para registrarmos o recebimento e seguirmos para a próxima etapa."
               maxLength={500}
             />
             <FieldError errors={fieldErrors.pix_instructions} />
+          </div>
+
+          <div
+            className={cn(
+              "rounded-lg border px-4 py-3 text-sm leading-6",
+              manualPixReady && !hasUnsavedChanges
+                ? "border-green-300 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100"
+                : manualPixReady
+                  ? "border-amber-300 bg-amber-50 text-amber-950"
+                  : "border-border bg-background text-muted-foreground",
+            )}
+          >
+            <div className="font-medium">
+              {manualPixReady && !hasUnsavedChanges
+                ? "Pix direto ativo para novas cobranças."
+                : manualPixReady
+                  ? "Dados preenchidos. Salve para ativar o Pix direto."
+                  : "Complete chave, nome e cidade para liberar QR Code Pix."}
+            </div>
+            <div className="text-xs opacity-80">
+              A obra só gera QR Code quando essa configuração estiver salva.
+            </div>
           </div>
         </div>
       ) : (
@@ -204,7 +262,9 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
           aria-live="polite"
         >
           <CheckCircle2 className="h-4 w-4" />
-          Recebimento salvo.
+          {manualPixReady
+            ? "Recebimento salvo. Pix direto pronto para cobrar."
+            : "Recebimento salvo."}
         </div>
       ) : null}
 
@@ -270,4 +330,22 @@ function ProviderOption({
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
   return <p className="text-xs font-medium text-destructive">{errors[0]}</p>;
+}
+
+function paymentSignature(input: {
+  provider: PaymentProvider;
+  pixKeyType: PixKeyType;
+  pixKey: string;
+  pixReceiverName: string;
+  pixReceiverCity: string;
+  pixInstructions: string;
+}) {
+  return JSON.stringify({
+    provider: input.provider,
+    pixKeyType: input.pixKeyType,
+    pixKey: input.pixKey.trim(),
+    pixReceiverName: input.pixReceiverName.trim(),
+    pixReceiverCity: input.pixReceiverCity.trim(),
+    pixInstructions: input.pixInstructions.trim(),
+  });
 }
