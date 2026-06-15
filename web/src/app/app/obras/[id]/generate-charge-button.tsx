@@ -46,7 +46,7 @@ export function GenerateChargeButton({
       toast({
         title: "Pix gerado",
         description:
-          "A cobrança foi atualizada. Agora você pode copiar o Pix ou abrir o link do Asaas.",
+          "A cobrança foi atualizada. Agora você pode enviar o QR Code ou o Pix copia-e-cola ao cliente.",
       });
       router.refresh();
     });

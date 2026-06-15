@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { uploadCompanyLogo } from "@/lib/supabase/storage";
 import { clientErrorFor, logServerError } from "@/lib/log";
+import { normalizePixKey } from "@/lib/pix/br-code";
+import { isValidCpfCnpj } from "@/lib/br-documents";
 
 // ─── Update dados da empresa ────────────────────────────────────────────────
 
@@ -74,6 +76,155 @@ export async function updateCompanyAction(
   }
 
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+
+const paymentSchema = z
+  .object({
+    payment_provider: z.enum(["manual_pix", "asaas"]),
+    pix_key_type: z
+      .enum(["cpf", "cnpj", "phone", "email", "random"])
+      .optional()
+      .nullable(),
+    pix_key: z.string().trim().max(120).optional().or(z.literal("")),
+    pix_receiver_name: z.string().trim().max(80).optional().or(z.literal("")),
+    pix_receiver_city: z.string().trim().max(80).optional().or(z.literal("")),
+    pix_instructions: z.string().trim().max(500).optional().or(z.literal("")),
+  })
+  .superRefine((value, ctx) => {
+    if (value.payment_provider !== "manual_pix") return;
+
+    if (!value.pix_key_type) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key_type"],
+        message: "Escolha o tipo da chave Pix.",
+      });
+    }
+    if (!value.pix_key?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "Informe a chave Pix.",
+      });
+    }
+    if (!value.pix_receiver_name?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_receiver_name"],
+        message: "Informe o nome que aparece no banco.",
+      });
+    }
+    if (!value.pix_receiver_city?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_receiver_city"],
+        message: "Informe a cidade do recebedor.",
+      });
+    }
+
+    const normalizedKey = value.pix_key_type
+      ? normalizePixKey(value.pix_key ?? "", value.pix_key_type)
+      : "";
+    if (
+      value.pix_key_type === "cpf" &&
+      (normalizedKey.length !== 11 || !isValidCpfCnpj(normalizedKey))
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "CPF da chave Pix inválido.",
+      });
+    }
+    if (
+      value.pix_key_type === "cnpj" &&
+      (normalizedKey.length !== 14 || !isValidCpfCnpj(normalizedKey))
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "CNPJ da chave Pix inválido.",
+      });
+    }
+    if (value.pix_key_type === "email" && !z.email().safeParse(normalizedKey).success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "Email da chave Pix inválido.",
+      });
+    }
+    if (value.pix_key_type === "phone" && normalizedKey.length < 12) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "Telefone Pix precisa incluir DDD.",
+      });
+    }
+    if (value.pix_key_type === "random" && normalizedKey.length < 8) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pix_key"],
+        message: "Chave aleatória muito curta.",
+      });
+    }
+  });
+
+export async function updatePaymentSettingsAction(
+  input: z.infer<typeof paymentSchema>,
+): Promise<CompanyActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const parsed = paymentSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Confira os dados de recebimento.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const payload = {
+    payment_provider: parsed.data.payment_provider,
+    pix_key_type:
+      parsed.data.payment_provider === "manual_pix"
+        ? parsed.data.pix_key_type
+        : null,
+    pix_key:
+      parsed.data.payment_provider === "manual_pix"
+        ? normalizePixKey(parsed.data.pix_key ?? "", parsed.data.pix_key_type!)
+        : null,
+    pix_receiver_name:
+      parsed.data.payment_provider === "manual_pix"
+        ? parsed.data.pix_receiver_name?.trim()
+        : null,
+    pix_receiver_city:
+      parsed.data.payment_provider === "manual_pix"
+        ? parsed.data.pix_receiver_city?.trim()
+        : null,
+    pix_instructions:
+      parsed.data.payment_provider === "manual_pix"
+        ? parsed.data.pix_instructions?.trim() || null
+        : null,
+  };
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("companies")
+    .update(payload)
+    .eq("id", company.company_id);
+
+  if (error) {
+    logServerError("config.payment.update", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/app/configuracoes");
   return { ok: true };
 }
 

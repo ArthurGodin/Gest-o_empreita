@@ -6,6 +6,14 @@ import { Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadCompanyLogoAction } from "./actions";
 
+const ALLOWED_LOGO_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+]);
+const MAX_LOGO_SIZE_BYTES = 2 * 1024 * 1024;
+
 interface LogoUploadProps {
   companyName: string;
   currentLogoUrl: string | null;
@@ -22,6 +30,18 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
     if (!file) return;
     setError(null);
 
+    if (!ALLOWED_LOGO_TYPES.has(file.type)) {
+      setError("Formato não suportado. Use PNG, JPG ou WEBP.");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > MAX_LOGO_SIZE_BYTES) {
+      setError("Logo muito grande. Use uma imagem de até 2MB.");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+
     // Preview local imediato
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
@@ -31,14 +51,23 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
     formData.set("logo", file);
 
     startTransition(async () => {
-      const result = await uploadCompanyLogoAction(formData);
-      if (!result.ok) {
-        setError(result.error);
-        setPreview(currentLogoUrl); // rollback preview
-        return;
+      try {
+        const result = await uploadCompanyLogoAction(formData);
+        if (!result.ok) {
+          setError(result.error);
+          setPreview(currentLogoUrl); // rollback preview
+          return;
+        }
+        setPreview(result.url);
+        if (inputRef.current) inputRef.current.value = "";
+        router.refresh();
+      } catch (e) {
+        console.error("[logo-upload] action threw:", e);
+        setError(
+          "Não foi possível enviar a logo. Use uma imagem de até 2MB e tente novamente.",
+        );
+        setPreview(currentLogoUrl);
       }
-      setPreview(result.url);
-      router.refresh();
     });
   }
 

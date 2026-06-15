@@ -1,12 +1,17 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { ChargeKind, ChargeStatus } from "@/lib/supabase/types";
+import type {
+  ChargeKind,
+  ChargeStatus,
+  PaymentProvider,
+} from "@/lib/supabase/types";
 
 export interface BillingChargeListItem {
   id: string;
   project_id: string;
   kind: ChargeKind;
   status: ChargeStatus;
+  payment_provider: PaymentProvider;
   amount_cents: number;
   due_date: string | null;
   paid_at: string | null;
@@ -21,7 +26,7 @@ export const getBillingCharges = cache(
     const { data, error } = await supabase
       .from("billing_charges")
       .select(
-        "id, project_id, kind, status, amount_cents, due_date, paid_at, invoice_url, created_at, updated_at",
+        "id, project_id, kind, status, payment_provider, amount_cents, due_date, paid_at, invoice_url, created_at, updated_at",
       )
       .order("created_at", { ascending: false })
       .limit(limit);

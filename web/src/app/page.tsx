@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 const proofItems = [
   "Orçamento com link de aprovação",
   "Obra com etapas, fotos e gastos",
-  "Pix Asaas e margem por projeto",
+  "Pix direto e margem por projeto",
 ];
 
 const workflow = [
@@ -38,7 +38,7 @@ const workflow = [
   },
   {
     title: "Você cobra e enxerga a margem",
-    text: "Pix de entrada e saldo, baixa por webhook, gasto lançado e margem estimada.",
+    text: "QR Code Pix com a chave da empreiteira, confirmação no extrato, gasto lançado e margem estimada.",
     icon: LineChart,
   },
 ];
@@ -172,8 +172,8 @@ export default function LandingPage() {
             </h2>
             <p className="mt-3 max-w-2xl text-[#cbd5e1]">
               O primeiro cliente precisa sair com um orçamento aprovado e uma
-              obra controlada. Depois disso, o Pix de entrada, o saldo e a
-              margem viram o centro do acompanhamento.
+              obra controlada. Depois disso, o Pix direto, o saldo e a margem
+              viram o centro do acompanhamento.
             </p>
           </div>
           <Button

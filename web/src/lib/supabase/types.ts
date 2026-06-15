@@ -33,6 +33,8 @@ export type QuoteApprovalAction = "approved" | "rejected";
 export type StageStatus = "todo" | "in_progress" | "done";
 export type CostCategory = "material" | "labor" | "freight" | "other";
 export type ChargeKind = "entrada" | "saldo";
+export type PaymentProvider = "asaas" | "manual_pix";
+export type PixKeyType = "cpf" | "cnpj" | "phone" | "email" | "random";
 export type ChargeStatus =
   | "draft"
   | "pending"
@@ -57,6 +59,12 @@ export interface Database {
           city: string | null;
           state: string | null;
           zip_code: string | null;
+          payment_provider: PaymentProvider;
+          pix_key_type: PixKeyType | null;
+          pix_key: string | null;
+          pix_receiver_name: string | null;
+          pix_receiver_city: string | null;
+          pix_instructions: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -72,6 +80,12 @@ export interface Database {
           city?: string | null;
           state?: string | null;
           zip_code?: string | null;
+          payment_provider?: PaymentProvider;
+          pix_key_type?: PixKeyType | null;
+          pix_key?: string | null;
+          pix_receiver_name?: string | null;
+          pix_receiver_city?: string | null;
+          pix_instructions?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -579,12 +593,16 @@ export interface Database {
           kind: ChargeKind;
           status: ChargeStatus;
           amount_cents: number;
+          payment_provider: PaymentProvider;
           asaas_payment_id: string | null;
           pix_qr_code: string | null;
           pix_qr_image_b64: string | null;
           invoice_url: string | null;
           due_date: string | null;
           paid_at: string | null;
+          paid_manually_at: string | null;
+          paid_manually_by: string | null;
+          manual_payment_note: string | null;
           released_at: string | null;
           released_by_token: string | null;
           created_at: string;
@@ -598,12 +616,16 @@ export interface Database {
           kind: ChargeKind;
           status?: ChargeStatus;
           amount_cents: number;
+          payment_provider?: PaymentProvider;
           asaas_payment_id?: string | null;
           pix_qr_code?: string | null;
           pix_qr_image_b64?: string | null;
           invoice_url?: string | null;
           due_date?: string | null;
           paid_at?: string | null;
+          paid_manually_at?: string | null;
+          paid_manually_by?: string | null;
+          manual_payment_note?: string | null;
           released_at?: string | null;
           released_by_token?: string | null;
           created_at?: string;

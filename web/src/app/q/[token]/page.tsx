@@ -31,6 +31,7 @@ interface PublicQuoteData {
     logo_url: string | null;
     city: string | null;
     state: string | null;
+    pix_instructions: string | null;
   };
   customer: {
     name: string;
@@ -65,7 +66,7 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
       id, number, title, description, status, share_token, project_id,
       valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
-      company:companies(name, phone, email, logo_url, city, state),
+      company:companies(name, phone, email, logo_url, city, state, pix_instructions),
       customer:customers(name, city, state),
       items:quote_items(id, position, description, unit, quantity, unit_price_cents, total_cents),
       approvals:quote_approvals(action, signer_name, rejection_reason, created_at)
@@ -120,7 +121,7 @@ async function loadPublicProjectView(
     admin
       .from("billing_charges")
       .select(
-        "id, kind, status, amount_cents, pix_qr_code, invoice_url, due_date, paid_at, released_at",
+        "id, kind, status, amount_cents, payment_provider, pix_qr_code, pix_qr_image_b64, invoice_url, due_date, paid_at, released_at",
       )
       .eq("project_id", projectId)
       .order("kind", { ascending: true }),

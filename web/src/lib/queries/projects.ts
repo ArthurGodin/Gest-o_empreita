@@ -111,12 +111,16 @@ export interface BillingCharge {
   kind: ChargeKind;
   status: ChargeStatus;
   amount_cents: number;
+  payment_provider: "asaas" | "manual_pix";
   asaas_payment_id: string | null;
   pix_qr_code: string | null;
   pix_qr_image_b64: string | null;
   invoice_url: string | null;
   due_date: string | null;
   paid_at: string | null;
+  paid_manually_at: string | null;
+  paid_manually_by: string | null;
+  manual_payment_note: string | null;
   released_at: string | null;
   created_at: string;
   updated_at: string;

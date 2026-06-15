@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { CompanyForm } from "./company-form";
 import { LogoUpload } from "./logo-upload";
+import { PaymentSettingsForm } from "./payment-settings-form";
 
 export const metadata = {
   title: "Configurações — Gestão Empreita",
@@ -27,6 +28,8 @@ export default async function SettingsPage() {
       />
 
       <CompanyForm company={company} />
+
+      <PaymentSettingsForm company={company} />
 
       <section>
         <h2 className="mb-2 text-sm font-semibold text-muted-foreground">

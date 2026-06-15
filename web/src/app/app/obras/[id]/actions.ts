@@ -8,7 +8,8 @@ import { clientErrorFor, logServerError } from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
 import { canTransitionStatus } from "@/lib/project-status";
 import { todayBR } from "@/lib/dates";
-import { generatePixForCharge } from "@/lib/billing/asaas";
+import { markManualPixChargePaid } from "@/lib/billing/manual-pix";
+import { generatePreferredPixForCharge } from "@/lib/billing/provider";
 import type {
   CostCategory,
   Database,
@@ -1116,7 +1117,7 @@ export async function generateChargePixAction(
   const kindLabel = charge.kind === "entrada" ? "Entrada" : "Saldo";
 
   try {
-    const result = await generatePixForCharge(supabase, {
+    const result = await generatePreferredPixForCharge(supabase, {
       chargeId: charge.id,
       companyId: auth.companyId,
       customer,
@@ -1149,4 +1150,32 @@ export async function generateChargePixAction(
   revalidatePath(`/app/obras/${charge.project_id}`);
   revalidatePath("/app/financeiro");
   return { ok: true };
+}
+
+export async function markChargePaidManuallyAction(
+  chargeId: string,
+  note?: string,
+): Promise<SimpleActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const auth = await requireCompany();
+  if (!auth.ok) return auth;
+
+  try {
+    const supabase = createClient();
+    const { projectId } = await markManualPixChargePaid(supabase, {
+      chargeId,
+      companyId: auth.companyId,
+      userId: user.id,
+      note,
+    });
+
+    revalidatePath(`/app/obras/${projectId}`);
+    revalidatePath("/app/financeiro");
+    return { ok: true };
+  } catch (error) {
+    logServerError("obras.billing.mark-paid-manual", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
 }

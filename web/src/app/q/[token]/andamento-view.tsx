@@ -16,7 +16,9 @@ export interface PublicBillingCharge {
   kind: ChargeKind;
   status: ChargeStatus;
   amount_cents: number;
+  payment_provider: "asaas" | "manual_pix";
   pix_qr_code: string | null;
+  pix_qr_image_b64: string | null;
   invoice_url: string | null;
   due_date: string | null;
   paid_at: string | null;

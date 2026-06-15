@@ -26,6 +26,7 @@ interface PublicBillingViewProps {
   projectStatus: ProjectStatus;
   deliveryApprovedAt: string | null;
   shareToken: string;
+  paymentInstructions?: string | null;
 }
 
 const PAID = new Set(["received", "confirmed"]);
@@ -35,6 +36,7 @@ export function PublicBillingView({
   projectStatus,
   deliveryApprovedAt,
   shareToken,
+  paymentInstructions,
 }: PublicBillingViewProps) {
   const ordered = [...charges].sort((a, b) => {
     if (a.kind === b.kind) return 0;
@@ -128,6 +130,15 @@ export function PublicBillingView({
             </div>
           </div>
         </div>
+
+        {paymentInstructions ? (
+          <div className="mt-4 rounded-lg border bg-muted/20 px-4 py-3 text-sm leading-6">
+            <strong className="block text-foreground">
+              Orientação da empreiteira
+            </strong>
+            <p className="mt-1 text-muted-foreground">{paymentInstructions}</p>
+          </div>
+        ) : null}
       </section>
 
       {shouldApproveDelivery ? (
@@ -289,10 +300,15 @@ function PublicChargeCard({
 
       {charge.pix_qr_code && !paid ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
-          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <QrCode className="h-3.5 w-3.5" />
-              Pix copia e cola
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <QrCode className="h-3.5 w-3.5" />
+                Pix para pagamento
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escaneie o QR Code ou copie o código para pagar no app do seu banco.
+              </p>
             </div>
             <CopyButton
               text={charge.pix_qr_code}
@@ -310,9 +326,23 @@ function PublicChargeCard({
               className="h-11 w-full sm:h-9 sm:w-auto"
             />
           </div>
-          <p className="max-h-20 overflow-hidden break-all font-mono text-[11px] leading-5">
-            {charge.pix_qr_code}
-          </p>
+          <div className="grid gap-3 sm:grid-cols-[132px_1fr]">
+            {charge.pix_qr_image_b64 ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`data:image/png;base64,${charge.pix_qr_image_b64}`}
+                alt="QR Code Pix"
+                className="h-32 w-32 rounded-md border bg-white p-2"
+              />
+            ) : (
+              <div className="flex h-32 w-32 items-center justify-center rounded-md border bg-background text-muted-foreground">
+                <QrCode className="h-8 w-8" />
+              </div>
+            )}
+            <p className="max-h-32 overflow-hidden break-all rounded-md bg-background p-3 font-mono text-[11px] leading-5">
+              {charge.pix_qr_code}
+            </p>
+          </div>
         </div>
       ) : null}
 
@@ -390,7 +420,9 @@ function publicNextStep({
       icon: "clock" as const,
       title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
       description:
-        "Use o botão de pagamento ou copie o Pix abaixo. A baixa aparece automaticamente quando o Asaas confirmar.",
+        pending.payment_provider === "manual_pix"
+          ? "Use o QR Code ou copie o Pix abaixo. Depois do pagamento, envie o comprovante para a empreiteira."
+          : "Use o botão de pagamento ou copie o Pix abaixo. A baixa aparece automaticamente quando o pagamento for confirmado.",
       tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     };
   }
@@ -425,7 +457,9 @@ function publicChargeInstruction(
     return "Esta parcela venceu. Abra a cobrança ou fale com a empreiteira para regularizar.";
   }
   if (charge.status === "pending") {
-    return "Pague pelo botão abaixo ou copie o Pix para o aplicativo do seu banco.";
+    return charge.payment_provider === "manual_pix"
+      ? "Escaneie o QR Code ou copie o Pix para o aplicativo do seu banco. Depois envie o comprovante para a empreiteira."
+      : "Pague pelo botão abaixo ou copie o Pix para o aplicativo do seu banco.";
   }
   if (charge.status === "cancelled") {
     return "Esta cobrança foi cancelada pela empreiteira.";

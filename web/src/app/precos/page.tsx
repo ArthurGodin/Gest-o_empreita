@@ -16,7 +16,7 @@ const included = [
   "Orçamentos ilimitados com PDF",
   "Link público para aprovação do cliente",
   "Conversão de aprovado em obra",
-  "Cobrança Pix Asaas integrada",
+  "QR Code Pix direto na chave do empreiteiro",
   "Financeiro com recebidos, pendentes e atrasados",
   "Etapas, diário com fotos e ponto da equipe",
   "Custos por obra e margem estimada",
@@ -25,7 +25,7 @@ const included = [
 
 const roadmap = [
   "PWA/offline para campo após os primeiros pilotos",
-  "Assinatura recorrente e cobrança automática",
+  "Cobrança automática para quem quiser baixa por provedor",
   "Relatórios de margem por tipo de obra",
   "Equipe com permissões por função",
   "Templates avançados de proposta",
@@ -115,8 +115,8 @@ export default function PricingPage() {
               <div className="mt-7 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4">
                 <p className="text-sm font-bold">Roadmap após os primeiros pilotos</p>
                 <p className="mt-1 text-xs leading-5 text-[#475569]">
-                  O plano atual já cobre orçamento, obra, Pix e financeiro. Os itens
-                  abaixo entram conforme o uso real mostrar prioridade.
+                  O plano atual já cobre orçamento, obra, Pix direto e financeiro.
+                  Os itens abaixo entram conforme o uso real mostrar prioridade.
                 </p>
                 <div className="mt-3 space-y-2">
                   {roadmap.map((item) => (

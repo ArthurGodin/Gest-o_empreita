@@ -44,8 +44,11 @@ export function asaasChargeAmountValidationMessage(
 export function entryChargeValidationMessage(
   totalCents: number,
   entryPct: number | null | undefined,
+  options: { enforceAsaasMinimum?: boolean } = {},
 ): string | null {
   if (!isValidEntryPercent(entryPct)) return ENTRY_PERCENT_ERROR;
+  const enforceAsaasMinimum = options.enforceAsaasMinimum ?? true;
+  if (!enforceAsaasMinimum) return null;
 
   const safeTotalCents = Math.max(0, Math.round(totalCents));
   if (safeTotalCents > 0 && safeTotalCents < MIN_ASAAS_PIX_CHARGE_CENTS) {

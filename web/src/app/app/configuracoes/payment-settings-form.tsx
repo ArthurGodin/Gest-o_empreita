@@ -1,0 +1,263 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Landmark, Save, ShieldCheck, WalletCards } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import type { CompanyFull } from "@/lib/queries/company-settings";
+import type { PaymentProvider, PixKeyType } from "@/lib/supabase/types";
+import { updatePaymentSettingsAction } from "./actions";
+
+const PIX_KEY_TYPES = [
+  { value: "cpf", label: "CPF" },
+  { value: "cnpj", label: "CNPJ" },
+  { value: "phone", label: "Telefone" },
+  { value: "email", label: "Email" },
+  { value: "random", label: "Chave aleatória" },
+] as const;
+
+export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
+  const router = useRouter();
+  const [provider, setProvider] = useState<PaymentProvider>(
+    company.payment_provider ?? "asaas",
+  );
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(false);
+    setFieldErrors({});
+
+    const formData = new FormData(event.currentTarget);
+    const pixKeyType = (formData.get("pix_key_type") as PixKeyType | null) || null;
+    const payload = {
+      payment_provider: provider,
+      pix_key_type: pixKeyType,
+      pix_key: (formData.get("pix_key") as string) ?? "",
+      pix_receiver_name:
+        (formData.get("pix_receiver_name") as string) ?? "",
+      pix_receiver_city:
+        (formData.get("pix_receiver_city") as string) ?? "",
+      pix_instructions:
+        (formData.get("pix_instructions") as string) ?? "",
+    };
+
+    startTransition(async () => {
+      const result = await updatePaymentSettingsAction(payload);
+      if (!result.ok) {
+        setError(result.error);
+        setFieldErrors(result.fieldErrors ?? {});
+        return;
+      }
+      setSuccess(true);
+      router.refresh();
+      setTimeout(() => setSuccess(false), 3000);
+    });
+  }
+
+  const manualPix = provider === "manual_pix";
+
+  return (
+    <form onSubmit={onSubmit} className="rounded-xl border bg-card p-5">
+      <div className="flex items-start gap-3">
+        <span className="rounded-lg bg-primary/10 p-2 text-primary">
+          <WalletCards className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold">Recebimento das obras</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Defina como os clientes pagam entrada e saldo. Para começar a vender
+            sem burocracia, use Pix direto na sua própria chave.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        <ProviderOption
+          checked={manualPix}
+          icon={WalletCards}
+          title="Pix direto"
+          badge="Recomendado"
+          description="QR Code e copia-e-cola com a sua chave Pix. O empreiteiro confirma a baixa depois de conferir o extrato."
+          onClick={() => setProvider("manual_pix")}
+        />
+        <ProviderOption
+          checked={provider === "asaas"}
+          icon={Landmark}
+          title="Cobrança automática"
+          badge="Avançado"
+          description="Usa provedor de pagamento com API e webhook. Melhor para automação depois que o produto já estiver rodando."
+          onClick={() => setProvider("asaas")}
+        />
+      </div>
+
+      <input type="hidden" name="payment_provider" value={provider} />
+
+      {manualPix ? (
+        <div className="mt-5 space-y-4 rounded-lg border bg-muted/20 p-4">
+          <div className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            O dinheiro cai direto na conta vinculada a esta chave Pix. O Gestão
+            Empreita não segura o dinheiro da obra.
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-[180px_1fr]">
+            <div className="space-y-2">
+              <Label htmlFor="pix_key_type">Tipo de chave</Label>
+              <select
+                id="pix_key_type"
+                name="pix_key_type"
+                defaultValue={company.pix_key_type ?? "random"}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {PIX_KEY_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError errors={fieldErrors.pix_key_type} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pix_key">Chave Pix que vai receber</Label>
+              <Input
+                id="pix_key"
+                name="pix_key"
+                defaultValue={company.pix_key ?? ""}
+                placeholder="CPF, CNPJ, telefone, email ou chave aleatória"
+              />
+              <FieldError errors={fieldErrors.pix_key} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="pix_receiver_name">Nome que aparece no banco</Label>
+              <Input
+                id="pix_receiver_name"
+                name="pix_receiver_name"
+                defaultValue={company.pix_receiver_name ?? company.name}
+                placeholder="Ex.: Coberturas do Leo"
+              />
+              <p className="text-xs text-muted-foreground">
+                O QR Code usa até 25 caracteres.
+              </p>
+              <FieldError errors={fieldErrors.pix_receiver_name} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pix_receiver_city">Cidade do recebedor</Label>
+              <Input
+                id="pix_receiver_city"
+                name="pix_receiver_city"
+                defaultValue={company.pix_receiver_city ?? company.city ?? ""}
+                placeholder="Ex.: Timon"
+              />
+              <p className="text-xs text-muted-foreground">
+                A cidade também aparece no Pix do banco.
+              </p>
+              <FieldError errors={fieldErrors.pix_receiver_city} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pix_instructions">Orientação para o cliente</Label>
+            <Textarea
+              id="pix_instructions"
+              name="pix_instructions"
+              defaultValue={company.pix_instructions ?? ""}
+              placeholder="Ex.: Depois de pagar, envie o comprovante no WhatsApp para liberarmos a próxima etapa."
+              maxLength={500}
+            />
+            <FieldError errors={fieldErrors.pix_instructions} />
+          </div>
+        </div>
+      ) : (
+        <div className="mt-5 rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
+          A cobrança automática depende das variáveis de produção do provedor e
+          do webhook ativo. Use este modo apenas quando quiser baixa automática.
+        </div>
+      )}
+
+      {error ? (
+        <div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
+      {success ? (
+        <div className="mt-4 flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100">
+          <CheckCircle2 className="h-4 w-4" />
+          Recebimento salvo.
+        </div>
+      ) : null}
+
+      <div className="mt-5 flex justify-end">
+        <Button type="submit" disabled={pending}>
+          <Save className="h-4 w-4" />
+          {pending ? "Salvando..." : "Salvar recebimento"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function ProviderOption({
+  checked,
+  icon: Icon,
+  title,
+  badge,
+  description,
+  onClick,
+}: {
+  checked: boolean;
+  icon: typeof WalletCards;
+  title: string;
+  badge: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-lg border p-4 text-left transition hover:bg-muted/20",
+        checked
+          ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+          : "bg-background",
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="rounded-md bg-muted p-2 text-muted-foreground">
+          <Icon className="h-4 w-4" />
+        </span>
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
+            checked
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {badge}
+        </span>
+      </div>
+      <h3 className="mt-3 font-semibold">{title}</h3>
+      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+        {description}
+      </p>
+    </button>
+  );
+}
+
+function FieldError({ errors }: { errors?: string[] }) {
+  if (!errors?.length) return null;
+  return <p className="text-xs font-medium text-destructive">{errors[0]}</p>;
+}

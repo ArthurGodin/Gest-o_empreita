@@ -13,6 +13,7 @@ import { cn, formatBRL, formatDateBR } from "@/lib/utils";
 import type { BillingCharge } from "@/lib/queries/projects";
 import type { ChargeStatus, ProjectStatus } from "@/lib/supabase/types";
 import { GenerateChargeButton } from "./generate-charge-button";
+import { MarkChargePaidButton } from "./mark-charge-paid-button";
 
 interface BillingSectionProps {
   charges: BillingCharge[];
@@ -277,8 +278,14 @@ function ChargePanel({
   const canGenerate =
     charge.status === "draft" ||
     (!charge.asaas_payment_id &&
+      !charge.pix_qr_code &&
+      !charge.invoice_url &&
       !PAID_STATUSES.includes(charge.status) &&
       charge.status !== "cancelled");
+  const canMarkManualPaid =
+    charge.payment_provider === "manual_pix" &&
+    ["pending", "overdue"].includes(charge.status) &&
+    !!charge.pix_qr_code;
   const isSaldoBlocked =
     charge.kind === "saldo" && charge.status === "draft" && !deliveryApprovedAt;
   const actionHint = chargeActionHint(charge, deliveryApprovedAt);
@@ -333,10 +340,17 @@ function ChargePanel({
 
       {charge.pix_qr_code ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
-          <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <QrCode className="h-3.5 w-3.5" />
-              Pix copia e cola
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <QrCode className="h-3.5 w-3.5" />
+                Pix para pagamento
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {charge.payment_provider === "manual_pix"
+                  ? "Cliente paga no banco. Depois confira o extrato e dê baixa."
+                  : "A baixa chega automaticamente quando o provedor confirmar."}
+              </p>
             </div>
             <CopyButton
               text={charge.pix_qr_code}
@@ -354,9 +368,23 @@ function ChargePanel({
               className="h-11 w-full sm:h-9 sm:w-auto"
             />
           </div>
-          <p className="max-h-20 overflow-hidden break-all font-mono text-[11px] leading-5">
-            {charge.pix_qr_code}
-          </p>
+          <div className="grid gap-3 sm:grid-cols-[132px_1fr]">
+            {charge.pix_qr_image_b64 ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`data:image/png;base64,${charge.pix_qr_image_b64}`}
+                alt="QR Code Pix"
+                className="h-32 w-32 rounded-md border bg-white p-2"
+              />
+            ) : (
+              <div className="flex h-32 w-32 items-center justify-center rounded-md border bg-background text-muted-foreground">
+                <QrCode className="h-8 w-8" />
+              </div>
+            )}
+            <p className="max-h-32 overflow-hidden break-all rounded-md bg-background p-3 font-mono text-[11px] leading-5">
+              {charge.pix_qr_code}
+            </p>
+          </div>
         </div>
       ) : null}
 
@@ -384,6 +412,13 @@ function ChargePanel({
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </Button>
+        ) : null}
+        {canMarkManualPaid ? (
+          <MarkChargePaidButton
+            chargeId={charge.id}
+            amountCents={charge.amount_cents}
+            className="h-11 w-full sm:h-9 sm:w-auto"
+          />
         ) : null}
       </div>
     </div>
@@ -438,7 +473,9 @@ function buildNextAction({
       kicker: "Atenção agora",
       title: `${overdue.kind === "entrada" ? "Entrada" : "Saldo"} vencido`,
       description:
-        "Abra a cobrança do Asaas ou envie o Pix ao cliente. Evite seguir acumulando custo sem nova cobrança ativa.",
+        overdue.payment_provider === "manual_pix"
+          ? "Reenvie o Pix ao cliente e confira o extrato antes de seguir acumulando custo."
+          : "Abra a cobrança automática ou reenvie o Pix ao cliente antes de seguir acumulando custo.",
     };
   }
 
@@ -500,7 +537,9 @@ function buildNextAction({
       kicker: "Acompanhamento",
       title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
       description:
-        "A cobrança já foi gerada. Mantenha o link visível e acompanhe a baixa automática pelo webhook do Asaas.",
+        pending.payment_provider === "manual_pix"
+          ? "A cobrança Pix já foi gerada. Depois que o cliente pagar, confira o extrato e marque a parcela como paga."
+          : "A cobrança já foi gerada. Mantenha o link visível e acompanhe a baixa automática.",
     };
   }
 
@@ -522,10 +561,14 @@ function chargeActionHint(
     return "Pagamento identificado. Esta parcela já pode ser considerada recebida na margem da obra.";
   }
   if (charge.status === "overdue") {
-    return "Cobrança vencida. Reenvie o link do Asaas ou fale com o cliente antes de continuar acumulando custo.";
+    return charge.payment_provider === "manual_pix"
+      ? "Cobrança vencida. Reenvie o Pix e combine a regularização antes de continuar acumulando custo."
+      : "Cobrança vencida. Reenvie o link de pagamento ou fale com o cliente antes de continuar acumulando custo.";
   }
   if (charge.status === "pending") {
-    return "Cobrança ativa. Envie o link do Asaas ou o Pix copia e cola no WhatsApp do cliente.";
+    return charge.payment_provider === "manual_pix"
+      ? "Pix ativo. Envie o QR Code ou copia-e-cola no WhatsApp e dê baixa depois de conferir seu extrato."
+      : "Cobrança ativa. Envie o link de pagamento ou o Pix copia-e-cola no WhatsApp do cliente.";
   }
   if (charge.status === "cancelled") {
     return "Cobrança cancelada. Gere uma nova cobrança somente se este valor ainda precisar ser recebido.";

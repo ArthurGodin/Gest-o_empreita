@@ -28,6 +28,10 @@ import {
 import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
+import {
+  getActiveCompanyFull,
+  type CompanyFull,
+} from "@/lib/queries/company-settings";
 import { todayBR } from "@/lib/dates";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { STATUS_LABEL } from "@/lib/quote-status";
@@ -49,12 +53,14 @@ const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 };
 
 export default async function DashboardPage() {
-  const [quotes, projects, customers, charges] = await Promise.all([
+  const [quotes, projects, customers, charges, company] = await Promise.all([
     getQuotes(),
     getProjects(),
     getCustomers(),
     getBillingCharges(),
+    getActiveCompanyFull(),
   ]);
+  const paymentReady = isCompanyPaymentReady(company);
 
   const today = todayBR();
   const pendingQuotes = quotes.filter(
@@ -83,6 +89,7 @@ export default async function DashboardPage() {
   );
 
   const nextActions = buildNextActions({
+    paymentReady,
     customersCount: customers.length,
     pendingQuotes,
     draftQuotes,
@@ -90,6 +97,7 @@ export default async function DashboardPage() {
     openProjects,
   });
   const firstMoneySteps = buildFirstMoneySteps({
+    company,
     customersCount: customers.length,
     quotes,
     projects,
@@ -308,8 +316,8 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                     Roteiro para receber a primeira entrada
                   </p>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Faça só o que aproxima o cliente da aprovação: cadastro,
-                    proposta, link, aceite e Pix da entrada.
+                    Um caminho curto para vender, registrar o aceite e receber
+                    a primeira entrada sem conversa perdida.
                   </p>
                 </div>
               </div>
@@ -326,12 +334,12 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
             />
           </div>
 
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {steps.map((step, index) => (
               <Link
                 key={step.title}
                 href={step.href}
-                className={`rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
+                className={`min-h-[104px] rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
                   step.done ? "bg-primary/5" : "bg-background"
                 }`}
               >
@@ -448,12 +456,14 @@ function StatusPill({ label }: { label: string }) {
 }
 
 function buildNextActions({
+  paymentReady,
   customersCount,
   pendingQuotes,
   draftQuotes,
   approvedWithoutProject,
   openProjects,
 }: {
+  paymentReady: boolean;
   customersCount: number;
   pendingQuotes: Array<{ id: string; title: string }>;
   draftQuotes: Array<{ id: string; title: string }>;
@@ -466,6 +476,15 @@ function buildNextActions({
     detail: string;
     icon: ReactNode;
   }> = [];
+
+  if (!paymentReady) {
+    actions.push({
+      href: "/app/configuracoes",
+      title: "Configurar recebimento",
+      detail: "Cadastre a chave Pix antes da primeira entrada.",
+      icon: <ShieldCheck className="h-4 w-4" />,
+    });
+  }
 
   if (customersCount === 0) {
     actions.push({
@@ -529,11 +548,13 @@ function buildNextActions({
 }
 
 function buildFirstMoneySteps({
+  company,
   customersCount,
   quotes,
   projects,
   charges,
 }: {
+  company: CompanyFull | null;
   customersCount: number;
   quotes: Array<{
     id: string;
@@ -587,18 +608,28 @@ function buildFirstMoneySteps({
     fallbackHref: entryChargeHref,
     paid: entryPaid,
   });
+  const paymentReady = isCompanyPaymentReady(company);
 
   return [
     {
+      title: "Recebimento",
+      detail: paymentReady
+        ? "Pix pronto para cobrar."
+        : "Configure Pix primeiro.",
+      href: "/app/configuracoes",
+      action: paymentReady ? "Revisar recebimento" : "Configurar Pix",
+      done: paymentReady,
+    },
+    {
       title: "Cliente",
-      detail: "Quem vai receber a proposta.",
+      detail: "Quem recebe a proposta.",
       href: customersCount > 0 ? "/app/clientes" : "/app/clientes/novo",
       action: "Cadastrar cliente",
       done: customersCount > 0,
     },
     {
       title: "Orçamento",
-      detail: "Valor, itens e prazo sem dúvida.",
+      detail: "Itens, prazo e total.",
       href: firstQuote ? `/app/orcamentos/${firstQuote.id}` : "/app/orcamentos/novo",
       action: firstDraft
         ? "Finalizar orçamento"
@@ -609,7 +640,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Link",
-      detail: "WhatsApp pronto para decisão.",
+      detail: "Envio pelo WhatsApp.",
       href: firstShared
         ? `/app/orcamentos/${firstShared.id}`
         : firstQuote
@@ -620,7 +651,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Aprovação",
-      detail: "Aceite registrado e rastreável.",
+      detail: "Aceite registrado.",
       href: firstApproved
         ? `/app/orcamentos/${firstApproved.id}`
         : firstShared
@@ -631,7 +662,7 @@ function buildFirstMoneySteps({
     },
     {
       title: "Obra",
-      detail: "Execução criada no painel.",
+      detail: "Execução criada.",
       href: firstProject
         ? `/app/obras/${firstProject.id}`
         : firstApproved
@@ -648,6 +679,17 @@ function buildFirstMoneySteps({
       done: entryPaid,
     },
   ];
+}
+
+function isCompanyPaymentReady(company: CompanyFull | null): boolean {
+  if (!company) return false;
+  if (company.payment_provider === "asaas") return true;
+  return Boolean(
+    company.pix_key_type &&
+      company.pix_key?.trim() &&
+      company.pix_receiver_name?.trim() &&
+      company.pix_receiver_city?.trim(),
+  );
 }
 
 function buildEntryStep({

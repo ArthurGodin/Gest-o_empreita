@@ -204,35 +204,6 @@ export function PublicQuoteView({
                 </div>
               )}
 
-              {isDecidable && (
-                <div className="mt-4 hidden gap-2 lg:grid lg:grid-cols-2">
-                  <Button
-                    asChild
-                    className="h-11 bg-green-600 font-bold text-white hover:bg-green-700"
-                  >
-                    <TrackedAnchor
-                      href="#decisao"
-                      analyticsEvent="quote_approval_started"
-                      analyticsProperties={{ source: "public_total_card" }}
-                    >
-                      Aprovar agora
-                    </TrackedAnchor>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 border-[#e2e8f0] bg-white"
-                  >
-                    <TrackedAnchor
-                      href="#decisao"
-                      analyticsEvent="quote_revision_started"
-                      analyticsProperties={{ source: "public_total_card" }}
-                    >
-                      Pedir ajuste
-                    </TrackedAnchor>
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </section>

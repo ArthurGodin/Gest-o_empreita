@@ -29,6 +29,7 @@ export interface LocalChargeInput {
   customerId: string;
   totalCents: number;
   entryPct: number;
+  enforceAsaasMinimum?: boolean;
 }
 
 export interface CreateChargeResult {
@@ -107,6 +108,7 @@ export async function createLocalCharges(
   const splitError = entryChargeValidationMessage(
     input.totalCents,
     input.entryPct,
+    { enforceAsaasMinimum: input.enforceAsaasMinimum ?? true },
   );
   if (splitError) throw new Error(splitError);
 
@@ -186,6 +188,7 @@ export async function generatePixForCharge(
       .from("billing_charges")
       .update({
         status: "pending",
+        payment_provider: "asaas",
         due_date: dueDate,
         asaas_payment_id: payment.id,
         invoice_url: payment.invoiceUrl,

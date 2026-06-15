@@ -13,7 +13,7 @@ import {
   buildQuoteRejectedEmail,
 } from "@/lib/email/templates";
 import { env } from "@/lib/env";
-import { generatePixForCharge } from "@/lib/billing/asaas";
+import { generatePreferredPixForCharge } from "@/lib/billing/provider";
 
 /**
  * Server actions chamadas pelo link público /q/[token]. Não passam pelo auth
@@ -445,7 +445,7 @@ export async function approveDeliveryAction(input: {
 
   if (saldoCharge.status === "draft") {
     try {
-      const result = await generatePixForCharge(admin, {
+      const result = await generatePreferredPixForCharge(admin, {
         chargeId: saldoCharge.id,
         companyId: quote.company_id,
         customer: quote.customer,

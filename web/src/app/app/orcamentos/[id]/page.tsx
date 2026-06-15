@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Button } from "@/components/ui/button";
 import { getCustomers } from "@/lib/queries/customers";
+import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { getQuoteRevisions, getQuoteWithRelations } from "@/lib/queries/quotes";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { isEditable, STATUS_LABEL } from "@/lib/quote-status";
@@ -48,7 +49,7 @@ export default async function QuoteDetailPage({
     ? persistedRevisionSourceId ?? queryRevisionSourceId
     : null;
 
-  const [customers, templates, revisionSource, revisions] = await Promise.all([
+  const [customers, templates, revisionSource, revisions, company] = await Promise.all([
     editable ? getCustomers() : Promise.resolve([]),
     showConvert ? listTemplates() : Promise.resolve([]),
     revisionSourceId && revisionSourceId !== quote.id
@@ -57,6 +58,7 @@ export default async function QuoteDetailPage({
     quote.effective_status === "rejected"
       ? getQuoteRevisions(quote.id)
       : Promise.resolve([]),
+    showConvert ? getActiveCompanyFull() : Promise.resolve(null),
   ]);
   const validRevisionSource =
     revisionSource?.effective_status === "rejected" &&
@@ -123,7 +125,12 @@ export default async function QuoteDetailPage({
           revisionSource={validRevisionSource}
         />
       ) : (
-        <QuoteView quote={quote} revisions={revisions} templates={templates} />
+        <QuoteView
+          quote={quote}
+          revisions={revisions}
+          templates={templates}
+          paymentProvider={company?.payment_provider ?? "asaas"}
+        />
       )}
     </div>
   );

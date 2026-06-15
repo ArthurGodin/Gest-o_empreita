@@ -22,6 +22,7 @@ import {
   parseEntryPercentInput,
 } from "@/lib/billing/entry-percent";
 import { trackProductEvent } from "@/lib/product-analytics";
+import type { PaymentProvider } from "@/lib/supabase/types";
 import { convertToProjectAction } from "../actions";
 
 export interface TemplateOption {
@@ -36,6 +37,7 @@ interface ConvertToProjectProps {
   quoteTotalCents: number;
   customerDocument?: string | null;
   templates: TemplateOption[];
+  paymentProvider: PaymentProvider;
 }
 
 const NO_TEMPLATE = "__none__";
@@ -46,6 +48,7 @@ export function ConvertToProject({
   quoteTotalCents,
   customerDocument,
   templates,
+  paymentProvider,
 }: ConvertToProjectProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -63,6 +66,7 @@ export function ConvertToProject({
   const entryPctError = entryChargeValidationMessage(
     quoteTotalCents,
     parsedEntryPct,
+    { enforceAsaasMinimum: paymentProvider !== "manual_pix" },
   );
   const validEntryPct = entryPctError ? null : parsedEntryPct;
   const { entryCents, saldoCents } = validEntryPct === null
@@ -178,13 +182,22 @@ export function ConvertToProject({
                   </>
                 )}
               </p>
-              <p className="text-xs text-muted-foreground">
-                Cada Pix no Asaas precisa ter pelo menos{" "}
-                {MIN_ASAAS_PIX_CHARGE_LABEL}.
-              </p>
+              {paymentProvider === "asaas" ? (
+                <p className="text-xs text-muted-foreground">
+                  No modo de cobrança automática, cada Pix precisa ter pelo menos{" "}
+                  {MIN_ASAAS_PIX_CHARGE_LABEL}.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Pix direto gera QR Code com a chave configurada na empresa.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cpf-cnpj">CPF/CNPJ do cliente</Label>
+              <Label htmlFor="cpf-cnpj">
+                CPF/CNPJ do cliente
+                {paymentProvider === "manual_pix" ? " (opcional)" : ""}
+              </Label>
               <Input
                 id="cpf-cnpj"
                 value={cpfCnpj}
@@ -193,7 +206,9 @@ export function ConvertToProject({
                 placeholder="Somente números"
               />
               <p className="text-xs text-muted-foreground">
-                Necessário para emitir a cobrança Pix no Asaas.
+                {paymentProvider === "manual_pix"
+                  ? "Opcional para cadastro. O Pix direto usa a chave configurada em Configurações."
+                  : "Necessário para emitir a cobrança automática."}
               </p>
             </div>
           </div>

@@ -6,6 +6,7 @@ import type {
   ChargeKind,
   ChargeStatus,
   CostCategory,
+  PaymentProvider,
   ProjectStatus,
 } from "@/lib/supabase/types";
 
@@ -39,6 +40,7 @@ export interface FinanceChargeRow {
   customer_name: string | null;
   kind: ChargeKind;
   status: ChargeStatus;
+  payment_provider: PaymentProvider;
   amount_cents: number;
   due_date: string | null;
   paid_at: string | null;
@@ -81,7 +83,7 @@ export const getFinanceOverview = cache(
       supabase
         .from("billing_charges")
         .select(
-          "id, project_id, kind, status, amount_cents, due_date, paid_at, created_at, project:projects(id, name), customer:customers(id, name)",
+          "id, project_id, kind, status, payment_provider, amount_cents, due_date, paid_at, created_at, project:projects(id, name), customer:customers(id, name)",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -96,6 +98,7 @@ export const getFinanceOverview = cache(
       project_id: string;
       kind: ChargeKind;
       status: ChargeStatus;
+      payment_provider: PaymentProvider;
       amount_cents: number;
       due_date: string | null;
       paid_at: string | null;
@@ -190,6 +193,7 @@ export const getFinanceOverview = cache(
           customer_name: customer?.name ?? null,
           kind: charge.kind,
           status: charge.status,
+          payment_provider: charge.payment_provider,
           amount_cents: charge.amount_cents,
           due_date: charge.due_date,
           paid_at: charge.paid_at,

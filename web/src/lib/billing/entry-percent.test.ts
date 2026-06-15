@@ -60,4 +60,10 @@ describe("entry percent helpers", () => {
       "Orçamento precisa ter pelo menos R$ 5,00 para gerar Pix pelo Asaas.",
     );
   });
+
+  it("can skip the Asaas minimum for manual Pix", () => {
+    expect(
+      entryChargeValidationMessage(400, 50, { enforceAsaasMinimum: false }),
+    ).toBeNull();
+  });
 });

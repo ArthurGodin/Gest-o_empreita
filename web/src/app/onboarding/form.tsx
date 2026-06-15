@@ -78,8 +78,8 @@ export function OnboardingForm() {
                 detail: "Cliente decide em um link limpo.",
               },
               {
-                title: "Dinheiro",
-                detail: "Aprovou, virou obra e entrada Pix.",
+                title: "Recebimento",
+                detail: "Depois configure Pix direto no painel.",
               },
             ].map((step) => (
               <div
@@ -106,8 +106,8 @@ export function OnboardingForm() {
                 </p>
                 <p className="mt-1 text-sm leading-6 text-[#486354]">
                   Logo, CNPJ, endereço completo e modelos de etapa podem ser
-                  refinados depois. Agora o objetivo é chegar rápido ao primeiro
-                  orçamento vendável.
+                  refinados depois. Ao entrar, o checklist já te leva para
+                  configurar a chave Pix antes da primeira entrada.
                 </p>
               </div>
             </div>

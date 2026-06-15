@@ -11,7 +11,12 @@ import { checkSendReadiness } from "@/lib/quote-status";
 import { addDaysBR, todayBR } from "@/lib/dates";
 import { normalizeQuoteUnit } from "@/lib/format";
 import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
-import { createLocalCharges, generatePixForCharge } from "@/lib/billing/asaas";
+import { createLocalCharges } from "@/lib/billing/asaas";
+import {
+  companyPrefersManualPix,
+  companyUsesManualPix,
+  generatePreferredPixForCharge,
+} from "@/lib/billing/provider";
 import { entryChargeValidationMessage } from "@/lib/billing/entry-percent";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
@@ -854,6 +859,10 @@ export async function convertToProjectAction(
   }
 
   const supabase = createClient();
+  const [prefersManualPix, manualPixReady] = await Promise.all([
+    companyPrefersManualPix(supabase, company.company_id),
+    companyUsesManualPix(supabase, company.company_id),
+  ]);
   const { data: quote, error: fetchError } = await supabase
     .from("quotes")
     .select(
@@ -898,22 +907,37 @@ export async function convertToProjectAction(
   const entryChargeError = entryChargeValidationMessage(
     q.total_cents,
     entryPct,
+    { enforceAsaasMinimum: !prefersManualPix },
   );
   if (entryChargeError) {
     return { ok: false, error: entryChargeError };
   }
-
-  const billingDocument = normalizeCpfCnpj(cpfCnpj || q.customer.document);
-  if (entryPct > 0 && !billingDocument) {
+  if (prefersManualPix && entryPct > 0 && !manualPixReady) {
     return {
       ok: false,
-      error: "Informe CPF/CNPJ do cliente para gerar a cobrança Pix.",
+      error:
+        "Configure a chave Pix em Configurações antes de virar este orçamento em obra com cobrança de entrada.",
     };
   }
-  if (entryPct > 0 && !isValidCpfCnpj(billingDocument)) {
+
+  if (cpfCnpj && !isValidCpfCnpj(cpfCnpj)) {
     return {
       ok: false,
       error: "CPF/CNPJ do cliente é inválido. Corrija antes de gerar cobrança Pix.",
+    };
+  }
+
+  const billingDocument = normalizeCpfCnpj(cpfCnpj || q.customer.document);
+  if (!prefersManualPix && entryPct > 0 && !billingDocument) {
+    return {
+      ok: false,
+      error: "Informe CPF/CNPJ do cliente para gerar a cobrança automática.",
+    };
+  }
+  if (!prefersManualPix && entryPct > 0 && !isValidCpfCnpj(billingDocument)) {
+    return {
+      ok: false,
+      error: "CPF/CNPJ do cliente é inválido. Corrija antes de gerar cobrança automática.",
     };
   }
 
@@ -993,10 +1017,11 @@ export async function convertToProjectAction(
       customerId: q.customer_id,
       totalCents: q.total_cents,
       entryPct,
+      enforceAsaasMinimum: !prefersManualPix,
     });
 
     if (charges.entryChargeId) {
-      const pix = await generatePixForCharge(supabase, {
+      const pix = await generatePreferredPixForCharge(supabase, {
         chargeId: charges.entryChargeId,
         companyId: company.company_id,
         customer: q.customer,

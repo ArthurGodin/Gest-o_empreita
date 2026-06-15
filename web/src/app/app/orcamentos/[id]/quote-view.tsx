@@ -18,6 +18,7 @@ import type {
   QuoteRevisionSummary,
   QuoteWithRelations,
 } from "@/lib/queries/quotes";
+import type { PaymentProvider } from "@/lib/supabase/types";
 import { ShareLinkCard } from "./share-link-card";
 import { ConvertToProject, type TemplateOption } from "./convert-to-project";
 import { DuplicateButton } from "./duplicate-button";
@@ -31,10 +32,12 @@ export function QuoteView({
   quote,
   revisions,
   templates,
+  paymentProvider,
 }: {
   quote: QuoteWithRelations;
   revisions: QuoteRevisionSummary[];
   templates: TemplateOption[];
+  paymentProvider: PaymentProvider;
 }) {
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
@@ -67,6 +70,7 @@ export function QuoteView({
                 quoteTotalCents={quote.total_cents}
                 customerDocument={quote.customer?.document}
                 templates={templates}
+                paymentProvider={paymentProvider}
               />
             )}
           </div>

@@ -122,6 +122,7 @@ export function PublicToggle({
             projectStatus={project.status}
             deliveryApprovedAt={project.delivery_approved_at}
             shareToken={shareToken}
+            paymentInstructions={quote.company?.pix_instructions ?? null}
           />
         ) : (
           <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
