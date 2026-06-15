@@ -35,7 +35,7 @@ export function GenerateChargeButton({
         setError(result.error);
         toast({
           variant: "destructive",
-          title: "Pix não gerado",
+          title: "Não foi possível gerar o Pix",
           description: result.error,
         });
         return;
@@ -46,7 +46,7 @@ export function GenerateChargeButton({
       toast({
         title: "Pix gerado",
         description:
-          "A cobrança foi atualizada. Agora você pode enviar o QR Code ou o Pix copia-e-cola ao cliente.",
+          "Envie o QR Code ou o Pix copia-e-cola ao cliente. No Pix direto, confirme o recebimento depois de conferir o extrato.",
       });
       router.refresh();
     });

@@ -129,8 +129,8 @@ export function BillingSection({
           </div>
           <h2 className="mt-1 text-lg font-semibold">Entrada e saldo da obra</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Controle o dinheiro recebido, o Pix em aberto e o momento certo de
-            liberar o saldo.
+            Gere o Pix, acompanhe o que está pendente e marque como recebido
+            somente depois de conferir o pagamento.
           </p>
         </div>
         <div className="rounded-md border bg-muted/20 px-3 py-2 text-left text-sm sm:text-right">
@@ -181,8 +181,8 @@ export function BillingSection({
 
       {ordered.length === 0 ? (
         <div className="mt-4 rounded-lg border border-dashed bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
-          Esta obra ainda não tem parcelas configuradas. O fluxo automático
-          aparece quando um orçamento aprovado vira obra.
+          Esta obra ainda não tem parcelas configuradas. Quando um orçamento
+          aprovado vira obra, entrada e saldo aparecem aqui para cobrança.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -348,7 +348,7 @@ function ChargePanel({
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 {charge.payment_provider === "manual_pix"
-                  ? "Cliente paga no banco. Depois confira o extrato e dê baixa."
+                  ? "Cliente paga no banco. Depois confira o extrato e marque como recebido."
                   : "A baixa chega automaticamente quando o provedor confirmar."}
               </p>
             </div>
@@ -392,7 +392,9 @@ function ChargePanel({
         {canGenerate ? (
           <GenerateChargeButton
             chargeId={charge.id}
-            label={charge.kind === "saldo" ? "Liberar saldo" : "Gerar Pix"}
+            label={
+              charge.kind === "saldo" ? "Gerar Pix do saldo" : "Gerar Pix da entrada"
+            }
             className="h-11 w-full sm:h-9 sm:w-auto"
           />
         ) : null}
@@ -408,7 +410,7 @@ function ChargePanel({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Abrir cobrança
+              Abrir link de cobrança
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </Button>
@@ -451,7 +453,7 @@ function buildNextAction({
       kicker: "Próxima ação",
       title: "Cobranças ainda não configuradas",
       description:
-        "Quando um orçamento aprovado virar obra, entrada e saldo aparecem aqui com Pix e baixa automática.",
+        "Quando um orçamento aprovado virar obra, entrada e saldo aparecem aqui para gerar Pix, enviar ao cliente e acompanhar recebimento.",
     };
   }
 
@@ -462,7 +464,7 @@ function buildNextAction({
       kicker: "Financeiro resolvido",
       title: "Pagamento completo desta obra",
       description:
-        "Todas as parcelas foram confirmadas. Use a obra para acompanhar execução, custos e margem.",
+        "Todas as parcelas foram confirmadas. Use a obra para acompanhar execução, custos e margem sem misturar valores pendentes.",
     };
   }
 
@@ -474,7 +476,7 @@ function buildNextAction({
       title: `${overdue.kind === "entrada" ? "Entrada" : "Saldo"} vencido`,
       description:
         overdue.payment_provider === "manual_pix"
-          ? "Reenvie o Pix ao cliente e confira o extrato antes de seguir acumulando custo."
+          ? "Reenvie o Pix ao cliente e confirme no extrato antes de seguir acumulando custo."
           : "Abra a cobrança automática ou reenvie o Pix ao cliente antes de seguir acumulando custo.",
     };
   }
@@ -486,7 +488,7 @@ function buildNextAction({
       kicker: "Próxima ação",
       title: "Gere o Pix da entrada",
       description: workStarted
-        ? "A obra já pode estar em andamento; confirme a entrada antes de comprar material pesado."
+        ? "A obra já pode estar em andamento; gere a entrada e confirme o pagamento antes de comprar material pesado."
         : "Comece pela entrada para travar compromisso financeiro antes da execução.",
       chargeId: entry.id,
       actionLabel: "Gerar Pix da entrada",
@@ -500,7 +502,7 @@ function buildNextAction({
       kicker: "Próxima ação",
       title: "Entrada enviada, pagamento pendente",
       description:
-        "Reenvie o link ou Pix pelo WhatsApp e confirme a baixa antes de assumir despesas grandes.",
+        "Reenvie o Pix pelo WhatsApp e confirme o pagamento antes de assumir despesas grandes.",
     };
   }
 
@@ -511,9 +513,9 @@ function buildNextAction({
       kicker: "Próxima ação",
       title: "Entrega aprovada, saldo pronto para cobrar",
       description:
-        "Libere o Pix do saldo e envie ao cliente para fechar o recebimento da obra.",
+        "Gere o Pix do saldo e envie ao cliente para fechar o recebimento da obra.",
       chargeId: saldo.id,
-      actionLabel: "Liberar Pix do saldo",
+      actionLabel: "Gerar Pix do saldo",
     };
   }
 
@@ -524,9 +526,9 @@ function buildNextAction({
       kicker: "Saldo protegido",
       title: "Saldo fica bloqueado até a entrega",
       description:
-        "Quando a entrega for confirmada, o cliente consegue liberar o saldo. Você também pode liberar manualmente se precisar cobrar antes.",
+        "Quando a entrega for confirmada, o saldo fica pronto para cobrança. Você também pode liberar antes, se combinou isso com o cliente.",
       chargeId: saldo.id,
-      actionLabel: "Liberar manualmente",
+      actionLabel: "Gerar Pix do saldo",
     };
   }
 
@@ -538,7 +540,7 @@ function buildNextAction({
       title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
       description:
         pending.payment_provider === "manual_pix"
-          ? "A cobrança Pix já foi gerada. Depois que o cliente pagar, confira o extrato e marque a parcela como paga."
+          ? "O Pix já foi gerado. Depois que o cliente pagar, confira o extrato e marque a parcela como recebida."
           : "A cobrança já foi gerada. Mantenha o link visível e acompanhe a baixa automática.",
     };
   }
@@ -558,7 +560,7 @@ function chargeActionHint(
   deliveryApprovedAt: string | null,
 ) {
   if (charge.status === "received" || charge.status === "confirmed") {
-    return "Pagamento identificado. Esta parcela já pode ser considerada recebida na margem da obra.";
+    return "Pagamento confirmado. Esta parcela já entra como recebida na margem da obra.";
   }
   if (charge.status === "overdue") {
     return charge.payment_provider === "manual_pix"
@@ -567,19 +569,19 @@ function chargeActionHint(
   }
   if (charge.status === "pending") {
     return charge.payment_provider === "manual_pix"
-      ? "Pix ativo. Envie o QR Code ou copia-e-cola no WhatsApp e dê baixa depois de conferir seu extrato."
+      ? "Pix ativo. Envie o QR Code ou copia-e-cola no WhatsApp e marque como recebido depois de conferir seu extrato."
       : "Cobrança ativa. Envie o link de pagamento ou o Pix copia-e-cola no WhatsApp do cliente.";
   }
   if (charge.status === "cancelled") {
     return "Cobrança cancelada. Gere uma nova cobrança somente se este valor ainda precisar ser recebido.";
   }
   if (charge.kind === "saldo" && !deliveryApprovedAt) {
-    return "Ainda não é a cobrança principal. O saldo fica guardado para o fechamento da entrega.";
+    return "Ainda não é hora de cobrar o saldo. Ele fica guardado para o fechamento da entrega.";
   }
   if (charge.kind === "saldo") {
-    return "Entrega liberada. Gere o Pix do saldo e envie ao cliente para finalizar a obra.";
+    return "Entrega liberada. Gere o Pix do saldo e envie ao cliente para finalizar o recebimento.";
   }
-  return "Pix ainda não existe. Gere a cobrança da entrada e envie ao cliente.";
+  return "Pix ainda não existe. Gere a entrada e envie ao cliente.";
 }
 
 function StatusIcon({

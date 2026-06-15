@@ -80,11 +80,11 @@ export function PublicBillingView({
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold tracking-tight">
-              Pagamento da obra
+              Pagamentos da obra
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Acompanhe entrada, saldo e comprovante de pagamento em um só
-              lugar.
+              Veja a entrada, o saldo e o próximo passo de pagamento sem
+              precisar fazer login.
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export function PublicBillingView({
         {paymentInstructions ? (
           <div className="mt-4 rounded-lg border bg-muted/20 px-4 py-3 text-sm leading-6">
             <strong className="block text-foreground">
-              Orientação da empreiteira
+              Mensagem da empreiteira
             </strong>
             <p className="mt-1 text-muted-foreground">{paymentInstructions}</p>
           </div>
@@ -147,7 +147,7 @@ export function PublicBillingView({
 
       {ordered.length === 0 ? (
         <section className="rounded-xl border border-dashed bg-card p-5 text-sm leading-6 text-muted-foreground">
-          A cobrança ainda não foi liberada pela empreiteira.
+          A empreiteira ainda não liberou nenhuma cobrança para esta obra.
         </section>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -204,8 +204,8 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
           <div>
             <h3 className="font-semibold">Confirme a entrega da obra</h3>
             <p className="mt-1 text-sm opacity-90">
-              Confirmando a entrega, o saldo fica liberado para pagamento via
-              Pix.
+              Confirme somente se o combinado foi entregue. Depois disso, o
+              saldo poderá ser liberado para pagamento via Pix.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -380,7 +380,7 @@ function publicNextStep({
       icon: "clock" as const,
       title: "Cobrança ainda não liberada",
       description:
-        "A empreiteira vai liberar a cobrança quando a próxima etapa financeira estiver pronta.",
+        "A empreiteira libera a cobrança quando a próxima etapa financeira estiver pronta.",
       tone: "border-border bg-muted/20 text-foreground",
     };
   }
@@ -400,7 +400,7 @@ function publicNextStep({
       icon: "warning" as const,
       title: "Existe uma cobrança vencida",
       description:
-        "Abra o link de pagamento ou fale com a empreiteira para regularizar a parcela.",
+        "Regularize esta parcela antes de seguir. Se já pagou, envie o comprovante para a empreiteira.",
       tone: "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100",
     };
   }
@@ -410,7 +410,7 @@ function publicNextStep({
       icon: "paid" as const,
       title: "Confirme a entrega para liberar o saldo",
       description:
-        "Depois da confirmação, o Pix do saldo pode ser emitido para fechar o pagamento da obra.",
+        "Se a obra foi entregue conforme combinado, confirme para permitir a emissão do Pix do saldo.",
       tone: "border-green-200 bg-green-50 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100",
     };
   }
@@ -421,8 +421,8 @@ function publicNextStep({
       title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
       description:
         pending.payment_provider === "manual_pix"
-          ? "Use o QR Code ou copie o Pix abaixo. Depois do pagamento, envie o comprovante para a empreiteira."
-          : "Use o botão de pagamento ou copie o Pix abaixo. A baixa aparece automaticamente quando o pagamento for confirmado.",
+          ? "Pague pelo QR Code ou Pix copia-e-cola. Depois envie o comprovante para a empreiteira registrar o recebimento."
+          : "Use o botão de pagamento ou copie o Pix. A baixa aparece automaticamente quando o pagamento for confirmado.",
       tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     };
   }
@@ -432,7 +432,7 @@ function publicNextStep({
       icon: "clock" as const,
       title: "Saldo protegido até a entrega",
       description:
-        "O saldo final será liberado quando a obra for entregue ou quando a empreiteira liberar manualmente.",
+        "O saldo final aparece para pagamento quando a entrega for confirmada ou liberada pela empreiteira.",
       tone: "border-border bg-muted/20 text-foreground",
     };
   }
@@ -441,7 +441,7 @@ function publicNextStep({
     icon: "clock" as const,
     title: "Acompanhe o próximo pagamento",
     description:
-      "Quando uma nova cobrança for liberada, o botão de pagamento aparecerá aqui.",
+      "Quando houver uma nova cobrança disponível, o QR Code ou botão de pagamento aparecerá aqui.",
     tone: "border-border bg-muted/20 text-foreground",
   };
 }
@@ -454,11 +454,11 @@ function publicChargeInstruction(
     return "Pagamento confirmado. Nenhuma ação é necessária nesta parcela.";
   }
   if (charge.status === "overdue") {
-    return "Esta parcela venceu. Abra a cobrança ou fale com a empreiteira para regularizar.";
+    return "Esta parcela venceu. Regularize pelo Pix disponível ou fale com a empreiteira se já tiver pago.";
   }
   if (charge.status === "pending") {
     return charge.payment_provider === "manual_pix"
-      ? "Escaneie o QR Code ou copie o Pix para o aplicativo do seu banco. Depois envie o comprovante para a empreiteira."
+      ? "Escaneie o QR Code ou copie o Pix para o app do seu banco. Depois envie o comprovante para a empreiteira."
       : "Pague pelo botão abaixo ou copie o Pix para o aplicativo do seu banco.";
   }
   if (charge.status === "cancelled") {

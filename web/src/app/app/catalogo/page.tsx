@@ -16,14 +16,14 @@ export default async function CatalogPage() {
     <div className="container space-y-6 py-6">
       <PageHeader
         title="Catálogo de itens"
-        description="Itens que você usa muito (telhas, mão de obra, mantas...). Cadastre uma vez, use em qualquer orçamento."
+        description="Itens que você usa muito (telhas, mão de obra, mantas…). Cadastre uma vez, use em qualquer orçamento."
       />
 
       {items.length === 0 ? (
         <EmptyState
           icon={<Package className="h-6 w-6" />}
           title="Catálogo vazio"
-          description="Você ainda não cadastrou itens. Pode cadastrar agora, ou simplesmente ir montar um orçamento — itens que você criar lá podem ser salvos pro catálogo com 1 clique."
+          description="Cadastre itens recorrentes para montar orçamentos mais rápido e manter preços consistentes. Você também pode salvar um item no catálogo enquanto cria uma proposta."
           action={<CreateFirstItem />}
         />
       ) : (

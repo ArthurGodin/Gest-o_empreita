@@ -14,7 +14,9 @@ export const metadata = {
 };
 
 const requestNewLinkHref =
-  "https://wa.me/?text=Ola%2C%20recebi%20um%20link%20de%20orcamento%20indisponivel.%20Voce%20pode%20me%20enviar%20o%20link%20atualizado%3F";
+  `https://wa.me/?text=${encodeURIComponent(
+    "Olá, recebi um link de orçamento indisponível. Você pode me enviar o link atualizado?",
+  )}`;
 
 export default function PublicQuoteNotFound() {
   return (
@@ -47,7 +49,7 @@ export default function PublicQuoteNotFound() {
             </div>
 
             <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight tracking-normal sm:text-5xl">
-              Esse orçamento foi atualizado ou saiu do ar.
+              Este orçamento foi atualizado ou saiu do ar.
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-[#52606f]">

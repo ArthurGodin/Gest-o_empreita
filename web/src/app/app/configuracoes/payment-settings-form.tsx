@@ -16,7 +16,7 @@ const PIX_KEY_TYPES = [
   { value: "cpf", label: "CPF" },
   { value: "cnpj", label: "CNPJ" },
   { value: "phone", label: "Telefone" },
-  { value: "email", label: "Email" },
+  { value: "email", label: "E-mail" },
   { value: "random", label: "Chave aleatória" },
 ] as const;
 
@@ -74,8 +74,9 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         <div>
           <h2 className="text-lg font-semibold">Recebimento das obras</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Defina como os clientes pagam entrada e saldo. Para começar a vender
-            sem burocracia, use Pix direto na sua própria chave.
+            Escolha como entrada e saldo serão cobrados. Para vender sem
+            burocracia, use Pix direto: o cliente paga na chave da sua
+            empresa e você confirma o recebimento após conferir o extrato.
           </p>
         </div>
       </div>
@@ -84,17 +85,17 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         <ProviderOption
           checked={manualPix}
           icon={WalletCards}
-          title="Pix direto"
+          title="Pix direto na sua chave"
           badge="Recomendado"
-          description="QR Code e copia-e-cola com a sua chave Pix. O empreiteiro confirma a baixa depois de conferir o extrato."
+          description="Gera QR Code e copia-e-cola sem API. O dinheiro cai na conta vinculada à chave Pix informada aqui."
           onClick={() => setProvider("manual_pix")}
         />
         <ProviderOption
           checked={provider === "asaas"}
           icon={Landmark}
-          title="Cobrança automática"
+          title="Asaas automático"
           badge="Avançado"
-          description="Usa provedor de pagamento com API e webhook. Melhor para automação depois que o produto já estiver rodando."
+          description="Usa provedor, API e webhook para baixa automática. Não é obrigatório para vender o primeiro projeto."
           onClick={() => setProvider("asaas")}
         />
       </div>
@@ -105,8 +106,9 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         <div className="mt-5 space-y-4 rounded-lg border bg-muted/20 p-4">
           <div className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            O dinheiro cai direto na conta vinculada a esta chave Pix. O Gestão
-            Empreita não segura o dinheiro da obra.
+            O Gestão Empreita não segura dinheiro da obra. Ele só monta o QR
+            Code, organiza a cobrança e deixa claro quando você deve marcar a
+            parcela como recebida.
           </div>
 
           <div className="grid gap-4 md:grid-cols-[180px_1fr]">
@@ -127,12 +129,12 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
               <FieldError errors={fieldErrors.pix_key_type} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pix_key">Chave Pix que vai receber</Label>
+              <Label htmlFor="pix_key">Chave Pix que receberá os pagamentos</Label>
               <Input
                 id="pix_key"
                 name="pix_key"
                 defaultValue={company.pix_key ?? ""}
-                placeholder="CPF, CNPJ, telefone, email ou chave aleatória"
+                placeholder="CPF, CNPJ, telefone, e-mail ou chave aleatória"
               />
               <FieldError errors={fieldErrors.pix_key} />
             </div>
@@ -145,10 +147,10 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
                 id="pix_receiver_name"
                 name="pix_receiver_name"
                 defaultValue={company.pix_receiver_name ?? company.name}
-                placeholder="Ex.: Coberturas do Leo"
+                placeholder="Ex.: Coberturas do Léo"
               />
               <p className="text-xs text-muted-foreground">
-                O QR Code usa até 25 caracteres.
+                Use o nome que o cliente reconhecerá no app do banco.
               </p>
               <FieldError errors={fieldErrors.pix_receiver_name} />
             </div>
@@ -168,12 +170,12 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="pix_instructions">Orientação para o cliente</Label>
+            <Label htmlFor="pix_instructions">Mensagem que aparece para o cliente</Label>
             <Textarea
               id="pix_instructions"
               name="pix_instructions"
               defaultValue={company.pix_instructions ?? ""}
-              placeholder="Ex.: Depois de pagar, envie o comprovante no WhatsApp para liberarmos a próxima etapa."
+              placeholder="Ex.: Depois de pagar, envie o comprovante no WhatsApp para registrarmos o recebimento e seguirmos para a próxima etapa."
               maxLength={500}
             />
             <FieldError errors={fieldErrors.pix_instructions} />
@@ -181,18 +183,26 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         </div>
       ) : (
         <div className="mt-5 rounded-lg border bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
-          A cobrança automática depende das variáveis de produção do provedor e
-          do webhook ativo. Use este modo apenas quando quiser baixa automática.
+          Este modo exige conta Asaas em produção, chave de API e webhook ativo.
+          Use quando a empresa já quiser automação de baixa; para começar, Pix
+          direto costuma ser mais simples.
         </div>
       )}
 
       {error ? (
-        <div className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div
+          className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </div>
       ) : null}
       {success ? (
-        <div className="mt-4 flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100">
+        <div
+          className="mt-4 flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100"
+          role="status"
+          aria-live="polite"
+        >
           <CheckCircle2 className="h-4 w-4" />
           Recebimento salvo.
         </div>
@@ -201,7 +211,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
       <div className="mt-5 flex justify-end">
         <Button type="submit" disabled={pending}>
           <Save className="h-4 w-4" />
-          {pending ? "Salvando..." : "Salvar recebimento"}
+          {pending ? "Salvando…" : "Salvar forma de recebimento"}
         </Button>
       </div>
     </form>

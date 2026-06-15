@@ -38,7 +38,7 @@ const workflow = [
   },
   {
     title: "Você cobra e enxerga a margem",
-    text: "QR Code Pix com a chave da empreiteira, confirmação no extrato, gasto lançado e margem estimada.",
+    text: "QR Code Pix com a chave da empreiteira, pagamento conferido no extrato, gasto lançado e margem estimada.",
     icon: LineChart,
   },
 ];
@@ -78,7 +78,7 @@ export default function LandingPage() {
             Orçamento bonito, obra no controle e margem na mão.
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#475569]">
-            Um SaaS simples para pequenas empreiteiras criarem orçamento
+            Um sistema simples para pequenas empreiteiras criarem orçamento
             profissional, receberem aprovação digital do cliente e acompanharem
             execução, fotos, equipe e gastos no celular.
           </p>
@@ -172,8 +172,8 @@ export default function LandingPage() {
             </h2>
             <p className="mt-3 max-w-2xl text-[#cbd5e1]">
               O primeiro cliente precisa sair com um orçamento aprovado e uma
-              obra controlada. Depois disso, o Pix direto, o saldo e a margem
-              viram o centro do acompanhamento.
+              obra controlada. Depois disso, Pix direto, saldo e margem viram
+              o centro do acompanhamento.
             </p>
           </div>
           <Button

@@ -28,7 +28,7 @@ interface MarkChargePaidButtonProps {
 export function MarkChargePaidButton({
   chargeId,
   amountCents,
-  label = "Marcar como pago",
+  label = "Marcar como recebido",
   className,
 }: MarkChargePaidButtonProps) {
   const router = useRouter();
@@ -45,14 +45,14 @@ export function MarkChargePaidButton({
         setError(result.error);
         toast({
           variant: "destructive",
-          title: "Baixa não registrada",
+          title: "Recebimento não registrado",
           description: result.error,
         });
         return;
       }
 
       toast({
-        title: "Pagamento confirmado",
+        title: "Recebimento confirmado",
         description: "A parcela entrou como recebida no financeiro da obra.",
       });
       setOpen(false);
@@ -100,7 +100,7 @@ export function MarkChargePaidButton({
             value={note}
             onChange={(event) => setNote(event.target.value)}
             maxLength={300}
-            placeholder="Ex.: Pago via Pix em 15/06, conferido no app do banco."
+            placeholder="Ex.: Recebido via Pix em 15/06, conferido no app do banco."
           />
           <p className="text-xs text-muted-foreground">
             Esta observação não aparece para o cliente.
@@ -124,7 +124,7 @@ export function MarkChargePaidButton({
           </Button>
           <Button type="button" onClick={confirm} disabled={pending}>
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Confirmar pagamento
+            Confirmar recebimento
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -108,7 +108,7 @@ export default async function DashboardPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
       <PageHeader
         title="Início"
-        description="O que precisa de atenção agora."
+        description="O caminho mais curto para vender, executar e receber."
         actions={
           <Button asChild>
             <Link href="/app/orcamentos/novo">
@@ -316,8 +316,8 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                     Roteiro para receber a primeira entrada
                   </p>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Um caminho curto para vender, registrar o aceite e receber
-                    a primeira entrada sem conversa perdida.
+                    Um caminho guiado para sair da proposta enviada até a
+                    primeira entrada registrada no financeiro.
                   </p>
                 </div>
               </div>
@@ -384,7 +384,7 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
           </Button>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">
             Quando esses passos ficam verdes, o app já provou valor: proposta
-            enviada, cliente aprovou e a primeira entrada caiu no controle.
+            enviada, aceite registrado e primeira entrada no controle.
           </p>
         </aside>
       </div>
@@ -490,7 +490,7 @@ function buildNextActions({
     actions.push({
       href: "/app/clientes/novo",
       title: "Cadastrar primeiro cliente",
-      detail: "Sem cliente cadastrado, o orçamento trava.",
+      detail: "Tenha nome e WhatsApp prontos para enviar a proposta.",
       icon: <Users className="h-4 w-4" />,
     });
   }
@@ -539,7 +539,7 @@ function buildNextActions({
     actions.push({
       href: "/app/orcamentos/novo",
       title: "Criar primeiro orçamento",
-      detail: "Comece pelo que mais ajuda a vender.",
+      detail: "Comece pelo que o cliente precisa aprovar.",
       icon: <Plus className="h-4 w-4" />,
     });
   }
