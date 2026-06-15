@@ -12,40 +12,52 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginAction } from "../actions";
+import { loginAction, type AuthResult } from "../actions";
 
 export default function LoginPage() {
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<AuthResult | null>(null);
 
   function onSubmit(formData: FormData) {
-    setError(null);
+    setResult(null);
     startTransition(async () => {
-      const result = await loginAction(formData);
-      if (!result.ok) setError(result.error);
+      const nextResult = await loginAction(formData);
+      if (!nextResult.ok) setResult(nextResult);
     });
   }
+
+  const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">Entrar</CardTitle>
         <CardDescription>
-          Bem-vindo de volta. Acesse seus orçamentos e obras.
+          Acesse seus orçamentos, obras, cobranças e margem em um só painel.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-mail</Label>
             <Input
               id="email"
               name="email"
               type="email"
               autoComplete="email"
+              autoCapitalize="none"
+              inputMode="email"
+              spellCheck={false}
               required
-              placeholder="voce@empresa.com.br"
+              placeholder="contato@empresa.com.br"
+              aria-invalid={Boolean(fieldErrors?.email)}
+              aria-describedby={fieldErrors?.email ? "login-email-error" : undefined}
             />
+            {fieldErrors?.email?.[0] ? (
+              <p id="login-email-error" className="text-sm text-destructive">
+                {fieldErrors.email[0]}
+              </p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
@@ -62,15 +74,29 @@ export default function LoginPage() {
               name="password"
               type="password"
               autoComplete="current-password"
+              spellCheck={false}
               required
               placeholder="••••••••"
+              aria-invalid={Boolean(fieldErrors?.password)}
+              aria-describedby={
+                fieldErrors?.password ? "login-password-error" : undefined
+              }
             />
+            {fieldErrors?.password?.[0] ? (
+              <p id="login-password-error" className="text-sm text-destructive">
+                {fieldErrors.password[0]}
+              </p>
+            ) : null}
           </div>
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
+          {result && !result.ok ? (
+            <p
+              className="text-sm text-destructive"
+              role="alert"
+              aria-live="polite"
+            >
+              {result.error}
             </p>
-          )}
+          ) : null}
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? "Entrando…" : "Entrar"}
           </Button>

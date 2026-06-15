@@ -8,18 +8,18 @@ import { env } from "@/lib/env";
 import { logServerError } from "@/lib/log";
 
 const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
+  email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
 });
 
 const signupSchema = z.object({
   name: z.string().min(2, "Informe seu nome"),
-  email: z.string().email("Email inválido"),
+  email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Email inválido"),
+  email: z.string().email("E-mail inválido"),
 });
 
 const resetPasswordSchema = z
@@ -54,7 +54,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return { ok: false, error: "Email ou senha incorretos." };
+    return { ok: false, error: "E-mail ou senha incorretos." };
   }
 
   revalidatePath("/", "layout");
@@ -87,7 +87,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
 
   if (error) {
     logServerError("auth.signup", error);
-    // Mensagem genérica: não revelamos "email já cadastrado" para impedir
+    // Mensagem genérica: não revelamos "e-mail já cadastrado" para impedir
     // user enumeration. Quem tem conta usa /login; quem não tem, conhecerá
     // o problema pela falha na confirmação ou no login posterior.
     return {
@@ -110,7 +110,7 @@ export async function requestPasswordResetAction(
   if (!parsed.success) {
     return {
       ok: false,
-      error: "Informe um email válido.",
+      error: "Informe um e-mail válido.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
