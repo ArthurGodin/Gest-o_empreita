@@ -196,15 +196,33 @@ export default function LandingPage() {
             {/* Bento Item 3 */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
-              className="rounded-3xl bg-white p-8 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow"
+              className="rounded-3xl bg-white p-8 pb-0 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow flex flex-col justify-between"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-6">
-                <Smartphone className="h-6 w-6" />
+              <div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-6">
+                  <Smartphone className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Aprovação mobile</h3>
+                <p className="mt-2 text-slate-500 text-sm">
+                  Seu cliente abre o orçamento no celular, assina e aprova sem precisar criar conta.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Aprovação mobile</h3>
-              <p className="mt-2 text-slate-500 text-sm">
-                Seu cliente abre o orçamento no celular, assina e aprova sem precisar criar conta.
-              </p>
+              
+              <div className="mt-8 relative w-48 mx-auto h-40 bg-slate-900 rounded-t-[2rem] border-[6px] border-slate-800 border-b-0 shadow-xl overflow-hidden group-hover:-translate-y-2 transition-transform duration-300">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-slate-800 rounded-full z-10" />
+                <div className="absolute inset-0 bg-white pt-10 px-4">
+                  <div className="w-full h-24 bg-emerald-50 rounded-xl border border-emerald-100 p-3 flex flex-col justify-between">
+                    <div className="flex justify-between items-center">
+                      <div className="h-2 w-16 bg-slate-200 rounded-full" />
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="text-xs font-bold text-slate-900">Orçamento #042</div>
+                    <div className="mt-2 h-6 w-full bg-emerald-500 rounded-lg flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-white uppercase tracking-wider">Aprovar</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
