@@ -1,16 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import type { ComponentType } from "react";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Camera,
   CheckCircle2,
   FileText,
   HardHat,
   LineChart,
-  ReceiptText,
   ShieldCheck,
   Smartphone,
-  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -43,112 +42,178 @@ const workflow = [
   },
 ];
 
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 },
+  },
+};
+
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#f8fafc] text-[#121826]">
-      <header className="border-b border-[#e2e8f0] bg-white/90 backdrop-blur">
+    <main className="min-h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-[#db5b18]/20">
+      
+      {/* Background Glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
+        <div className="absolute -right-1/4 top-1/4 h-1/2 w-1/2 rounded-full bg-blue-500/10 blur-[120px]" />
+      </div>
+
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#db5b18] text-white shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#db5b18] to-[#ea7a3e] text-white shadow-lg shadow-[#db5b18]/20">
               <HardHat className="h-5 w-5" />
             </span>
-            <span>Gestão Empreita</span>
+            <span className="text-lg tracking-tight">Gestão Empreita</span>
           </Link>
-          <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <nav className="flex items-center gap-3">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full">
               <Link href="/precos">Preços</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="rounded-full">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button asChild size="sm" className="bg-[#db5b18] hover:bg-[#bc4810]">
+            <Button asChild size="sm" className="rounded-full bg-[#db5b18] hover:bg-[#bc4810] shadow-md shadow-[#db5b18]/20 transition-all hover:shadow-lg hover:shadow-[#db5b18]/30">
               <Link href="/signup">Começar grátis</Link>
             </Button>
           </nav>
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[1fr_0.9fr] md:items-center md:py-20">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-white px-3 py-1 text-sm font-medium text-[#9a3412]">
+      <section className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-32 pb-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:pt-40 md:pb-24">
+        <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="relative z-10">
+          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/50 px-4 py-1.5 text-sm font-semibold text-[#9a3412] backdrop-blur-sm shadow-sm">
             <ShieldCheck className="h-4 w-4" />
-            Feito para empreiteiro vender e controlar obra sem planilha
-          </div>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.02] tracking-normal md:text-6xl">
-            Orçamento bonito, obra no controle e margem na mão.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#475569]">
-            Um sistema simples para pequenas empreiteiras criarem orçamento
-            profissional, receberem aprovação digital do cliente e acompanharem
-            execução, fotos, equipe e gastos no celular.
-          </p>
+            Venda e controle obras sem planilhas
+          </motion.div>
+          
+          <motion.h1 variants={fadeIn} className="mt-6 max-w-3xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
+            Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">bonito</span>,<br/>obra no controle.
+          </motion.h1>
+          
+          <motion.p variants={fadeIn} className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+            O software elegante para pequenas empreiteiras. Crie orçamentos profissionais, receba aprovação digital do cliente e acompanhe tudo no seu celular.
+          </motion.p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <motion.div variants={fadeIn} className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="h-12 bg-[#db5b18] px-6 text-base hover:bg-[#bc4810]"
+              className="h-14 rounded-full bg-[#db5b18] px-8 text-base font-semibold shadow-xl shadow-[#db5b18]/20 transition-all hover:scale-105 hover:bg-[#bc4810]"
             >
               <Link href="/signup">
                 Testar por 14 dias
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="h-12 border-[#cbd5e1] bg-white px-6 text-base"
+              className="h-14 rounded-full border-slate-300 bg-white/50 px-8 text-base font-semibold backdrop-blur-sm transition-all hover:scale-105 hover:bg-white"
             >
-              <Link href="/precos">Ver preço</Link>
+              <Link href="/precos">Ver preços</Link>
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="mt-7 flex flex-wrap gap-2">
+          <motion.div variants={staggerContainer} className="mt-10 flex flex-wrap gap-3">
             {proofItems.map((item) => (
-              <span
+              <motion.span
+                variants={fadeIn}
                 key={item}
-                className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-[#334155] shadow-sm ring-1 ring-[#e2e8f0]"
+                className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md"
               >
-                <CheckCircle2 className="h-4 w-4 text-[#2f8f4e]" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 {item}
-              </span>
+              </motion.span>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <ProductPreview />
+        <motion.div 
+          initial={{ opacity: 0, x: 40, rotateY: 10 }} 
+          animate={{ opacity: 1, x: 0, rotateY: 0 }} 
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative perspective-1000"
+        >
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white p-2 shadow-2xl shadow-slate-300/50 transform-gpu hover:scale-[1.02] transition-transform duration-500">
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+            <img
+              src="/dashboard-mockup.png"
+              alt="Dashboard Gestão Empreita"
+              className="w-full h-auto rounded-xl object-cover ring-1 ring-slate-900/5"
+            />
+          </div>
+          {/* Decorative floating element */}
+          <motion.div 
+            animate={{ y: [0, -10, 0] }} 
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            className="absolute -bottom-6 -left-6 rounded-2xl bg-white p-4 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aprovado</p>
+              <p className="text-sm font-bold text-slate-900">R$ 15.000,00</p>
+            </div>
+          </motion.div>
+        </motion.div>
       </section>
 
-      <section className="border-y border-[#e2e8f0] bg-white">
-        <div className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-4">
+      <section className="relative z-10 border-y border-slate-200/50 bg-white/50 backdrop-blur-md">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-4"
+        >
           {workflow.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className="rounded-lg border border-[#e2e8f0] p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#fff1df] text-[#db5b18]">
-                  <Icon className="h-5 w-5" />
+              <motion.div variants={fadeIn} key={item.title} className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-[#db5b18]/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#db5b18] transition-colors group-hover:bg-[#db5b18] group-hover:text-white">
+                  <Icon className="h-6 w-6" />
                 </div>
-                <h2 className="mt-4 text-base font-bold">{item.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#475569]">
+                <h2 className="mt-5 text-lg font-bold text-slate-900">{item.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-500">
                   {item.text}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-[0.8fr_1fr] md:items-start">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#db5b18]">
+      <section className="mx-auto grid max-w-6xl gap-12 px-4 py-24 md:grid-cols-[0.8fr_1fr] md:items-start">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }} 
+          whileInView={{ opacity: 1, x: 0 }} 
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="text-sm font-bold uppercase tracking-widest text-[#db5b18]">
             Por que o dono paga
           </p>
-          <h2 className="mt-3 text-3xl font-black tracking-normal">
+          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900">
             O produto começa onde dói: venda, execução e dinheiro.
           </h2>
-        </div>
-        <div className="grid gap-3">
+        </motion.div>
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true }}
+          variants={staggerContainer}
+          className="grid gap-4"
+        >
           <Reason
             title="Menos orçamento perdido no WhatsApp"
             text="O cliente recebe um link limpo, com PDF e aprovação digital. Parece empresa grande, sem virar ERP pesado."
@@ -161,16 +226,24 @@ export default function LandingPage() {
             title="Mais clareza de margem"
             text="A tela financeira mostra aprovado, Pix recebido, pendente, gasto e margem estimada. O dono sabe o que entrou e o que ainda falta cobrar."
           />
-        </div>
+        </motion.div>
       </section>
 
-      <section className="bg-[#0f172a] px-4 py-14 text-white">
-        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1fr_auto] md:items-center">
+      <section className="relative mx-4 mb-16 overflow-hidden rounded-3xl bg-slate-900 px-6 py-20 text-white shadow-2xl md:mx-auto md:max-w-6xl md:px-12">
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#db5b18] blur-[100px] opacity-40" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }}
+          className="relative z-10 grid gap-8 md:grid-cols-[1fr_auto] md:items-center"
+        >
           <div>
-            <h2 className="text-3xl font-black tracking-normal">
+            <h2 className="text-4xl font-extrabold tracking-tight">
               Comece pequeno, mas com cara de produto sério.
             </h2>
-            <p className="mt-3 max-w-2xl text-[#cbd5e1]">
+            <p className="mt-4 max-w-2xl text-lg text-slate-400">
               O primeiro cliente precisa sair com um orçamento aprovado e uma
               obra controlada. Depois disso, Pix direto, saldo e margem viram
               o centro do acompanhamento.
@@ -179,27 +252,27 @@ export default function LandingPage() {
           <Button
             asChild
             size="lg"
-            className="h-12 bg-[#f47721] px-6 text-base text-white hover:bg-[#db5b18]"
+            className="h-14 rounded-full bg-[#db5b18] px-8 text-base font-bold text-white shadow-lg shadow-[#db5b18]/20 transition-all hover:scale-105 hover:bg-[#ea7a3e]"
           >
             <Link href="/signup">
               Criar minha conta
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-        </div>
+        </motion.div>
       </section>
 
-      <footer className="border-t border-[#e2e8f0] bg-white px-4 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-[#475569] md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Gestão Empreita.</p>
-          <div className="flex gap-4">
-            <Link href="/precos" className="hover:text-[#db5b18]">
+      <footer className="border-t border-slate-200 bg-white px-4 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm font-medium text-slate-500 md:flex-row md:items-center md:justify-between">
+          <p>© {new Date().getFullYear()} Gestão Empreita. Todos os direitos reservados.</p>
+          <div className="flex gap-6">
+            <Link href="/precos" className="transition-colors hover:text-[#db5b18]">
               Preços
             </Link>
-            <Link href="/termos" className="hover:text-[#db5b18]">
+            <Link href="/termos" className="transition-colors hover:text-[#db5b18]">
               Termos
             </Link>
-            <Link href="/privacidade" className="hover:text-[#db5b18]">
+            <Link href="/privacidade" className="transition-colors hover:text-[#db5b18]">
               Privacidade
             </Link>
           </div>
@@ -209,25 +282,11 @@ export default function LandingPage() {
   );
 }
 
-function ProductPreview() {
-  return (
-    <div className="relative">
-      <div className="relative overflow-hidden rounded-xl border border-[#111827] bg-[#111827] shadow-2xl">
-        <img
-          src="/dashboard-mockup.png"
-          alt="Dashboard Gestão Empreita"
-          className="w-full h-auto object-cover opacity-95 transition-opacity hover:opacity-100"
-        />
-      </div>
-    </div>
-  );
-}
-
 function Reason({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-lg border border-[#e2e8f0] bg-white p-5">
-      <h3 className="font-bold">{title}</h3>
-      <p className="mt-2 leading-7 text-[#475569]">{text}</p>
-    </div>
+    <motion.div variants={fadeIn} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+      <p className="mt-2 leading-relaxed text-slate-500">{text}</p>
+    </motion.div>
   );
 }
