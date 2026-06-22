@@ -149,6 +149,73 @@ export function buildQuoteRejectedEmail(ctx: QuoteContext) {
   return { subject, html, text };
 }
 
+export interface QuoteViewedContext {
+  quoteNumber: string;
+  quoteTitle: string;
+  totalCents: number;
+  customerName: string;
+  viewedAt: Date;
+  detailUrl: string;
+}
+
+export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
+  const subject = safeSubject(
+    `👀 O cliente está vendo o orçamento ${ctx.quoteNumber} agora!`,
+  );
+
+  const text = [
+    `Cliente na página!`,
+    ``,
+    `${ctx.customerName} acabou de abrir o orçamento ${ctx.quoteNumber} ("${ctx.quoteTitle}") em ${formatDateBR(ctx.viewedAt.toISOString())}.`,
+    ``,
+    `Total: ${formatBRL(ctx.totalCents / 100)}`,
+    ``,
+    `Se o cliente tiver dúvidas, este é um ótimo momento para estar disponível no WhatsApp.`,
+    ``,
+    `${ctx.detailUrl}`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+      <div style="background: #3b82f6; color: white; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+        <div style="font-size: 36px; line-height: 1; margin-bottom: 8px;">👀</div>
+        <h1 style="font-size: 20px; font-weight: 600; margin: 0;">Cliente na página!</h1>
+      </div>
+
+      <div style="background: white; padding: 24px; border: 1px solid #e5e7eb; border-top: 0; border-radius: 0 0 12px 12px;">
+        <p style="margin: 0 0 16px;">
+          <strong>${escapeHtml(ctx.customerName)}</strong> acabou de abrir o orçamento
+          <span style="font-family: monospace;">${escapeHtml(ctx.quoteNumber)}</span> e está visualizando a proposta neste momento.
+        </p>
+
+        <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">Orçamento</div>
+          <div style="font-weight: 600; margin-bottom: 12px;">${escapeHtml(ctx.quoteTitle)}</div>
+
+          <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">Total</div>
+          <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">${formatBRL(ctx.totalCents / 100)}</div>
+        </div>
+
+        <p style="margin: 16px 0;">
+          Se o cliente tiver dúvidas, este é um <strong>ótimo momento</strong> para estar disponível no WhatsApp e fechar negócio!
+        </p>
+
+        <div style="text-align: center; margin: 24px 0 8px;">
+          <a href="${ctx.detailUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            Abrir orçamento
+          </a>
+        </div>
+
+        <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; text-align: center;">
+          Visualizado em ${formatDateBR(ctx.viewedAt.toISOString())} · Gestão Empreita
+        </p>
+      </div>
+    </div>
+  `;
+
+  return { subject, html, text };
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

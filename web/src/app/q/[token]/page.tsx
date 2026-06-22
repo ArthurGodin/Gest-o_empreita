@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { effectiveStatus } from "@/lib/quote-status";
+import { notifyCompanyOwner } from "@/lib/email/send";
+import { buildQuoteViewedEmail } from "@/lib/email/templates";
+import { env } from "@/lib/env";
 import { PublicToggle } from "./public-toggle";
 import type { PublicProjectView } from "./andamento-view";
 import type { ProjectStatus, QuoteStatus, StageStatus } from "@/lib/supabase/types";
@@ -16,6 +19,7 @@ interface PublicQuoteData {
   status: QuoteStatus;
   share_token: string;
   project_id: string | null;
+  company_id: string;
   valid_until: string | null;
   sent_at: string | null;
   viewed_at: string | null;
@@ -63,7 +67,7 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
     .from("quotes")
     .select(
       `
-      id, number, title, description, status, share_token, project_id,
+      id, number, title, description, status, share_token, project_id, company_id,
       valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
       company:companies(name, phone, email, logo_url, city, state, pix_instructions),
@@ -177,15 +181,31 @@ async function loadPublicProjectView(
 async function recordViewIfNeeded(quote: PublicQuoteData) {
   if (quote.status !== "sent" || quote.viewed_at) return;
 
+  const viewedAt = new Date();
   const admin = createAdminClient();
-  await admin
+  const { error } = await admin
     .from("quotes")
     .update({
       status: "viewed",
-      viewed_at: new Date().toISOString(),
+      viewed_at: viewedAt.toISOString(),
     })
     .eq("id", quote.id)
     .eq("status", "sent"); // safety: não sobrescreve approved/rejected
+
+  if (!error) {
+    // Fire and forget notification
+    notifyCompanyOwner(
+      quote.company_id,
+      buildQuoteViewedEmail({
+        quoteNumber: quote.number,
+        quoteTitle: quote.title,
+        totalCents: quote.total_cents,
+        customerName: quote.customer?.name ?? "Cliente",
+        viewedAt: viewedAt,
+        detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/orcamentos/${quote.id}`,
+      })
+    ).catch(() => {});
+  }
 }
 
 export async function generateMetadata({

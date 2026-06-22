@@ -92,7 +92,7 @@ export function PaymentForm() {
           ) : (
             method === "pix" ? <QrCode className="mr-2 h-5 w-5" /> : <CreditCard className="mr-2 h-5 w-5" />
           )}
-          {loading ? "Processando..." : \`Pagar R$ 97,00 com \${method === "pix" ? "Pix" : "Cartão"}\`}
+          {loading ? "Processando..." : `Pagar R$ 97,00 com ${method === "pix" ? "Pix" : "Cartão"}`}
         </Button>
       </div>
     </div>
