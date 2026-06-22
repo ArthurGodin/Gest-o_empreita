@@ -36,7 +36,7 @@ export default async function CheckoutPage() {
             <li>✓ Orçamentos Ilimitados</li>
             <li>✓ Obras Ilimitadas</li>
             <li>✓ Integração Pix Asaas</li>
-            <li>✓ Sem marca d'água</li>
+            <li>✓ Sem marca d&apos;água</li>
           </ul>
         </div>
 

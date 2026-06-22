@@ -62,7 +62,7 @@ export default async function PlanPage() {
             </div>
             <div className="flex items-start gap-3 text-sm">
               <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Geração de PDF (com marca d'água)</span>
+              <span>Geração de PDF (com marca d&apos;água)</span>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ export default async function PlanPage() {
             </div>
             <div className="flex items-start gap-3 text-sm">
               <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span>Sem marca d'água nos PDFs</span>
+              <span>Sem marca d&apos;água nos PDFs</span>
             </div>
             <div className="flex items-start gap-3 text-sm">
               <Check className="h-5 w-5 text-amber-500 shrink-0" />
