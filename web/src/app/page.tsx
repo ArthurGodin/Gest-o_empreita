@@ -275,7 +275,7 @@ export default function LandingPage() {
               }
               childrenB={
                 <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center relative">
-                  <img src="/dashboard-mockup.png" alt="Gestão Empreita Screenshot" className="absolute inset-0 w-full h-full object-cover object-left-top opacity-90" />
+                  <img src="/quote-mockup.png" alt="Gestão Empreita Screenshot" draggable={false} className="absolute inset-0 w-full h-full object-cover object-left-top opacity-90 select-none pointer-events-none" />
                   <div className="absolute bottom-4 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center px-4 py-2 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-800">
                     ✅ Como vai ser agora (Gestão Empreita)
                   </div>

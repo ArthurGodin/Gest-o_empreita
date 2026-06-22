@@ -52,7 +52,7 @@ export const CompareSlider = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden select-none rounded-3xl cursor-ew-resize ${className}`}
+      className={`relative w-full h-full overflow-hidden select-none rounded-3xl cursor-ew-resize touch-none ${className}`}
       onMouseDown={(e) => {
         setIsDragging(true);
         handleDrag(e);
@@ -61,6 +61,7 @@ export const CompareSlider = ({
         setIsDragging(true);
         handleDrag(e);
       }}
+      onDragStart={(e) => e.preventDefault()}
     >
       {/* Imagem/Div B (Solução / Nova) - Fica no fundo */}
       <div className="absolute inset-0 w-full h-full">
