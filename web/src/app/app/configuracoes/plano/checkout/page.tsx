@@ -1,17 +1,24 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getActiveCompany } from "@/lib/queries/company";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { PaymentForm } from "./payment-form";
 
 export default async function CheckoutPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const company = await getActiveCompany();
-  if (!company) redirect("/app");
+  const active = await getActiveCompany();
+  if (!active) redirect("/app");
+
+  const supabase = createClient();
+  const { data: companyRecord } = await supabase
+    .from("companies")
+    .select("plan")
+    .eq("id", active.company_id)
+    .single();
 
   // Se já for pro, manda de volta
-  if (company.plan === "pro") {
+  if (companyRecord?.plan === "pro") {
     redirect("/app/configuracoes/plano");
   }
 
