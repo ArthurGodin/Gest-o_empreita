@@ -286,35 +286,45 @@ export default function LandingPage() {
             />
           </div>
 
-          <div className="h-[400px] md:h-[500px] w-full rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-            <CompareSlider
-              childrenA={
-                <div className="w-full h-full bg-slate-100 flex flex-col p-6 items-center justify-center">
-                  <div className="bg-[#e1f5c4] p-4 rounded-xl shadow-sm text-sm text-slate-800 max-w-[280px] w-full relative">
-                    <div className="absolute -left-2 top-4 w-0 h-0 border-t-[10px] border-t-transparent border-r-[15px] border-r-[#e1f5c4] border-b-[10px] border-b-transparent"></div>
-                    "Opa fulano, o orçamento da cobertura colonial ficou em R$ 10.780,00 total. Fechado?"
-                  </div>
-                  <div className="mt-6 px-4 py-1.5 rounded-full bg-slate-200 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                    ❌ Como você faz hoje (WhatsApp)
-                  </div>
-                </div>
-              }
-              childrenB={
-                <div className="w-full h-full bg-white flex flex-col items-center justify-center relative overflow-hidden">
-                  <img 
-                    src="/quote-mockup.png" 
-                    alt="Gestão Empreita Screenshot" 
-                    draggable={false} 
-                    className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none" 
-                  />
-                  {/* Gradiente sutil para garantir a leitura da tag na parte inferior */}
-                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-6 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center px-5 py-2 bg-slate-900/90 rounded-full backdrop-blur-md border border-slate-800/50 shadow-2xl">
-                    ✅ Como vai ser agora
-                  </div>
-                </div>
-              }
-            />
+          {/* Showcase Flutuante Impactante */}
+          <div className="relative h-[400px] md:h-[550px] w-full perspective-1000">
+            {/* Elemento de fundo: Dashboard */}
+            <motion.div
+              animate={{ y: [-10, 10, -10], rotateX: [2, -2, 2], rotateY: [-2, 2, -2] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-0 right-0 w-[90%] h-[75%] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white"
+            >
+              <div className="h-6 bg-slate-100 border-b border-slate-200 flex items-center px-3 gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+              </div>
+              <img src="/dashboard-mockup.png" alt="Dashboard" className="w-full h-full object-cover object-left-top select-none pointer-events-none opacity-95" draggable={false} />
+            </motion.div>
+
+            {/* Elemento frontal flutuante: Orçamento */}
+            <motion.div
+              animate={{ y: [15, -15, 15], rotateZ: [-2, 1, -2] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute bottom-0 left-0 w-[65%] h-[80%] rounded-2xl overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200 bg-white"
+            >
+               <img src="/quote-mockup.png" alt="Quote" className="w-full h-full object-cover object-top select-none pointer-events-none" draggable={false} />
+            </motion.div>
+
+            {/* Selo de Destaque Flutuante */}
+            <motion.div
+              animate={{ y: [-5, 5, -5], scale: [1, 1.05, 1] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              className="absolute top-[60%] -right-4 md:-right-8 bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700 backdrop-blur-md"
+            >
+              <div className="h-10 w-10 bg-emerald-500 rounded-full flex items-center justify-center shadow-inner">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium">Link do Orçamento</p>
+                <p className="text-sm font-bold text-emerald-400">Aprovado online</p>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
