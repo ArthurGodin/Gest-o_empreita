@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/ui/aurora-background";
+import { CompareSlider } from "@/components/ui/compare-slider";
+import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 
 const proofItems = [
   "Orçamento com link de aprovação",
@@ -132,65 +134,146 @@ export default function LandingPage() {
         </ContainerScroll>
       </section>
 
-      <section className="relative z-10 border-y border-slate-200/50 bg-white/50 backdrop-blur-md">
-        <motion.div 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-          className="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-4"
-        >
-          {workflow.map((item) => {
-            const Icon = item.icon;
-            return (
-              <motion.div variants={fadeIn} key={item.title} className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-[#db5b18]/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#db5b18] transition-colors group-hover:bg-[#db5b18] group-hover:text-white">
-                  <Icon className="h-6 w-6" />
+      {/* NOVA SEÇÃO: BENTO GRID */}
+      <section className="relative z-10 border-y border-slate-200/50 bg-white backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-4 py-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+              Tudo que a sua empreiteira precisa.
+            </h2>
+            <p className="mt-4 text-lg text-slate-500">
+              Desenhado para ser simples, poderoso e impressionar o cliente final.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
+            {/* Bento Item 1 - Grande */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+              className="md:col-span-2 md:row-span-2 rounded-3xl bg-slate-50 p-8 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow"
+            >
+              <div className="absolute right-0 top-0 w-64 h-64 bg-[#db5b18]/10 rounded-full blur-3xl group-hover:bg-[#db5b18]/20 transition-colors" />
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-[#db5b18] mb-6">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900">Orçamentos que vendem.</h3>
+                  <p className="mt-2 text-slate-600 max-w-sm">
+                    Diga adeus às planilhas confusas. Crie orçamentos elegantes em minutos, adicione sua margem invisível e envie o link para aprovação digital.
+                  </p>
                 </div>
-                <h2 className="mt-5 text-lg font-bold text-slate-900">{item.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                  {item.text}
-                </p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                <div className="mt-8 flex-1 rounded-2xl border border-slate-200 bg-white shadow-sm p-4 translate-y-4 group-hover:-translate-y-0 transition-transform">
+                  <div className="h-4 w-1/3 bg-slate-100 rounded mb-4" />
+                  <div className="space-y-2">
+                    <div className="h-2 w-full bg-slate-50 rounded" />
+                    <div className="h-2 w-5/6 bg-slate-50 rounded" />
+                    <div className="h-2 w-4/6 bg-slate-50 rounded" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Bento Item 2 */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+              className="rounded-3xl bg-slate-900 p-8 border border-slate-800 shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow text-white"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 mb-6">
+                <LineChart className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-bold">Margem na mão</h3>
+              <p className="mt-2 text-slate-400 text-sm">
+                Saiba exatamente quanto de lucro cada obra está deixando. Controle o previsto vs realizado.
+              </p>
+            </motion.div>
+
+            {/* Bento Item 3 */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
+              className="rounded-3xl bg-white p-8 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-shadow"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-6">
+                <Smartphone className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Aprovação mobile</h3>
+              <p className="mt-2 text-slate-500 text-sm">
+                Seu cliente abre o orçamento no celular, assina e aprova sem precisar criar conta.
+              </p>
+            </motion.div>
+          </div>
+        </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-12 px-4 py-24 md:grid-cols-[0.8fr_1fr] md:items-start">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }} 
-          whileInView={{ opacity: 1, x: 0 }} 
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <p className="text-sm font-bold uppercase tracking-widest text-[#db5b18]">
-            Por que o dono paga
-          </p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900">
-            O produto começa onde dói: venda, execução e dinheiro.
-          </h2>
-        </motion.div>
-        <motion.div 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true }}
-          variants={staggerContainer}
-          className="grid gap-4"
-        >
-          <Reason
-            title="Menos orçamento perdido no WhatsApp"
-            text="O cliente recebe um link limpo, com PDF e aprovação digital. Parece empresa grande, sem virar ERP pesado."
-          />
-          <Reason
-            title="Menos surpresa no fim da obra"
-            text="Fotos, diário, ponto e gastos ficam presos à obra. O dono consegue cobrar decisão com contexto."
-          />
-          <Reason
-            title="Mais clareza de margem"
-            text="A tela financeira mostra aprovado, Pix recebido, pendente, gasto e margem estimada. O dono sabe o que entrou e o que ainda falta cobrar."
-          />
-        </motion.div>
+      {/* NOVA SEÇÃO: COMPARE (ANTES / DEPOIS) & HERO HIGHLIGHT */}
+      <section className="mx-auto max-w-6xl px-4 py-24">
+        <div className="text-center mb-16">
+          <HeroHighlight>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: [20, -5, 0] }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
+              className="text-3xl md:text-5xl font-bold text-slate-900 leading-snug"
+            >
+              O produto começa onde dói: <br />
+              <Highlight className="text-white">venda, execução e dinheiro.</Highlight>
+            </motion.h2>
+          </HeroHighlight>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <Reason
+              title="Menos orçamento perdido no WhatsApp"
+              text="Você para de mandar textos bagunçados. O cliente recebe um link limpo, com PDF e aprovação digital. Parece empresa grande."
+            />
+            <Reason
+              title="Menos surpresa no fim da obra"
+              text="Fotos, diário, ponto e gastos ficam presos à obra. O dono consegue cobrar decisões com contexto direto do canteiro."
+            />
+            <Reason
+              title="Recebimento com Pix Automático"
+              text="A tela financeira mostra aprovado, pendente, e o gasto. A cobrança via Pix vai direto pra conta e cai no extrato."
+            />
+          </div>
+
+          <div className="h-[400px] md:h-[500px] w-full rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+            <CompareSlider
+              childrenA={
+                <div className="w-full h-full bg-slate-100 flex flex-col p-6 items-center justify-center">
+                  <div className="bg-green-100 p-4 rounded-xl shadow-sm text-sm text-green-900 max-w-[280px] w-full">
+                    "Opa fulano, o orçamento ficou em R$ 15.000 de mão de obra + 8.000 de material. Fechado?"
+                  </div>
+                  <div className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                    ❌ Como você faz hoje <br/>(WhatsApp)
+                  </div>
+                </div>
+              }
+              childrenB={
+                <div className="w-full h-full bg-slate-900 flex flex-col p-6 items-center justify-center">
+                  <div className="bg-white p-6 rounded-xl shadow-2xl max-w-[280px] w-full border border-slate-800">
+                    <div className="h-8 w-8 bg-[#db5b18] rounded-md mb-4" />
+                    <div className="text-xl font-bold text-slate-900">Orçamento #042</div>
+                    <div className="text-sm text-slate-500 mt-2">Valor Total</div>
+                    <div className="text-2xl font-black text-slate-900">R$ 23.000,00</div>
+                    <div className="mt-6 bg-emerald-500 text-white text-center py-2 rounded-lg text-sm font-bold">
+                      Aprovar Orçamento
+                    </div>
+                  </div>
+                  <div className="mt-4 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center">
+                    ✅ Como vai ser agora <br/>(Gestão Empreita)
+                  </div>
+                </div>
+              }
+            />
+          </div>
+        </div>
       </section>
 
       {/* ACETERNITY AURORA BACKGROUND */}
