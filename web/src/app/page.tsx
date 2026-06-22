@@ -1,7 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
@@ -56,13 +57,25 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Animação 3D do Dashboard estilo Apple (ScrollTrigger)
+  const dashboardRotateX = useTransform(scrollYProgress, [0, 0.4], [25, 0]);
+  const dashboardScale = useTransform(scrollYProgress, [0, 0.4], [0.85, 1]);
+  const dashboardY = useTransform(scrollYProgress, [0, 0.4], ["0%", "-10%"]);
+  const dashboardOpacity = useTransform(scrollYProgress, [0, 0.2, 0.4], [0.5, 1, 1]);
+
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-[#db5b18]/20">
+    <main ref={containerRef} className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#db5b18]/20 relative">
       
-      {/* Background Glows */}
+      {/* Background Glows Falsos para dar clima "SaaS" */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
-        <div className="absolute -right-1/4 top-1/4 h-1/2 w-1/2 rounded-full bg-blue-500/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
+        <div className="absolute right-0 top-[20%] h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
       </div>
 
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md">
@@ -74,10 +87,10 @@ export default function LandingPage() {
             <span className="text-lg tracking-tight">Gestão Empreita</span>
           </Link>
           <nav className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full hover:bg-slate-100">
               <Link href="/precos">Preços</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-full">
+            <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100">
               <Link href="/login">Entrar</Link>
             </Button>
             <Button asChild size="sm" className="rounded-full bg-[#db5b18] hover:bg-[#bc4810] shadow-md shadow-[#db5b18]/20 transition-all hover:shadow-lg hover:shadow-[#db5b18]/30">
@@ -87,14 +100,15 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-32 pb-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:pt-40 md:pb-24">
-        <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="relative z-10">
+      {/* HERO SECTION - Centralizado para preparar a animação 3D */}
+      <section className="relative mx-auto flex max-w-6xl flex-col items-center pt-32 pb-8 text-center md:pt-48 md:pb-16 px-4 z-10">
+        <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="flex flex-col items-center">
           <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/50 px-4 py-1.5 text-sm font-semibold text-[#9a3412] backdrop-blur-sm shadow-sm">
             <ShieldCheck className="h-4 w-4" />
             Venda e controle obras sem planilhas
           </motion.div>
           
-          <motion.h1 variants={fadeIn} className="mt-6 max-w-3xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
+          <motion.h1 variants={fadeIn} className="mt-8 max-w-4xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
             Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">bonito</span>,<br/>obra no controle.
           </motion.h1>
           
@@ -102,7 +116,7 @@ export default function LandingPage() {
             O software elegante para pequenas empreiteiras. Crie orçamentos profissionais, receba aprovação digital do cliente e acompanhe tudo no seu celular.
           </motion.p>
 
-          <motion.div variants={fadeIn} className="mt-8 flex flex-col gap-4 sm:flex-row">
+          <motion.div variants={fadeIn} className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
             <Button
               asChild
               size="lg"
@@ -123,7 +137,7 @@ export default function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div variants={staggerContainer} className="mt-10 flex flex-wrap gap-3">
+          <motion.div variants={staggerContainer} className="mt-12 flex flex-wrap justify-center gap-3">
             {proofItems.map((item) => (
               <motion.span
                 variants={fadeIn}
@@ -136,33 +150,44 @@ export default function LandingPage() {
             ))}
           </motion.div>
         </motion.div>
+      </section>
 
+      {/* SCROLL TRIGGER 3D MOCKUP */}
+      <section className="relative z-20 w-full px-4" style={{ perspective: "1000px" }}>
         <motion.div 
-          initial={{ opacity: 0, x: 40, rotateY: 10 }} 
-          animate={{ opacity: 1, x: 0, rotateY: 0 }} 
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative perspective-1000"
+          style={{ 
+            rotateX: dashboardRotateX, 
+            scale: dashboardScale, 
+            y: dashboardY,
+            opacity: dashboardOpacity,
+            transformStyle: "preserve-3d"
+          }}
+          className="mx-auto max-w-5xl relative"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white p-2 shadow-2xl shadow-slate-300/50 transform-gpu hover:scale-[1.02] transition-transform duration-500">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+          {/* Sombra debaixo da imagem para dar efeito de profundidade 3D */}
+          <div className="absolute inset-0 translate-y-10 scale-[0.95] bg-[#db5b18]/20 blur-[50px] rounded-3xl -z-10" />
+          
+          <div className="relative overflow-hidden rounded-3xl border border-slate-200/50 bg-white/50 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-md">
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
             <img
               src="/dashboard-mockup.png"
               alt="Dashboard Gestão Empreita"
-              className="w-full h-auto rounded-xl object-cover ring-1 ring-slate-900/5"
+              className="w-full h-auto rounded-2xl object-cover ring-1 ring-slate-900/5"
             />
           </div>
-          {/* Decorative floating element */}
+          
+          {/* Decorative floating element - flutua solto! */}
           <motion.div 
-            animate={{ y: [0, -10, 0] }} 
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="absolute -bottom-6 -left-6 rounded-2xl bg-white p-4 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-3"
+            animate={{ y: [0, -15, 0] }} 
+            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+            className="absolute -bottom-8 -left-8 md:bottom-12 md:-left-12 rounded-2xl bg-white/90 backdrop-blur-lg p-5 shadow-2xl shadow-slate-900/10 border border-slate-100 flex items-center gap-4 z-30 transform-gpu"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <CheckCircle2 className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aprovado</p>
-              <p className="text-sm font-bold text-slate-900">R$ 15.000,00</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Orçamento Aprovado</p>
+              <p className="text-lg font-black text-slate-900 mt-0.5">R$ 24.500,00</p>
             </div>
           </motion.div>
         </motion.div>
