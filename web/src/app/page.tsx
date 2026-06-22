@@ -168,12 +168,37 @@ export default function LandingPage() {
                     Diga adeus às planilhas confusas. Crie orçamentos elegantes em minutos, adicione sua margem invisível e envie o link para aprovação digital.
                   </p>
                 </div>
-                <div className="mt-8 flex-1 rounded-2xl border border-slate-200 bg-white shadow-sm p-4 translate-y-4 group-hover:-translate-y-0 transition-transform">
-                  <div className="h-4 w-1/3 bg-slate-100 rounded mb-4" />
-                  <div className="space-y-2">
-                    <div className="h-2 w-full bg-slate-50 rounded" />
-                    <div className="h-2 w-5/6 bg-slate-50 rounded" />
-                    <div className="h-2 w-4/6 bg-slate-50 rounded" />
+                
+                {/* Mini-UI interativa no lugar das linhas de skeleton */}
+                <div className="mt-8 flex-1 rounded-2xl border border-slate-200 bg-white shadow-sm p-5 translate-y-4 group-hover:-translate-y-0 transition-transform duration-500 max-w-md">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 bg-[#db5b18] rounded-lg flex items-center justify-center text-white font-bold text-xs">
+                        GE
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">Reforma Cozinha</div>
+                        <div className="text-[10px] text-slate-500">Para: Maria Santos</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total</div>
+                      <div className="text-lg font-black text-[#db5b18]">R$ 14.500</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-xs text-slate-600 font-medium">Porcelanato e Argamassa</span>
+                      <span className="text-xs font-semibold text-slate-900">R$ 4.200</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-xs text-slate-600 font-medium">Mão de obra especializada</span>
+                      <span className="text-xs font-semibold text-slate-900">R$ 8.000</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg w-fit">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="text-xs font-bold">Aprovado pelo cliente</span>
                   </div>
                 </div>
               </div>
@@ -265,19 +290,27 @@ export default function LandingPage() {
             <CompareSlider
               childrenA={
                 <div className="w-full h-full bg-slate-100 flex flex-col p-6 items-center justify-center">
-                  <div className="bg-green-100 p-4 rounded-xl shadow-sm text-sm text-green-900 max-w-[280px] w-full">
-                    "Opa fulano, o orçamento ficou em R$ 15.000 de mão de obra + 8.000 de material. Fechado?"
+                  <div className="bg-[#e1f5c4] p-4 rounded-xl shadow-sm text-sm text-slate-800 max-w-[280px] w-full relative">
+                    <div className="absolute -left-2 top-4 w-0 h-0 border-t-[10px] border-t-transparent border-r-[15px] border-r-[#e1f5c4] border-b-[10px] border-b-transparent"></div>
+                    "Opa fulano, o orçamento da cobertura colonial ficou em R$ 10.780,00 total. Fechado?"
                   </div>
-                  <div className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
-                    ❌ Como você faz hoje <br/>(WhatsApp)
+                  <div className="mt-6 px-4 py-1.5 rounded-full bg-slate-200 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                    ❌ Como você faz hoje (WhatsApp)
                   </div>
                 </div>
               }
               childrenB={
-                <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center relative">
-                  <img src="/quote-mockup.png" alt="Gestão Empreita Screenshot" draggable={false} className="absolute inset-0 w-full h-full object-cover object-left-top opacity-90 select-none pointer-events-none" />
-                  <div className="absolute bottom-4 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center px-4 py-2 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-800">
-                    ✅ Como vai ser agora (Gestão Empreita)
+                <div className="w-full h-full bg-white flex flex-col items-center justify-center relative overflow-hidden">
+                  <img 
+                    src="/quote-mockup.png" 
+                    alt="Gestão Empreita Screenshot" 
+                    draggable={false} 
+                    className="absolute inset-0 w-full h-full object-cover object-[center_8%] md:object-[center_12%] scale-[1.3] md:scale-[1.4] origin-top select-none pointer-events-none" 
+                  />
+                  {/* Gradiente sutil para garantir a leitura da tag na parte inferior */}
+                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-6 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center px-5 py-2 bg-slate-900/90 rounded-full backdrop-blur-md border border-slate-800/50 shadow-2xl">
+                    ✅ Como vai ser agora
                   </div>
                 </div>
               }
