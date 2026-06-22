@@ -75,6 +75,14 @@ export async function POST(request: Request) {
 
   const charge = chargeResult.charge;
   if (!charge) {
+    const { processSaasSubscriptionWebhook } = await import("@/lib/asaas/webhook-saas");
+    const saasHandled = await processSaasSubscriptionWebhook(admin, payload);
+    
+    if (saasHandled) {
+      await markWebhookEventProcessed(admin, eventRow.id);
+      return NextResponse.json({ ok: true, saas_subscription: true });
+    }
+
     await markWebhookEventProcessed(admin, eventRow.id);
     return NextResponse.json({ ok: true, unknown_payment: true });
   }

@@ -1,0 +1,1 @@
+ALTER TABLE companies ADD COLUMN saas_asaas_customer_id text; ALTER TABLE companies ADD COLUMN saas_asaas_subscription_id text;

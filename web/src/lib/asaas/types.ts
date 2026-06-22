@@ -39,6 +39,7 @@ export interface AsaasWebhookPayment {
   paymentDate?: string | null;
   clientPaymentDate?: string | null;
   externalReference?: string | null;
+  subscription?: string | null;
 }
 
 export interface AsaasWebhookPayload {
