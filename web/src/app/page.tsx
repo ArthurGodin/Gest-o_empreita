@@ -13,6 +13,8 @@ import {
   Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 const proofItems = [
   "Orçamento com link de aprovação",
@@ -57,20 +59,8 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  // Animação 3D do Dashboard estilo Apple (ScrollTrigger)
-  const dashboardRotateX = useTransform(scrollYProgress, [0, 0.4], [25, 0]);
-  const dashboardScale = useTransform(scrollYProgress, [0, 0.4], [0.85, 1]);
-  const dashboardY = useTransform(scrollYProgress, [0, 0.4], ["0%", "-10%"]);
-  const dashboardOpacity = useTransform(scrollYProgress, [0, 0.2, 0.4], [0.5, 1, 1]);
-
   return (
-    <main ref={containerRef} className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#db5b18]/20 relative">
+    <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#db5b18]/20 relative">
       
       {/* Background Glows Falsos para dar clima "SaaS" */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -100,97 +90,46 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* HERO SECTION - Centralizado para preparar a animação 3D */}
-      <section className="relative mx-auto flex max-w-6xl flex-col items-center pt-32 pb-8 text-center md:pt-48 md:pb-16 px-4 z-10">
-        <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="flex flex-col items-center">
-          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/50 px-4 py-1.5 text-sm font-semibold text-[#9a3412] backdrop-blur-sm shadow-sm">
-            <ShieldCheck className="h-4 w-4" />
-            Venda e controle obras sem planilhas
-          </motion.div>
-          
-          <motion.h1 variants={fadeIn} className="mt-8 max-w-4xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
-            Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">bonito</span>,<br/>obra no controle.
-          </motion.h1>
-          
-          <motion.p variants={fadeIn} className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
-            O software elegante para pequenas empreiteiras. Crie orçamentos profissionais, receba aprovação digital do cliente e acompanhe tudo no seu celular.
-          </motion.p>
+      {/* ACETERNITY HERO SCROLL ANIMATION */}
+      <section className="relative z-10 w-full overflow-hidden pt-20">
+        <ContainerScroll
+          titleComponent={
+            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="flex flex-col items-center pb-8">
+              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/50 px-4 py-1.5 text-sm font-semibold text-[#9a3412] backdrop-blur-sm shadow-sm mb-6">
+                <ShieldCheck className="h-4 w-4" />
+                Venda e controle obras sem planilhas
+              </motion.div>
+              
+              <motion.h1 variants={fadeIn} className="max-w-4xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
+                Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">bonito</span>,<br/>obra no controle.
+              </motion.h1>
+              
+              <motion.p variants={fadeIn} className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed text-slate-600">
+                O software elegante para pequenas empreiteiras. Crie orçamentos profissionais, receba aprovação digital do cliente e acompanhe tudo no seu celular.
+              </motion.p>
 
-          <motion.div variants={fadeIn} className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="h-14 rounded-full bg-[#db5b18] px-8 text-base font-semibold shadow-xl shadow-[#db5b18]/20 transition-all hover:scale-105 hover:bg-[#bc4810]"
-            >
-              <Link href="/signup">
-                Testar por 14 dias
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="h-14 rounded-full border-slate-300 bg-white/50 px-8 text-base font-semibold backdrop-blur-sm transition-all hover:scale-105 hover:bg-white"
-            >
-              <Link href="/precos">Ver preços</Link>
-            </Button>
-          </motion.div>
-
-          <motion.div variants={staggerContainer} className="mt-12 flex flex-wrap justify-center gap-3">
-            {proofItems.map((item) => (
-              <motion.span
-                variants={fadeIn}
-                key={item}
-                className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md"
-              >
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                {item}
-              </motion.span>
-            ))}
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* SCROLL TRIGGER 3D MOCKUP */}
-      <section className="relative z-20 w-full px-4" style={{ perspective: "1000px" }}>
-        <motion.div 
-          style={{ 
-            rotateX: dashboardRotateX, 
-            scale: dashboardScale, 
-            y: dashboardY,
-            opacity: dashboardOpacity,
-            transformStyle: "preserve-3d"
-          }}
-          className="mx-auto max-w-5xl relative"
+              <motion.div variants={fadeIn} className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-14 rounded-full bg-[#db5b18] px-8 text-base font-semibold shadow-xl shadow-[#db5b18]/20 transition-all hover:scale-105 hover:bg-[#bc4810]"
+                >
+                  <Link href="/signup">
+                    Testar por 14 dias
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </motion.div>
+            </motion.div>
+          }
         >
-          {/* Sombra debaixo da imagem para dar efeito de profundidade 3D */}
-          <div className="absolute inset-0 translate-y-10 scale-[0.95] bg-[#db5b18]/20 blur-[50px] rounded-3xl -z-10" />
-          
-          <div className="relative overflow-hidden rounded-3xl border border-slate-200/50 bg-white/50 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur-md">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
-            <img
-              src="/dashboard-mockup.png"
-              alt="Dashboard Gestão Empreita"
-              className="w-full h-auto rounded-2xl object-cover ring-1 ring-slate-900/5"
-            />
-          </div>
-          
-          {/* Decorative floating element - flutua solto! */}
-          <motion.div 
-            animate={{ y: [0, -15, 0] }} 
-            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-            className="absolute -bottom-8 -left-8 md:bottom-12 md:-left-12 rounded-2xl bg-white/90 backdrop-blur-lg p-5 shadow-2xl shadow-slate-900/10 border border-slate-100 flex items-center gap-4 z-30 transform-gpu"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Orçamento Aprovado</p>
-              <p className="text-lg font-black text-slate-900 mt-0.5">R$ 24.500,00</p>
-            </div>
-          </motion.div>
-        </motion.div>
+          <img
+            src="/dashboard-mockup.png"
+            alt="Dashboard Gestão Empreita"
+            className="w-full h-full object-cover object-left-top"
+            draggable={false}
+          />
+        </ContainerScroll>
       </section>
 
       <section className="relative z-10 border-y border-slate-200/50 bg-white/50 backdrop-blur-md">
@@ -254,30 +193,30 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      <section className="relative mx-4 mb-16 overflow-hidden rounded-3xl bg-slate-900 px-6 py-20 text-white shadow-2xl md:mx-auto md:max-w-6xl md:px-12">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#db5b18] blur-[100px] opacity-40" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          viewport={{ once: true }}
-          className="relative z-10 grid gap-8 md:grid-cols-[1fr_auto] md:items-center"
+      {/* ACETERNITY AURORA BACKGROUND */}
+      <AuroraBackground>
+        <motion.div
+          initial={{ opacity: 0.0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.3,
+            duration: 0.8,
+            ease: "easeInOut",
+          }}
+          className="relative flex flex-col gap-6 items-center justify-center px-4 max-w-3xl text-center"
         >
-          <div>
-            <h2 className="text-4xl font-extrabold tracking-tight">
-              Comece pequeno, mas com cara de produto sério.
-            </h2>
-            <p className="mt-4 max-w-2xl text-lg text-slate-400">
-              O primeiro cliente precisa sair com um orçamento aprovado e uma
-              obra controlada. Depois disso, Pix direto, saldo e margem viram
-              o centro do acompanhamento.
-            </p>
-          </div>
+          <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
+            Comece pequeno, mas com cara de produto sério.
+          </h2>
+          <p className="font-light text-lg md:text-xl text-neutral-200 py-4 max-w-2xl">
+            O primeiro cliente precisa sair com um orçamento aprovado e uma
+            obra controlada. Depois disso, Pix direto, saldo e margem viram
+            o centro do seu dia a dia.
+          </p>
           <Button
             asChild
             size="lg"
-            className="h-14 rounded-full bg-[#db5b18] px-8 text-base font-bold text-white shadow-lg shadow-[#db5b18]/20 transition-all hover:scale-105 hover:bg-[#ea7a3e]"
+            className="h-14 rounded-full bg-white px-8 text-lg font-bold text-[#db5b18] transition-all hover:scale-105 hover:bg-neutral-100 shadow-[0_0_40px_rgba(255,255,255,0.3)]"
           >
             <Link href="/signup">
               Criar minha conta
@@ -285,7 +224,7 @@ export default function LandingPage() {
             </Link>
           </Button>
         </motion.div>
-      </section>
+      </AuroraBackground>
 
       <footer className="border-t border-slate-200 bg-white px-4 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm font-medium text-slate-500 md:flex-row md:items-center md:justify-between">
