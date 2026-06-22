@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteQuoteAction } from "../actions";
+import { deleteQuoteAction } from "../actions/convert";
 
 interface DeleteQuoteButtonProps {
   id: string;

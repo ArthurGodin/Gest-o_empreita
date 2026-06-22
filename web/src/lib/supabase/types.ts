@@ -65,6 +65,7 @@ export interface Database {
           pix_receiver_name: string | null;
           pix_receiver_city: string | null;
           pix_instructions: string | null;
+          plan: string;
           created_at: string;
           updated_at: string;
         };
@@ -86,6 +87,7 @@ export interface Database {
           pix_receiver_name?: string | null;
           pix_receiver_city?: string | null;
           pix_instructions?: string | null;
+          plan?: string;
           created_at?: string;
           updated_at?: string;
         };

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Copy, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { duplicateQuoteAction } from "../actions";
+import { duplicateQuoteAction } from "../actions/duplicate";
 
 export function DuplicateButton({
   id,

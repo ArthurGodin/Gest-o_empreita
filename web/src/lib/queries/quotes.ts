@@ -101,22 +101,30 @@ function isMissingRevisionColumn(error: unknown) {
   );
 }
 
-export const getQuotes = cache(async (): Promise<QuoteListItem[]> => {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("quotes")
-    .select("*, customer:customers(id, name)")
-    .order("created_at", { ascending: false });
+export const getQuotes = cache(
+  async (options?: { limit?: number }): Promise<QuoteListItem[]> => {
+    const supabase = createClient();
+    let query = supabase
+      .from("quotes")
+      .select("*, customer:customers(id, name)")
+      .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  const rows = (data ?? []) as unknown as Array<
-    Quote & { customer: { id: string; name: string } | null }
-  >;
-  return rows.map((q) => ({
-    ...q,
-    effective_status: effectiveStatus(q),
-  }));
-});
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    const rows = (data ?? []) as unknown as Array<
+      Quote & { customer: { id: string; name: string } | null }
+    >;
+    return rows.map((q) => ({
+      ...q,
+      effective_status: effectiveStatus(q),
+    }));
+  },
+);
 
 export const getQuoteWithRelations = cache(
   async (id: string): Promise<QuoteWithRelations | null> => {

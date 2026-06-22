@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createQuoteAction } from "../actions";
+import { createQuoteAction } from "../actions/create";
 import type { Customer } from "@/lib/queries/customers";
 import { trackProductEvent } from "@/lib/product-analytics";
 
@@ -88,8 +88,13 @@ export function NewQuoteForm({ customers }: NewQuoteFormProps) {
       </div>
 
       {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-4 text-sm text-amber-800 dark:text-amber-500 shadow-sm">
+          <p className="font-medium mb-3">{error}</p>
+          {error.includes("Limite atingido") && (
+            <Button asChild className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white">
+              <Link href="/app/configuracoes/plano">Ver planos e assinar PRO</Link>
+            </Button>
+          )}
         </div>
       )}
 

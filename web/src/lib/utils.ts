@@ -39,3 +39,32 @@ export function formatDateTimeBR(date: Date | string): string {
     minute: "2-digit",
   }).format(d);
 }
+
+/**
+ * Converte strings vazias ("") para null em todos os campos de um objeto.
+ * Útil para server actions que recebem inputs de formulário onde campos
+ * opcionais podem vir como string vazia em vez de null/undefined.
+ */
+export function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
+  const out = { ...obj };
+  for (const key of Object.keys(out) as (keyof T)[]) {
+    if (out[key] === "") (out as Record<string, unknown>)[key as string] = null;
+  }
+  return out;
+}
+
+/**
+ * Verifica se um erro do Supabase/PostgREST indica que uma coluna não existe.
+ * Útil para graceful degradation quando uma migration mais recente ainda não
+ * foi aplicada no DB.
+ */
+export function isMissingColumn(error: unknown, columnName: string): boolean {
+  const err = error as { code?: string; message?: string; details?: string };
+  const text = `${err?.message ?? ""} ${err?.details ?? ""}`;
+  return (
+    err?.code === "42703" ||
+    err?.code === "PGRST204" ||
+    text.includes(columnName)
+  );
+}
+

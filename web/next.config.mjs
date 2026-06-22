@@ -8,6 +8,33 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // ── Security headers globais ────────────────────────────────────
+        // Aplica em todas as rotas. Defesa em profundidade contra XSS,
+        // clickjacking, MIME sniffing e abuso de APIs do navegador.
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+      {
         // Link público — sem Referer pra impedir leak do share_token
         source: "/q/:token*",
         headers: [

@@ -11,7 +11,9 @@ import {
   Rocket,
   Send,
   ShieldCheck,
+  TrendingUp,
   Users,
+  Wallet,
 } from "lucide-react";
 import {
   Card,
@@ -54,8 +56,8 @@ const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 
 export default async function DashboardPage() {
   const [quotes, projects, customers, charges, company] = await Promise.all([
-    getQuotes(),
-    getProjects(),
+    getQuotes({ limit: 300 }),
+    getProjects({ limit: 200 }),
     getCustomers(),
     getBillingCharges(),
     getActiveCompanyFull(),
@@ -105,7 +107,7 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
+    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 sm:py-8">
       <PageHeader
         title="Início"
         description="O caminho mais curto para vender, executar e receber."
@@ -121,7 +123,7 @@ export default async function DashboardPage() {
 
       <FirstMoneyGuide steps={firstMoneySteps} />
 
-      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <MetricTile
           icon={<Send className="h-4 w-4" />}
           label="Esperando cliente"
@@ -158,8 +160,8 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <Card className="min-w-0 rounded-lg">
+      <section className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+        <Card className="min-w-0 rounded-xl shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Próximas ações</CardTitle>
           </CardHeader>
@@ -168,10 +170,10 @@ export default async function DashboardPage() {
               <Link
                 key={action.href + action.title}
                 href={action.href}
-                className="group flex items-center justify-between rounded-lg border bg-background px-4 py-3 transition-colors hover:border-primary/40 hover:bg-accent"
+                className="group flex items-center justify-between rounded-xl border bg-background px-4 py-3.5 transition-all duration-150 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     {action.icon}
                   </span>
                   <span className="min-w-0">
@@ -189,7 +191,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 rounded-lg">
+        <Card className="min-w-0 rounded-xl shadow-sm">
           <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-base">Obras abertas</CardTitle>
             <Button asChild variant="ghost" size="sm">
@@ -205,7 +207,7 @@ export default async function DashboardPage() {
                 action="Ver orçamentos"
               />
             ) : (
-              <div className="divide-y rounded-lg border">
+              <div className="divide-y rounded-xl border">
                 {openProjects.slice(0, 5).map((project) => (
                   <Link
                     key={project.id}
@@ -241,7 +243,7 @@ export default async function DashboardPage() {
         </Card>
       </section>
 
-      <Card className="min-w-0 rounded-lg">
+      <Card className="min-w-0 rounded-xl shadow-sm">
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
           <CardTitle className="text-base">Orçamentos recentes</CardTitle>
           <Button asChild variant="ghost" size="sm">
@@ -257,7 +259,7 @@ export default async function DashboardPage() {
               action="Criar orçamento"
             />
           ) : (
-            <div className="divide-y rounded-lg border">
+            <div className="divide-y rounded-xl border">
               {quotes.slice(0, 5).map((quote) => (
                 <Link
                   key={quote.id}
@@ -405,22 +407,32 @@ function MetricTile({
   hint: string;
   tone: "neutral" | "blue" | "amber" | "green" | "red";
 }) {
-  const toneClass = {
-    neutral: "bg-muted text-foreground",
-    blue: "bg-sky-50 text-sky-700",
-    amber: "bg-amber-50 text-amber-700",
-    green: "bg-emerald-50 text-emerald-700",
-    red: "bg-red-50 text-red-700",
+  const iconBg = {
+    neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    blue: "bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400",
+    amber: "bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400",
+    green: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400",
+    red: "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400",
+  }[tone];
+
+  const borderAccent = {
+    neutral: "hover:border-slate-300 dark:hover:border-slate-600",
+    blue: "hover:border-sky-300 dark:hover:border-sky-700",
+    amber: "hover:border-amber-300 dark:hover:border-amber-700",
+    green: "hover:border-emerald-300 dark:hover:border-emerald-700",
+    red: "hover:border-red-300 dark:hover:border-red-700",
   }[tone];
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span className={`rounded-md p-2 ${toneClass}`}>{icon}</span>
+    <div className={`group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all duration-200 ${borderAccent} hover:shadow-md`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
+          <div className="mt-2 text-2xl font-bold tracking-tight">{value}</div>
+          <p className="mt-1.5 text-xs text-muted-foreground/80">{hint}</p>
+        </div>
+        <span className={`shrink-0 rounded-xl p-2.5 ${iconBg} transition-transform duration-200 group-hover:scale-110`}>{icon}</span>
       </div>
-      <div className="mt-3 text-2xl font-semibold tracking-normal">{value}</div>
-      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }
@@ -437,10 +449,10 @@ function EmptyLine({
   action: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed px-4 py-5">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
-      <Button asChild variant="outline" size="sm" className="mt-4">
+    <div className="rounded-xl border border-dashed px-5 py-8 text-center">
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">{detail}</p>
+      <Button asChild variant="outline" size="sm" className="mt-5">
         <Link href={href}>{action}</Link>
       </Button>
     </div>
@@ -448,8 +460,17 @@ function EmptyLine({
 }
 
 function StatusPill({ label }: { label: string }) {
+  const colorMap: Record<string, string> = {
+    Rascunho: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+    Enviado: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    Visualizado: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
+    Aprovado: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    Recusado: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
+    Expirado: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
+  };
+  const cls = colorMap[label] ?? "bg-muted text-muted-foreground";
   return (
-    <span className="w-fit rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+    <span className={`w-fit rounded-full px-2.5 py-1 text-[11px] font-semibold ${cls}`}>
       {label}
     </span>
   );

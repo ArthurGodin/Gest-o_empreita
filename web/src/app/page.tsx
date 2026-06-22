@@ -212,82 +212,13 @@ export default function LandingPage() {
 function ProductPreview() {
   return (
     <div className="relative">
-      <div className="relative overflow-hidden rounded-xl border border-[#111827] bg-[#111827] p-3 shadow-2xl">
-        <div className="rounded-lg bg-white p-4">
-          <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#db5b18]">
-                Obra em execução
-              </p>
-              <h3 className="mt-1 text-lg font-black">Cobertura Maria Santos</h3>
-            </div>
-            <span className="rounded-md bg-[#e7f7ec] px-2 py-1 text-xs font-bold text-[#2f8f4e]">
-              62% pronta
-            </span>
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <MiniMetric label="Aprovado" value="R$ 18.400" icon={Wallet} />
-            <MiniMetric label="Gasto" value="R$ 9.820" icon={ReceiptText} />
-            <MiniMetric label="Margem" value="R$ 8.580" icon={LineChart} />
-          </div>
-
-          <div className="mt-4 space-y-2">
-            {[
-              ["Manta asfáltica", "Concluída"],
-              ["Colocação de telha", "Em andamento"],
-              ["Calhas e rufos", "Próxima"],
-            ].map(([name, status]) => (
-              <div
-                key={name}
-                className="flex items-center justify-between rounded-lg border border-[#e2e8f0] bg-white px-3 py-3"
-              >
-                <span className="text-sm font-medium">{name}</span>
-                <span className="text-xs text-[#475569]">{status}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-[#e2e8f0] bg-white p-3">
-              <div className="flex items-center gap-2 text-sm font-bold">
-                <Camera className="h-4 w-4 text-[#db5b18]" />
-                Diário de hoje
-              </div>
-              <p className="mt-2 text-sm text-[#475569]">
-                Equipe finalizou a manta e iniciou telha da lateral esquerda.
-              </p>
-            </div>
-            <div className="rounded-lg border border-[#e2e8f0] bg-white p-3">
-              <div className="flex items-center gap-2 text-sm font-bold">
-                <Smartphone className="h-4 w-4 text-[#db5b18]" />
-                Link do cliente
-              </div>
-              <p className="mt-2 text-sm text-[#475569]">
-                Cliente acompanha orçamento, aprovação e andamento sem login.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="relative overflow-hidden rounded-xl border border-[#111827] bg-[#111827] shadow-2xl">
+        <img
+          src="/dashboard-mockup.png"
+          alt="Dashboard Gestão Empreita"
+          className="w-full h-auto object-cover opacity-95 transition-opacity hover:opacity-100"
+        />
       </div>
-    </div>
-  );
-}
-
-function MiniMetric({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="rounded-lg bg-white p-3 ring-1 ring-[#e2e8f0]">
-      <Icon className="h-4 w-4 text-[#db5b18]" />
-      <p className="mt-2 text-xs text-[#475569]">{label}</p>
-      <p className="text-sm font-black">{value}</p>
     </div>
   );
 }

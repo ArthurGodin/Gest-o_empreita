@@ -11,6 +11,7 @@ import {
   Settings,
   Users,
   Wallet,
+  Crown,
 } from "lucide-react";
 import { signoutAction } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
@@ -64,8 +65,15 @@ export function Sidebar({ companyName }: { companyName: string }) {
 
       <div className="border-t p-3">
         <Link
+          href="/app/configuracoes/plano"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-amber-600 dark:text-amber-500 hover:bg-amber-500/10 transition-colors"
+        >
+          <Crown className="h-4 w-4" />
+          Meu Plano
+        </Link>
+        <Link
           href="/app/configuracoes"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground mt-1"
         >
           <Settings className="h-4 w-4" />
           Configurações

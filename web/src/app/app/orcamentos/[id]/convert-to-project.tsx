@@ -23,7 +23,7 @@ import {
 } from "@/lib/billing/entry-percent";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { PaymentProvider } from "@/lib/supabase/types";
-import { convertToProjectAction } from "../actions";
+import { convertToProjectAction } from "../actions/convert";
 
 export interface TemplateOption {
   id: string;

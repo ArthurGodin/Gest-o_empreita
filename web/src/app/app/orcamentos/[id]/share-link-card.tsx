@@ -22,10 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  markQuoteWhatsappSentAction,
-  revokeShareTokenAction,
-} from "../actions";
+import { markQuoteWhatsappSentAction } from "../actions/revoke";
+import { revokeShareTokenAction } from "../actions/revoke";
 import { env } from "@/lib/env";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
 import { trackProductEvent } from "@/lib/product-analytics";

@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { normalizeQuoteUnit } from "@/lib/format";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import { updateQuoteAction } from "../actions";
+import { updateQuoteAction } from "../actions/update";
 import { ItemRow, type ItemDraft } from "./item-row";
 import { SendQuoteButton } from "./send-quote-button";
 import type { Customer } from "@/lib/queries/customers";

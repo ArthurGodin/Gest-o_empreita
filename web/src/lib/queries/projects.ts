@@ -138,16 +138,24 @@ export interface ProjectWithRelations extends ProjectListItem {
   share_token: string | null;
 }
 
-export const getProjects = cache(async (): Promise<ProjectListItem[]> => {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*, customer:customers(id, name)")
-    .order("created_at", { ascending: false });
+export const getProjects = cache(
+  async (options?: { limit?: number }): Promise<ProjectListItem[]> => {
+    const supabase = createClient();
+    let query = supabase
+      .from("projects")
+      .select("*, customer:customers(id, name)")
+      .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  return (data ?? []) as unknown as ProjectListItem[];
-});
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return (data ?? []) as unknown as ProjectListItem[];
+  },
+);
 
 export const getProject = cache(
   async (id: string): Promise<ProjectListItem | null> => {

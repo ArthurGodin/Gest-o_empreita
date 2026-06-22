@@ -17,7 +17,8 @@ import { cn, formatDateTimeBR } from "@/lib/utils";
 import { formatPhone, whatsappLink, whatsappShareLink } from "@/lib/format";
 import { trackProductEvent } from "@/lib/product-analytics";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
-import { markQuoteWhatsappSentAction, sendQuoteAction } from "../actions";
+import { sendQuoteAction } from "../actions/send";
+import { markQuoteWhatsappSentAction } from "../actions/revoke";
 
 interface SendQuoteButtonProps {
   quoteId: string;
