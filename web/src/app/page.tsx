@@ -305,7 +305,7 @@ export default function LandingPage() {
                     src="/quote-mockup.png" 
                     alt="Gestão Empreita Screenshot" 
                     draggable={false} 
-                    className="absolute inset-0 w-full h-full object-cover object-[center_8%] md:object-[center_12%] scale-[1.3] md:scale-[1.4] origin-top select-none pointer-events-none" 
+                    className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none" 
                   />
                   {/* Gradiente sutil para garantir a leitura da tag na parte inferior */}
                   <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
