@@ -256,18 +256,10 @@ export default function LandingPage() {
                 </div>
               }
               childrenB={
-                <div className="w-full h-full bg-slate-900 flex flex-col p-6 items-center justify-center">
-                  <div className="bg-white p-6 rounded-xl shadow-2xl max-w-[280px] w-full border border-slate-800">
-                    <div className="h-8 w-8 bg-[#db5b18] rounded-md mb-4" />
-                    <div className="text-xl font-bold text-slate-900">Orçamento #042</div>
-                    <div className="text-sm text-slate-500 mt-2">Valor Total</div>
-                    <div className="text-2xl font-black text-slate-900">R$ 23.000,00</div>
-                    <div className="mt-6 bg-emerald-500 text-white text-center py-2 rounded-lg text-sm font-bold">
-                      Aprovar Orçamento
-                    </div>
-                  </div>
-                  <div className="mt-4 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center">
-                    ✅ Como vai ser agora <br/>(Gestão Empreita)
+                <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center relative">
+                  <img src="/dashboard-mockup.png" alt="Gestão Empreita Screenshot" className="absolute inset-0 w-full h-full object-cover object-left-top opacity-90" />
+                  <div className="absolute bottom-4 text-xs font-bold text-emerald-400 uppercase tracking-widest text-center px-4 py-2 bg-slate-900/80 rounded-full backdrop-blur-sm border border-slate-800">
+                    ✅ Como vai ser agora (Gestão Empreita)
                   </div>
                 </div>
               }

@@ -301,7 +301,7 @@ function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
   const nextStep = steps.find((step) => !step.done) ?? steps.at(-1);
   const progressPct = Math.round((doneCount / steps.length) * 100);
 
-  if (!nextStep) return null;
+  if (!nextStep || doneCount === steps.length) return null;
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
