@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 
 export async function checkoutProAction(): Promise<{ ok: boolean; error?: string; checkoutUrl?: string }> {
@@ -10,7 +10,7 @@ export async function checkoutProAction(): Promise<{ ok: boolean; error?: string
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa não encontrada." };
 
-  const supabase = createClient();
+  const admin = createAdminClient();
   
   // Aqui você integraria com a API de Assinaturas do Asaas
   // Exemplo simulado para faturamento real:
@@ -20,12 +20,13 @@ export async function checkoutProAction(): Promise<{ ok: boolean; error?: string
   // Por enquanto, faremos o upgrade instantâneo para fins de demonstração (ou um bypass caso não haja Link do Asaas configurado).
   // TODO: Integrar Checkout Asaas Real aqui.
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("companies")
     .update({ plan: "pro" })
     .eq("id", company.company_id);
 
   if (error) {
+    console.error("Erro ao atualizar plano (Admin):", error);
     return { ok: false, error: "Falha ao atualizar o plano." };
   }
 
