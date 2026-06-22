@@ -6,7 +6,7 @@ import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { createProSubscriptionCheckout } from "@/lib/asaas/saas-billing";
 import { AsaasConfigError } from "@/lib/asaas/client";
 
-export async function checkoutProAction(): Promise<{ ok: boolean; error?: string; checkoutUrl?: string }> {
+export async function checkoutProAction(document: string): Promise<{ ok: boolean; error?: string; checkoutUrl?: string }> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Sessão expirada." };
 
@@ -18,7 +18,8 @@ export async function checkoutProAction(): Promise<{ ok: boolean; error?: string
     const result = await createProSubscriptionCheckout(
       company.company_id,
       company.company.name,
-      user.email ?? null
+      user.email ?? null,
+      document
     );
 
     return { 

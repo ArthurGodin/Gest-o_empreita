@@ -4,18 +4,32 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard, Loader2, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { confirmProUpgradeAction } from "../actions";
+import { checkoutProAction, confirmProUpgradeAction } from "../actions";
 
 export function PaymentForm() {
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<"pix" | "card">("pix");
+  const [document, setDocument] = useState("");
   const router = useRouter();
 
   async function handlePayment() {
+    if (document.replace(/\D/g, "").length < 11) {
+      toast({
+        variant: "destructive",
+        title: "Documento inválido",
+        description: "Por favor, digite um CPF ou CNPJ válido.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await confirmProUpgradeAction();
+      // 1. Tenta gerar o Checkout Oficial do Asaas (Produção/SaaS)
+      const res = await checkoutProAction(document.replace(/\D/g, ""));
+      
       if (!res.ok) {
         toast({
           variant: "destructive",
@@ -25,15 +39,23 @@ export function PaymentForm() {
         return;
       }
       
+      // 2. Se a integração do Asaas retornou a URL de checkout
+      if (res.checkoutUrl && res.checkoutUrl !== "/app/configuracoes/plano/checkout") {
+        window.location.href = res.checkoutUrl;
+        return;
+      }
+
+      // 3. Fallback (Modo Simulação sem Asaas configurado)
+      const simRes = await confirmProUpgradeAction();
+      if (!simRes.ok) throw new Error("Falha na simulação");
+
       toast({
         variant: "success",
-        title: "Pagamento Aprovado!",
+        title: "Pagamento Aprovado! (Modo Simulação)",
         description: "Sua conta agora é PRO. Aproveite!",
       });
       
-      // Force refresh to update the plan in the layout/sidebar
       router.refresh();
-      // Redirect back to plan page
       router.push("/app/configuracoes/plano");
       
     } catch (error) {
@@ -49,6 +71,18 @@ export function PaymentForm() {
 
   return (
     <div className="space-y-6 mt-6">
+      
+      <div className="space-y-2">
+        <Label htmlFor="document">CPF ou CNPJ (Obrigatório)</Label>
+        <Input 
+          id="document" 
+          placeholder="000.000.000-00" 
+          value={document}
+          onChange={e => setDocument(e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">O Asaas exige seu documento para gerar a fatura de R$ 97.</p>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <button
           type="button"
@@ -92,7 +126,7 @@ export function PaymentForm() {
           ) : (
             method === "pix" ? <QrCode className="mr-2 h-5 w-5" /> : <CreditCard className="mr-2 h-5 w-5" />
           )}
-          {loading ? "Processando..." : `Pagar R$ 97,00 com ${method === "pix" ? "Pix" : "Cartão"}`}
+          {loading ? "Processando..." : `Ir para Pagamento Asaas`}
         </Button>
       </div>
     </div>

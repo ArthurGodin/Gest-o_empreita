@@ -66,10 +66,11 @@ export async function createProSubscriptionCheckout(
   companyId: string,
   companyName: string,
   userEmail: string | null,
+  document: string // CPF ou CNPJ agora é obrigatório
 ): Promise<{ checkoutUrl: string }> {
   const admin = createAdminClient();
   
-  const customerId = await ensureSaasCustomer(companyId, companyName, userEmail, null);
+  const customerId = await ensureSaasCustomer(companyId, companyName, userEmail, document);
 
   // Criar assinatura
   const subscription = await asaasRequest<AsaasSubscriptionResponse>("/subscriptions", {

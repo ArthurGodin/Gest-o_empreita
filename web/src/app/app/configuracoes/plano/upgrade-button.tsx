@@ -13,37 +13,7 @@ export function UpgradeButton() {
 
   async function handleUpgrade() {
     setLoading(true);
-    try {
-      const res = await checkoutProAction();
-      if (!res.ok) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao iniciar upgrade",
-          description: res.error,
-        });
-        return;
-      }
-      
-      if (res.checkoutUrl) {
-        // Redirect to Asaas checkout / payment link
-        window.location.href = res.checkoutUrl;
-      } else {
-        toast({
-          variant: "success",
-          title: "Plano atualizado!",
-          description: "Bem-vindo ao plano PRO.",
-        });
-        router.refresh();
-      }
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Erro inesperado",
-        description: "Não foi possível conectar ao checkout.",
-      });
-    } finally {
-      setLoading(false);
-    }
+    router.push("/app/configuracoes/plano/checkout");
   }
 
   return (
