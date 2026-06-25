@@ -405,6 +405,85 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SEÇÃO: DEPOIMENTOS */}
+      <section className="relative z-10 border-y border-slate-200/50 bg-white py-24 md:py-32">
+        <div className="mx-auto max-w-6xl px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+              Quem usa, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">recomenda.</span>
+            </h2>
+            <p className="mt-4 text-lg font-medium text-slate-500">Empreiteiros reais que transformaram a forma de vender e controlar obras.</p>
+          </motion.div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              { name: "Carlos Mendes", role: "Mendes Reformas — SP", text: "Antes eu mandava orçamento por WhatsApp e o cliente sumia. Agora mando o link, ele aprova no celular, e já vira obra no sistema. Profissionalizou meu negócio." },
+              { name: "Ana Oliveira", role: "AO Construções — MG", text: "A margem que eu achava que tinha nunca batia. Com o Gestão Empreita eu vejo o gasto real de cada obra e sei exatamente quanto sobrou. Mudou tudo." },
+              { name: "Roberto Silva", role: "Silva Coberturas — PI", text: "Meu cliente recebe um link bonito, com PDF, aprovação digital. Ele me disse que parece empresa grande. Isso faz diferença na hora de fechar." },
+            ].map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group rounded-3xl border border-slate-200/60 bg-slate-50 p-8 shadow-sm hover:shadow-xl hover:bg-white transition-all duration-300 relative overflow-hidden"
+              >
+                <div className="absolute top-6 right-6 text-6xl font-black text-slate-100 leading-none select-none group-hover:text-[#db5b18]/10 transition-colors">&ldquo;</div>
+                <p className="relative z-10 text-slate-600 font-medium leading-relaxed italic">&ldquo;{t.text}&rdquo;</p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#db5b18] to-[#ea7a3e] flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    {t.name.split(" ").map(n => n[0]).join("")}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{t.name}</p>
+                    <p className="text-xs text-slate-500 font-medium">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SEÇÃO: FAQ */}
+      <section className="py-24 md:py-32 bg-slate-50">
+        <div className="mx-auto max-w-3xl px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">Dúvidas frequentes</h2>
+            <p className="mt-4 text-lg font-medium text-slate-500">Tudo que você precisa saber antes de começar.</p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {[
+              { q: "Preciso instalar alguma coisa?", a: "Não. O Gestão Empreita funciona 100% no navegador, no celular ou no computador. Basta criar a conta e começar." },
+              { q: "Meu cliente precisa criar conta para aprovar?", a: "Não. Ele recebe um link único e privado. Abre no celular, vê o orçamento completo e aprova com um clique." },
+              { q: "Como funciona o Pix?", a: "Você cadastra sua chave Pix nas configurações. O sistema gera QR Code automático nas cobranças. O pagamento cai direto na sua conta." },
+              { q: "E se eu quiser cancelar?", a: "Sem multa, sem fidelidade. Você cancela a qualquer momento direto nas configurações da conta." },
+              { q: "Tem período de teste?", a: "Sim! 14 dias grátis sem precisar de cartão. Você testa tudo e só paga se gostar." },
+              { q: "Funciona para qualquer tipo de obra?", a: "Sim. Reformas, coberturas, acabamentos, pintura, elétrica — qualquer serviço de empreitada. Você personaliza os itens do seu catálogo." },
+            ].map((item, i) => (
+              <motion.details
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="group rounded-2xl border border-slate-200/60 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <summary className="cursor-pointer px-6 py-5 text-base font-bold text-slate-900 flex items-center justify-between list-none select-none">
+                  {item.q}
+                  <span className="ml-4 text-slate-400 group-open:rotate-45 transition-transform duration-200 text-xl font-light">+</span>
+                </summary>
+                <div className="px-6 pb-5 text-sm text-slate-600 font-medium leading-relaxed -mt-1">
+                  {item.a}
+                </div>
+              </motion.details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ACETERNITY AURORA BACKGROUND CTA */}
       <AuroraBackground>
         <motion.div
