@@ -29,17 +29,17 @@ export default function LoginPage() {
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">Entrar</CardTitle>
-        <CardDescription>
+    <Card className="border-slate-200/60 shadow-xl backdrop-blur-sm bg-white/95 rounded-2xl overflow-hidden">
+      <CardHeader className="space-y-2 pb-6">
+        <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">Entrar</CardTitle>
+        <CardDescription className="text-sm font-medium text-slate-500">
           Acesse seus orçamentos, obras, cobranças e margem em um só painel.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={onSubmit} className="space-y-4">
+        <form action={onSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
+            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-600">E-mail</Label>
             <Input
               id="email"
               name="email"
@@ -52,19 +52,20 @@ export default function LoginPage() {
               placeholder="contato@empresa.com.br"
               aria-invalid={Boolean(fieldErrors?.email)}
               aria-describedby={fieldErrors?.email ? "login-email-error" : undefined}
+              className="h-12 bg-slate-50 border-slate-200 focus:border-[#db5b18] focus:ring-[#db5b18] transition-colors"
             />
             {fieldErrors?.email?.[0] ? (
-              <p id="login-email-error" className="text-sm text-destructive">
+              <p id="login-email-error" className="text-sm font-medium text-red-500">
                 {fieldErrors.email[0]}
               </p>
             ) : null}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-600">Senha</Label>
               <Link
                 href="/forgot-password"
-                className="text-xs font-medium text-primary hover:underline"
+                className="text-xs font-bold text-[#db5b18] hover:underline"
               >
                 Esqueci minha senha
               </Link>
@@ -81,28 +82,29 @@ export default function LoginPage() {
               aria-describedby={
                 fieldErrors?.password ? "login-password-error" : undefined
               }
+              className="h-12 bg-slate-50 border-slate-200 focus:border-[#db5b18] focus:ring-[#db5b18] transition-colors"
             />
             {fieldErrors?.password?.[0] ? (
-              <p id="login-password-error" className="text-sm text-destructive">
+              <p id="login-password-error" className="text-sm font-medium text-red-500">
                 {fieldErrors.password[0]}
               </p>
             ) : null}
           </div>
           {result && !result.ok ? (
             <p
-              className="text-sm text-destructive"
+              className="text-sm font-medium text-red-500 bg-red-50 p-3 rounded-lg border border-red-100"
               role="alert"
               aria-live="polite"
             >
               {result.error}
             </p>
           ) : null}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Entrando…" : "Entrar"}
+          <Button type="submit" className="w-full h-12 rounded-xl bg-[#db5b18] text-base font-bold shadow-lg shadow-[#db5b18]/20 transition-all hover:scale-[1.02] hover:bg-[#bc4810] hover:shadow-xl hover:shadow-[#db5b18]/30" disabled={pending}>
+            {pending ? "Entrando…" : "Entrar no painel"}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm font-medium text-slate-500 pt-4">
             Ainda não tem conta?{" "}
-            <Link href="/signup" className="font-medium text-primary hover:underline">
+            <Link href="/signup" className="font-bold text-[#db5b18] hover:underline">
               Comece grátis
             </Link>
           </p>
