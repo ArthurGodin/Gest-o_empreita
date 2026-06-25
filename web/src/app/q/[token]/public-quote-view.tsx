@@ -89,33 +89,40 @@ export function PublicQuoteView({
     : "";
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] pb-24 text-[#121826] lg:pb-0">
-      <div className="mx-auto w-full max-w-5xl px-4 py-4 sm:py-8">
-        <header className="flex flex-col gap-3 rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
+    <main className="min-h-screen bg-slate-50 pb-24 text-slate-900 lg:pb-0 relative overflow-hidden font-sans">
+      {/* Background Glows e Pattern "SaaS Premium" */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Grid pattern suave */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
+      </div>
+
+      <div className="mx-auto w-full max-w-5xl px-4 py-4 sm:py-8 relative z-10">
+        <header className="flex flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
             {quote.company.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={quote.company.logo_url}
                 alt={quote.company.name}
-                className="h-12 w-12 rounded-md object-cover"
+                className="h-14 w-14 rounded-xl object-cover shadow-sm border border-slate-100"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#db5b18] text-lg font-bold text-white">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#db5b18] to-[#ea7a3e] text-xl font-black text-white shadow-md shadow-[#db5b18]/20">
                 {quote.company.name.slice(0, 2).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <div className="truncate font-semibold">{quote.company.name}</div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#475569]">
+              <div className="truncate text-lg font-bold tracking-tight text-slate-900">{quote.company.name}</div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500">
                 {quote.company.phone && (
-                  <span className="inline-flex items-center gap-1">
-                    <Phone className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" />
                     {formatPhone(quote.company.phone)}
                   </span>
                 )}
                 {(quote.company.city || quote.company.state) && (
-                  <span>
+                  <span className="inline-flex items-center gap-1.5 before:content-['·'] before:mr-4 before:text-slate-300">
                     {[quote.company.city, quote.company.state]
                       .filter(Boolean)
                       .join("/")}
@@ -129,7 +136,7 @@ export function PublicQuoteView({
             <Button
               asChild
               variant="outline"
-              className="h-11 border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
+              className="h-11 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-100 shadow-sm transition-all"
             >
               <TrackedAnchor
                 href={contactUrl}
@@ -138,14 +145,14 @@ export function PublicQuoteView({
                 analyticsEvent="quote_contact_whatsapp_clicked"
                 analyticsProperties={{ source: "public_header" }}
               >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Dúvida no WhatsApp
               </TrackedAnchor>
             </Button>
           )}
         </header>
 
-        <section className="mt-4 rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-3xl border border-slate-200/60 bg-white p-6 md:p-8 shadow-md">
           <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-md border border-[#e2e8f0] bg-[#fff7ed] px-3 py-1.5 text-xs font-semibold text-[#9a3412]">
@@ -171,30 +178,30 @@ export function PublicQuoteView({
               )}
             </div>
 
-            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#475569]">
+            <div className="rounded-2xl border border-slate-200/60 bg-slate-50/50 p-6 md:p-8">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
                 Total da proposta
               </div>
-              <div className="mt-2 text-3xl font-black text-[#db5b18]">
+              <div className="mt-3 text-4xl font-black tracking-tight text-[#db5b18]">
                 {formatBRL(quote.total_cents / 100)}
               </div>
               {quote.valid_until && (
-                <div className="mt-3 flex items-start gap-2 text-sm text-[#475569]">
-                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="mt-4 flex items-start gap-2.5 text-sm text-slate-600 font-medium">
+                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                   <span>
                     Válido até{" "}
-                    <strong className="text-[#121826]">
+                    <strong className="text-slate-900">
                       {formatDateBR(quote.valid_until)}
                     </strong>
                     {isDecidable &&
                       daysUntilExpiry != null &&
                       daysUntilExpiry > 0 && (
-                        <>
+                        <span className="text-slate-400">
                           {" "}
                           {daysUntilExpiry === 1
                             ? "(falta 1 dia)"
                             : `(faltam ${daysUntilExpiry} dias)`}
-                        </>
+                        </span>
                     )}
                   </span>
                 </div>
@@ -204,8 +211,8 @@ export function PublicQuoteView({
           </div>
         </section>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-          <aside className="space-y-3 lg:sticky lg:top-4 lg:order-2">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:order-2">
             {isDecidable && (
               <ApprovalForm
                 token={quote.share_token}
@@ -214,21 +221,23 @@ export function PublicQuoteView({
               />
             )}
 
-            <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
+            <section className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100">
+                  <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                </div>
                 <div>
-                  <div className="font-semibold">Link único e privado</div>
-                  <p className="mt-1 text-sm leading-6 text-[#475569]">
+                  <div className="font-bold text-slate-900 tracking-tight">Link único e privado</div>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-500 font-medium">
                     Só quem recebeu este link consegue ver, aprovar ou pedir
                     ajuste neste orçamento.
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-2">
+              <div className="mt-6 grid gap-3">
                 {status !== "expired" && (
-                  <Button asChild variant="outline" className="h-11 w-full">
+                  <Button asChild variant="outline" className="h-12 w-full rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700 font-bold shadow-sm transition-all">
                     <TrackedAnchor
                       href={`/q/${quote.share_token}/pdf`}
                       target="_blank"
@@ -236,7 +245,7 @@ export function PublicQuoteView({
                       analyticsEvent="quote_pdf_clicked"
                       analyticsProperties={{ source: "public_quote" }}
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="h-4 w-4 mr-2" />
                       Baixar PDF
                     </TrackedAnchor>
                   </Button>
@@ -245,7 +254,7 @@ export function PublicQuoteView({
                   <Button
                     asChild
                     variant="outline"
-                    className="h-11 w-full border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
+                    className="h-12 w-full rounded-xl border-emerald-200 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-100 shadow-sm transition-all"
                   >
                     <TrackedAnchor
                       href={contactUrl}
@@ -254,7 +263,7 @@ export function PublicQuoteView({
                       analyticsEvent="quote_contact_whatsapp_clicked"
                       analyticsProperties={{ source: "public_security_card" }}
                     >
-                      <MessageCircle className="h-4 w-4" />
+                      <MessageCircle className="h-4 w-4 mr-2" />
                       Tirar dúvida no WhatsApp
                     </TrackedAnchor>
                   </Button>
@@ -263,18 +272,20 @@ export function PublicQuoteView({
             </section>
           </aside>
 
-          <div className="space-y-3 lg:order-1">
+          <div className="space-y-4 lg:order-1">
             {status === "approved" && quote.approved_at && (
-              <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+              <div className="rounded-2xl border-2 border-emerald-500/20 bg-emerald-50/50 p-5 backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
                   <div>
-                    <div className="font-semibold">Orçamento aprovado</div>
-                    <div className="text-sm">
+                    <div className="font-bold text-emerald-900 tracking-tight text-lg">Orçamento aprovado!</div>
+                    <div className="text-sm font-medium text-emerald-800/80 mt-1">
                       {lastApproval?.signer_name && (
                         <>
                           Aprovado por{" "}
-                          <strong>{lastApproval.signer_name}</strong> em{" "}
+                          <strong className="text-emerald-900">{lastApproval.signer_name}</strong> em{" "}
                         </>
                       )}
                       {formatDateBR(quote.approved_at)}
@@ -285,29 +296,31 @@ export function PublicQuoteView({
             )}
 
             {status === "rejected" && quote.rejected_at && (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
-                <div className="flex items-start gap-3">
-                  <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                  <div>
-                    <div className="font-semibold">
+              <div className="rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 p-5 backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                    <XCircle className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-amber-900 tracking-tight text-lg">
                       Pedido de mudanças enviado
                     </div>
-                    <div className="text-sm text-amber-900/80">
+                    <div className="text-sm font-medium text-amber-800/80 mt-1">
                       {lastApproval?.signer_name && (
                         <>
                           Resposta de{" "}
-                          <strong>{lastApproval.signer_name}</strong>
+                          <strong className="text-amber-900">{lastApproval.signer_name}</strong>
                           {" · "}
                         </>
                       )}
                       {formatDateBR(quote.rejected_at)}
                     </div>
                     {lastApproval?.rejection_reason && (
-                      <div className="mt-3 rounded-md bg-white/75 p-3 text-sm">
-                        <div className="text-xs font-semibold text-amber-900/70">
+                      <div className="mt-4 rounded-xl border border-amber-200/60 bg-white/60 p-4 shadow-sm">
+                        <div className="text-xs font-bold uppercase tracking-wider text-amber-900/60">
                           O que foi solicitado
                         </div>
-                        <div className="mt-1">
+                        <div className="mt-2 text-sm text-amber-950 font-medium">
                           {lastApproval.rejection_reason}
                         </div>
                       </div>
@@ -318,12 +331,14 @@ export function PublicQuoteView({
             )}
 
             {status === "expired" && (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
-                <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-5 w-5 shrink-0" />
+              <div className="rounded-2xl border-2 border-slate-300/40 bg-slate-100/50 p-5 backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                    <Clock className="h-5 w-5" />
+                  </div>
                   <div>
-                    <div className="font-semibold">Esse orçamento expirou</div>
-                    <div className="text-sm text-amber-900/80">
+                    <div className="font-bold text-slate-900 tracking-tight text-lg">Esse orçamento expirou</div>
+                    <div className="text-sm font-medium text-slate-600 mt-1">
                       Validade era{" "}
                       {quote.valid_until && formatDateBR(quote.valid_until)}.
                       Peça um novo ao {quote.company.name}.
@@ -333,53 +348,53 @@ export function PublicQuoteView({
               </div>
             )}
 
-            <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
+            <section className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm overflow-hidden">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">
                 Itens incluídos
               </div>
-              <ul className="mt-2 divide-y divide-[#e2e8f0]">
+              <ul className="divide-y divide-slate-100">
                 {quote.items.map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-start gap-3 py-3 sm:items-center"
+                    className="flex items-start gap-4 py-4 sm:items-center group"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold leading-tight">
+                      <div className="font-bold text-slate-900 leading-tight group-hover:text-[#db5b18] transition-colors">
                         {item.description}
                       </div>
-                      <div className="mt-1 text-xs text-[#475569]">
+                      <div className="mt-1.5 text-sm font-medium text-slate-500">
                         {`${formatQuantityBR(item.quantity)} ${normalizeQuoteUnit(item.unit)} × ${formatBRL(item.unit_price_cents / 100)}`}
                       </div>
                     </div>
-                    <div className="shrink-0 text-right text-sm font-bold">
+                    <div className="shrink-0 text-right text-base font-black text-slate-900">
                       {formatBRL(item.total_cents / 100)}
                     </div>
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-4 flex items-center justify-between border-t border-[#e2e8f0] pt-4">
-                <span className="text-sm font-medium text-[#475569]">Total</span>
-                <span className="text-2xl font-black text-[#db5b18]">
+              <div className="mt-2 flex items-center justify-between border-t-2 border-slate-100 pt-6">
+                <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Total</span>
+                <span className="text-3xl font-black tracking-tight text-[#db5b18]">
                   {formatBRL(quote.total_cents / 100)}
                 </span>
               </div>
             </section>
 
             {quote.notes && (
-              <section className="rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-sm">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
+              <section className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
                   Observações
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+                <p className="whitespace-pre-wrap text-sm font-medium leading-relaxed text-slate-600">
                   {quote.notes}
                 </p>
               </section>
             )}
 
-            <footer className="pb-6 pt-2 text-center text-xs text-[#475569]">
-              <span>Gerado por </span>
-              <span className="font-semibold text-[#121826]">
+            <footer className="pb-8 pt-4 text-center text-xs font-medium text-slate-400">
+              <span>Tecnologia </span>
+              <span className="font-bold text-slate-600">
                 Gestão Empreita
               </span>
             </footer>
