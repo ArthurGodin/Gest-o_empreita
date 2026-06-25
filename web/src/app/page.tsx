@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
@@ -11,18 +10,14 @@ import {
   LineChart,
   ShieldCheck,
   Smartphone,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/ui/aurora-background";
-import { CompareSlider } from "@/components/ui/compare-slider";
 import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 
-const proofItems = [
-  "Orçamento com link de aprovação",
-  "Obra com etapas, fotos e gastos",
-  "Pix direto e margem por projeto",
-];
+
 
 const workflow = [
   {
@@ -57,6 +52,9 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: { staggerChildren: 0.15 },
+  },
+};
+
 export default function LandingPage() {
   return (
     <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#db5b18]/20 relative">
@@ -290,6 +288,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* SEÇÃO: COMO FUNCIONA (4 passos) */}
+      <section className="relative z-10 py-24 md:py-32 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 shadow-sm mb-6">
+              <ArrowRight className="h-4 w-4 text-[#db5b18]" /> 4 passos para receber
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+              Do orçamento ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">Pix na conta.</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {workflow.map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="group relative text-center"
+              >
+                {/* Connector line */}
+                {i < workflow.length - 1 && (
+                  <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-slate-200 to-slate-100" />
+                )}
+                <div className="relative z-10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white border-2 border-slate-100 shadow-lg group-hover:shadow-xl group-hover:border-[#db5b18]/30 group-hover:scale-110 transition-all duration-300">
+                  <span className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-[#db5b18] text-white text-xs font-black flex items-center justify-center shadow-md">{i + 1}</span>
+                  <step.icon className="h-8 w-8 text-slate-600 group-hover:text-[#db5b18] transition-colors" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm text-slate-500 font-medium leading-relaxed max-w-[220px] mx-auto">{step.text}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* SEÇÃO: O PRODUTO COMEÇA ONDE DÓI */}
       <section className="mx-auto max-w-6xl px-4 py-24 md:py-32">
         <div className="text-center mb-20">
@@ -438,9 +474,6 @@ function Reason({ title, text, icon }: { title: string; text: string; icon: Reac
           <p className="mt-3 leading-relaxed text-slate-600 font-medium">{text}</p>
         </div>
       </div>
-    </motion.div>
-  );
-}axed text-slate-500">{text}</p>
     </motion.div>
   );
 }
