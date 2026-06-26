@@ -220,31 +220,31 @@ export default function LandingPage() {
             {/* Bento Item 2 */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-              className="rounded-3xl bg-slate-900 p-8 border border-slate-800 shadow-xl relative overflow-hidden group hover:shadow-2xl transition-all duration-300 text-white flex flex-col justify-between"
+              className="rounded-3xl bg-slate-900 p-8 pb-0 border border-slate-800 shadow-xl relative overflow-hidden group hover:shadow-2xl transition-all duration-300 text-white flex flex-col justify-between"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 mb-6">
-                  <LineChart className="h-6 w-6" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 mb-4">
+                  <LineChart className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-bold tracking-tight">Margem na mão</h3>
-                <p className="mt-2 text-slate-400 text-sm font-medium leading-relaxed">
+                <p className="mt-1 text-slate-400 text-sm font-medium leading-relaxed">
                   Saiba exatamente quanto de lucro cada obra está deixando. Controle o previsto vs realizado.
                 </p>
               </div>
 
               {/* Mini-UI Chart */}
-              <div className="relative z-10 mt-auto bg-slate-800/80 backdrop-blur-xl rounded-t-2xl border border-slate-700/50 border-b-0 p-4 pb-16 -mb-12 translate-y-4 group-hover:-translate-y-8 transition-transform duration-500 shadow-2xl">
-                <div className="flex justify-between items-end mb-4">
+              <div className="relative z-10 mt-auto bg-slate-800/80 backdrop-blur-xl rounded-t-2xl border border-slate-700/50 border-b-0 p-4 pb-2 translate-y-6 group-hover:translate-y-0 transition-transform duration-500 shadow-2xl">
+                <div className="flex justify-between items-end mb-2">
                   <div>
                     <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Lucro Estimado</div>
-                    <div className="text-3xl font-black text-emerald-400">28.5%</div>
+                    <div className="text-2xl font-black text-emerald-400">28.5%</div>
                   </div>
-                  <div className="h-6 px-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold flex items-center gap-1">
+                  <div className="h-5 px-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[9px] font-extrabold flex items-center gap-1">
                     <TrendingUp className="h-3 w-3" /> +4.2%
                   </div>
                 </div>
-                <div className="h-16 w-full flex items-end gap-1.5 opacity-90">
+                <div className="h-10 w-full flex items-end gap-1.5 opacity-90">
                   <div className="w-1/6 bg-slate-700 h-[30%] rounded-t-sm" />
                   <div className="w-1/6 bg-slate-700 h-[45%] rounded-t-sm" />
                   <div className="w-1/6 bg-emerald-500/60 h-[60%] rounded-t-sm" />
