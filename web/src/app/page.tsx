@@ -234,7 +234,7 @@ export default function LandingPage() {
               </div>
 
               {/* Mini-UI Chart */}
-              <div className="relative z-10 mt-6 bg-slate-800/80 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-4 translate-y-4 group-hover:-translate-y-0 transition-transform duration-500 shadow-2xl">
+              <div className="relative z-10 mt-6 bg-slate-800/80 backdrop-blur-xl rounded-t-2xl border border-slate-700/50 border-b-0 p-4 pb-12 -mb-12 translate-y-8 group-hover:-translate-y-2 transition-transform duration-500 shadow-2xl">
                 <div className="flex justify-between items-end mb-4">
                   <div>
                     <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Lucro Estimado</div>
