@@ -33,7 +33,7 @@ const STATUS_COPY: Record<
   },
   pending: {
     label: "Aguardando pagamento",
-    tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+    tone: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     icon: "clock",
   },
   overdue: {
@@ -79,7 +79,7 @@ const NEXT_ACTION_TONE: Record<NextActionTone, string> = {
     "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100",
   danger:
     "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100",
-  info: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+  info: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
   neutral: "border-border bg-muted/20 text-foreground",
 };
 

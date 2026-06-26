@@ -423,7 +423,7 @@ function publicNextStep({
         pending.payment_provider === "manual_pix"
           ? "Pague pelo QR Code ou Pix copia-e-cola. Depois envie o comprovante para a empreiteira registrar o recebimento."
           : "Use o botão de pagamento ou copie o Pix. A baixa aparece automaticamente quando o pagamento for confirmado.",
-      tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+      tone: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     };
   }
 
@@ -491,7 +491,7 @@ function statusClass(status: PublicBillingCharge["status"]) {
     return `${base} border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100`;
   }
   if (status === "pending") {
-    return `${base} border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100`;
+    return `${base} border-blue-200 bg-emerald-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100`;
   }
   return `${base} border-muted bg-muted/30 text-muted-foreground`;
 }

@@ -83,7 +83,7 @@ export const CompareSlider = ({
         className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize flex items-center justify-center z-20 pointer-events-none"
         style={{ left: `calc(${sliderPosition}% - 2px)` }}
       >
-        <div className="w-8 h-8 bg-white text-[#2563eb] shadow-xl rounded-full flex items-center justify-center ring-2 ring-black/5">
+        <div className="w-8 h-8 bg-white text-[#059669] shadow-xl rounded-full flex items-center justify-center ring-2 ring-black/5">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
             <path d="M9 18l6-6-6-6" />

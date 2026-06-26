@@ -101,7 +101,7 @@ export function PaymentForm() {
           onClick={() => setMethod("card")}
           className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
             method === "card"
-              ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+              ? "border-emerald-500 bg-emerald-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
               : "border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
           }`}
         >
@@ -118,7 +118,7 @@ export function PaymentForm() {
           className={`w-full h-12 text-white border-0 shadow-md text-base ${
             method === "pix"
               ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"
-              : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+              : "bg-blue-600 hover:bg-blue-700 shadow-emerald-500/20"
           }`}
         >
           {loading ? (

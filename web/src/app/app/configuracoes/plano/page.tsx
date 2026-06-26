@@ -160,8 +160,8 @@ export default async function PlanPage() {
         <h3 className="text-xl font-semibold mb-6 text-center">Tudo o que você precisa para crescer</h3>
         <div className="grid sm:grid-cols-3 gap-6">
           <div className="p-5 rounded-xl border bg-card/50">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">
-              <FileText className="h-5 w-5 text-blue-500" />
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+              <FileText className="h-5 w-5 text-emerald-500" />
             </div>
             <h4 className="font-medium mb-2">Orçamentos que vendem</h4>
             <p className="text-sm text-muted-foreground">

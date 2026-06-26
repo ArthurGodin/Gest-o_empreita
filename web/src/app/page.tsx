@@ -59,20 +59,20 @@ const staggerContainer = {
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   return (
-    <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#2563eb]/20 relative">
+    <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#059669]/20 relative">
       
       {/* Background Glows e Pattern "SaaS Premium" */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Grid pattern suave */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60" />
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563eb]/15 blur-[120px]" />
-        <div className="absolute right-0 top-[20%] h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#059669]/15 blur-[120px]" />
+        <div className="absolute right-0 top-[20%] h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[120px]" />
       </div>
 
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#3b82f6] text-white shadow-lg shadow-[#2563eb]/20">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-lg shadow-[#059669]/20">
               <HardHat className="h-5 w-5" />
             </span>
             <span className="text-lg tracking-tight">Prumo</span>
@@ -84,7 +84,7 @@ export default function LandingPage() {
             <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100 font-medium">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md shadow-[#2563eb]/20 transition-all hover:shadow-lg hover:shadow-[#2563eb]/30 font-bold">
+            <Button asChild size="sm" className="rounded-full bg-[#059669] hover:bg-[#047857] shadow-md shadow-[#059669]/20 transition-all hover:shadow-lg hover:shadow-[#059669]/30 font-bold">
               <Link href="/signup">Começar grátis</Link>
             </Button>
           </nav>
@@ -96,13 +96,13 @@ export default function LandingPage() {
         <ContainerScroll
           titleComponent={
             <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="flex flex-col items-center pb-8">
-              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#dbeafe] bg-blue-50/80 px-4 py-1.5 text-sm font-semibold text-[#1e3a8a] backdrop-blur-md shadow-sm mb-6">
+              <motion.div variants={fadeIn} className="inline-flex items-center gap-2 rounded-full border border-[#d1fae5] bg-emerald-50/80 px-4 py-1.5 text-sm font-semibold text-[#064e3b] backdrop-blur-md shadow-sm mb-6">
                 <ShieldCheck className="h-4 w-4" />
                 Venda e controle obras sem planilhas
               </motion.div>
               
               <motion.h1 variants={fadeIn} className="max-w-4xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
-                Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563eb] to-[#f47721]">bonito</span>,<br/>obra no controle.
+                Orçamento <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">bonito</span>,<br/>obra no controle.
               </motion.h1>
               
               <motion.p variants={fadeIn} className="mt-6 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed text-slate-600 font-medium">
@@ -113,7 +113,7 @@ export default function LandingPage() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-14 rounded-full bg-[#2563eb] px-8 text-base font-bold shadow-xl shadow-[#2563eb]/20 transition-all hover:scale-105 hover:bg-[#1d4ed8]"
+                  className="h-14 rounded-full bg-[#059669] px-8 text-base font-bold shadow-xl shadow-[#059669]/20 transition-all hover:scale-105 hover:bg-[#047857]"
                 >
                   <Link href="/signup">
                     Testar por 14 dias
@@ -170,10 +170,10 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
               className="md:col-span-2 md:row-span-2 rounded-3xl bg-slate-50 p-8 md:p-10 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-300"
             >
-              <div className="absolute right-0 top-0 w-64 h-64 bg-[#2563eb]/10 rounded-full blur-3xl group-hover:bg-[#2563eb]/20 transition-colors" />
+              <div className="absolute right-0 top-0 w-64 h-64 bg-[#059669]/10 rounded-full blur-3xl group-hover:bg-[#059669]/20 transition-colors" />
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-[#2563eb] mb-6 shadow-sm">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-[#059669] mb-6 shadow-sm">
                     <FileText className="h-6 w-6" />
                   </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Orçamentos que vendem.</h3>
@@ -186,7 +186,7 @@ export default function LandingPage() {
                 <div className="mt-8 flex-1 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md shadow-xl p-5 translate-y-4 group-hover:-translate-y-0 transition-transform duration-500 max-w-md">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gradient-to-br from-[#2563eb] to-[#3b82f6] rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">
+                      <div className="h-10 w-10 bg-gradient-to-br from-[#059669] to-[#10b981] rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">
                         GE
                       </div>
                       <div>
@@ -196,7 +196,7 @@ export default function LandingPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Total</div>
-                      <div className="text-xl font-black text-[#2563eb]">R$ 14.500</div>
+                      <div className="text-xl font-black text-[#059669]">R$ 14.500</div>
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -261,7 +261,7 @@ export default function LandingPage() {
               className="rounded-3xl bg-white p-8 pb-0 border border-slate-200/60 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
               <div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
                   <Smartphone className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Aprovação mobile</h3>
@@ -295,10 +295,10 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 shadow-sm mb-6">
-              <ArrowRight className="h-4 w-4 text-[#2563eb]" /> 4 passos para receber
+              <ArrowRight className="h-4 w-4 text-[#059669]" /> 4 passos para receber
             </div>
             <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-              Do orçamento ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563eb] to-[#f47721]">Pix na conta.</span>
+              Do orçamento ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">Pix na conta.</span>
             </h2>
           </motion.div>
 
@@ -316,9 +316,9 @@ export default function LandingPage() {
                 {i < workflow.length - 1 && (
                   <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-slate-200 to-slate-100" />
                 )}
-                <div className="relative z-10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white border-2 border-slate-100 shadow-lg group-hover:shadow-xl group-hover:border-[#2563eb]/30 group-hover:scale-110 transition-all duration-300">
-                  <span className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-[#2563eb] text-white text-xs font-black flex items-center justify-center shadow-md">{i + 1}</span>
-                  <step.icon className="h-8 w-8 text-slate-600 group-hover:text-[#2563eb] transition-colors" />
+                <div className="relative z-10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white border-2 border-slate-100 shadow-lg group-hover:shadow-xl group-hover:border-[#059669]/30 group-hover:scale-110 transition-all duration-300">
+                  <span className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-[#059669] text-white text-xs font-black flex items-center justify-center shadow-md">{i + 1}</span>
+                  <step.icon className="h-8 w-8 text-slate-600 group-hover:text-[#059669] transition-colors" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight">{step.title}</h3>
                 <p className="mt-2 text-sm text-slate-500 font-medium leading-relaxed max-w-[220px] mx-auto">{step.text}</p>
@@ -350,17 +350,17 @@ export default function LandingPage() {
             <Reason
               title="Menos orçamento perdido no WhatsApp"
               text="Você para de mandar textos bagunçados. O cliente recebe um link limpo, com PDF e aprovação digital. Parece empresa grande."
-              icon={<FileText className="h-5 w-5 text-[#2563eb]" />}
+              icon={<FileText className="h-5 w-5 text-[#059669]" />}
             />
             <Reason
               title="Menos surpresa no fim da obra"
               text="Fotos, diário, ponto e gastos ficam presos à obra. O dono consegue cobrar decisões com contexto direto do canteiro."
-              icon={<HardHat className="h-5 w-5 text-[#2563eb]" />}
+              icon={<HardHat className="h-5 w-5 text-[#059669]" />}
             />
             <Reason
               title="Recebimento com Pix Automático"
               text="A tela financeira mostra aprovado, pendente, e o gasto. A cobrança via Pix vai direto pra conta e cai no extrato."
-              icon={<LineChart className="h-5 w-5 text-[#2563eb]" />}
+              icon={<LineChart className="h-5 w-5 text-[#059669]" />}
             />
           </div>
 
@@ -412,7 +412,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-              Quem usa, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563eb] to-[#f47721]">recomenda.</span>
+              Quem usa, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">recomenda.</span>
             </h2>
             <p className="mt-4 text-lg font-medium text-slate-500">Empreiteiros reais que transformaram a forma de vender e controlar obras.</p>
           </motion.div>
@@ -431,10 +431,10 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1 }}
                 className="group rounded-3xl border border-slate-200/60 bg-slate-50 p-8 shadow-sm hover:shadow-xl hover:bg-white transition-all duration-300 relative overflow-hidden"
               >
-                <div className="absolute top-6 right-6 text-6xl font-black text-slate-100 leading-none select-none group-hover:text-[#2563eb]/10 transition-colors">&ldquo;</div>
+                <div className="absolute top-6 right-6 text-6xl font-black text-slate-100 leading-none select-none group-hover:text-[#059669]/10 transition-colors">&ldquo;</div>
                 <p className="relative z-10 text-slate-600 font-medium leading-relaxed italic">&ldquo;{t.text}&rdquo;</p>
                 <div className="mt-6 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#2563eb] to-[#3b82f6] flex items-center justify-center text-white font-bold text-sm shadow-md">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#059669] to-[#10b981] flex items-center justify-center text-white font-bold text-sm shadow-md">
                     {t.name.split(" ").map(n => n[0]).join("")}
                   </div>
                   <div>
@@ -528,7 +528,7 @@ export default function LandingPage() {
           <Button
             asChild
             size="lg"
-            className="h-14 mt-4 rounded-full bg-white px-10 text-lg font-black text-[#2563eb] transition-all duration-300 hover:scale-110 hover:bg-slate-50 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)]"
+            className="h-14 mt-4 rounded-full bg-white px-10 text-lg font-black text-[#059669] transition-all duration-300 hover:scale-110 hover:bg-slate-50 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)]"
           >
             <Link href="/signup">
               Criar minha conta agora
@@ -542,13 +542,13 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm font-semibold text-slate-400 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
           <div className="flex gap-6">
-            <Link href="/precos" className="transition-colors hover:text-[#2563eb]">
+            <Link href="/precos" className="transition-colors hover:text-[#059669]">
               Preços
             </Link>
-            <Link href="/termos" className="transition-colors hover:text-[#2563eb]">
+            <Link href="/termos" className="transition-colors hover:text-[#059669]">
               Termos
             </Link>
-            <Link href="/privacidade" className="transition-colors hover:text-[#2563eb]">
+            <Link href="/privacidade" className="transition-colors hover:text-[#059669]">
               Privacidade
             </Link>
           </div>
@@ -564,13 +564,13 @@ function Reason({ title, text, icon }: { title: string; text: string; icon: Reac
       variants={fadeIn} 
       className="group relative rounded-3xl border border-slate-200/60 bg-white/40 backdrop-blur-md p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-2xl hover:bg-white hover:-translate-y-1 overflow-hidden cursor-default"
     >
-      <div className="absolute w-2 bg-gradient-to-b from-[#2563eb] to-[#3b82f6] inset-y-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute w-2 bg-gradient-to-b from-[#059669] to-[#10b981] inset-y-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-orange-100 group-hover:scale-110 transition-transform duration-300">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center border border-orange-100 group-hover:scale-110 transition-transform duration-300">
           {icon}
         </div>
         <div>
-          <h3 className="text-xl font-bold text-slate-900 group-hover:text-[#2563eb] transition-colors">{title}</h3>
+          <h3 className="text-xl font-bold text-slate-900 group-hover:text-[#059669] transition-colors">{title}</h3>
           <p className="mt-3 leading-relaxed text-slate-600 font-medium">{text}</p>
         </div>
       </div>

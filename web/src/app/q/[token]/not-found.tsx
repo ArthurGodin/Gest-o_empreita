@@ -28,7 +28,7 @@ export default function PublicQuoteNotFound() {
       <div className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 sm:py-8">
         <header className="flex h-14 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#2563eb] text-white shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#059669] text-white shadow-sm">
               <HardHat className="h-5 w-5" />
             </span>
             <span>Prumo</span>
@@ -62,7 +62,7 @@ export default function PublicQuoteNotFound() {
               <Button
                 asChild
                 size="lg"
-                className="h-12 bg-[#2563eb] px-6 text-base hover:bg-[#c85b17]"
+                className="h-12 bg-[#059669] px-6 text-base hover:bg-[#c85b17]"
               >
                 <a
                   href={requestNewLinkHref}

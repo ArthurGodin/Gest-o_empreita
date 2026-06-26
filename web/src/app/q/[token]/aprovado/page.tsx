@@ -102,7 +102,7 @@ export default async function ApprovedPage({
                 className="h-12 w-12 rounded-md object-cover"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#2563eb] text-lg font-bold text-white">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#059669] text-lg font-bold text-white">
                 {quote.company.name.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -170,7 +170,7 @@ export default async function ApprovedPage({
 
             <section className="rounded-lg border border-[#e2e8f0] bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
-                <FileText className="mt-0.5 h-5 w-5 shrink-0 text-[#2563eb]" />
+                <FileText className="mt-0.5 h-5 w-5 shrink-0 text-[#059669]" />
                 <div>
                   <h2 className="font-bold">Recibo da aprovação</h2>
                   <p className="mt-1 text-sm leading-6 text-[#475569]">
@@ -217,7 +217,7 @@ export default async function ApprovedPage({
                 </div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
                   <dt className="text-sm text-[#475569]">Total aprovado</dt>
-                  <dd className="text-2xl font-black text-[#2563eb]">
+                  <dd className="text-2xl font-black text-[#059669]">
                     {formatBRL(quote.total_cents / 100)}
                   </dd>
                 </div>
@@ -228,7 +228,7 @@ export default async function ApprovedPage({
           <aside className="space-y-4 lg:sticky lg:top-6">
             <section className="rounded-lg border border-[#e2e8f0] bg-white p-5 shadow-sm">
               <div className="flex items-start gap-3">
-                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-[#2563eb]" />
+                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-[#059669]" />
                 <div>
                   <h2 className="font-bold">Próximos passos</h2>
                   <ol className="mt-3 space-y-3 text-sm leading-6 text-[#475569]">

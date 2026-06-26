@@ -49,7 +49,7 @@ export function OnboardingForm() {
       <div className="relative mx-auto grid min-h-svh w-full max-w-6xl gap-6 px-4 py-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-8 lg:px-8 lg:py-6">
         <section className="space-y-6 lg:space-y-8">
           <div className="flex items-center gap-2 text-lg font-semibold text-[#17202a]">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#2563eb] text-white shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#059669] text-white shadow-sm">
               <HardHat className="h-5 w-5" />
             </div>
             Prumo

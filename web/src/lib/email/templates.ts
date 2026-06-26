@@ -177,7 +177,7 @@ export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-      <div style="background: #3b82f6; color: white; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+      <div style="background: #10b981; color: white; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
         <div style="font-size: 36px; line-height: 1; margin-bottom: 8px;">👀</div>
         <h1 style="font-size: 20px; font-weight: 600; margin: 0;">Cliente na página!</h1>
       </div>
@@ -193,7 +193,7 @@ export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
           <div style="font-weight: 600; margin-bottom: 12px;">${escapeHtml(ctx.quoteTitle)}</div>
 
           <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">Total</div>
-          <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">${formatBRL(ctx.totalCents / 100)}</div>
+          <div style="font-size: 24px; font-weight: 700; color: #10b981;">${formatBRL(ctx.totalCents / 100)}</div>
         </div>
 
         <p style="margin: 16px 0;">
@@ -201,7 +201,7 @@ export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
         </p>
 
         <div style="text-align: center; margin: 24px 0 8px;">
-          <a href="${ctx.detailUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+          <a href="${ctx.detailUrl}" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
             Abrir orçamento
           </a>
         </div>
