@@ -54,7 +54,11 @@ export default async function PlanPage() {
           <div className="space-y-4 mb-8 flex-1">
             <div className="flex items-start gap-3 text-sm">
               <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Até <strong>5 orçamentos</strong> totais</span>
+              <span>Até <strong>3 orçamentos</strong> totais</span>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <Check className="h-5 w-5 text-green-500 shrink-0" />
+              <span>Até <strong>1 obra</strong> simultânea</span>
             </div>
             <div className="flex items-start gap-3 text-sm">
               <Check className="h-5 w-5 text-green-500 shrink-0" />

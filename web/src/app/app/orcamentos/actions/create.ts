@@ -143,7 +143,7 @@ export async function createQuoteAction(
     .single();
 
   if (companyData?.plan === "free") {
-    const FREE_MAX_QUOTES = 5;
+    const FREE_MAX_QUOTES = 3;
     const { count } = await supabase
       .from("quotes")
       .select("id", { count: "exact", head: true })
@@ -152,7 +152,7 @@ export async function createQuoteAction(
     if (count != null && count >= FREE_MAX_QUOTES) {
       return {
         ok: false,
-        error: "Limite atingido! O plano Grátis permite até 5 orçamentos. Faça o upgrade para criar orçamentos ilimitados.",
+        error: "Limite atingido! O plano Starter Grátis permite até 3 orçamentos. Faça o upgrade para PRO para criar orçamentos ilimitados.",
       };
     }
   }

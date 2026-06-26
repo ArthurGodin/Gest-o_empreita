@@ -176,6 +176,30 @@ export async function convertToProjectAction(
   }
 
   const supabase = createClient();
+
+  // ─── Paywall (Soft Limit) ──────────────────────────────────────────────────
+  const { data: companyData } = await supabase
+    .from("companies")
+    .select("plan")
+    .eq("id", company.company_id)
+    .single();
+
+  if (companyData?.plan === "free") {
+    const { count } = await supabase
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", company.company_id)
+      .in("status", ["planning", "in_progress", "paused"]);
+
+    if (count != null && count >= 1) {
+      return {
+        ok: false,
+        error: "Limite atingido! O plano Starter Grátis permite apenas 1 obra simultânea. Conclua a obra atual ou assine o PRO.",
+      };
+    }
+  }
+  // ───────────────────────────────────────────────────────────────────────────
+
   const [prefersManualPix, manualPixReady] = await Promise.all([
     companyPrefersManualPix(supabase, company.company_id),
     companyUsesManualPix(supabase, company.company_id),
