@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
@@ -56,6 +57,7 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   return (
     <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#db5b18]/20 relative">
       
@@ -268,7 +270,7 @@ export default function LandingPage() {
                 </p>
               </div>
               
-              <div className="mt-8 relative w-48 mx-auto h-40 bg-slate-900 rounded-t-[2rem] border-[6px] border-slate-800 border-b-0 shadow-2xl overflow-hidden group-hover:-translate-y-3 transition-transform duration-500">
+              <div className="mt-8 relative w-48 mx-auto h-[240px] -mb-20 bg-slate-900 rounded-t-[2rem] border-[6px] border-slate-800 border-b-0 shadow-2xl overflow-hidden group-hover:-translate-y-4 transition-transform duration-500">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-slate-800 rounded-full z-10" />
                 <div className="absolute inset-0 bg-white pt-10 px-4">
                   <div className="w-full h-24 bg-emerald-50 rounded-xl border border-emerald-100 p-3 flex flex-col justify-between shadow-inner">
@@ -463,22 +465,41 @@ export default function LandingPage() {
               { q: "Tem período de teste?", a: "Sim! 14 dias grátis sem precisar de cartão. Você testa tudo e só paga se gostar." },
               { q: "Funciona para qualquer tipo de obra?", a: "Sim. Reformas, coberturas, acabamentos, pintura, elétrica — qualquer serviço de empreitada. Você personaliza os itens do seu catálogo." },
             ].map((item, i) => (
-              <motion.details
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="group rounded-2xl border border-slate-200/60 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                className="rounded-2xl border border-slate-200/60 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
-                <summary className="cursor-pointer px-6 py-5 text-base font-bold text-slate-900 flex items-center justify-between list-none select-none">
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full text-left cursor-pointer px-6 py-5 text-base font-bold text-slate-900 flex items-center justify-between select-none"
+                >
                   {item.q}
-                  <span className="ml-4 text-slate-400 group-open:rotate-45 transition-transform duration-200 text-xl font-light">+</span>
-                </summary>
-                <div className="px-6 pb-5 text-sm text-slate-600 font-medium leading-relaxed -mt-1">
-                  {item.a}
-                </div>
-              </motion.details>
+                  <motion.span
+                    animate={{ rotate: openFaq === i ? 45 : 0 }}
+                    className="ml-4 text-slate-400 text-xl font-light shrink-0 origin-center flex items-center justify-center"
+                  >
+                    +
+                  </motion.span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-6 pb-5 text-sm text-slate-600 font-medium leading-relaxed -mt-1">
+                        {item.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))}
           </div>
         </div>

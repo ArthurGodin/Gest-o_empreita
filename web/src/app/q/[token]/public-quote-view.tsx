@@ -393,10 +393,17 @@ export function PublicQuoteView({
             )}
 
             <footer className="pb-8 pt-4 text-center text-xs font-medium text-slate-400">
-              <span>Tecnologia </span>
-              <span className="font-bold text-slate-600">
-                Gestão Empreita
-              </span>
+              <a
+                href="https://gestaoempreita.com.br"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:text-slate-600 transition-colors"
+              >
+                <span>Tecnologia </span>
+                <span className="font-bold text-slate-600">
+                  Gestão Empreita
+                </span>
+              </a>
             </footer>
           </div>
         </div>
