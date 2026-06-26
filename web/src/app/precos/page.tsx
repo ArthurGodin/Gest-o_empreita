@@ -1,47 +1,25 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  FileText,
   HardHat,
   ShieldCheck,
-  Sparkles,
-  Wallet,
   Zap,
+  Building2,
+  UploadCloud,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const included = [
-  "Clientes e catálogo de itens",
-  "Orçamentos ilimitados com PDF",
-  "Link público para aprovação do cliente",
-  "Conversão de aprovado em obra",
-  "QR Code Pix direto na chave do empreiteiro",
-  "Financeiro com recebidos, pendentes e atrasados",
-  "Etapas, diário com fotos e ponto da equipe",
-  "Custos por obra e margem estimada",
-  "Suporte direto na implantação inicial",
-];
-
-const roadmap = [
-  "PWA/offline para campo após os primeiros pilotos",
-  "Cobrança automática para quem quiser baixa por provedor",
-  "Relatórios de margem por tipo de obra",
-  "Equipe com permissões por função",
-  "Templates avançados de proposta",
-];
-
 export const metadata = {
   title: "Preços - Gestão Empreita",
-  description:
-    "Plano simples e acessível para pequenas empreiteiras. 14 dias grátis, sem cartão.",
+  description: "Escolha o plano ideal para a sua empreiteira. Do grátis ao avançado.",
 };
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 relative overflow-hidden">
+    <main className="min-h-screen bg-[#f8fafc] text-slate-900 relative overflow-hidden pb-24">
       {/* Background pattern */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40" />
@@ -63,162 +41,145 @@ export default function PricingPage() {
                 <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
               </Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full bg-[#db5b18] hover:bg-[#bc4810] shadow-md shadow-[#db5b18]/20 font-bold">
-              <Link href="/signup">Começar grátis</Link>
+            <Button asChild size="sm" className="rounded-full bg-[#db5b18] hover:bg-[#bc4810] shadow-md shadow-[#db5b18]/20 font-bold text-white">
+              <Link href="/signup">Criar conta</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <section className="relative z-10 mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-start">
-          {/* Left — Value Proposition */}
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/80 px-4 py-1.5 text-sm font-bold text-[#9a3412] backdrop-blur-md shadow-sm">
-              <ShieldCheck className="h-4 w-4" />
-              Plano inicial para empresas de obra
+      {/* Pricing Header */}
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pt-20 pb-12 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/80 px-4 py-1.5 text-sm font-bold text-[#9a3412] backdrop-blur-md shadow-sm mb-6">
+          <ShieldCheck className="h-4 w-4" />
+          Sem fidelidade, cancele quando quiser
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-6">
+          Um sistema que <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">se paga sozinho.</span>
+        </h1>
+        <p className="text-lg text-slate-600 font-medium max-w-2xl mx-auto">
+          Comece de graça para fechar sua primeira obra profissional. Mude de plano quando precisar controlar o financeiro e a execução.
+        </p>
+      </section>
+
+      {/* Pricing Cards */}
+      <section className="relative z-10 mx-auto max-w-6xl px-4">
+        <div className="grid md:grid-cols-3 gap-8 items-start">
+          
+          {/* PLANO STARTER */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Starter</h3>
+              <p className="text-sm text-slate-500 font-medium mt-2">Para experimentar e enviar a 1ª proposta matadora.</p>
             </div>
-
-            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-              Comece com um plano{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">
-                simples.
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 font-medium">
-              O preço inicial é pensado para pequenas empreiteiras que precisam
-              sair do orçamento no caderno e controlar a obra sem contratar um
-              ERP pesado.
-            </p>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <MiniProof
-                icon={<FileText className="h-5 w-5" />}
-                label="Orçamento"
-                desc="PDF profissional"
-              />
-              <MiniProof
-                icon={<HardHat className="h-5 w-5" />}
-                label="Obra"
-                desc="Fotos e etapas"
-              />
-              <MiniProof
-                icon={<Wallet className="h-5 w-5" />}
-                label="Margem"
-                desc="Lucro por obra"
-              />
+            <div className="mb-8">
+              <div className="flex items-end gap-1">
+                <span className="text-4xl font-black text-slate-900">Grátis</span>
+              </div>
+              <p className="text-sm text-slate-500 font-medium mt-1">Para sempre.</p>
+            </div>
+            <Button asChild variant="outline" className="w-full h-12 rounded-xl font-bold border-slate-300 text-slate-700 hover:bg-slate-50 mb-8">
+              <Link href="/signup">Começar grátis</Link>
+            </Button>
+            <div className="space-y-4 flex-1">
+              <p className="text-sm font-bold text-slate-900">O que está incluído:</p>
+              <ul className="space-y-3">
+                <FeatureItem text="Até 3 orçamentos por mês" />
+                <FeatureItem text="1 obra simultânea" />
+                <FeatureItem text="Link público para o cliente aprovar" />
+                <FeatureItem text="Orçamento em PDF" />
+                <FeatureItem text="Marca d'água Gestão Empreita" />
+              </ul>
             </div>
           </div>
 
-          {/* Right — Pricing Card */}
-          <div className="group relative">
-            {/* Glow behind card */}
-            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#db5b18]/20 to-blue-500/10 blur-2xl opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-
-            <div className="relative rounded-3xl border-2 border-slate-900 bg-slate-900 p-2 shadow-2xl">
-              <div className="rounded-2xl bg-white p-8 md:p-10">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-[#db5b18]">
-                      Plano Obra
-                    </p>
-                    <h2 className="mt-2 text-2xl font-extrabold tracking-tight">
-                      Para vender agora
-                    </h2>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-sm font-bold text-emerald-700 shadow-sm">
-                    <Zap className="h-3.5 w-3.5" />
-                    14 dias grátis
-                  </span>
-                </div>
-
-                {/* Price */}
-                <div className="mt-8 flex items-end gap-2">
-                  <span className="text-6xl font-black tracking-tight">
-                    R$ 197
-                  </span>
-                  <span className="pb-2 text-lg text-slate-500 font-medium">/mês</span>
-                </div>
-                <p className="mt-3 text-sm text-slate-500 font-medium">
-                  Sem cartão no teste. Implantação assistida para os primeiros
-                  clientes.
-                </p>
-
-                {/* CTA */}
-                <Button
-                  asChild
-                  size="lg"
-                  className="mt-8 h-14 w-full rounded-2xl bg-[#db5b18] text-base font-bold shadow-xl shadow-[#db5b18]/20 transition-all hover:scale-[1.02] hover:bg-[#bc4810] hover:shadow-2xl hover:shadow-[#db5b18]/30"
-                >
-                  <Link href="/signup">
-                    Começar teste grátis
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-
-                {/* Features */}
-                <div className="mt-8 space-y-3">
-                  {included.map((item) => (
-                    <div key={item} className="flex items-start gap-3 group/item">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                      <span className="text-sm text-slate-700 font-medium group-hover/item:text-slate-900 transition-colors">
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Roadmap */}
-                <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="h-4 w-4 text-[#db5b18]" />
-                    <p className="text-sm font-bold text-slate-900">
-                      Roadmap após os primeiros pilotos
-                    </p>
-                  </div>
-                  <p className="text-xs leading-5 text-slate-500 font-medium">
-                    O plano atual já cobre orçamento, obra, Pix direto e
-                    financeiro. Os itens abaixo entram conforme o uso real
-                    mostrar prioridade.
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    {roadmap.map((item) => (
-                      <p
-                        key={item}
-                        className="text-sm text-slate-500 font-medium pl-4 border-l-2 border-slate-200"
-                      >
-                        {item}
-                      </p>
-                    ))}
-                  </div>
-                </div>
+          {/* PLANO PRO (HIGHLIGHT) */}
+          <div className="relative rounded-3xl border-2 border-slate-900 bg-slate-900 p-8 shadow-2xl flex flex-col h-full transform md:-translate-y-4">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#db5b18] to-[#ea7a3e] px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-lg">
+                <Zap className="h-4 w-4" /> Mais escolhido
+              </span>
+            </div>
+            <div className="mb-6 mt-4">
+              <h3 className="text-xl font-bold text-white">Pro</h3>
+              <p className="text-sm text-slate-400 font-medium mt-2">A máquina de lucro para quem já fatura com obras.</p>
+            </div>
+            <div className="mb-8">
+              <div className="flex items-end gap-1">
+                <span className="text-sm font-bold text-slate-400 mb-1">R$</span>
+                <span className="text-5xl font-black text-white">97</span>
+                <span className="text-sm text-slate-400 font-medium mb-1">/mês</span>
               </div>
             </div>
+            <Button asChild className="w-full h-14 rounded-xl font-bold bg-[#db5b18] hover:bg-[#bc4810] text-white shadow-xl shadow-[#db5b18]/20 transition-transform hover:scale-[1.02] mb-8 text-base">
+              <Link href="/signup?plan=pro">Assinar PRO <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            </Button>
+            <div className="space-y-4 flex-1">
+              <p className="text-sm font-bold text-white">Tudo do Starter, mais:</p>
+              <ul className="space-y-3">
+                <FeatureItem text="Orçamentos e Obras Ilimitadas" dark />
+                <FeatureItem text="Cobrança automática via Pix (Asaas)" dark />
+                <FeatureItem text="Dashboard financeiro completo" dark />
+                <FeatureItem text="Gestão de margem e lucro real da obra" dark />
+                <FeatureItem text="Diário de obra com fotos" dark />
+                <FeatureItem text="Sem marca d'água no PDF/Link" dark />
+              </ul>
+            </div>
           </div>
+
+          {/* PLANO ULTIMATE */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Ultimate</h3>
+              <p className="text-sm text-slate-500 font-medium mt-2">Para construtoras estruturadas e múltiplas frentes.</p>
+            </div>
+            <div className="mb-8">
+              <div className="flex items-end gap-1">
+                <span className="text-sm font-bold text-slate-500 mb-1">R$</span>
+                <span className="text-4xl font-black text-slate-900">247</span>
+                <span className="text-sm text-slate-500 font-medium mb-1">/mês</span>
+              </div>
+            </div>
+            <Button asChild variant="secondary" className="w-full h-12 rounded-xl font-bold bg-slate-100 text-slate-900 hover:bg-slate-200 mb-8">
+              <Link href="/signup?plan=ultimate">Assinar Ultimate</Link>
+            </Button>
+            <div className="space-y-4 flex-1">
+              <p className="text-sm font-bold text-slate-900">Tudo do PRO, mais:</p>
+              <ul className="space-y-3">
+                <FeatureItem text="Importação de catálogos (Excel/CSV)" highlightIcon={<UploadCloud className="h-4 w-4 text-[#db5b18]" />} />
+                <FeatureItem text="Base SINAPI integrada (Em breve)" highlightIcon={<Building2 className="h-4 w-4 text-[#db5b18]" />} />
+                <FeatureItem text="Exportação de relatórios contábeis" highlightIcon={<FileSpreadsheet className="h-4 w-4 text-[#db5b18]" />} />
+                <FeatureItem text="Múltiplos usuários e permissões" />
+                <FeatureItem text="Suporte VIP WhatsApp Direto" />
+              </ul>
+            </div>
+          </div>
+
         </div>
       </section>
+
+      {/* Footer / FAQ mini */}
+      <section className="mx-auto max-w-4xl px-4 mt-24 text-center">
+        <p className="text-slate-500 text-sm font-medium">
+          Dúvidas sobre os planos? O teste no plano PRO ou Ultimate possui garantia de 7 dias sem taxas de cancelamento. <br/>A transição de planos e importações de catálogos no plano Ultimate é feita com acompanhamento da nossa equipe.
+        </p>
+      </section>
+
     </main>
   );
 }
 
-function MiniProof({
-  icon,
-  label,
-  desc,
-}: {
-  icon: ReactNode;
-  label: string;
-  desc: string;
-}) {
+function FeatureItem({ text, dark = false, highlightIcon }: { text: string; dark?: boolean; highlightIcon?: ReactNode }) {
   return (
-    <div className="group rounded-2xl border border-slate-200/60 bg-white/80 backdrop-blur-sm p-5 shadow-sm hover:shadow-lg hover:border-[#db5b18]/30 transition-all duration-300">
-      <div className="text-[#db5b18] group-hover:scale-110 transition-transform duration-300">
-        {icon}
-      </div>
-      <p className="mt-3 text-sm font-bold text-slate-900">{label}</p>
-      <p className="mt-1 text-xs text-slate-500 font-medium">{desc}</p>
-    </div>
+    <li className="flex items-start gap-3">
+      {highlightIcon ? (
+        <div className="mt-0.5 shrink-0">{highlightIcon}</div>
+      ) : (
+        <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${dark ? 'text-emerald-400' : 'text-emerald-500'}`} />
+      )}
+      <span className={`text-sm font-medium ${dark ? 'text-slate-300' : 'text-slate-700'}`}>
+        {text}
+      </span>
+    </li>
   );
 }
