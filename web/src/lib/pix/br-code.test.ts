@@ -15,7 +15,7 @@ describe("Pix BR Code", () => {
 
   it("sanitizes merchant fields to EMV-safe text", () => {
     expect(sanitizeEmvText("Prumo — Timon/MA", 25)).toBe(
-      "GESTAO EMPREITA TIMON/MA",
+      "PRUMO TIMON/MA",
     );
     expect(sanitizeTxid("charge:abc-123_ç")).toBe("chargeabc123c");
   });
@@ -34,7 +34,7 @@ describe("Pix BR Code", () => {
     expect(payload).toContain("0014br.gov.bcb.pix");
     expect(payload).toContain("011106024377339");
     expect(payload).toContain("5406190.00");
-    expect(payload).toContain("5915GESTAO EMPREITA");
+    expect(payload).toContain("5905PRUMO");
     expect(payload).toContain("6005TIMON");
     expect(payload).toMatch(/6304[A-F0-9]{4}$/);
   });

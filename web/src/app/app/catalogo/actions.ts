@@ -7,6 +7,11 @@ import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { suggestCatalogItems, type CatalogItem } from "@/lib/queries/catalog";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { normalizeQuoteUnit } from "@/lib/format";
+import {
+  CATALOG_IMPORT_MAX_ROWS,
+  type CatalogImportError,
+  parseCatalogCsv,
+} from "@/lib/catalog-import";
 
 const itemSchema = z.object({
   description: z.string().trim().min(2, "Descrição precisa ter pelo menos 2 caracteres"),
@@ -21,6 +26,21 @@ const itemSchema = z.object({
 export type CatalogActionResult =
   | { ok: true; id: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export type CatalogImportActionResult =
+  | {
+      ok: true;
+      inserted: number;
+      updated: number;
+      ignored: number;
+      invalid: number;
+      errors: CatalogImportError[];
+    }
+  | {
+      ok: false;
+      error: string;
+      errors?: CatalogImportError[];
+    };
 
 interface CreateInput {
   description: string;
@@ -146,6 +166,171 @@ export async function deleteCatalogItemAction(
   return { ok: true };
 }
 
+export async function importCatalogCsvAction(
+  formData: FormData,
+): Promise<CatalogImportActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada. Faça login." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const supabase = createClient();
+
+  const { data: companyData, error: companyError } = await supabase
+    .from("companies")
+    .select("plan")
+    .eq("id", company.company_id)
+    .single();
+
+  if (companyError) {
+    logServerError("catalog.import.company", companyError);
+    return { ok: false, error: clientErrorFor(companyError) };
+  }
+
+  if (companyData?.plan !== "ultimate") {
+    return {
+      ok: false,
+      error:
+        "Importar planilha é uma funcionalidade do plano Ultimate. O catálogo manual continua disponível no seu plano atual.",
+    };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return { ok: false, error: "Selecione um arquivo CSV para importar." };
+  }
+
+  if (file.size === 0) {
+    return { ok: false, error: "O arquivo selecionado esta vazio." };
+  }
+
+  if (file.size > 1024 * 1024) {
+    return {
+      ok: false,
+      error: "Arquivo muito grande. Importe até 1 MB por vez.",
+    };
+  }
+
+  const lowerName = file.name.toLowerCase();
+  if (!lowerName.endsWith(".csv") && file.type && !file.type.includes("csv")) {
+    return {
+      ok: false,
+      error: "Por enquanto a importação aceita CSV. Baixe o modelo e salve sua planilha nesse formato.",
+    };
+  }
+
+  const text = await file.text();
+  const parsed = parseCatalogCsv(text, { maxRows: CATALOG_IMPORT_MAX_ROWS });
+
+  if (parsed.rows.length === 0) {
+    return {
+      ok: false,
+      error:
+        parsed.errors[0]?.message ??
+        "Nenhum item válido encontrado no arquivo.",
+      errors: parsed.errors,
+    };
+  }
+
+  const uniqueRows = new Map<string, (typeof parsed.rows)[number]>();
+  let duplicatedInFile = 0;
+
+  for (const row of parsed.rows) {
+    const key = normalizeCatalogKey(row.description);
+    if (uniqueRows.has(key)) duplicatedInFile += 1;
+    uniqueRows.set(key, row);
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("catalog_items")
+    .select("id, description")
+    .eq("company_id", company.company_id);
+
+  if (existingError) {
+    logServerError("catalog.import.existing", existingError);
+    return { ok: false, error: clientErrorFor(existingError) };
+  }
+
+  const existingByDescription = new Map(
+    (existing ?? []).map((item) => [
+      normalizeCatalogKey((item as { description: string }).description),
+      (item as { id: string }).id,
+    ]),
+  );
+
+  const inserts: Array<{
+    company_id: string;
+    description: string;
+    unit: string;
+    default_price_cents: number;
+  }> = [];
+  const updates: Array<{
+    id: string;
+    description: string;
+    unit: string;
+    default_price_cents: number;
+    sourceRow: number;
+  }> = [];
+
+  for (const [key, row] of uniqueRows.entries()) {
+    const existingId = existingByDescription.get(key);
+    if (existingId) {
+      updates.push({ id: existingId, ...row });
+    } else {
+      inserts.push({
+        company_id: company.company_id,
+        description: row.description,
+        unit: row.unit,
+        default_price_cents: row.default_price_cents,
+      });
+    }
+  }
+
+  if (inserts.length > 0) {
+    const { error: insertError } = await supabase
+      .from("catalog_items")
+      .insert(inserts);
+
+    if (insertError) {
+      logServerError("catalog.import.insert", insertError);
+      return { ok: false, error: clientErrorFor(insertError) };
+    }
+  }
+
+  const updateErrors: CatalogImportError[] = [];
+  for (const update of updates) {
+    const { error: updateError } = await supabase
+      .from("catalog_items")
+      .update({
+        description: update.description,
+        unit: update.unit,
+        default_price_cents: update.default_price_cents,
+      })
+      .eq("id", update.id)
+      .eq("company_id", company.company_id);
+
+    if (updateError) {
+      logServerError("catalog.import.update", updateError);
+      updateErrors.push({
+        row: update.sourceRow,
+        message: "Não foi possível atualizar este item.",
+      });
+    }
+  }
+
+  revalidatePath("/app/catalogo");
+
+  return {
+    ok: true,
+    inserted: inserts.length,
+    updated: updates.length - updateErrors.length,
+    ignored: parsed.ignoredRows + duplicatedInFile,
+    invalid: parsed.errors.length + updateErrors.length,
+    errors: [...parsed.errors, ...updateErrors].slice(0, 12),
+  };
+}
+
 /**
  * Incrementa usage_count e atualiza last_used_at quando um item do catálogo
  * é selecionado no editor de orçamento. Best-effort — falha silenciosa.
@@ -202,4 +387,8 @@ export async function suggestCatalogAction(
     logServerError("catalog.suggest", e);
     return [];
   }
+}
+
+function normalizeCatalogKey(description: string): string {
+  return description.trim().toLocaleLowerCase("pt-BR");
 }

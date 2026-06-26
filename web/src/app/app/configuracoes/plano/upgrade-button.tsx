@@ -1,34 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Zap, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Crown, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import { checkoutProAction } from "./actions";
+import { PLAN_DEFINITIONS, type PaidPlan } from "@/lib/plans";
+import { cn } from "@/lib/utils";
 
-export function UpgradeButton() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+interface UpgradeButtonProps {
+  plan: PaidPlan;
+  className?: string;
+}
 
-  async function handleUpgrade() {
-    setLoading(true);
-    router.push("/app/configuracoes/plano/checkout");
-  }
+export function UpgradeButton({ plan, className }: UpgradeButtonProps) {
+  const definition = PLAN_DEFINITIONS[plan];
+  const Icon = plan === "ultimate" ? Crown : Zap;
 
   return (
     <Button
+      asChild
       size="lg"
-      onClick={handleUpgrade}
-      disabled={loading}
-      className="w-full h-12 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0 shadow-md shadow-amber-500/20 text-base"
-    >
-      {loading ? (
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-      ) : (
-        <Zap className="mr-2 h-5 w-5" />
+      className={cn(
+        "h-12 w-full rounded-xl border-0 text-base font-semibold text-white shadow-md",
+        plan === "ultimate"
+          ? "bg-slate-950 shadow-slate-900/15 hover:bg-slate-800"
+          : "bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-700",
+        className,
       )}
-      {loading ? "Processando..." : "Assinar Plano PRO"}
+    >
+      <Link href={`/app/configuracoes/plano/checkout?plan=${plan}`}>
+        <Icon className="h-5 w-5" />
+        {definition.cta}
+        <ArrowRight className="h-5 w-5" />
+      </Link>
     </Button>
   );
 }

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 import { serverEnv } from "@/lib/env-server";
 import type { Database } from "@/lib/supabase/types";
@@ -17,10 +17,17 @@ import type { Database } from "@/lib/supabase/types";
  * SUPABASE_SERVICE_ROLE_KEY é validado no boot via env-server.ts — se
  * estiver faltando, o app não sobe. Deploy é fail-fast.
  */
-export function createAdminClient() {
+export type AdminClient = SupabaseClient<Database>;
+
+export function createAdminClient(): AdminClient {
+  const serviceRoleKey = serverEnv.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY nao configurada no servidor.");
+  }
+
   return createClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
-    serverEnv.SUPABASE_SERVICE_ROLE_KEY,
+    serviceRoleKey,
     {
       auth: {
         persistSession: false,

@@ -1,56 +1,87 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
-import type { AsaasWebhookPayload } from "@/lib/asaas/types";
 
-type AdminClient = ReturnType<typeof createAdminClient>;
+import type { AdminClient } from "@/lib/supabase/admin";
+import type { AsaasWebhookPayload } from "@/lib/asaas/types";
+import {
+  normalizePaidPlan,
+  paidPlanFromSaasSubscriptionReference,
+  type PaidPlan,
+} from "@/lib/plans";
+
+const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
+const DOWNGRADE_EVENTS = new Set([
+  "PAYMENT_OVERDUE",
+  "PAYMENT_DELETED",
+  "PAYMENT_REFUNDED",
+  "PAYMENT_CHARGEBACK_REQUESTED",
+]);
+
+interface SaasCompanySubscription {
+  id: string;
+  plan: string | null;
+  saas_asaas_subscription_plan?: string | null;
+}
 
 export async function processSaasSubscriptionWebhook(
   admin: AdminClient,
-  payload: AsaasWebhookPayload
+  payload: AsaasWebhookPayload,
 ): Promise<boolean> {
   const eventType = payload.event;
   const subscriptionId = payload.payment?.subscription;
 
-  if (!subscriptionId) return false;
+  if (!eventType || !subscriptionId) return false;
 
-  // Busca a empresa que tem essa assinatura no Asaas
-  const { data: company } = await admin
+  const company = await findCompanyBySaasSubscription(admin, subscriptionId);
+  if (!company) return false;
+
+  if (PAID_EVENTS.has(eventType)) {
+    const targetPlan = resolvePaidPlanForWebhook(payload, company);
+    if (company.plan !== targetPlan) {
+      await admin.from("companies").update({ plan: targetPlan }).eq("id", company.id);
+    }
+    return true;
+  }
+
+  if (DOWNGRADE_EVENTS.has(eventType)) {
+    if (company.plan !== "free") {
+      await admin.from("companies").update({ plan: "free" }).eq("id", company.id);
+    }
+    return true;
+  }
+
+  return true;
+}
+
+async function findCompanyBySaasSubscription(
+  admin: AdminClient,
+  subscriptionId: string,
+): Promise<SaasCompanySubscription | null> {
+  const withPlanColumn = await admin
+    .from("companies")
+    .select("id, plan, saas_asaas_subscription_plan")
+    .eq("saas_asaas_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  if (!withPlanColumn.error) {
+    return (withPlanColumn.data as SaasCompanySubscription | null) ?? null;
+  }
+
+  const legacy = await admin
     .from("companies")
     .select("id, plan")
     .eq("saas_asaas_subscription_id", subscriptionId)
-    .single();
+    .maybeSingle();
 
-  if (!company) return false; // Não é uma assinatura do nosso SaaS
+  return (legacy.data as SaasCompanySubscription | null) ?? null;
+}
 
-  // Quando o pagamento for recebido/confirmado, liberamos o plano PRO
-  if (eventType === "PAYMENT_RECEIVED" || eventType === "PAYMENT_CONFIRMED") {
-    if (company.plan !== "pro") {
-      await admin
-        .from("companies")
-        .update({ plan: "pro" })
-        .eq("id", company.id);
-    }
-    return true;
-  }
-
-  // Se o pagamento atrasar muito ou for estornado/devolvido/cancelado, revogamos o plano PRO
-  const downgradeEvents = [
-    "PAYMENT_OVERDUE",
-    "PAYMENT_DELETED",
-    "PAYMENT_REFUNDED",
-    "PAYMENT_CHARGEBACK_REQUESTED",
-  ];
-  
-  if (eventType && downgradeEvents.includes(eventType)) {
-    if (company.plan !== "free") {
-      await admin
-        .from("companies")
-        .update({ plan: "free" })
-        .eq("id", company.id);
-    }
-    return true;
-  }
-
-  // Outros eventos da assinatura (gerada, atualizada, etc)
-  return true;
+function resolvePaidPlanForWebhook(
+  payload: AsaasWebhookPayload,
+  company: SaasCompanySubscription,
+): PaidPlan {
+  return (
+    paidPlanFromSaasSubscriptionReference(payload.payment?.externalReference) ??
+    normalizePaidPlan(company.saas_asaas_subscription_plan) ??
+    "pro"
+  );
 }

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { clientErrorFor, logServerError } from "@/lib/log";
+import { normalizePaidPlan } from "@/lib/plans";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Informe o nome da empresa"),
@@ -118,10 +119,10 @@ export async function createCompanyAction(
     return { ok: false, error: clientErrorFor(memberError) };
   }
 
-  const plan = formData.get("plan")?.toString();
+  const plan = normalizePaidPlan(formData.get("plan")?.toString());
 
   revalidatePath("/", "layout");
-  if (plan && plan !== "free") {
+  if (plan) {
     redirect(`/app/configuracoes/plano/checkout?plan=${plan}`);
   }
   redirect("/app");

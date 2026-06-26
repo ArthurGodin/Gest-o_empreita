@@ -1,9 +1,37 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser, getActiveCompany } from "@/lib/queries/company";
+import type { ReactNode } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Crown,
+  CreditCard,
+  QrCode,
+  Receipt,
+  ShieldCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
+import {
+  formatPlanPrice,
+  isPlanAtLeast,
+  normalizeAppPlan,
+  normalizePaidPlan,
+  PLAN_DEFINITIONS,
+  type PaidPlan,
+} from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { PaymentForm } from "./payment-form";
 
-export default async function CheckoutPage() {
+interface CheckoutPageProps {
+  searchParams?: Promise<{ plan?: string }>;
+}
+
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+  const query = searchParams ? await searchParams : {};
+  const targetPlan: PaidPlan = normalizePaidPlan(query.plan) ?? "pro";
+  const targetDefinition = PLAN_DEFINITIONS[targetPlan];
+
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -17,44 +45,112 @@ export default async function CheckoutPage() {
     .eq("id", active.company_id)
     .single();
 
-  // Se já for pro, manda de volta
-  if (companyRecord?.plan === "pro") {
+  const currentPlan = normalizeAppPlan(companyRecord?.plan);
+  if (isPlanAtLeast(currentPlan, targetPlan)) {
     redirect("/app/configuracoes/plano");
   }
 
+  const Icon = targetPlan === "ultimate" ? Crown : ShieldCheck;
+
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
-      <div className="w-full max-w-md space-y-8 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800">
-        <div className="text-center">
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Assinatura PRO
-          </h2>
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Libere todos os recursos ilimitados para a sua empresa.
-          </p>
-        </div>
+    <div className="min-h-[80vh] bg-slate-50 px-4 py-10">
+      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_420px] lg:items-start">
+        <section className="rounded-2xl border bg-white p-6 shadow-sm md:p-8">
+          <Button asChild variant="ghost" className="-ml-3 mb-6 text-muted-foreground">
+            <Link href="/app/configuracoes/plano">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para planos
+            </Link>
+          </Button>
 
-        <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-4 border border-amber-200 dark:border-amber-900/50">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-amber-900 dark:text-amber-100">Plano Profissional</span>
-            <span className="text-sm font-bold text-amber-900 dark:text-amber-100">R$ 97,00/mês</span>
+          <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <Icon className="h-6 w-6" />
           </div>
-          <ul className="text-xs text-amber-800 dark:text-amber-200 space-y-1 mt-3">
-            <li>✓ Orçamentos Ilimitados</li>
-            <li>✓ Obras Ilimitadas</li>
-            <li>✓ Integração Pix Asaas</li>
-            <li>✓ Sem marca d&apos;água</li>
-          </ul>
-        </div>
 
-        <PaymentForm />
-        
-        <div className="text-center mt-4">
-          <p className="text-xs text-zinc-400 dark:text-zinc-500">
-            Ambiente seguro simulado. Nenhum valor real será cobrado.
+          <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+            Assinar {targetDefinition.label}
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+            Informe seu CPF ou CNPJ para gerar a assinatura no Asaas. Na etapa
+            seguinte, você escolhe se paga por Pix, cartão ou boleto.
           </p>
-        </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <PaymentMethod icon={<QrCode className="h-5 w-5" />} label="Pix" />
+            <PaymentMethod
+              icon={<CreditCard className="h-5 w-5" />}
+              label="Cartão"
+            />
+            <PaymentMethod
+              icon={<Receipt className="h-5 w-5" />}
+              label="Boleto"
+            />
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+              <div>
+                <div className="text-sm font-semibold text-emerald-950">
+                  Assinatura mensal, sem fidelidade
+                </div>
+                <p className="mt-1 text-sm leading-6 text-emerald-900/80">
+                  O pagamento é processado pelo Asaas. Quando o pagamento for
+                  confirmado, o webhook ativa o plano automaticamente.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside className="rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4 border-b pb-5">
+            <div>
+              <div className="text-sm font-medium text-muted-foreground">
+                Plano selecionado
+              </div>
+              <h2 className="mt-1 text-2xl font-bold text-slate-950">
+                {targetDefinition.name}
+              </h2>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black text-slate-950">
+                {formatPlanPrice(targetPlan)}
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">
+                por mês
+              </div>
+            </div>
+          </div>
+
+          <ul className="my-6 space-y-3">
+            {targetDefinition.checkoutHighlights.map((feature) => (
+              <li key={feature} className="flex items-start gap-3 text-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <PaymentForm plan={targetPlan} />
+
+          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+            Em ambiente sem chave do Asaas, o Prumo usa um modo simulado apenas
+            para validação interna do produto.
+          </p>
+        </aside>
       </div>
+    </div>
+  );
+}
+
+function PaymentMethod({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border bg-white p-3 text-sm font-semibold text-slate-800 shadow-sm">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+        {icon}
+      </div>
+      {label}
     </div>
   );
 }

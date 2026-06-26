@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 
 export const CompareSlider = ({
   childrenA,
@@ -15,21 +14,21 @@ export const CompareSlider = ({
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleDrag = (event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent) => {
+  const handleDrag = React.useCallback((event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !containerRef.current) return;
     
     let clientX = 0;
     if ("touches" in event && event.touches && event.touches.length > 0) {
       clientX = event.touches[0]?.clientX || 0;
     } else {
-      clientX = (event as any).clientX;
+      clientX = (event as MouseEvent | React.MouseEvent).clientX;
     }
 
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPosition(percentage);
-  };
+  }, [isDragging]);
 
   useEffect(() => {
     const handleMouseUp = () => setIsDragging(false);
@@ -47,7 +46,7 @@ export const CompareSlider = ({
       window.removeEventListener("touchmove", handleDrag);
       window.removeEventListener("touchend", handleMouseUp);
     };
-  }, [isDragging]);
+  }, [handleDrag, isDragging]);
 
   return (
     <div 

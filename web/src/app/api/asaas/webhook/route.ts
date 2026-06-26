@@ -8,6 +8,7 @@ import {
 import { validateAsaasWebhookToken } from "@/lib/asaas/webhook-verify";
 import type { AsaasWebhookPayload } from "@/lib/asaas/types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { AdminClient } from "@/lib/supabase/admin";
 import type { ChargeStatus, Json } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
@@ -128,8 +129,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true });
 }
-
-type AdminClient = ReturnType<typeof createAdminClient>;
 
 interface WebhookCharge {
   id: string;

@@ -15,14 +15,16 @@ import {
 } from "@/components/ui/dialog";
 import { formatBRL } from "@/lib/utils";
 import { ItemDialog } from "./item-dialog";
+import { CatalogImportDialog } from "./catalog-import-dialog";
 import { deleteCatalogItemAction } from "./actions";
 import type { CatalogItem } from "@/lib/queries/catalog";
 
 interface CatalogListProps {
   items: CatalogItem[];
+  currentPlan: string;
 }
 
-export function CatalogList({ items }: CatalogListProps) {
+export function CatalogList({ items, currentPlan }: CatalogListProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<CatalogItem | null>(null);
@@ -95,6 +97,7 @@ export function CatalogList({ items }: CatalogListProps) {
           <Plus className="h-4 w-4" />
           Novo item
         </Button>
+        <CatalogImportDialog currentPlan={currentPlan} />
       </div>
 
       <p className="text-xs text-muted-foreground">

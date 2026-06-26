@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
 import { env } from "@/lib/env";
 import { logServerError } from "@/lib/log";
+import { normalizePaidPlan } from "@/lib/plans";
+import { createClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
+  redirect: z.string().optional(),
 });
 
 const signupSchema = z.object({
@@ -36,10 +38,31 @@ export type AuthResult =
   | { ok: true }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
+function safeInternalAppRedirect(value: string | undefined): string | null {
+  if (!value) return null;
+  if (!value.startsWith("/app")) return null;
+  if (value.startsWith("//") || value.includes("\\")) return null;
+  return value;
+}
+
+function paidPlanFromCheckoutRedirect(
+  value: string | null,
+): "pro" | "ultimate" | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value, "https://prumo.local");
+    if (url.pathname !== "/app/configuracoes/plano/checkout") return null;
+    return normalizePaidPlan(url.searchParams.get("plan"));
+  } catch {
+    return null;
+  }
+}
+
 export async function loginAction(formData: FormData): Promise<AuthResult> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
+    redirect: formData.get("redirect")?.toString(),
   });
 
   if (!parsed.success) {
@@ -51,14 +74,31 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
 
   if (error) {
     return { ok: false, error: "E-mail ou senha incorretos." };
   }
 
   revalidatePath("/", "layout");
-  redirect("/app");
+  const redirectTo = safeInternalAppRedirect(parsed.data.redirect);
+  const targetPlan = paidPlanFromCheckoutRedirect(redirectTo);
+
+  if (targetPlan) {
+    const { data: memberships, error: membershipError } = await supabase
+      .from("company_members")
+      .select("company_id")
+      .limit(1);
+
+    if (!membershipError && (!memberships || memberships.length === 0)) {
+      redirect(`/onboarding?plan=${targetPlan}`);
+    }
+  }
+
+  redirect(redirectTo ?? "/app");
 }
 
 export async function signupAction(formData: FormData): Promise<AuthResult> {
@@ -87,16 +127,14 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
 
   if (error) {
     logServerError("auth.signup", error);
-    // Mensagem genérica: não revelamos "e-mail já cadastrado" para impedir
-    // user enumeration. Quem tem conta usa /login; quem não tem, conhecerá
-    // o problema pela falha na confirmação ou no login posterior.
     return {
       ok: false,
-      error: "Não foi possível criar a conta. Verifique os dados ou tente novamente.",
+      error:
+        "Não foi possível criar a conta. Verifique os dados ou tente novamente.",
     };
   }
 
-  const plan = formData.get("plan")?.toString();
+  const plan = normalizePaidPlan(formData.get("plan")?.toString());
 
   revalidatePath("/", "layout");
   redirect(plan ? `/onboarding?plan=${plan}` : "/onboarding");
@@ -127,7 +165,6 @@ export async function requestPasswordResetAction(
     logServerError("auth.password-reset.request", error);
   }
 
-  // Sempre retorna sucesso para evitar enumeração de emails cadastrados.
   return { ok: true };
 }
 

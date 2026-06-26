@@ -68,6 +68,7 @@ export interface Database {
           plan: string;
           saas_asaas_customer_id: string | null;
           saas_asaas_subscription_id: string | null;
+          saas_asaas_subscription_plan: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -92,6 +93,7 @@ export interface Database {
           plan?: string;
           saas_asaas_customer_id?: string | null;
           saas_asaas_subscription_id?: string | null;
+          saas_asaas_subscription_plan?: string | null;
           created_at?: string;
           updated_at?: string;
         };

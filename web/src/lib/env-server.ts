@@ -35,4 +35,8 @@ if (!parsed.success) {
   // Não trava a Vercel durante o build se as chaves faltarem!
 }
 
-export const serverEnv = parsed.success ? parsed.data : ({} as any);
+const fallbackServerEnv: z.infer<typeof serverEnvSchema> = {
+  ASAAS_API_URL: "https://api-sandbox.asaas.com/v3",
+};
+
+export const serverEnv = parsed.success ? parsed.data : fallbackServerEnv;

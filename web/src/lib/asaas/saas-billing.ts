@@ -3,6 +3,11 @@ import "server-only";
 import { asaasRequest } from "@/lib/asaas/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { addDaysBR } from "@/lib/dates";
+import {
+  makeSaasSubscriptionReference,
+  PLAN_DEFINITIONS,
+  type PaidPlan,
+} from "@/lib/plans";
 
 interface AsaasCustomerResponse {
   id: string;
@@ -18,14 +23,18 @@ interface AsaasPaymentResponse {
   status: string;
 }
 
-/**
- * Cria ou recupera o Customer no Asaas para a EMPRESA (SaaS Billing)
- */
+interface AsaasCustomerPayload extends Record<string, string | undefined> {
+  name: string;
+  email?: string;
+  cpfCnpj?: string;
+  externalReference?: string;
+}
+
 async function ensureSaasCustomer(
   companyId: string,
   name: string,
   email: string | null,
-  document: string | null
+  document: string | null,
 ): Promise<string> {
   const admin = createAdminClient();
   const { data: company } = await admin
@@ -38,64 +47,82 @@ async function ensureSaasCustomer(
     return company.saas_asaas_customer_id;
   }
 
-  // Se não tem, cria no Asaas
-  const payload: any = { name };
+  const payload: AsaasCustomerPayload = {
+    name,
+    externalReference: `COMPANY_${companyId}`,
+  };
   if (email) payload.email = email;
   if (document) payload.cpfCnpj = document;
-  
-  // Usamos um externalReference para saber que é a empresa
-  payload.externalReference = `COMPANY_${companyId}`;
 
   const asaasCustomer = await asaasRequest<AsaasCustomerResponse>("/customers", {
     method: "POST",
     body: payload,
   });
 
-  await admin
+  const { error } = await admin
     .from("companies")
     .update({ saas_asaas_customer_id: asaasCustomer.id })
     .eq("id", companyId);
 
+  if (error) {
+    throw new Error("Não foi possível salvar o cliente SaaS do Asaas.");
+  }
+
   return asaasCustomer.id;
 }
 
-/**
- * Cria uma assinatura mensal no Asaas e retorna a URL de pagamento do 1º mês
- */
-export async function createProSubscriptionCheckout(
-  companyId: string,
-  companyName: string,
-  userEmail: string | null,
-  document: string // CPF ou CNPJ agora é obrigatório
-): Promise<{ checkoutUrl: string }> {
+export async function createSaasSubscriptionCheckout({
+  plan,
+  companyId,
+  companyName,
+  userEmail,
+  document,
+}: {
+  plan: PaidPlan;
+  companyId: string;
+  companyName: string;
+  userEmail: string | null;
+  document: string;
+}): Promise<{ checkoutUrl: string }> {
   const admin = createAdminClient();
-  
-  const customerId = await ensureSaasCustomer(companyId, companyName, userEmail, document);
+  const planDefinition = PLAN_DEFINITIONS[plan];
+  const customerId = await ensureSaasCustomer(
+    companyId,
+    companyName,
+    userEmail,
+    document,
+  );
 
-  // Criar assinatura
-  const subscription = await asaasRequest<AsaasSubscriptionResponse>("/subscriptions", {
-    method: "POST",
-    body: {
-      customer: customerId,
-      billingType: "UNDEFINED", // Cliente escolhe: Pix, Cartão, Boleto
-      value: 97.00,
-      nextDueDate: addDaysBR(0), // Vence hoje (cobra agora)
-      cycle: "MONTHLY",
-      description: "Assinatura Plano PRO - Prumo",
-      externalReference: `SUB_PRO_${companyId}`,
+  const subscription = await asaasRequest<AsaasSubscriptionResponse>(
+    "/subscriptions",
+    {
+      method: "POST",
+      body: {
+        customer: customerId,
+        billingType: "UNDEFINED",
+        value: planDefinition.priceCents / 100,
+        nextDueDate: addDaysBR(0),
+        cycle: "MONTHLY",
+        description: `Assinatura ${planDefinition.label} - Prumo`,
+        externalReference: makeSaasSubscriptionReference(plan, companyId),
+      },
     },
-  });
+  );
 
-  // Salvar o ID da assinatura na empresa
-  await admin
+  const { error: subscriptionError } = await admin
     .from("companies")
-    .update({ saas_asaas_subscription_id: subscription.id })
+    .update({
+      saas_asaas_subscription_id: subscription.id,
+      saas_asaas_subscription_plan: plan,
+    })
     .eq("id", companyId);
 
-  // Buscar a cobrança gerada para essa assinatura para pegar o Link de Pagamento (InvoiceUrl)
-  // O Asaas gera a cobrança imediatamente quando a data de vencimento é próxima
+  if (subscriptionError) {
+    throw new Error("Não foi possível salvar a assinatura SaaS da empresa.");
+  }
+
   const payments = await asaasRequest<{ data: AsaasPaymentResponse[] }>(
-    `/payments?subscription=${subscription.id}`
+    `/payments?subscription=${subscription.id}`,
   );
 
   const firstPayment = payments.data[0];
@@ -104,4 +131,19 @@ export async function createProSubscriptionCheckout(
   }
 
   return { checkoutUrl: firstPayment.invoiceUrl };
+}
+
+export async function createProSubscriptionCheckout(
+  companyId: string,
+  companyName: string,
+  userEmail: string | null,
+  document: string,
+): Promise<{ checkoutUrl: string }> {
+  return createSaasSubscriptionCheckout({
+    plan: "pro",
+    companyId,
+    companyName,
+    userEmail,
+    document,
+  });
 }

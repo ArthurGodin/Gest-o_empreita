@@ -13,6 +13,17 @@ const PUBLIC_PATHS = [
 ];
 const APP_PATHS = ["/app", "/dashboard"];
 
+function safeInternalAppRedirect(value: string | null): string | null {
+  if (!value) return null;
+  if (!value.startsWith("/app")) return null;
+  if (value.startsWith("//") || value.includes("\\")) return null;
+  return value;
+}
+
+function paidPlanFromQuery(value: string | null): "pro" | "ultimate" | null {
+  return value === "pro" || value === "ultimate" ? value : null;
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -49,14 +60,22 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isAppRoute) {
     const url = request.nextUrl.clone();
+    const redirectTo = `${pathname}${request.nextUrl.search}`;
     url.pathname = "/login";
-    url.searchParams.set("redirect", pathname);
+    url.search = "";
+    url.searchParams.set("redirect", redirectTo);
     return NextResponse.redirect(url);
   }
 
   if (user && (pathname === "/login" || pathname === "/signup")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/app";
+    const redirectTo =
+      safeInternalAppRedirect(request.nextUrl.searchParams.get("redirect")) ??
+      null;
+    const plan = paidPlanFromQuery(request.nextUrl.searchParams.get("plan"));
+    const destination =
+      redirectTo ??
+      (plan ? `/app/configuracoes/plano/checkout?plan=${plan}` : "/app");
+    const url = new URL(destination, request.url);
     return NextResponse.redirect(url);
   }
 

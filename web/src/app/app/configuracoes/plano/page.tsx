@@ -1,9 +1,29 @@
 import { redirect } from "next/navigation";
-import { Check, Sparkles, Crown, Building2, FileText, Blocks, Zap } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  Blocks,
+  Building2,
+  Check,
+  Crown,
+  FileText,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany } from "@/lib/queries/company";
+import {
+  formatPlanPrice,
+  isPlanAtLeast,
+  normalizeAppPlan,
+  PLAN_DEFINITIONS,
+  PLAN_ORDER,
+  type AppPlan,
+  type PaidPlan,
+} from "@/lib/plans";
+import { cn } from "@/lib/utils";
 import { UpgradeButton } from "./upgrade-button";
-// Badge import removed
+
+const PLAN_SEQUENCE: AppPlan[] = ["free", "pro", "ultimate"];
 
 export default async function PlanPage() {
   const company = await getActiveCompany();
@@ -16,178 +36,209 @@ export default async function PlanPage() {
     .eq("id", company.company_id)
     .single();
 
-  const currentPlan = companyData?.plan || "free";
-  const isPro = currentPlan === "pro";
+  const currentPlan = normalizeAppPlan(companyData?.plan);
+  const currentDefinition = PLAN_DEFINITIONS[currentPlan];
 
   return (
-    <div className="max-w-5xl mx-auto py-8">
-      <div className="mb-8 flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Plano e Assinatura</h1>
-        <p className="text-muted-foreground">
-          Gerencie os limites da sua conta e libere todo o potencial da Prumo.
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
-        {/* Grátis Plan Card */}
-        <div className="relative rounded-2xl border bg-card p-8 shadow-sm flex flex-col h-full">
-          {currentPlan === "free" && (
-            <div className="absolute top-0 right-8 -translate-y-1/2">
-              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs bg-muted font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                Plano Atual
-              </span>
-            </div>
-          )}
-          
-          <div className="mb-6">
-            <h3 className="text-2xl font-semibold mb-2">Grátis</h3>
-            <p className="text-muted-foreground text-sm">
-              Ideal para conhecer a plataforma e enviar os primeiros orçamentos.
-            </p>
+    <div className="mx-auto max-w-6xl space-y-10 py-8">
+      <header className="grid gap-6 rounded-2xl border bg-gradient-to-br from-emerald-50 via-white to-white p-6 shadow-sm md:grid-cols-[1fr_auto] md:items-end md:p-8">
+        <div>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Plano atual: {currentDefinition.label}
           </div>
-          
-          <div className="mb-8 flex items-baseline gap-1">
-            <span className="text-4xl font-bold">R$ 0</span>
-            <span className="text-muted-foreground font-medium">/mês</span>
-          </div>
-
-          <div className="space-y-4 mb-8 flex-1">
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Até <strong>3 orçamentos</strong> totais</span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Até <strong>1 obra</strong> simultânea</span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Catálogo de serviços básico</span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-green-500 shrink-0" />
-              <span>Geração de PDF (com marca d&apos;água)</span>
-            </div>
-          </div>
-
-          <div className="mt-auto">
-            {currentPlan === "free" ? (
-              <div className="w-full text-center p-3 rounded-lg border bg-muted/50 text-sm font-medium text-muted-foreground">
-                Plano em uso
-              </div>
-            ) : (
-              <div className="w-full text-center p-3 rounded-lg border border-dashed text-sm font-medium text-muted-foreground">
-                Você já superou este plano
-              </div>
-            )}
-          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
+            Escolha o plano certo para vender, executar e cobrar melhor.
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+            O Starter serve para validar o produto. O Pro tira a operação da
+            planilha. O Ultimate acelera orçamento em escala com importação de
+            catálogo e exportação contábil.
+          </p>
         </div>
+        <div className="rounded-xl border border-emerald-200 bg-white p-4 text-sm shadow-sm">
+          <div className="font-semibold text-slate-950">Próximo ganho prático</div>
+          <p className="mt-1 max-w-xs leading-6 text-muted-foreground">
+            Menos digitação repetida, cobrança mais clara e orçamento com cara
+            de empresa profissional.
+          </p>
+        </div>
+      </header>
 
-        {/* PRO Plan Card */}
-        <div className="relative rounded-2xl border-2 border-amber-500/50 bg-gradient-to-b from-amber-500/10 via-background to-background p-8 shadow-xl shadow-amber-500/5 flex flex-col h-full overflow-hidden">
-          {currentPlan === "pro" && (
-            <div className="absolute top-0 right-8 -translate-y-1/2">
-              <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs bg-amber-500 hover:bg-amber-600 font-medium text-white shadow-sm transition-colors">
-                <Crown className="w-3.5 h-3.5 mr-1" />
-                Seu Plano
-              </span>
-            </div>
-          )}
-          
-          <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-            <Crown className="w-32 h-32 text-amber-500" />
-          </div>
+      <section className="grid gap-5 lg:grid-cols-3">
+        {PLAN_SEQUENCE.map((plan) => (
+          <PlanCard
+            key={plan}
+            plan={plan}
+            currentPlan={currentPlan}
+            featured={plan === "pro"}
+          />
+        ))}
+      </section>
 
-          <div className="mb-6 relative z-10">
-            <h3 className="text-2xl font-bold flex items-center gap-2 text-amber-600 dark:text-amber-500">
-              Profissional
-              <Sparkles className="h-5 w-5" />
-            </h3>
-            <p className="text-muted-foreground text-sm mt-2 max-w-[90%]">
-              A suíte completa para gerenciar obras, impressionar clientes e cobrar com Pix automático.
-            </p>
-          </div>
-          
-          <div className="mb-8 flex items-baseline gap-1 relative z-10">
-            <span className="text-4xl font-bold">R$ 97</span>
-            <span className="text-muted-foreground font-medium">/mês</span>
-          </div>
+      <section className="grid gap-5 md:grid-cols-3">
+        <FeatureHighlight
+          icon={<FileText className="h-5 w-5" />}
+          title="Orçamentos que vendem"
+          text="Link público, PDF profissional e aceite digital para reduzir ida e volta no WhatsApp."
+        />
+        <FeatureHighlight
+          icon={<Building2 className="h-5 w-5" />}
+          title="Obra sob controle"
+          text="O orçamento aprovado vira obra, cronograma, diário, custos e cobrança sem retrabalho."
+        />
+        <FeatureHighlight
+          icon={<Blocks className="h-5 w-5" />}
+          title="Escala com catálogo"
+          text="No Ultimate, a planilha antiga vira base de itens para orçar mais rápido e com menos erro."
+        />
+      </section>
+    </div>
+  );
+}
 
-          <div className="space-y-4 mb-8 flex-1 relative z-10">
-            <div className="flex items-start gap-3 text-sm font-medium">
-              <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span><strong>Orçamentos Ilimitados</strong></span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span><strong>Obras e Cronogramas Ilimitados</strong></span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span>Geração de Cobranças Pix (Integração Asaas)</span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span>Sem marca d&apos;água nos PDFs</span>
-            </div>
-            <div className="flex items-start gap-3 text-sm">
-              <Check className="h-5 w-5 text-amber-500 shrink-0" />
-              <span>Suporte Prioritário por WhatsApp</span>
-            </div>
-          </div>
+function PlanCard({
+  plan,
+  currentPlan,
+  featured = false,
+}: {
+  plan: AppPlan;
+  currentPlan: AppPlan;
+  featured?: boolean;
+}) {
+  const definition = PLAN_DEFINITIONS[plan];
+  const isCurrent = currentPlan === plan;
+  const isIncluded = !isCurrent && isPlanAtLeast(currentPlan, plan);
+  const canUpgrade = PLAN_ORDER[currentPlan] < PLAN_ORDER[plan] && plan !== "free";
+  const Icon = plan === "ultimate" ? Crown : plan === "pro" ? Sparkles : ShieldCheck;
 
-          <div className="mt-auto relative z-10">
-            {currentPlan === "pro" ? (
-              <div className="w-full text-center p-3 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-500 font-semibold border border-amber-500/20 flex items-center justify-center gap-2">
-                <Check className="w-5 h-5" />
-                Assinatura Ativa
-              </div>
-            ) : (
-              <UpgradeButton />
+  return (
+    <article
+      className={cn(
+        "relative flex min-h-[560px] flex-col rounded-2xl border bg-white p-6 shadow-sm",
+        featured && "border-emerald-500 shadow-lg shadow-emerald-500/10",
+        plan === "ultimate" && "bg-slate-950 text-white",
+      )}
+    >
+      {featured ? (
+        <div className="absolute left-6 top-0 -translate-y-1/2 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-sm">
+          Mais escolhido
+        </div>
+      ) : null}
+
+      {isCurrent ? (
+        <div className="absolute right-6 top-0 -translate-y-1/2 rounded-full border bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+          Seu plano
+        </div>
+      ) : null}
+
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <div
+            className={cn(
+              "mb-4 flex h-11 w-11 items-center justify-center rounded-xl",
+              plan === "ultimate"
+                ? "bg-white/10 text-emerald-300"
+                : "bg-emerald-50 text-emerald-700",
             )}
-            
-            {!isPro && (
-              <p className="text-center text-xs text-muted-foreground mt-4">
-                Pagamento seguro processado via Asaas. Cancele quando quiser.
-              </p>
-            )}
+          >
+            <Icon className="h-5 w-5" />
           </div>
+          <h2 className="text-2xl font-bold">{definition.name}</h2>
+          <p
+            className={cn(
+              "mt-2 min-h-[72px] text-sm leading-6",
+              plan === "ultimate" ? "text-slate-300" : "text-muted-foreground",
+            )}
+          >
+            {definition.description}
+          </p>
         </div>
       </div>
-      
-      {/* Feature Highlights Section */}
-      <div className="mt-16">
-        <h3 className="text-xl font-semibold mb-6 text-center">Tudo o que você precisa para crescer</h3>
-        <div className="grid sm:grid-cols-3 gap-6">
-          <div className="p-5 rounded-xl border bg-card/50">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
-              <FileText className="h-5 w-5 text-emerald-500" />
-            </div>
-            <h4 className="font-medium mb-2">Orçamentos que vendem</h4>
-            <p className="text-sm text-muted-foreground">
-              Links públicos com aceite digital e acompanhamento de leitura pelo WhatsApp.
-            </p>
-          </div>
-          <div className="p-5 rounded-xl border bg-card/50">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center mb-4">
-              <Building2 className="h-5 w-5 text-green-500" />
-            </div>
-            <h4 className="font-medium mb-2">Gestão de Obras</h4>
-            <p className="text-sm text-muted-foreground">
-              Transforme orçamentos aprovados em obras com 1 clique e acompanhe a execução.
-            </p>
-          </div>
-          <div className="p-5 rounded-xl border bg-card/50">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center mb-4">
-              <Blocks className="h-5 w-5 text-purple-500" />
-            </div>
-            <h4 className="font-medium mb-2">Cobranças Automáticas</h4>
-            <p className="text-sm text-muted-foreground">
-              Gere Pix de entrada e cobranças de parcelas automaticamente com a integração Asaas.
-            </p>
-          </div>
+
+      <div className="mb-6">
+        <div className="flex items-end gap-1">
+          <span className="text-4xl font-black tracking-tight">
+            {formatPlanPrice(plan)}
+          </span>
+          {plan !== "free" ? (
+            <span
+              className={cn(
+                "mb-1 text-sm font-medium",
+                plan === "ultimate" ? "text-slate-400" : "text-muted-foreground",
+              )}
+            >
+              /mês
+            </span>
+          ) : null}
         </div>
       </div>
+
+      <ul className="mb-8 flex-1 space-y-3">
+        {definition.features.map((feature) => (
+          <li key={feature} className="flex items-start gap-3 text-sm leading-6">
+            <Check
+              className={cn(
+                "mt-0.5 h-4 w-4 shrink-0",
+                plan === "ultimate" ? "text-emerald-300" : "text-emerald-600",
+              )}
+            />
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-auto space-y-3">
+        {canUpgrade ? (
+          <UpgradeButton plan={plan as PaidPlan} />
+        ) : (
+          <div
+            className={cn(
+              "flex h-12 items-center justify-center rounded-xl border text-sm font-semibold",
+              plan === "ultimate"
+                ? "border-white/15 bg-white/10 text-white"
+                : "bg-muted/50 text-muted-foreground",
+            )}
+          >
+            {isCurrent
+              ? "Plano ativo"
+              : isIncluded
+                ? "Incluído no seu plano"
+                : "Plano em uso"}
+          </div>
+        )}
+
+        {plan !== "free" && canUpgrade ? (
+          <p
+            className={cn(
+              "text-center text-xs leading-5",
+              plan === "ultimate" ? "text-slate-400" : "text-muted-foreground",
+            )}
+          >
+            Pagamento seguro via Asaas. Sem fidelidade.
+          </p>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function FeatureHighlight({
+  icon,
+  title,
+  text,
+}: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-2xl border bg-card p-5 shadow-sm">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+        {icon}
+      </div>
+      <h3 className="font-semibold text-slate-950">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
     </div>
   );
 }
