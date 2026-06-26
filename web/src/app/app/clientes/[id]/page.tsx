@@ -16,7 +16,7 @@ export async function generateMetadata({
   return {
     title: customer
       ? `${customer.name} — Clientes`
-      : "Cliente não encontrado — Gestão Empreita",
+      : "Cliente não encontrado — Prumo",
   };
 }
 

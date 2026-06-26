@@ -21,6 +21,9 @@ export default function SignupPage() {
   function onSubmit(formData: FormData) {
     setResult(null);
     startTransition(async () => {
+      const url = new URL(window.location.href);
+      const plan = url.searchParams.get("plan");
+      if (plan) formData.append("plan", plan);
       const nextResult = await signupAction(formData);
       if (!nextResult.ok) setResult(nextResult);
     });
@@ -49,7 +52,7 @@ export default function SignupPage() {
               placeholder="João da Silva"
               aria-invalid={Boolean(fieldErrors?.name)}
               aria-describedby={fieldErrors?.name ? "signup-name-error" : undefined}
-              className="h-12 bg-slate-50 border-slate-200 focus:border-[#db5b18] focus:ring-[#db5b18] transition-colors"
+              className="h-12 bg-slate-50 border-slate-200 focus:border-[#2563eb] focus:ring-[#2563eb] transition-colors"
             />
             {fieldErrors?.name?.[0] ? (
               <p id="signup-name-error" className="text-sm font-medium text-red-500">
@@ -71,7 +74,7 @@ export default function SignupPage() {
               placeholder="contato@empresa.com.br"
               aria-invalid={Boolean(fieldErrors?.email)}
               aria-describedby={fieldErrors?.email ? "signup-email-error" : undefined}
-              className="h-12 bg-slate-50 border-slate-200 focus:border-[#db5b18] focus:ring-[#db5b18] transition-colors"
+              className="h-12 bg-slate-50 border-slate-200 focus:border-[#2563eb] focus:ring-[#2563eb] transition-colors"
             />
             {fieldErrors?.email?.[0] ? (
               <p id="signup-email-error" className="text-sm font-medium text-red-500">
@@ -94,7 +97,7 @@ export default function SignupPage() {
               aria-describedby={
                 fieldErrors?.password ? "signup-password-error" : undefined
               }
-              className="h-12 bg-slate-50 border-slate-200 focus:border-[#db5b18] focus:ring-[#db5b18] transition-colors"
+              className="h-12 bg-slate-50 border-slate-200 focus:border-[#2563eb] focus:ring-[#2563eb] transition-colors"
             />
             {fieldErrors?.password?.[0] ? (
               <p id="signup-password-error" className="text-sm font-medium text-red-500">
@@ -111,12 +114,12 @@ export default function SignupPage() {
               {result.error}
             </p>
           ) : null}
-          <Button type="submit" className="w-full h-12 rounded-xl bg-[#db5b18] text-base font-bold shadow-lg shadow-[#db5b18]/20 transition-all hover:scale-[1.02] hover:bg-[#bc4810] hover:shadow-xl hover:shadow-[#db5b18]/30" disabled={pending}>
+          <Button type="submit" className="w-full h-12 rounded-xl bg-[#2563eb] text-base font-bold shadow-lg shadow-[#2563eb]/20 transition-all hover:scale-[1.02] hover:bg-[#1d4ed8] hover:shadow-xl hover:shadow-[#2563eb]/30" disabled={pending}>
             {pending ? "Criando…" : "Criar minha conta"}
           </Button>
           <p className="text-center text-sm font-medium text-slate-500 pt-4">
             Já tem conta?{" "}
-            <Link href="/login" className="font-bold text-[#db5b18] hover:underline">
+            <Link href="/login" className="font-bold text-[#2563eb] hover:underline">
               Entrar
             </Link>
           </p>

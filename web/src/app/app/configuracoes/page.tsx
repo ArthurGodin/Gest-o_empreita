@@ -8,7 +8,7 @@ import { LogoUpload } from "./logo-upload";
 import { PaymentSettingsForm } from "./payment-settings-form";
 
 export const metadata = {
-  title: "Configurações — Gestão Empreita",
+  title: "Configurações — Prumo",
 };
 
 export default async function SettingsPage() {

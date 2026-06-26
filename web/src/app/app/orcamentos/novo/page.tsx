@@ -7,7 +7,7 @@ import { getCustomers } from "@/lib/queries/customers";
 import { NewQuoteForm } from "./new-quote-form";
 
 export const metadata = {
-  title: "Novo orçamento — Gestão Empreita",
+  title: "Novo orçamento — Prumo",
 };
 
 export default async function NewQuotePage() {

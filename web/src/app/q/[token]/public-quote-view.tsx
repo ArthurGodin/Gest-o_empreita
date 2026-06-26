@@ -94,7 +94,7 @@ export function PublicQuoteView({
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Grid pattern suave */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60" />
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563eb]/10 blur-[120px]" />
       </div>
 
       <div className="mx-auto w-full max-w-5xl px-4 py-4 sm:py-8 relative z-10">
@@ -108,7 +108,7 @@ export function PublicQuoteView({
                 className="h-14 w-14 rounded-xl object-cover shadow-sm border border-slate-100"
               />
             ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#db5b18] to-[#ea7a3e] text-xl font-black text-white shadow-md shadow-[#db5b18]/20">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#3b82f6] text-xl font-black text-white shadow-md shadow-[#2563eb]/20">
                 {quote.company.name.slice(0, 2).toUpperCase()}
               </div>
             )}
@@ -155,7 +155,7 @@ export function PublicQuoteView({
         <section className="mt-6 rounded-3xl border border-slate-200/60 bg-white p-6 md:p-8 shadow-md">
           <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-md border border-[#e2e8f0] bg-[#fff7ed] px-3 py-1.5 text-xs font-semibold text-[#9a3412]">
+              <div className="inline-flex items-center gap-2 rounded-md border border-[#e2e8f0] bg-[#fff7ed] px-3 py-1.5 text-xs font-semibold text-[#1e3a8a]">
                 <FileText className="h-4 w-4" />
                 Orçamento {quote.number}
               </div>
@@ -182,7 +182,7 @@ export function PublicQuoteView({
               <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
                 Total da proposta
               </div>
-              <div className="mt-3 text-4xl font-black tracking-tight text-[#db5b18]">
+              <div className="mt-3 text-4xl font-black tracking-tight text-[#2563eb]">
                 {formatBRL(quote.total_cents / 100)}
               </div>
               {quote.valid_until && (
@@ -359,7 +359,7 @@ export function PublicQuoteView({
                     className="flex items-start gap-4 py-4 sm:items-center group"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-slate-900 leading-tight group-hover:text-[#db5b18] transition-colors">
+                      <div className="font-bold text-slate-900 leading-tight group-hover:text-[#2563eb] transition-colors">
                         {item.description}
                       </div>
                       <div className="mt-1.5 text-sm font-medium text-slate-500">
@@ -375,7 +375,7 @@ export function PublicQuoteView({
 
               <div className="mt-2 flex items-center justify-between border-t-2 border-slate-100 pt-6">
                 <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Total</span>
-                <span className="text-3xl font-black tracking-tight text-[#db5b18]">
+                <span className="text-3xl font-black tracking-tight text-[#2563eb]">
                   {formatBRL(quote.total_cents / 100)}
                 </span>
               </div>
@@ -401,7 +401,7 @@ export function PublicQuoteView({
               >
                 <span>Tecnologia </span>
                 <span className="font-bold text-slate-600">
-                  Gestão Empreita
+                  Prumo
                 </span>
               </a>
             </footer>
@@ -416,7 +416,7 @@ export function PublicQuoteView({
               <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
                 Total da proposta
               </div>
-              <div className="truncate text-lg font-black text-[#db5b18]">
+              <div className="truncate text-lg font-black text-[#2563eb]">
                 {formatBRL(quote.total_cents / 100)}
               </div>
             </div>

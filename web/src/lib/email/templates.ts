@@ -82,7 +82,7 @@ export function buildQuoteApprovedEmail(ctx: QuoteContext) {
         </div>
 
         <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; text-align: center;">
-          Aprovado em ${formatDateBR(ctx.signedAt.toISOString())} · Gestão Empreita
+          Aprovado em ${formatDateBR(ctx.signedAt.toISOString())} · Prumo
         </p>
       </div>
     </div>
@@ -140,7 +140,7 @@ export function buildQuoteRejectedEmail(ctx: QuoteContext) {
         </div>
 
         <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; text-align: center;">
-          Resposta recebida em ${formatDateBR(ctx.signedAt.toISOString())} · Gestão Empreita
+          Resposta recebida em ${formatDateBR(ctx.signedAt.toISOString())} · Prumo
         </p>
       </div>
     </div>
@@ -207,7 +207,7 @@ export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
         </div>
 
         <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; text-align: center;">
-          Visualizado em ${formatDateBR(ctx.viewedAt.toISOString())} · Gestão Empreita
+          Visualizado em ${formatDateBR(ctx.viewedAt.toISOString())} · Prumo
         </p>
       </div>
     </div>

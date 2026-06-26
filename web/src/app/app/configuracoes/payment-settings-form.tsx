@@ -137,7 +137,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         <div className="mt-5 space-y-4 rounded-lg border bg-muted/20 p-4">
           <div className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            O Gestão Empreita não segura dinheiro da obra. Ele só monta o QR
+            O Prumo não segura dinheiro da obra. Ele só monta o QR
             Code, organiza a cobrança e deixa claro quando você deve marcar a
             parcela como recebida.
           </div>

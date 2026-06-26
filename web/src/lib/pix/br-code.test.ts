@@ -14,7 +14,7 @@ describe("Pix BR Code", () => {
   });
 
   it("sanitizes merchant fields to EMV-safe text", () => {
-    expect(sanitizeEmvText("Gestão Empreita — Timon/MA", 25)).toBe(
+    expect(sanitizeEmvText("Prumo — Timon/MA", 25)).toBe(
       "GESTAO EMPREITA TIMON/MA",
     );
     expect(sanitizeTxid("charge:abc-123_ç")).toBe("chargeabc123c");
@@ -24,7 +24,7 @@ describe("Pix BR Code", () => {
     const payload = createPixBrCode({
       key: "060.243.773-39",
       keyType: "cpf",
-      receiverName: "Gestão Empreita",
+      receiverName: "Prumo",
       receiverCity: "Timon",
       amountCents: 19000,
       txid: "charge-abc-123",
@@ -43,7 +43,7 @@ describe("Pix BR Code", () => {
     const payload = createPixBrCode({
       key: "cliente.com.chave.pix.email.muito.grande@example.com",
       keyType: "email",
-      receiverName: "Gestão Empreita",
+      receiverName: "Prumo",
       receiverCity: "Timon",
       amountCents: 1000,
       txid: "charge-abc-123",

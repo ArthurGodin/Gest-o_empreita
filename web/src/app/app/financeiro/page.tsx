@@ -50,7 +50,7 @@ const CHARGE_STATUS_LABEL: Record<ChargeStatus, string> = {
 };
 
 export const metadata = {
-  title: "Financeiro - Gestão Empreita",
+  title: "Financeiro - Prumo",
 };
 
 export default async function FinanceiroPage() {

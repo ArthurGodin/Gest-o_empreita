@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { DemoKitButton } from "./demo-kit-button";
 
 export const metadata = {
-  title: "Diagnóstico de produção — Gestão Empreita",
+  title: "Diagnóstico de produção — Prumo",
 };
 
 type ReadinessStatus = "ready" | "attention" | "blocked";
@@ -182,7 +182,7 @@ export default async function ProductionDiagnosticsPage() {
     <div className="container max-w-5xl space-y-6 py-6">
       <PageHeader
         title="Diagnóstico de produção"
-        description="Painel objetivo para saber se o Gestão Empreita está pronto para demonstrar, vender e cobrar sem improviso."
+        description="Painel objetivo para saber se o Prumo está pronto para demonstrar, vender e cobrar sem improviso."
         actions={
           <Button asChild variant="outline">
             <Link href="/app/configuracoes">

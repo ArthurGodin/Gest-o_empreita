@@ -118,6 +118,11 @@ export async function createCompanyAction(
     return { ok: false, error: clientErrorFor(memberError) };
   }
 
+  const plan = formData.get("plan")?.toString();
+
   revalidatePath("/", "layout");
+  if (plan && plan !== "free") {
+    redirect(`/app/configuracoes/plano/checkout?plan=${plan}`);
+  }
   redirect("/app");
 }

@@ -7,7 +7,7 @@ import { getCustomers } from "@/lib/queries/customers";
 import { CustomerList } from "./customer-list";
 
 export const metadata = {
-  title: "Clientes — Gestão Empreita",
+  title: "Clientes — Prumo",
 };
 
 export default async function CustomersPage() {

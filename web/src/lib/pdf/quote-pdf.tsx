@@ -415,7 +415,7 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
         <Text style={styles.footer} fixed>
           {company.name}
           {quote.valid_until ? ` · Válido até ${formatDateBR(quote.valid_until)}` : ""}
-          {" · Gerado por Gestão Empreita"}
+          {" · Gerado por Prumo"}
         </Text>
       </Page>
     </Document>

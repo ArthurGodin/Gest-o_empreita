@@ -96,8 +96,10 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
     };
   }
 
+  const plan = formData.get("plan")?.toString();
+
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  redirect(plan ? `/onboarding?plan=${plan}` : "/onboarding");
 }
 
 export async function requestPasswordResetAction(

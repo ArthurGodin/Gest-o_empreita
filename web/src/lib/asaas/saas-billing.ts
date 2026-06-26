@@ -81,7 +81,7 @@ export async function createProSubscriptionCheckout(
       value: 97.00,
       nextDueDate: addDaysBR(0), // Vence hoje (cobra agora)
       cycle: "MONTHLY",
-      description: "Assinatura Plano PRO - Gestão Empreita",
+      description: "Assinatura Plano PRO - Prumo",
       externalReference: `SUB_PRO_${companyId}`,
     },
   });

@@ -343,7 +343,7 @@ async function upsertDemoApproval(companyId: string, quoteId: string) {
       action: "approved",
       signer_name: DEMO_APPROVER,
       rejection_reason: null,
-      user_agent: "Gestão Empreita demo kit",
+      user_agent: "Prumo demo kit",
     },
     { onConflict: "quote_id,action", ignoreDuplicates: false },
   );

@@ -217,7 +217,7 @@ export async function generateMetadata({
   const quote = await loadByToken(token);
   if (!quote) {
     return {
-      title: "Link de orçamento indisponível — Gestão Empreita",
+      title: "Link de orçamento indisponível — Prumo",
       description:
         "O orçamento pode ter sido atualizado, expirado ou substituído por um novo link.",
       robots: { index: false, follow: false },

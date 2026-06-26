@@ -7,7 +7,7 @@ import { getQuotes } from "@/lib/queries/quotes";
 import { QuoteList } from "./quote-list";
 
 export const metadata = {
-  title: "Orçamentos — Gestão Empreita",
+  title: "Orçamentos — Prumo",
 };
 
 export default async function QuotesPage() {

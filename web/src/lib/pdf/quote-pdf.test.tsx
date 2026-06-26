@@ -14,8 +14,8 @@ describe("quote PDF", () => {
 
     const document = createElement(QuotePdf, {
       company: {
-        name: "Gestão Empreita",
-        legal_name: "Gestão Empreita LTDA",
+        name: "Prumo",
+        legal_name: "Prumo LTDA",
         cnpj: "12.345.678/0001-90",
         phone: "(11) 98888-0000",
         email: "contato@gestaoempreita.test",

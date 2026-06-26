@@ -7,7 +7,7 @@ import { getProjects } from "@/lib/queries/projects";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 
 export const metadata = {
-  title: "Obras — Gestão Empreita",
+  title: "Obras — Prumo",
 };
 
 const STATUS_LABEL = {

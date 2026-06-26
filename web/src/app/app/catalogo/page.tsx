@@ -6,7 +6,7 @@ import { CatalogList } from "./catalog-list";
 import { CreateFirstItem } from "./create-first-item";
 
 export const metadata = {
-  title: "Catálogo — Gestão Empreita",
+  title: "Catálogo — Prumo",
 };
 
 export default async function CatalogPage() {

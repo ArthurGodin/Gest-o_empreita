@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Preços - Gestão Empreita",
+  title: "Preços - Prumo",
   description: "Escolha o plano ideal para a sua empreiteira. Do grátis ao avançado.",
 };
 
@@ -24,17 +24,17 @@ export default function PricingPage() {
       {/* Background pattern */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40" />
-        <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#db5b18]/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563eb]/10 blur-[120px]" />
       </div>
 
       {/* Header */}
       <header className="relative z-10 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#db5b18] to-[#ea7a3e] text-white shadow-lg shadow-[#db5b18]/20">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563eb] to-[#3b82f6] text-white shadow-lg shadow-[#2563eb]/20">
               <HardHat className="h-5 w-5" />
             </span>
-            <span className="text-lg tracking-tight">Gestão Empreita</span>
+            <span className="text-lg tracking-tight">Prumo</span>
           </Link>
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100 font-medium">
@@ -42,7 +42,7 @@ export default function PricingPage() {
                 <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
               </Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full bg-[#db5b18] hover:bg-[#bc4810] shadow-md shadow-[#db5b18]/20 font-bold text-white">
+            <Button asChild size="sm" className="rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md shadow-[#2563eb]/20 font-bold text-white">
               <Link href="/signup">Criar conta</Link>
             </Button>
           </div>
@@ -51,12 +51,12 @@ export default function PricingPage() {
 
       {/* Pricing Header */}
       <section className="relative z-10 mx-auto max-w-6xl px-4 pt-20 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#fed7aa] bg-orange-50/80 px-4 py-1.5 text-sm font-bold text-[#9a3412] backdrop-blur-md shadow-sm mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#dbeafe] bg-blue-50/80 px-4 py-1.5 text-sm font-bold text-[#1e3a8a] backdrop-blur-md shadow-sm mb-6">
           <ShieldCheck className="h-4 w-4" />
           Sem fidelidade, cancele quando quiser
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-6">
-          Um sistema que <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#db5b18] to-[#f47721]">se paga sozinho.</span>
+          Um sistema que <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563eb] to-[#f47721]">se paga sozinho.</span>
         </h1>
         <p className="text-lg text-slate-600 font-medium max-w-2xl mx-auto">
           Comece de graça para fechar sua primeira obra profissional. Mude de plano quando precisar controlar o financeiro e a execução.
@@ -89,7 +89,7 @@ export default function PricingPage() {
                 <FeatureItem text="1 obra simultânea" />
                 <FeatureItem text="Link público para o cliente aprovar" />
                 <FeatureItem text="Orçamento em PDF" />
-                <FeatureItem text="Marca d'água Gestão Empreita" />
+                <FeatureItem text="Marca d'água Prumo" />
               </ul>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function PricingPage() {
           {/* PLANO PRO (HIGHLIGHT) */}
           <div className="relative rounded-3xl border-2 border-slate-900 bg-slate-900 p-8 shadow-2xl flex flex-col h-full transform md:-translate-y-4">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#db5b18] to-[#ea7a3e] px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-lg">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#2563eb] to-[#3b82f6] px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-lg">
                 <Zap className="h-4 w-4" /> Mais escolhido
               </span>
             </div>
@@ -112,7 +112,7 @@ export default function PricingPage() {
                 <span className="text-sm text-slate-400 font-medium mb-1">/mês</span>
               </div>
             </div>
-            <Button asChild className="w-full h-14 rounded-xl font-bold bg-[#db5b18] hover:bg-[#bc4810] text-white shadow-xl shadow-[#db5b18]/20 transition-transform hover:scale-[1.02] mb-8 text-base">
+            <Button asChild className="w-full h-14 rounded-xl font-bold bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-xl shadow-[#2563eb]/20 transition-transform hover:scale-[1.02] mb-8 text-base">
               <Link href="/signup?plan=pro">Assinar PRO <ArrowRight className="ml-2 h-5 w-5" /></Link>
             </Button>
             <div className="space-y-4 flex-1">
@@ -147,9 +147,9 @@ export default function PricingPage() {
             <div className="space-y-4 flex-1">
               <p className="text-sm font-bold text-slate-900">Tudo do PRO, mais:</p>
               <ul className="space-y-3">
-                <FeatureItem text="Importação de catálogos (Excel/CSV)" highlightIcon={<UploadCloud className="h-4 w-4 text-[#db5b18]" />} />
-                <FeatureItem text="Base SINAPI integrada (Em breve)" highlightIcon={<Building2 className="h-4 w-4 text-[#db5b18]" />} />
-                <FeatureItem text="Exportação de relatórios contábeis" highlightIcon={<FileSpreadsheet className="h-4 w-4 text-[#db5b18]" />} />
+                <FeatureItem text="Importação de catálogos (Excel/CSV)" highlightIcon={<UploadCloud className="h-4 w-4 text-[#2563eb]" />} />
+                <FeatureItem text="Base SINAPI integrada (Em breve)" highlightIcon={<Building2 className="h-4 w-4 text-[#2563eb]" />} />
+                <FeatureItem text="Exportação de relatórios contábeis" highlightIcon={<FileSpreadsheet className="h-4 w-4 text-[#2563eb]" />} />
                 <FeatureItem text="Múltiplos usuários e permissões" />
                 <FeatureItem text="Suporte VIP WhatsApp Direto" />
               </ul>

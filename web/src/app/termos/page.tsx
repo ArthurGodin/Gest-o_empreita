@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Termos de Uso - Gestão Empreita",
+  title: "Termos de Uso - Prumo",
 };
 
 export default function TermsPage() {
@@ -30,7 +30,7 @@ export default function TermsPage() {
               1. Uso do produto
             </h2>
             <p className="mt-2">
-              O Gestão Empreita é uma ferramenta para gestão operacional de
+              O Prumo é uma ferramenta para gestão operacional de
               orçamentos, clientes, obras, diários, custos e informações de
               equipe. O usuário é responsável pela veracidade dos dados
               cadastrados e pelo uso adequado das informações geradas.

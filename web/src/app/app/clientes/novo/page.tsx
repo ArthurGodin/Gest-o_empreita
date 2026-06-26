@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { CustomerForm } from "../customer-form";
 
 export const metadata = {
-  title: "Novo cliente — Gestão Empreita",
+  title: "Novo cliente — Prumo",
 };
 
 export default function NewCustomerPage() {

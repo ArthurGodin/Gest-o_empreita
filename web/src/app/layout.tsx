@@ -13,26 +13,26 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#db5b18",
+  themeColor: "#2563eb",
 };
 
 export const metadata: Metadata = {
-  title: "Gestão Empreita — Orçamentos e obras sem dor de cabeça",
+  title: "Prumo — Orçamentos e obras sem dor de cabeça",
   description:
     "Sistema para empreiteiros e empresas de cobertura: orçamentos profissionais, controle de obras, cobranças e equipe — tudo no celular.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Gestão Empreita",
+    title: "Prumo",
   },
   openGraph: {
-    title: "Gestão Empreita — Orçamentos e obras sem dor de cabeça",
+    title: "Prumo — Orçamentos e obras sem dor de cabeça",
     description:
       "Crie orçamentos profissionais, controle obras com fotos e etapas, cobre via Pix e veja sua margem em tempo real.",
     type: "website",
     locale: "pt_BR",
-    siteName: "Gestão Empreita",
+    siteName: "Prumo",
   },
 };
 

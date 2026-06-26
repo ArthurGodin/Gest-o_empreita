@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Política de Privacidade - Gestão Empreita",
+  title: "Política de Privacidade - Prumo",
 };
 
 export default function PrivacyPage() {
