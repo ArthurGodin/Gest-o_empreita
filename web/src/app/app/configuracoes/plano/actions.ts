@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createSaasSubscriptionCheckout } from "@/lib/asaas/saas-billing";
+import { isSaasBillingSimulationEnabled } from "@/lib/billing/saas-simulation";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { normalizePaidPlan, type PaidPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -45,7 +46,16 @@ export async function checkoutPlanAction(
     };
   } catch (err) {
     if (err instanceof AsaasConfigError) {
-      console.warn("Asaas não configurado. Usando checkout simulado.");
+      if (!isSaasBillingSimulationEnabled()) {
+        console.warn("Asaas não configurado em ambiente que bloqueia simulação.");
+        return {
+          ok: false,
+          error:
+            "Pagamento ainda não configurado. Configure o Asaas antes de vender planos em produção.",
+        };
+      }
+
+      console.warn("Asaas não configurado. Usando checkout simulado local.");
       return {
         ok: true,
         checkoutUrl: `/app/configuracoes/plano/checkout?plan=${targetPlan}&simulate=1`,
@@ -61,6 +71,14 @@ export async function checkoutPlanAction(
 export async function confirmPlanUpgradeAction(
   plan: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (!isSaasBillingSimulationEnabled()) {
+    return {
+      ok: false,
+      error:
+        "Ativação manual bloqueada. Em produção, o plano só é liberado após confirmação do pagamento pelo Asaas.",
+    };
+  }
+
   const targetPlan = normalizePaidPlan(plan);
   if (!targetPlan) return { ok: false, error: "Plano inválido." };
 

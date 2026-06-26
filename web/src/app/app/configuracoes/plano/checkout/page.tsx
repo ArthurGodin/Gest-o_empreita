@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
+import { isSaasBillingSimulationEnabled } from "@/lib/billing/saas-simulation";
 import {
   formatPlanPrice,
   isPlanAtLeast,
@@ -51,6 +52,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   }
 
   const Icon = targetPlan === "ultimate" ? Crown : ShieldCheck;
+  const simulationEnabled = isSaasBillingSimulationEnabled();
 
   return (
     <div className="min-h-[80vh] bg-slate-50 px-4 py-10">
@@ -134,10 +136,17 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
           <PaymentForm plan={targetPlan} />
 
-          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
-            Em ambiente sem chave do Asaas, o Prumo usa um modo simulado apenas
-            para validação interna do produto.
-          </p>
+          {simulationEnabled ? (
+            <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+              Modo simulado local ativo. Em produção, o plano só libera após
+              confirmação de pagamento pelo Asaas.
+            </p>
+          ) : (
+            <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+              O plano será liberado automaticamente quando o pagamento for
+              confirmado pelo Asaas.
+            </p>
+          )}
         </aside>
       </div>
     </div>
