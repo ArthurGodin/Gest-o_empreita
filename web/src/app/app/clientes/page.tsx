@@ -14,10 +14,10 @@ export default async function CustomersPage() {
   const customers = await getCustomers();
 
   return (
-    <div className="container space-y-6 py-6">
+    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <PageHeader
         title="Clientes"
-        description="Sua agenda de clientes. Cadastre uma vez, use em qualquer orçamento ou obra."
+        description="Cadastre uma vez e reutilize os dados em orçamentos e obras."
         actions={
           customers.length > 0 ? (
             <Button asChild>
@@ -36,7 +36,7 @@ export default async function CustomersPage() {
           title="Ainda sem clientes por aqui"
           description="Cadastre seu primeiro cliente para começar a fazer orçamentos e obras."
           action={
-            <Button asChild size="lg">
+            <Button asChild>
               <Link href="/app/clientes/novo">
                 <Plus className="h-4 w-4" />
                 Cadastrar primeiro cliente

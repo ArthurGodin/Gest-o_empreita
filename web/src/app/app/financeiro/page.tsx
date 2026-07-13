@@ -64,10 +64,10 @@ export default async function FinanceiroPage() {
       : null;
 
   return (
-    <div className="container max-w-6xl space-y-5 py-5 sm:space-y-6 sm:py-6">
+    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <PageHeader
         title="Financeiro"
-        description="Uma leitura simples do dinheiro que entrou no papel, do que já virou gasto e da margem estimada."
+        description="Acompanhe recebimentos, gastos e margem estimada das obras."
         actions={
           <div className="flex flex-wrap gap-2">
             <ExportButton />
@@ -81,8 +81,9 @@ export default async function FinanceiroPage() {
         }
       />
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)] xl:grid-cols-4">
         <FinanceMetric
+          className="border-b border-r xl:border-b-0"
           icon={<FileCheck2 className="h-4 w-4" />}
           label="Recebido Pix"
           value={formatBRL(overview.received_charge_cents / 100)}
@@ -90,6 +91,7 @@ export default async function FinanceiroPage() {
           tone="green"
         />
         <FinanceMetric
+          className="border-b xl:border-b-0 xl:border-r"
           icon={<Banknote className="h-4 w-4" />}
           label="A receber"
           value={formatBRL(overview.pending_charge_cents / 100)}
@@ -97,6 +99,7 @@ export default async function FinanceiroPage() {
           tone="blue"
         />
         <FinanceMetric
+          className="border-r xl:border-r"
           icon={<TrendingUp className="h-4 w-4" />}
           label="Margem estimada"
           value={formatBRL(overview.margin_cents / 100)}
@@ -132,27 +135,27 @@ export default async function FinanceiroPage() {
         </div>
       ) : null}
 
-      <Card className="min-w-0 rounded-lg bg-white shadow-sm">
-        <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="min-w-0">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-3.5">
           <CardTitle className="text-base">Cobranças recentes</CardTitle>
           <span className="text-xs text-muted-foreground">
             {overview.charge_rows.length} registro
             {overview.charge_rows.length === 1 ? "" : "s"}
           </span>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {overview.charge_rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
+            <div className="px-4 py-6 text-sm leading-6 text-muted-foreground">
               Nenhuma cobrança criada ainda. Quando um orçamento aprovado virar
               obra, as parcelas aparecem aqui.
             </div>
           ) : (
-            <div className="min-w-0 divide-y rounded-lg border">
+            <div className="min-w-0 divide-y">
               {overview.charge_rows.slice(0, 10).map((charge) => (
                 <Link
                   key={charge.id}
                   href={`/app/obras/${charge.project_id}`}
-                  className="grid min-w-0 gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
+                  className="grid min-h-16 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -176,7 +179,7 @@ export default async function FinanceiroPage() {
                       ) : null}
                     </p>
                   </div>
-                  <div className="text-left text-sm font-semibold md:min-w-32 md:text-right">
+                  <div className="text-left text-sm font-semibold tabular-nums text-slate-950 md:min-w-32 md:text-right">
                     {formatBRL(charge.amount_cents / 100)}
                   </div>
                 </Link>
@@ -187,23 +190,23 @@ export default async function FinanceiroPage() {
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <Card className="min-w-0 rounded-lg bg-white shadow-sm">
-          <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="min-w-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
             <CardTitle className="text-base">Margem por obra</CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/app/obras">Ver obras</Link>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {overview.project_rows.length === 0 ? (
               <EmptyFinanceState />
             ) : (
-              <div className="min-w-0 divide-y rounded-lg border">
+              <div className="min-w-0 divide-y">
                 {overview.project_rows.map((project) => (
                   <Link
                     key={project.id}
                     href={`/app/obras/${project.id}`}
-                    className="grid min-w-0 gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
+                    className="grid min-h-20 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -254,8 +257,8 @@ export default async function FinanceiroPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="min-w-0 rounded-lg bg-white shadow-sm">
-            <CardHeader>
+          <Card className="min-w-0">
+            <CardHeader className="border-b py-3.5">
               <CardTitle className="text-base">Gastos por tipo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -273,9 +276,9 @@ export default async function FinanceiroPage() {
                         {formatBRL(value / 100)}
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-primary"
+                        className="h-full rounded-full bg-primary transition-[width] duration-300"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -285,19 +288,19 @@ export default async function FinanceiroPage() {
             </CardContent>
           </Card>
 
-          <Card className="min-w-0 rounded-lg bg-white shadow-sm">
-            <CardHeader>
+          <Card className="min-w-0">
+            <CardHeader className="border-b py-3.5">
               <CardTitle className="text-base">Últimos gastos</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {overview.recent_costs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="px-4 py-6 text-sm leading-6 text-muted-foreground">
                   Lance gastos dentro de uma obra para enxergar a margem real.
                 </p>
               ) : (
-                <div className="space-y-3">
+                <div className="divide-y">
                   {overview.recent_costs.map((cost) => (
-                    <div key={cost.id} className="rounded-lg border p-3">
+                    <div key={cost.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
@@ -308,7 +311,7 @@ export default async function FinanceiroPage() {
                             {formatDateBR(cost.incurred_on)}
                           </p>
                         </div>
-                        <p className="shrink-0 text-sm font-semibold">
+                        <p className="shrink-0 text-sm font-semibold tabular-nums">
                           {formatBRL(cost.amount_cents / 100)}
                         </p>
                       </div>
@@ -325,12 +328,14 @@ export default async function FinanceiroPage() {
 }
 
 function FinanceMetric({
+  className = "",
   icon,
   label,
   value,
   hint,
   tone,
 }: {
+  className?: string;
   icon: ReactNode;
   label: string;
   value: string;
@@ -339,22 +344,22 @@ function FinanceMetric({
 }) {
   const toneClass = {
     neutral: "bg-muted text-foreground",
-    blue: "bg-emerald-50 text-emerald-700",
+    blue: "bg-sky-100 text-sky-700",
     amber: "bg-amber-50 text-amber-700",
     green: "bg-emerald-50 text-emerald-700",
     red: "bg-red-50 text-red-700",
   }[tone];
 
   return (
-    <div className="min-w-0 rounded-lg border bg-white p-4 shadow-sm">
+    <div className={`min-w-0 p-3.5 sm:p-4 ${className}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <span className={`rounded-md p-2 ${toneClass}`}>{icon}</span>
       </div>
-      <div className="mt-3 break-words text-xl font-semibold tracking-normal text-slate-950 sm:text-2xl">
+      <div className="mt-1 break-words text-lg font-bold tabular-nums text-slate-950 sm:text-xl">
         {value}
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+      <p className="mt-1 text-xs leading-4 text-muted-foreground">{hint}</p>
     </div>
   );
 }
@@ -362,13 +367,13 @@ function FinanceMetric({
 function chargeStatusClass(status: ChargeStatus) {
   const base = "rounded-md px-2 py-1 text-xs";
   if (status === "received" || status === "confirmed") {
-    return `${base} bg-emerald-50 text-emerald-700`;
+    return `${base} bg-emerald-100 text-emerald-800`;
   }
   if (status === "overdue") {
     return `${base} bg-red-50 text-red-700`;
   }
   if (status === "pending") {
-    return `${base} bg-emerald-50 text-emerald-700`;
+    return `${base} bg-amber-100 text-amber-800`;
   }
   return `${base} bg-muted text-muted-foreground`;
 }
@@ -385,7 +390,7 @@ function MoneyColumn({
   return (
     <div className="text-right">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="font-semibold">
+      <p className="font-semibold tabular-nums">
         {value == null ? empty : formatBRL(value / 100)}
       </p>
     </div>
@@ -394,7 +399,7 @@ function MoneyColumn({
 
 function EmptyFinanceState() {
   return (
-    <div className="rounded-lg border border-dashed px-4 py-8 text-center">
+    <div className="px-4 py-8 text-center">
       <HardHat className="mx-auto h-8 w-8 text-muted-foreground" />
       <p className="mt-3 text-sm font-medium">Ainda não há financeiro para ler.</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">

@@ -30,10 +30,10 @@ export default async function CatalogPage() {
   }
 
   return (
-    <div className="container space-y-6 py-6">
+    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <PageHeader
         title="Catálogo de itens"
-        description="Itens que você usa muito (telhas, mão de obra, mantas…). Cadastre uma vez, use em qualquer orçamento."
+        description="Reutilize serviços, materiais, unidades e preços nos seus orçamentos."
       />
 
       {items.length === 0 ? (
