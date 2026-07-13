@@ -40,7 +40,7 @@ export default async function TemplatesPage() {
   const templates = await loadTemplates();
 
   return (
-    <div className="container max-w-3xl space-y-6 py-6">
+    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
       <Link
         href="/app/configuracoes"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

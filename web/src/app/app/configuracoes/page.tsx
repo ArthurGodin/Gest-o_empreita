@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   if (!company) redirect("/onboarding");
 
   return (
-    <div className="container max-w-3xl space-y-6 py-6">
+    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
       <PageHeader
         title="Configurações"
         description="Dados da empresa que aparecem nos orçamentos enviados pra clientes."
@@ -32,10 +32,10 @@ export default async function SettingsPage() {
       <PaymentSettingsForm company={company} />
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
+        <h2 className="mb-2 text-sm font-semibold text-foreground">
           Mais ajustes
         </h2>
-        <div className="space-y-2">
+        <div className="divide-y rounded-lg border bg-card">
           <SettingsLink
             href="/app/configuracoes/diagnostico"
             icon={BarChart3}
@@ -68,13 +68,13 @@ function SettingsLink({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-lg border bg-card p-4 hover:bg-muted/20"
+      className="flex min-h-16 items-center justify-between gap-3 p-4 transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <Icon className="h-5 w-5 text-muted-foreground" />
-        <div>
+        <div className="min-w-0">
           <div className="font-medium">{title}</div>
-          <div className="text-xs text-muted-foreground">{description}</div>
+          <div className="text-xs leading-5 text-muted-foreground">{description}</div>
         </div>
       </div>
       <ChevronRight className="h-4 w-4 text-muted-foreground" />

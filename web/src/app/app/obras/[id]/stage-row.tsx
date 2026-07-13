@@ -137,13 +137,17 @@ export function StageRow({
           aria-label={
             stage.status === "done" ? "Reabrir etapa" : "Marcar como concluída"
           }
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-            stage.status === "done"
-              ? "border-green-600 bg-green-600 text-white"
-              : "border-input hover:border-foreground"
-          }`}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {stage.status === "done" && <Check className="h-3 w-3" />}
+          <span
+            className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
+              stage.status === "done"
+                ? "border-green-600 bg-green-600 text-white"
+                : "border-input"
+            }`}
+          >
+            {stage.status === "done" && <Check className="h-3 w-3" />}
+          </span>
         </button>
 
         <div className="flex-1 min-w-0">
@@ -178,7 +182,7 @@ export function StageRow({
             disabled={movePending || !canMoveUp}
             onClick={() => onMove("up")}
             aria-label="Mover etapa para cima"
-            className="h-8 w-8"
+            className="hidden h-11 w-11 sm:inline-flex"
           >
             <ChevronUp className="h-4 w-4" />
           </Button>
@@ -189,7 +193,7 @@ export function StageRow({
             disabled={movePending || !canMoveDown}
             onClick={() => onMove("down")}
             aria-label="Mover etapa para baixo"
-            className="h-8 w-8"
+            className="hidden h-11 w-11 sm:inline-flex"
           >
             <ChevronDown className="h-4 w-4" />
           </Button>
@@ -199,7 +203,7 @@ export function StageRow({
             variant="ghost"
             onClick={() => setExpanded((v) => !v)}
             aria-label="Editar etapa"
-            className="h-8 w-8"
+            className="h-11 w-11"
           >
             <Pencil className="h-4 w-4" />
           </Button>
@@ -210,6 +214,28 @@ export function StageRow({
         <div className="space-y-3 pb-4 pl-8 pr-2 text-sm">
           {!editing && (
             <>
+              <div className="flex items-center gap-2 sm:hidden">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onMove("up")}
+                  disabled={movePending || !canMoveUp}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                  Subir
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onMove("down")}
+                  disabled={movePending || !canMoveDown}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  Descer
+                </Button>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted-foreground">Status:</span>
                 <Button

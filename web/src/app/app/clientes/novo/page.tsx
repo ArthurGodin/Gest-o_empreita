@@ -16,7 +16,7 @@ export default async function NewCustomerPage({
   const continueToQuote = query.after === "quote";
 
   return (
-    <div className="container max-w-3xl space-y-6 py-6">
+    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
       <div>
         <Link
           href={continueToQuote ? "/app/orcamentos/novo" : "/app/clientes"}

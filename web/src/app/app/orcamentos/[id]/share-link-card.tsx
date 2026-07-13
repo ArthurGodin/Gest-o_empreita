@@ -225,7 +225,7 @@ export function ShareLinkCard({
   }
 
   return (
-    <section className="rounded-xl border bg-card p-4">
+    <section className="rounded-lg border bg-card p-4">
       <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
         <MessageCircle className="h-4 w-4" />
         Envio para o cliente
@@ -274,7 +274,7 @@ export function ShareLinkCard({
               readOnly
               value={whatsappMessage}
               rows={6}
-              className="w-full resize-none rounded-md border border-input bg-muted px-3 py-2 text-sm leading-5"
+              className="w-full resize-none rounded-md border border-input bg-muted px-3 py-2 text-base leading-6 sm:text-sm sm:leading-5"
               onFocus={(event) => event.currentTarget.select()}
             />
           </div>
@@ -310,7 +310,7 @@ export function ShareLinkCard({
           type="text"
           readOnly
           value={url || "Link antigo inválido. Gere um novo link."}
-          className="min-h-10 w-full rounded-md border border-input bg-muted px-3 py-2 font-mono text-xs"
+          className="min-h-11 w-full rounded-md border border-input bg-muted px-3 py-2 font-mono text-base sm:text-xs"
           onFocus={(e) => e.currentTarget.select()}
         />
       </div>

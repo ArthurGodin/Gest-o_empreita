@@ -40,7 +40,7 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
 
   return (
-    <div className="container max-w-4xl space-y-4 py-6">
+    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
       <ProjectHeader project={project} />
 
       <StatusSuggestion
@@ -65,7 +65,7 @@ export default async function ProjectDetailPage({
         conversionBillingAttention={conversionBillingAttention}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(20rem,0.85fr)]">
         <DiarySection
           projectId={project.id}
           entries={project.diary}

@@ -60,10 +60,10 @@ export function CustomerForm({
   }
 
   return (
-    <form action={onSubmit} className="space-y-6">
+    <form action={onSubmit} className="space-y-5 rounded-lg border bg-card p-4 sm:p-5">
       {/* ── Dados básicos ─────────────────────────────────────────── */}
-      <fieldset className="space-y-4">
-        <legend className="text-sm font-semibold text-muted-foreground">
+      <fieldset className="space-y-4 border-b pb-5">
+        <legend className="mb-3 text-sm font-semibold text-foreground">
           Dados do cliente
         </legend>
 
@@ -77,7 +77,6 @@ export function CustomerForm({
             required
             defaultValue={customer?.name ?? ""}
             placeholder="João da Silva ou Construtora Silva LTDA"
-            autoFocus={!isEdit}
             aria-invalid={Boolean(fieldErrors.name)}
           />
           {fieldErrors.name && (
@@ -120,7 +119,7 @@ export function CustomerForm({
             name="document"
             inputMode="numeric"
             defaultValue={customer?.document ?? ""}
-            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+            placeholder="CPF ou CNPJ do cliente"
             aria-invalid={Boolean(fieldErrors.document)}
           />
           {fieldErrors.document && (
@@ -130,8 +129,8 @@ export function CustomerForm({
       </fieldset>
 
       {/* ── Endereço ──────────────────────────────────────────────── */}
-      <fieldset className="space-y-4">
-        <legend className="text-sm font-semibold text-muted-foreground">
+      <fieldset className="space-y-4 border-b pb-5">
+        <legend className="mb-3 text-sm font-semibold text-foreground">
           Endereço (opcional)
         </legend>
 
@@ -186,20 +185,20 @@ export function CustomerForm({
           id="notes"
           name="notes"
           defaultValue={customer?.notes ?? ""}
-          placeholder="Anotações internas sobre o cliente, preferências, histórico..."
+          placeholder="Anotações internas sobre o cliente, preferências, histórico…"
           rows={3}
         />
       </div>
 
       {/* ── Erro geral ────────────────────────────────────────────── */}
       {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
           {error}
         </div>
       )}
 
       {/* ── Ações ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 -mb-4 flex flex-col-reverse gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
         <Button asChild variant="outline">
           <Link
             href={cancelHref}

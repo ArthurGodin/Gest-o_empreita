@@ -72,8 +72,8 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
   }
 
   return (
-    <div className="rounded-xl border bg-card p-5">
-      <h2 className="text-sm font-semibold text-muted-foreground">
+    <div className="rounded-lg border bg-card p-4 sm:p-5">
+      <h2 className="text-sm font-semibold text-foreground">
         Logo da empresa
       </h2>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -88,7 +88,9 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
             <img
               src={preview}
               alt={companyName}
-              className="h-full w-full object-cover"
+              width={80}
+              height={80}
+              className="h-full w-full bg-white object-contain p-1"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-primary text-2xl font-bold text-primary-foreground">
@@ -124,7 +126,7 @@ export function LogoUpload({ companyName, currentLogoUrl }: LogoUploadProps) {
                 : "Adicionar logo"}
           </Button>
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive" role="alert">{error}</p>
           )}
         </div>
       </div>

@@ -57,7 +57,7 @@ export function NewQuoteForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-5 rounded-lg border bg-card p-4 sm:p-5">
       <div className="space-y-2">
         <Label htmlFor="customer">
           Cliente <span className="text-destructive">*</span>
@@ -86,7 +86,6 @@ export function NewQuoteForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ex: Cobertura nova — Casa Maria Santos"
-          autoFocus
         />
         <p className="text-xs text-muted-foreground">
           Você pode editar depois. Se deixar vazio, viramos &quot;Novo orçamento&quot;.
@@ -104,7 +103,7 @@ export function NewQuoteForm({
         </div>
       )}
 
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 -mb-4 flex flex-col-reverse gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0">
         <Button asChild variant="outline">
           <Link
             href="/app/orcamentos"

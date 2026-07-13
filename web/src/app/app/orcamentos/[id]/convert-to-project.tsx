@@ -148,7 +148,7 @@ export function ConvertToProject({
               value={templateId}
               onChange={(e) => setTemplateId(e.target.value)}
               disabled={pending}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm"
             >
               <option value={NO_TEMPLATE}>
                 Criar sem etapas (vou adicionar manualmente)

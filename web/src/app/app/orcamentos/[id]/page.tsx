@@ -68,7 +68,7 @@ export default async function QuoteDetailPage({
   const latestRevision = revisions[0] ?? null;
 
   return (
-    <div className="container max-w-5xl space-y-6 py-6">
+    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
       <div>
         <Link
           href="/app/orcamentos"
@@ -91,7 +91,7 @@ export default async function QuoteDetailPage({
               : `Esse orçamento está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
         }
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {latestRevision && quote.effective_status === "rejected" && (
               <Button asChild>
                 <Link href={`/app/orcamentos/${latestRevision.id}`}>

@@ -207,7 +207,7 @@ export function TimeForm({ projectId, triggerLabel = "Bater ponto" }: TimeFormPr
               value={workerRole}
               onChange={(e) => setWorkerRole(e.target.value)}
               disabled={pending}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm"
             >
               <option value="encarregado">Encarregado</option>
               <option value="peão">Peão</option>

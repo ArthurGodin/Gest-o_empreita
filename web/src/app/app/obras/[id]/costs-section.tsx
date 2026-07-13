@@ -41,12 +41,12 @@ export function CostsSection({
   const stageById = new Map(stages.map((s) => [s.id, s] as const));
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="text-sm font-semibold text-foreground">
           Custos da obra
         </div>
-        <span className="text-[10px] text-muted-foreground">interno</span>
+        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Interno</span>
       </div>
 
       <MarginCard summary={summary} />
@@ -141,7 +141,7 @@ function MarginCard({ summary }: { summary: CostSummary }) {
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className={`text-[10px] font-semibold ${textTone}`}>
+          <div className={`text-xs font-semibold ${textTone}`}>
             Margem atual
           </div>
           <div className={`text-xl font-bold ${textTone}`}>
@@ -149,7 +149,7 @@ function MarginCard({ summary }: { summary: CostSummary }) {
             {pct.toFixed(1)}%
           </div>
         </div>
-        <div className={`text-right text-[10px] leading-5 ${textTone}`}>
+        <div className={`text-right text-xs leading-5 ${textTone}`}>
           {formatBRL(summary.revenue_cents / 100)} receita
           <br />
           − {formatBRL(summary.total_cents / 100)} custos
@@ -190,11 +190,11 @@ function CostRow({
     <li className="flex items-center justify-between gap-2 border-b py-1.5 last:border-0">
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm">{cost.description}</div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           {formatDateBR(cost.incurred_on)} · {CATEGORY_LABEL[cost.category]}
           {stageName && <span> · {stageName}</span>}
         </div>
-        {error && <div className="text-[10px] text-destructive">{error}</div>}
+        {error && <div className="text-xs text-destructive">{error}</div>}
       </div>
       <div className="text-sm font-semibold">
         {formatBRL(cost.amount_cents / 100)}
@@ -203,7 +203,7 @@ function CostRow({
         <Button
           size="icon"
           variant="ghost"
-          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          className="h-10 w-10 text-muted-foreground hover:text-destructive"
           onClick={() => setConfirming(true)}
           aria-label="Apagar"
         >
@@ -216,7 +216,7 @@ function CostRow({
             variant="destructive"
             onClick={doDelete}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Sim"}
           </Button>
@@ -225,7 +225,7 @@ function CostRow({
             variant="ghost"
             onClick={() => setConfirming(false)}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             Não
           </Button>

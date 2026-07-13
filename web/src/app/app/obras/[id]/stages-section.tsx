@@ -88,10 +88,10 @@ export function StagesSection({
   }
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="text-sm font-semibold text-foreground">
             Andamento da obra
           </div>
           {totalCount > 0 ? (
@@ -139,7 +139,7 @@ export function StagesSection({
       )}
 
       {totalCount === 0 ? (
-        <div className="space-y-4 rounded-md border border-dashed bg-muted/20 p-6 text-center">
+        <div className="space-y-3 rounded-md border border-dashed bg-muted/20 p-4 text-center sm:p-5">
           <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground" />
           <div>
             <h3 className="text-sm font-semibold">Comece com um template</h3>

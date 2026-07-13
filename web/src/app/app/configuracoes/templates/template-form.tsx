@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   createTemplateAction,
@@ -115,10 +116,11 @@ export function TemplateForm({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border bg-card p-4">
+    <div className="space-y-4 rounded-lg border bg-card p-4 sm:p-5">
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">Nome do template</label>
+        <Label htmlFor="template-name">Nome do template</Label>
         <Input
+          id="template-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ex: Telhado industrial"
@@ -127,10 +129,11 @@ export function TemplateForm({
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">
+        <Label htmlFor="template-description">
           Descrição <span className="text-xs text-muted-foreground">(opcional)</span>
-        </label>
+        </Label>
         <Textarea
+          id="template-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Pra que tipo de obra serve"
@@ -141,21 +144,22 @@ export function TemplateForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Etapas (em ordem)</label>
-        <ul className="space-y-1">
+        <div className="text-sm font-medium">Etapas (em ordem)</div>
+        <ul className="space-y-2">
           {items.map((it, idx) => (
             <li
               key={idx}
-              className="flex items-center gap-1 rounded-md border bg-background p-2"
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border bg-background p-2 sm:grid-cols-[auto_minmax(0,1fr)_6rem_auto]"
             >
-              <div className="flex flex-col">
+              <div className="row-span-2 flex flex-col sm:row-span-1">
                 <Button
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="h-5 w-5"
+                  className="h-10 w-10"
                   onClick={() => move(idx, "up")}
                   disabled={pending || idx === 0}
+                  aria-label={`Mover etapa ${idx + 1} para cima`}
                 >
                   <ChevronUp className="h-3 w-3" />
                 </Button>
@@ -163,14 +167,16 @@ export function TemplateForm({
                   type="button"
                   size="icon"
                   variant="ghost"
-                  className="h-5 w-5"
+                  className="h-10 w-10"
                   onClick={() => move(idx, "down")}
                   disabled={pending || idx === items.length - 1}
+                  aria-label={`Mover etapa ${idx + 1} para baixo`}
                 >
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </div>
               <Input
+                aria-label={`Nome da etapa ${idx + 1}`}
                 value={it.name}
                 onChange={(e) => updateItem(idx, { name: e.target.value })}
                 placeholder="Ex: Remoção do telhado antigo"
@@ -178,6 +184,7 @@ export function TemplateForm({
                 className="flex-1"
               />
               <Input
+                aria-label={`Dias previstos da etapa ${idx + 1}`}
                 type="number"
                 min={1}
                 max={365}
@@ -185,13 +192,13 @@ export function TemplateForm({
                 onChange={(e) => updateItem(idx, { est_days: e.target.value })}
                 placeholder="dias"
                 disabled={pending}
-                className="w-20"
+                className="col-start-2 w-full sm:col-start-auto"
               />
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                className="row-span-2 h-10 w-10 text-muted-foreground hover:text-destructive sm:row-span-1"
                 onClick={() => removeItem(idx)}
                 disabled={pending || items.length <= 1}
                 aria-label="Remover etapa"
@@ -219,7 +226,7 @@ export function TemplateForm({
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-end">
         <Button variant="outline" onClick={onCancel} disabled={pending}>
           Cancelar
         </Button>

@@ -215,7 +215,7 @@ export default async function ProductionDiagnosticsPage() {
   ];
 
   return (
-    <div className="container max-w-5xl space-y-6 py-6">
+    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
       <PageHeader
         title="Diagnóstico de produção"
         description="Painel objetivo para saber se o Prumo está pronto para demonstrar, vender e cobrar sem improviso."
@@ -230,13 +230,13 @@ export default async function ProductionDiagnosticsPage() {
       />
 
       <section className="grid gap-3 lg:grid-cols-[1fr_18rem]">
-        <div className="rounded-lg border bg-card p-5 shadow-sm">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Prontidão comercial
               </div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight">
+              <h2 className="mt-2 text-xl font-bold sm:text-2xl">
                 {pilotStatus}
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -246,21 +246,21 @@ export default async function ProductionDiagnosticsPage() {
               </p>
             </div>
             <div className="rounded-md border bg-muted/30 px-4 py-3 text-center">
-              <div className="text-3xl font-black">{score}%</div>
+              <div className="text-2xl font-bold tabular-nums">{score}%</div>
               <div className="text-xs font-medium text-muted-foreground">
                 do checklist pronto
               </div>
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid divide-y rounded-lg border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             <Metric label="Prontos" value={readyCount} tone="ready" />
             <Metric label="Atenção" value={attentionItems.length} tone="attention" />
             <Metric label="Bloqueios" value={blockedItems.length} tone="blocked" />
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#d8e0ea] bg-[#f7fafc] p-5 shadow-sm dark:bg-muted/20">
+        <div className="rounded-lg border bg-muted/20 p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
             <div>
@@ -274,7 +274,7 @@ export default async function ProductionDiagnosticsPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/20">
+      <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 dark:border-emerald-900/60 dark:bg-emerald-950/20">
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <div className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs font-black uppercase tracking-[0.14em] text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-100">
@@ -297,7 +297,7 @@ export default async function ProductionDiagnosticsPage() {
             {financialProof.map((item) => (
               <li
                 key={item}
-                className="flex gap-3 rounded-md border border-emerald-200 bg-white/75 px-3 py-2 text-sm text-emerald-950 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-50"
+                className="flex gap-3 rounded-md border border-emerald-200 bg-white/75 px-3 py-2 text-sm text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-50"
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
                 <span className="leading-6">{item}</span>
@@ -313,9 +313,9 @@ export default async function ProductionDiagnosticsPage() {
         ))}
       </section>
 
-      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <section className="overflow-hidden rounded-lg border bg-card">
         <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <div className="inline-flex items-center gap-2 rounded-md border bg-muted/35 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
               <Rocket className="h-3.5 w-3.5" />
               Demo guiada
@@ -334,7 +334,7 @@ export default async function ProductionDiagnosticsPage() {
             </div>
           </div>
 
-          <div className="border-t bg-muted/20 p-5 lg:border-l lg:border-t-0">
+          <div className="border-t bg-muted/20 p-4 sm:p-5 lg:border-l lg:border-t-0">
             <h3 className="text-sm font-black uppercase tracking-[0.14em] text-muted-foreground">
               Como usar na venda
             </h3>
@@ -359,7 +359,7 @@ export default async function ProductionDiagnosticsPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border bg-card p-5 shadow-sm">
+      <section className="rounded-lg border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-lg font-black tracking-tight">
@@ -419,7 +419,7 @@ function Metric({
   const copy = statusCopy[tone];
 
   return (
-    <div className={cn("rounded-md border px-3 py-2", copy.className)}>
+    <div className={cn("px-3 py-2", copy.className)}>
       <div className="text-2xl font-black">{value}</div>
       <div className="text-xs font-semibold">{label}</div>
     </div>
@@ -437,7 +437,7 @@ function ReadinessCard({ item }: { item: ReadinessItem }) {
         : Wrench;
 
   return (
-    <article className="rounded-lg border bg-card p-4 shadow-sm">
+    <article className="rounded-lg border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">

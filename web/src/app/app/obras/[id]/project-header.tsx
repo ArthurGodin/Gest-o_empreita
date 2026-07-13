@@ -34,9 +34,9 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
         Voltar para obras
       </Link>
 
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">
             {project.name}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -57,7 +57,9 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
             </span>
           </div>
         </div>
-        <StatusMenu projectId={project.id} current={project.status} />
+        <div className="shrink-0">
+          <StatusMenu projectId={project.id} current={project.status} />
+        </div>
       </div>
     </div>
   );

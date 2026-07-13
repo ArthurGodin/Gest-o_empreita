@@ -220,7 +220,7 @@ export function QuoteEditor({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {revisionSource && revisionRequest && (
         <RevisionBriefing
           sourceId={revisionSource.id}
@@ -233,8 +233,8 @@ export function QuoteEditor({
       )}
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
+      <section className="rounded-lg border bg-card p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold text-foreground">
           Dados do orçamento
         </h2>
 
@@ -291,7 +291,7 @@ export function QuoteEditor({
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Detalhes sobre o serviço, escopo, condições..."
+              placeholder="Detalhes sobre o serviço, escopo, condições…"
               rows={2}
             />
           </div>
@@ -305,9 +305,9 @@ export function QuoteEditor({
       />
 
       {/* ── Itens ──────────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-muted-foreground">
+      <section className="rounded-lg border bg-card p-3 sm:p-4">
+        <div className="mb-3 flex items-center justify-between gap-3 px-1">
+          <h2 className="text-sm font-semibold text-foreground">
             Itens do orçamento
           </h2>
           <span className="text-xs text-muted-foreground">
@@ -316,7 +316,7 @@ export function QuoteEditor({
         </div>
 
         {/* Header de colunas no desktop */}
-        <div className="hidden md:grid md:grid-cols-[1fr_84px_78px_132px_118px_auto] md:gap-2 md:px-3 md:pb-2 md:text-[10px] md:font-medium md:uppercase md:tracking-wider md:text-muted-foreground">
+        <div className="hidden lg:grid lg:grid-cols-[1fr_84px_78px_132px_118px_auto] lg:gap-2 lg:px-3 lg:pb-2 lg:text-[10px] lg:font-medium lg:uppercase lg:tracking-wider lg:text-muted-foreground">
           <span>Descrição</span>
           <span>Qtd</span>
           <span>Un.</span>
@@ -325,7 +325,7 @@ export function QuoteEditor({
           <span></span>
         </div>
 
-        <ul className="space-y-3">
+        <ul className="space-y-2 lg:space-y-0 lg:border-y">
           {items.map((item, idx) => (
             <ItemRow
               key={item.key}
@@ -344,7 +344,7 @@ export function QuoteEditor({
           ))}
         </ul>
 
-        <div className="mt-4">
+        <div className="mt-3 px-1">
           <Button
             type="button"
             variant="outline"
@@ -357,17 +357,17 @@ export function QuoteEditor({
         </div>
 
         {/* Total geral */}
-        <div className="mt-6 flex items-center justify-between border-t pt-4">
+        <div className="mt-4 flex items-center justify-between border-t px-1 pt-3">
           <span className="text-sm text-muted-foreground">Total do orçamento</span>
-          <span className="text-2xl font-bold text-primary">
+          <span className="text-xl font-bold tabular-nums text-primary sm:text-2xl">
             {formatBRL(total / 100)}
           </span>
         </div>
       </section>
 
       {/* ── Observações ────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
+      <section className="rounded-lg border bg-card p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold text-foreground">
           Observações (aparecem pro cliente no link)
         </h2>
         <Textarea
@@ -384,9 +384,9 @@ export function QuoteEditor({
           {error}
         </div>
       )}
-      <div className="sticky bottom-16 z-30 -mx-4 border-t bg-background/95 px-4 py-3 shadow-[0_-16px_36px_rgba(15,23,42,0.10)] backdrop-blur md:bottom-4 md:mx-0 md:rounded-xl md:border md:px-4 md:shadow-lg">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 -mx-4 border-t bg-background/95 px-4 py-3 shadow-[0_-12px_28px_rgba(15,23,42,0.08)] backdrop-blur md:bottom-4 md:mx-0 md:rounded-lg md:border md:px-4 md:shadow-md">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center justify-between gap-4 rounded-lg bg-muted/50 px-3 py-2 lg:bg-transparent lg:p-0">
+          <div className="flex min-w-0 items-center justify-between gap-4 rounded-md bg-muted/50 px-3 py-2 lg:bg-transparent lg:p-0">
             <div className="min-w-0">
               <div className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 {readiness.ready
@@ -491,17 +491,18 @@ function SendReadinessPanel({
     <section
       className={
         ready
-          ? "rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 text-emerald-950"
-          : "rounded-xl border border-amber-200 bg-amber-50/70 p-5 text-amber-950"
+          ? "rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 text-emerald-950"
+          : "rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-amber-950"
       }
+      aria-label="Prontidão para envio"
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div
             className={
               ready
-                ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700"
-                : "flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700"
+                ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700"
+                : "flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700"
             }
           >
             {ready ? (
@@ -514,38 +515,37 @@ function SendReadinessPanel({
             <div className="text-sm font-bold">
               {ready ? "Pronto para enviar pelo WhatsApp" : "Falta pouco para enviar"}
             </div>
-            <p className="mt-1 text-sm leading-6 opacity-85">
+            <p className="mt-0.5 text-sm leading-5 opacity-85">
               {ready
-                ? "O orçamento já tem as informações mínimas para salvar, gerar o link e abrir a mensagem pronta."
-                : "Complete os pontos abaixo antes de mandar a proposta para o cliente."}
+                ? "Tudo certo para salvar e abrir a mensagem pronta."
+                : `${blockers.length} ${blockers.length === 1 ? "ajuste pendente" : "ajustes pendentes"}. Próximo: ${blockers[0]}.`}
             </p>
           </div>
         </div>
 
-        {!ready ? (
-          <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2 text-sm font-medium text-amber-950 lg:max-w-sm">
-            Próximo ajuste: {blockers[0]}.
-          </div>
-        ) : null}
+        <details className="group relative shrink-0 text-sm">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center rounded-md border border-current/15 bg-white/65 px-3 font-medium transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            {ready ? "Ver conferência" : "Ver o que falta"}
+          </summary>
+          <ul className="mt-3 grid gap-2 border-t border-current/15 pt-3 sm:absolute sm:right-0 sm:z-20 sm:w-[min(32rem,calc(100vw-2rem))] sm:rounded-lg sm:border sm:bg-background sm:p-4 sm:text-foreground sm:shadow-md">
+            {checks.map((check) => (
+              <li key={check.label} className="flex items-start gap-2 text-sm">
+                {check.ok ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                ) : (
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                )}
+                <span>
+                  <span className="block font-semibold">{check.label}</span>
+                  <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                    {check.help}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
       </div>
-
-      <ul className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        {checks.map((check) => (
-          <li key={check.label} className="flex items-start gap-2 text-sm">
-            {check.ok ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-            ) : (
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-            )}
-            <span>
-              <span className="block font-semibold">{check.label}</span>
-              <span className="mt-0.5 block text-xs leading-5 opacity-75">
-                {check.help}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
@@ -589,7 +589,7 @@ function RevisionBriefing({
   }
 
   return (
-    <section className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 shadow-sm">
+    <section className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
         <div className="min-w-0">
           <div className="flex items-start gap-3">

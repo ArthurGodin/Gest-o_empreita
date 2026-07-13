@@ -20,7 +20,7 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b bg-white/95 pt-[env(safe-area-inset-top)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur lg:hidden">
       <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-3">
-        <Link href="/app" className="flex min-w-0 items-center gap-2.5">
+        <Link href="/app" className="flex min-h-11 min-w-0 items-center gap-2.5">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-white shadow-[0_1px_2px_rgba(15,23,42,0.14)]">
             <HardHat className="h-4 w-4" />
           </span>
@@ -40,7 +40,7 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
               type="button"
               aria-label="Abrir menu da conta"
               title="Menu da conta"
-              className="inline-flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-md border bg-white text-slate-700 shadow-[0_1px_1px_rgba(15,23,42,0.04)] outline-none transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-md border bg-white text-slate-700 shadow-[0_1px_1px_rgba(15,23,42,0.04)] outline-none transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-ring"
             >
               <MenuIcon className="h-4 w-4" />
             </button>

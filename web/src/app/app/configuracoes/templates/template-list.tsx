@@ -50,7 +50,7 @@ export function TemplateList({ templates }: TemplateListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-base font-semibold">Templates de etapas</h2>
           <p className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                         setState({ mode: "editing", templateId: template.id })
                       }
                       aria-label="Editar template"
-                      className="h-8 w-8"
+                    className="h-10 w-10"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -138,7 +138,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                           variant="destructive"
                           onClick={() => doDelete(template.id)}
                           disabled={pending}
-                          className="h-8 text-xs"
+                          className="h-10 text-xs"
                         >
                           {pending ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
@@ -151,7 +151,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                           variant="ghost"
                           onClick={() => setConfirmId(null)}
                           disabled={pending}
-                          className="h-8 text-xs"
+                          className="h-10 text-xs"
                         >
                           Não
                         </Button>
@@ -162,7 +162,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                         variant="ghost"
                         onClick={() => setConfirmId(template.id)}
                         aria-label="Apagar template"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        className="h-10 w-10 text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -45,10 +45,10 @@ export function QuoteView({
   const messageMode = quote.revision_source_id ? "revision" : "quote";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* ── Banner de aprovação/rejeição (quando aplicável) ─────── */}
       {quote.effective_status === "approved" && lastApproval && (
-        <div className="rounded-xl border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/40">
+        <div className="rounded-lg border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/40">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700 dark:text-green-400" />
@@ -78,7 +78,7 @@ export function QuoteView({
       )}
 
       {quote.effective_status === "rejected" && lastApproval && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
@@ -145,7 +145,7 @@ export function QuoteView({
       )}
 
       {/* ── Status banner ──────────────────────────────────────── */}
-      <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm">
+      <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
         Status atual:{" "}
         <span className="font-semibold text-foreground">
           {STATUS_LABEL[quote.effective_status]}
@@ -188,8 +188,8 @@ export function QuoteView({
       </div>
 
       {/* ── Cliente + validade ──────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
+      <section className="rounded-lg border bg-card p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold text-foreground">
           Cliente
         </h2>
         {quote.customer ? (
@@ -231,8 +231,8 @@ export function QuoteView({
       </section>
 
       {/* ── Itens ───────────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-5">
-        <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
+      <section className="rounded-lg border bg-card p-4 sm:p-5">
+        <h2 className="mb-3 text-sm font-semibold text-foreground">
           Itens ({quote.items.length})
         </h2>
         <ul className="divide-y">
@@ -253,7 +253,7 @@ export function QuoteView({
         </ul>
         <div className="mt-4 flex items-center justify-between border-t pt-4">
           <span className="text-sm text-muted-foreground">Total</span>
-          <span className="text-2xl font-bold text-primary">
+          <span className="text-xl font-bold tabular-nums text-primary sm:text-2xl">
             {formatBRL(total / 100)}
           </span>
         </div>
@@ -261,8 +261,8 @@ export function QuoteView({
 
       {/* ── Observações ─────────────────────────────────────────── */}
       {quote.notes && (
-        <section className="rounded-xl border bg-card p-5">
-          <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
+        <section className="rounded-lg border bg-card p-4 sm:p-5">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">
             Observações
           </h2>
           <p className="whitespace-pre-wrap text-sm">{quote.notes}</p>

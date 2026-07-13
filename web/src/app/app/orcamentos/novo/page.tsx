@@ -24,7 +24,7 @@ export default async function NewQuotePage({
     : undefined;
 
   return (
-    <div className="container max-w-2xl space-y-6 py-6">
+    <div className="container max-w-3xl space-y-4 py-5 sm:py-6">
       <div>
         <Link
           href="/app/orcamentos"

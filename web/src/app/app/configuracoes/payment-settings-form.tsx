@@ -97,7 +97,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
   const hasUnsavedChanges = currentSignature !== savedSignature;
 
   return (
-    <form onSubmit={onSubmit} className="rounded-xl border bg-card p-5">
+    <form onSubmit={onSubmit} className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="flex items-start gap-3">
         <span className="rounded-lg bg-primary/10 p-2 text-primary">
           <WalletCards className="h-5 w-5" />
@@ -112,7 +112,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
         <ProviderOption
           checked={manualPix}
           icon={WalletCards}
@@ -134,7 +134,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
       <input type="hidden" name="payment_provider" value={provider} />
 
       {manualPix ? (
-        <div className="mt-5 space-y-4 rounded-lg border bg-muted/20 p-4">
+        <div className="mt-4 space-y-4 rounded-lg border bg-muted/20 p-4">
           <div className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             O Prumo não segura dinheiro da obra. Ele só monta o QR
@@ -150,7 +150,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
                 name="pix_key_type"
                 value={pixKeyType}
                 onChange={(event) => setPixKeyType(event.target.value as PixKeyType)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:text-sm"
               >
                 {PIX_KEY_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -268,7 +268,7 @@ export function PaymentSettingsForm({ company }: { company: CompanyFull }) {
         </div>
       ) : null}
 
-      <div className="mt-5 flex justify-end">
+      <div className="mt-4 flex justify-end border-t pt-4">
         <Button type="submit" disabled={pending}>
           <Save className="h-4 w-4" />
           {pending ? "Salvando…" : "Salvar forma de recebimento"}
@@ -297,8 +297,9 @@ function ProviderOption({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={checked}
       className={cn(
-        "rounded-lg border p-4 text-left transition hover:bg-muted/20",
+        "min-h-11 rounded-lg border p-3 text-left transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:p-4",
         checked
           ? "border-primary bg-primary/5 ring-1 ring-primary/30"
           : "bg-background",

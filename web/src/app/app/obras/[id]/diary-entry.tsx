@@ -61,7 +61,7 @@ export function DiaryEntryView({ entry }: { entry: DiaryEntry }) {
           <Button
             size="icon"
             variant="ghost"
-            className="h-6 w-6"
+            className="h-11 w-11"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="Mais opções"
           >
@@ -69,13 +69,13 @@ export function DiaryEntryView({ entry }: { entry: DiaryEntry }) {
           </Button>
           {menuOpen && (
             <div
-              className="absolute right-0 top-7 z-10 w-40 rounded-md border bg-popover p-1 text-sm shadow-md"
+              className="absolute right-0 top-11 z-10 w-40 rounded-md border bg-popover p-1 text-sm shadow-md"
               onMouseLeave={() => setMenuOpen(false)}
             >
               {!confirming ? (
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-destructive hover:bg-muted"
+                  className="flex min-h-10 w-full items-center gap-2 rounded px-2 py-1.5 text-left text-destructive hover:bg-muted"
                   onClick={() => setConfirming(true)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -90,7 +90,7 @@ export function DiaryEntryView({ entry }: { entry: DiaryEntry }) {
                       variant="destructive"
                       onClick={doDelete}
                       disabled={pending}
-                      className="h-7 flex-1 text-xs"
+                      className="h-10 flex-1 text-xs"
                     >
                       {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Apagar"}
                     </Button>
@@ -101,7 +101,7 @@ export function DiaryEntryView({ entry }: { entry: DiaryEntry }) {
                         setConfirming(false);
                         setMenuOpen(false);
                       }}
-                      className="h-7 flex-1 text-xs"
+                      className="h-10 flex-1 text-xs"
                     >
                       Não
                     </Button>

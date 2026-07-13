@@ -31,7 +31,7 @@ export function PublicLinkCallout({
 
   if (!shareToken) {
     return (
-      <section className="rounded-xl border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
+      <section className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
         Essa obra não veio de um orçamento aprovado, então não tem link público
         pra acompanhamento do cliente.
       </section>
@@ -50,8 +50,8 @@ export function PublicLinkCallout({
   }
 
   return (
-    <section className="rounded-xl border bg-card p-5">
-      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <section className="rounded-lg border bg-card p-4 sm:p-5">
+      <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
         <Link2 className="h-3.5 w-3.5" />
         Link público (mesmo do orçamento)
       </div>

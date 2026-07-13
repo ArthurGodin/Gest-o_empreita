@@ -111,7 +111,7 @@ export function CostForm({ projectId, stages }: CostFormProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value as CostCategory)}
               disabled={pending}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm"
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -164,12 +164,12 @@ export function CostForm({ projectId, stages }: CostFormProps) {
                 value={stageId}
                 onChange={(e) => setStageId(e.target.value)}
                 disabled={pending}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm"
               >
                 <option value="__none__">Sem vínculo</option>
                 {stages.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.status === "in_progress" ? "▶ " : ""}
+                    {s.status === "in_progress" ? "Em execução · " : ""}
                     {s.name}
                   </option>
                 ))}

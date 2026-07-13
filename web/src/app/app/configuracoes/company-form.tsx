@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
+import { CheckCircle2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,9 +46,9 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <fieldset className="space-y-4">
-        <legend className="text-sm font-semibold text-muted-foreground">
+    <form onSubmit={onSubmit} className="space-y-5 rounded-lg border bg-card p-4 sm:p-5">
+      <fieldset className="space-y-4 border-b pb-5">
+        <legend className="mb-3 text-sm font-semibold text-foreground">
           Identificação
         </legend>
 
@@ -88,8 +88,8 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4">
-        <legend className="text-sm font-semibold text-muted-foreground">
+      <fieldset className="space-y-4 border-b pb-5">
+        <legend className="mb-3 text-sm font-semibold text-foreground">
           Contato
         </legend>
 
@@ -118,8 +118,8 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4">
-        <legend className="text-sm font-semibold text-muted-foreground">
+      <fieldset className="space-y-4 border-b pb-5">
+        <legend className="mb-3 text-sm font-semibold text-foreground">
           Endereço
         </legend>
 
@@ -168,17 +168,18 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
       </fieldset>
 
       {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
           {error}
         </div>
       )}
       {success && (
-        <div className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100">
-          ✓ Dados salvos.
+        <div className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100" role="status" aria-live="polite">
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+          Dados salvos.
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 -mb-4 flex justify-end border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0">
         <Button type="submit" disabled={pending}>
           <Save className="h-4 w-4" />
           {pending ? "Salvando…" : "Salvar alterações"}

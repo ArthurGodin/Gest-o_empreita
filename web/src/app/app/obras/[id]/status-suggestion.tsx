@@ -37,15 +37,15 @@ export function StatusSuggestion({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-sm">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm sm:flex-row sm:items-center">
+      <div className="flex items-start gap-2 sm:items-center">
         <Lightbulb className="h-4 w-4 text-primary" />
         <span>
           {suggestion.reason} —{" "}
           <strong>marcar obra como {PROJECT_STATUS_LABEL[suggestion.to]}?</strong>
         </span>
       </div>
-      <Button size="sm" onClick={accept} disabled={pending}>
+      <Button size="sm" onClick={accept} disabled={pending} className="self-end sm:self-auto">
         {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Marcar"}
       </Button>
     </div>

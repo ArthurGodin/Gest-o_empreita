@@ -34,7 +34,7 @@ const STATUS_COPY: Record<
   },
   pending: {
     label: "Aguardando pagamento",
-    tone: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+    tone: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     icon: "clock",
   },
   overdue: {
@@ -80,7 +80,7 @@ const NEXT_ACTION_TONE: Record<NextActionTone, string> = {
     "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100",
   danger:
     "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100",
-  info: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
+  info: "border-blue-200 bg-blue-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
   neutral: "border-border bg-muted/20 text-foreground",
 };
 
@@ -124,20 +124,20 @@ export function BillingSection({
   const entryCharge = ordered.find((charge) => charge.kind === "entrada") ?? null;
 
   return (
-    <section id="cobranca" className="scroll-mt-24 rounded-xl border bg-card p-5">
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <section id="cobranca" className="scroll-mt-24 rounded-lg border bg-card p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="text-[10px] font-semibold uppercase text-muted-foreground">
+          <div className="text-sm font-semibold text-foreground">
             Cobrança
           </div>
-          <h2 className="mt-1 text-lg font-semibold">Entrada e saldo da obra</h2>
+          <h2 className="mt-0.5 text-base font-semibold">Entrada e saldo da obra</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Gere o Pix, acompanhe o que está pendente e marque como recebido
             somente depois de conferir o pagamento.
           </p>
         </div>
         <div className="rounded-md border bg-muted/20 px-3 py-2 text-left text-sm sm:text-right">
-          <div className="text-[10px] uppercase text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             Total contratado
           </div>
           <strong className="tabular-nums">{formatBRL(totalCents / 100)}</strong>
@@ -148,7 +148,7 @@ export function BillingSection({
         <ConversionBillingNotice entryCharge={entryCharge} />
       ) : null}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="mb-4 grid divide-y rounded-lg border bg-background sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <PaymentMetric
           label="Recebido"
           value={formatBRL(receivedCents / 100)}
@@ -218,7 +218,7 @@ function PaymentMetric({
   icon: "paid" | "clock" | "trend";
 }) {
   return (
-    <div className="rounded-lg border bg-background p-3">
+    <div className="p-3">
       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         {icon === "paid" ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-green-700 dark:text-green-300" />
@@ -340,7 +340,7 @@ function ChargePanel({
     <div className="rounded-lg border bg-background p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[10px] font-semibold uppercase text-muted-foreground">
+            <div className="text-xs font-semibold text-muted-foreground">
             {title}
           </div>
           <div className="mt-1 text-xl font-bold tabular-nums">
@@ -420,6 +420,8 @@ function ChargePanel({
               <img
                 src={`data:image/png;base64,${charge.pix_qr_image_b64}`}
                 alt="QR Code Pix"
+                width={128}
+                height={128}
                 className="h-32 w-32 rounded-md border bg-white p-2"
               />
             ) : (

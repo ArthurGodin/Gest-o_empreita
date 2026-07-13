@@ -30,11 +30,11 @@ export function TimeSection({ projectId, today, historyCount }: TimeSectionProps
   );
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="text-sm font-semibold text-foreground">
             Ponto da equipe (encarregado bate por todos)
           </div>
         </div>
@@ -121,7 +121,7 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
         <div className="flex items-center gap-2">
           <span className="truncate font-medium">{entry.worker_name}</span>
           {entry.worker_role && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               ({entry.worker_role})
             </span>
           )}
@@ -141,14 +141,14 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
             </span>
           )}
         </div>
-        {error && <div className="text-[10px] text-destructive">{error}</div>}
+        {error && <div className="text-xs text-destructive">{error}</div>}
       </div>
 
       {isOpen && !endingOpen && (
         <Button
           size="sm"
           variant="outline"
-          className="h-7 text-xs"
+          className="h-10 text-xs"
           onClick={() => setEndingOpen(true)}
           disabled={pending}
         >
@@ -161,14 +161,14 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
             type="time"
             value={endedAtInput}
             onChange={(e) => setEndedAtInput(e.target.value)}
-            className="h-7 w-24 text-xs"
+            className="h-10 w-28 text-base sm:text-sm"
             disabled={pending}
           />
           <Button
             size="sm"
             onClick={doEnd}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Salvar"}
           </Button>
@@ -177,7 +177,7 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
             variant="ghost"
             onClick={() => setEndingOpen(false)}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             Cancelar
           </Button>
@@ -187,7 +187,7 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
         <Button
           size="icon"
           variant="ghost"
-          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          className="h-10 w-10 text-muted-foreground hover:text-destructive"
           onClick={() => setConfirming(true)}
           aria-label="Apagar"
         >
@@ -200,7 +200,7 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
             variant="destructive"
             onClick={doDelete}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Sim"}
           </Button>
@@ -209,7 +209,7 @@ function TimeRow({ entry }: { entry: TimeEntry }) {
             variant="ghost"
             onClick={() => setConfirming(false)}
             disabled={pending}
-            className="h-7 text-xs"
+            className="h-10 text-xs"
           >
             Não
           </Button>

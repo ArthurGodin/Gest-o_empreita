@@ -11,11 +11,11 @@ interface DiarySectionProps {
 
 export function DiarySection({ projectId, entries, total }: DiarySectionProps) {
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-muted-foreground" />
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="text-sm font-semibold text-foreground">
             Diário de obra
           </div>
         </div>
@@ -30,8 +30,8 @@ export function DiarySection({ projectId, entries, total }: DiarySectionProps) {
 
       <div className="mt-2">
         {entries.length === 0 ? (
-          <div className="rounded-md bg-muted/20 px-3 py-6 text-center text-sm text-muted-foreground">
-            Nenhum registro ainda. Posta a primeira foto do dia aí em cima.
+          <div className="rounded-md bg-muted/20 px-3 py-5 text-center text-sm text-muted-foreground">
+            Nenhum registro ainda. Adicione a primeira atualização da obra.
           </div>
         ) : (
           <div>

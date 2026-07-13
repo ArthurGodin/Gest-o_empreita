@@ -129,13 +129,13 @@ export function ItemRow({
   }
 
   return (
-    <li className="rounded-xl border bg-card p-4 md:p-3">
+    <li className="rounded-lg border bg-background p-3 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-3 lg:py-3">
       {/* Layout responsivo: mobile = stack vertical com labels, desktop = grid */}
-      <div className="space-y-3 md:grid md:grid-cols-[1fr_84px_78px_132px_118px_auto] md:items-end md:gap-2 md:space-y-0">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1fr_84px_78px_132px_118px_auto] lg:items-end lg:gap-2">
         {/* Descrição (com autocomplete) */}
-        <div className="md:col-span-1">
+        <div className="col-span-2 lg:col-span-1">
           <Label
-            className="text-xs md:sr-only"
+            className="text-xs lg:sr-only"
             htmlFor={`description-${item.key}`}
           >
             Descrição
@@ -158,7 +158,7 @@ export function ItemRow({
 
         {/* Quantidade (aceita "1,5" notação BR) */}
         <div>
-          <Label className="text-xs md:sr-only" htmlFor={`qty-${item.key}`}>
+          <Label className="text-xs lg:sr-only" htmlFor={`qty-${item.key}`}>
             Qtd
           </Label>
           <Input
@@ -185,7 +185,7 @@ export function ItemRow({
 
         {/* Unidade */}
         <div>
-          <Label className="text-xs md:sr-only" htmlFor={`unit-${item.key}`}>
+          <Label className="text-xs lg:sr-only" htmlFor={`unit-${item.key}`}>
             Un.
           </Label>
           <Input
@@ -214,7 +214,7 @@ export function ItemRow({
 
         {/* Preço unitário (controlled — reage a updates do catálogo) */}
         <div>
-          <Label className="text-xs md:sr-only" htmlFor={`price-${item.key}`}>
+          <Label className="text-xs lg:sr-only" htmlFor={`price-${item.key}`}>
             Preço unitário
           </Label>
           <Input
@@ -251,14 +251,14 @@ export function ItemRow({
 
         {/* Total da linha (read-only) */}
         <div>
-          <Label className="text-xs md:sr-only">Total</Label>
-          <div className="flex h-11 items-center justify-end rounded-md border border-transparent px-3 text-base font-semibold md:text-sm">
+          <Label className="text-xs lg:sr-only">Total</Label>
+          <div className="flex h-11 items-center justify-end rounded-md border border-transparent px-3 text-base font-semibold lg:text-sm">
             {formatBRL(lineTotal / 100)}
           </div>
         </div>
 
         {/* Ações: salvar no catálogo, mover, remover */}
-        <div className="flex items-center justify-end gap-1">
+        <div className="col-span-2 flex items-center justify-end gap-1 lg:col-span-1">
           {canSaveToCatalog && (
             <Button
               type="button"
@@ -308,8 +308,9 @@ export function ItemRow({
       </div>
 
       {item.catalog_item_id && (
-        <div className="mt-2 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary md:mt-1">
-          ✓ Salvo no catálogo
+        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary lg:mt-1">
+          <Save className="h-3 w-3" aria-hidden="true" />
+          Salvo no catálogo
         </div>
       )}
     </li>
