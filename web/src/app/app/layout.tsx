@@ -21,11 +21,21 @@ export default async function AppLayout({
   const companyName = first.company.name;
 
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden bg-slate-50">
+    <div className="flex min-h-dvh w-full overflow-x-hidden bg-background">
+      <a
+        href="#app-content"
+        className="fixed left-3 top-3 z-[60] -translate-y-20 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition-transform focus:translate-y-0"
+      >
+        Pular para o conteúdo
+      </a>
       <Sidebar companyName={companyName} />
       <MobileTopbar companyName={companyName} />
-      <div className="flex min-w-0 max-w-full flex-1 flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] pt-[calc(3.5rem+env(safe-area-inset-top))] md:pb-0 md:pt-0">
-        <main className="min-w-0 max-w-full flex-1 overflow-x-hidden">
+      <div className="flex min-w-0 max-w-full flex-1 flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pb-0 lg:pt-0">
+        <main
+          id="app-content"
+          tabIndex={-1}
+          className="min-w-0 max-w-full flex-1 overflow-x-hidden focus:outline-none"
+        >
           {children}
         </main>
       </div>

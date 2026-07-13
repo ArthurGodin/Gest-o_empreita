@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const speedInsightsEnabled =
   process.env.NEXT_PUBLIC_ENABLE_SPEED_INSIGHTS === "true";
 const metaPixelId = env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${manrope.variable} font-sans antialiased`}>
         {children}
         <Toaster />
         {metaPixelId ? <MetaPixel pixelId={metaPixelId} /> : null}

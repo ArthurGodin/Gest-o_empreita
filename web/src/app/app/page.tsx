@@ -107,7 +107,7 @@ export default async function DashboardPage() {
     customers.length === 0 && quotes.length === 0 && projects.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-4 sm:py-6">
+    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <PageHeader
         title="Início"
         description="O caminho mais curto para vender, executar e receber."
@@ -125,8 +125,9 @@ export default async function DashboardPage() {
 
       <FirstMoneyGuide steps={firstMoneySteps} />
 
-      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <section className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)] xl:grid-cols-4">
         <MetricTile
+          className="border-b border-r xl:border-b-0"
           icon={<Send className="h-4 w-4" />}
           label="Esperando cliente"
           value={pendingQuotes.length.toString()}
@@ -134,6 +135,7 @@ export default async function DashboardPage() {
           tone="amber"
         />
         <MetricTile
+          className="border-b xl:border-b-0 xl:border-r"
           icon={<CheckCircle2 className="h-4 w-4" />}
           label="Aprovado no mês"
           value={formatBRL(approvedValueThisMonth / 100)}
@@ -143,6 +145,7 @@ export default async function DashboardPage() {
           tone="green"
         />
         <MetricTile
+          className="border-r xl:border-r"
           icon={<HardHat className="h-4 w-4" />}
           label="Obras abertas"
           value={openProjects.length.toString()}
@@ -163,19 +166,19 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <Card className="min-w-0 rounded-xl shadow-sm">
-          <CardHeader className="pb-3">
+        <Card className="min-w-0">
+          <CardHeader className="border-b py-3.5">
             <CardTitle className="text-base">Próximas ações</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="divide-y p-0">
             {nextActions.map((action) => (
               <Link
                 key={action.href + action.title}
                 href={action.href}
-                className="group flex items-center justify-between rounded-lg border bg-background px-3 py-3 transition-all duration-150 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
+                className="group flex min-h-16 items-center justify-between px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                     {action.icon}
                   </span>
                   <span className="min-w-0">
@@ -193,14 +196,14 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 rounded-xl shadow-sm">
-          <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+        <Card className="min-w-0">
+          <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
             <CardTitle className="text-base">Obras abertas</CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/app/obras">Ver todas</Link>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {openProjects.length === 0 ? (
               <EmptyLine
                 title="Nenhuma obra aberta"
@@ -209,12 +212,12 @@ export default async function DashboardPage() {
                 action="Ver orçamentos"
               />
             ) : (
-              <div className="divide-y rounded-xl border">
+              <div className="divide-y">
                 {openProjects.slice(0, 5).map((project) => (
                 <Link
                   key={project.id}
                   href={`/app/obras/${project.id}`}
-                  className="flex items-center justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-accent"
+                  className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">
@@ -245,14 +248,14 @@ export default async function DashboardPage() {
         </Card>
       </section>
 
-      <Card className="min-w-0 rounded-xl shadow-sm">
-        <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
+      <Card className="min-w-0">
+        <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
           <CardTitle className="text-base">Orçamentos recentes</CardTitle>
           <Button asChild variant="ghost" size="sm">
             <Link href="/app/orcamentos">Ver todos</Link>
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {quotes.length === 0 ? (
             <EmptyLine
               title="Nenhum orçamento criado"
@@ -261,12 +264,12 @@ export default async function DashboardPage() {
               action="Criar orçamento"
             />
           ) : (
-            <div className="divide-y rounded-xl border">
+            <div className="divide-y">
               {quotes.slice(0, 5).map((quote) => (
                 <Link
                   key={quote.id}
                   href={`/app/orcamentos/${quote.id}`}
-                  className="grid gap-2 px-3 py-2.5 transition-colors hover:bg-accent md:grid-cols-[1fr_auto_auto] md:items-center"
+                  className="grid min-h-16 gap-2 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[1fr_auto_auto] md:items-center"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">
@@ -292,13 +295,13 @@ export default async function DashboardPage() {
 
 function EmptyWorkspaceCard() {
   return (
-    <section className="overflow-hidden rounded-lg border bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-sm sm:p-5">
+    <section className="overflow-hidden rounded-lg border border-l-[3px] border-l-primary bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
+          <div className="text-xs font-semibold uppercase text-primary">
             Comece sem depender de suporte
           </div>
-          <h2 className="mt-3 text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
+          <h2 className="mt-2 text-lg font-bold text-slate-950 sm:text-xl">
             Monte o primeiro orçamento real ou explore um exemplo pronto.
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -323,12 +326,14 @@ function EmptyWorkspaceCard() {
 
 
 function MetricTile({
+  className = "",
   icon,
   label,
   value,
   hint,
   tone,
 }: {
+  className?: string;
   icon: ReactNode;
   label: string;
   value: string;
@@ -343,23 +348,15 @@ function MetricTile({
     red: "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400",
   }[tone];
 
-  const borderAccent = {
-    neutral: "hover:border-slate-300 dark:hover:border-slate-600",
-    blue: "hover:border-sky-300 dark:hover:border-sky-700",
-    amber: "hover:border-amber-300 dark:hover:border-amber-700",
-    green: "hover:border-emerald-300 dark:hover:border-emerald-700",
-    red: "hover:border-red-300 dark:hover:border-red-700",
-  }[tone];
-
   return (
-    <div className={`group relative overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 ${borderAccent} hover:shadow-md`}>
+    <div className={`min-w-0 p-3.5 sm:p-4 ${className}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
-          <div className="mt-1.5 text-xl font-bold tracking-tight">{value}</div>
-          <p className="mt-1 text-xs text-muted-foreground/80">{hint}</p>
+          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <div className="mt-1 text-lg font-bold tabular-nums text-slate-950 sm:text-xl">{value}</div>
+          <p className="mt-1 text-xs leading-4 text-muted-foreground">{hint}</p>
         </div>
-        <span className={`shrink-0 rounded-lg p-2 ${iconBg} transition-transform duration-200 group-hover:scale-110`}>{icon}</span>
+        <span className={`shrink-0 rounded-md p-2 ${iconBg}`}>{icon}</span>
       </div>
     </div>
   );
@@ -377,10 +374,10 @@ function EmptyLine({
   action: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed px-4 py-6 text-center">
+    <div className="px-4 py-6 text-center">
       <p className="text-sm font-semibold">{title}</p>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">{detail}</p>
-      <Button asChild variant="outline" size="sm" className="mt-5">
+      <Button asChild variant="outline" size="sm" className="mt-4">
         <Link href={href}>{action}</Link>
       </Button>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Building2,
   FileText,
   HardHat,
   Home,
@@ -29,17 +30,38 @@ export function Sidebar({ companyName }: { companyName: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden border-r border-slate-200/70 bg-white md:flex md:w-64 md:flex-col">
-      <div className="flex h-16 items-center border-b border-slate-200/70 px-6">
-        <Link href="/app" className="flex items-center gap-2 font-semibold">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-sm shadow-[#059669]/20">
+    <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-56 lg:shrink-0 lg:flex-col">
+      <div className="flex h-16 items-center border-b px-4">
+        <Link href="/app" className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-white shadow-[0_1px_2px_rgba(15,23,42,0.16)]">
             <HardHat className="h-4 w-4" />
           </div>
-          <span className="truncate">{companyName}</span>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold leading-4 text-slate-950">
+              Prumo
+            </span>
+            <span className="block text-[11px] leading-4 text-muted-foreground">
+              Gestão de obras
+            </span>
+          </span>
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
+      <div className="px-3 pt-3">
+        <div className="flex min-w-0 items-center gap-2.5 rounded-md border bg-slate-50 px-3 py-2.5">
+          <Building2 className="h-4 w-4 shrink-0 text-slate-500" />
+          <span className="min-w-0">
+            <span className="block text-[10px] font-semibold uppercase text-muted-foreground">
+              Empresa
+            </span>
+            <span className="block truncate text-xs font-semibold text-slate-800">
+              {companyName}
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <nav className="flex-1 space-y-1 p-3" aria-label="Navegação principal">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active =
@@ -49,11 +71,12 @@ export function Sidebar({ companyName }: { companyName: string }) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "relative flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors before:absolute before:bottom-2 before:left-0 before:top-2 before:w-0.5 before:rounded-full before:bg-primary before:opacity-0",
                 active
-                  ? "bg-emerald-50 text-emerald-800"
-                  : "text-muted-foreground hover:bg-emerald-50 hover:text-emerald-800",
+                  ? "bg-primary/10 text-emerald-900 before:opacity-100"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -63,17 +86,17 @@ export function Sidebar({ companyName }: { companyName: string }) {
         })}
       </nav>
 
-      <div className="border-t border-slate-200/70 p-3">
+      <div className="border-t p-3">
         <Link
           href="/app/configuracoes/plano"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-[#f47721] transition-colors hover:bg-orange-50"
+          className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold text-commercial transition-colors hover:bg-orange-50 hover:text-orange-700"
         >
           <Crown className="h-4 w-4" />
           Meu Plano
         </Link>
         <Link
           href="/app/configuracoes"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground mt-1"
+          className="mt-1 flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
         >
           <Settings className="h-4 w-4" />
           Configurações
@@ -81,7 +104,7 @@ export function Sidebar({ companyName }: { companyName: string }) {
         <form action={signoutAction}>
           <button
             type="submit"
-            className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            className="mt-1 flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
           >
             <LogOut className="h-4 w-4" />
             Sair

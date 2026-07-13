@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   CheckCircle2,
@@ -23,7 +23,8 @@ export interface FirstMoneyStep {
 
 export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+  const shouldReduceMotion = useReducedMotion();
+
   const doneCount = steps.filter((step) => step.done).length;
   const nextStep = steps.find((step) => !step.done) ?? steps.at(-1);
   const progressPct = Math.round((doneCount / steps.length) * 100);
@@ -31,17 +32,20 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
   if (!nextStep || doneCount === steps.length) return null;
 
   return (
-    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+    <section className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
       <button
+        type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center justify-between bg-card p-4 text-left transition-colors hover:bg-accent/50"
+        aria-expanded={isExpanded}
+        aria-controls="first-money-steps"
+        className="flex min-h-16 w-full items-center justify-between bg-card p-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
         <div className="flex items-center gap-3">
           <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Rocket className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-sm font-semibold sm:text-base">
+            <p className="text-sm font-semibold text-slate-950 sm:text-base">
               Roteiro para receber a primeira entrada
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -57,7 +61,11 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
               {doneCount}/{steps.length} concluído
             </span>
           )}
-          <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} className="text-muted-foreground shrink-0">
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
+            className="shrink-0 text-muted-foreground"
+          >
             <ChevronDown className="h-5 w-5" />
           </motion.div>
         </div>
@@ -66,10 +74,14 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
+            id="first-money-steps"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.22,
+              ease: "easeOut",
+            }}
             className="overflow-hidden"
           >
             <div className="grid gap-0 border-t lg:grid-cols-[minmax(0,1fr)_17rem]">
@@ -79,9 +91,9 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                   primeira entrada registrada no financeiro.
                 </p>
 
-                <div className="mt-4 h-2 rounded-full bg-muted">
+                <div className="mt-4 h-1.5 rounded-full bg-muted">
                   <div
-                    className="h-2 rounded-full bg-primary transition-[width] duration-500"
+                    className="h-1.5 rounded-full bg-primary transition-[width] duration-300"
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
@@ -91,7 +103,7 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                     <Link
                       key={step.title}
                       href={step.href}
-                      className={`min-h-[92px] rounded-lg border px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-accent ${
+                      className={`min-h-[84px] rounded-md border px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         step.done ? "bg-primary/5" : "bg-background"
                       }`}
                     >
@@ -118,10 +130,10 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                 </div>
               </div>
 
-              <aside className="flex flex-col justify-between border-t bg-[#fff7ed] p-4 lg:border-l lg:border-t-0">
+              <aside className="flex flex-col justify-between border-t bg-commercial/5 p-4 lg:border-l lg:border-t-0">
                 <div>
                   <div className="flex items-start gap-3">
-                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
+                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                     <div>
                       <p className="text-sm font-semibold">Próxima melhor ação</p>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
