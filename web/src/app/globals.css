@@ -19,20 +19,20 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
 
-    /* Laranja construção — cor primária do produto */
-    --primary: 24 95% 53%;
+    /* Verde Prumo: mesma cor principal da landing page. */
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 151 81% 96%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 151 81% 96%;
+    --accent-foreground: 158 64% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 24 95% 53%;
+    --ring: 160 84% 39%;
 
     --radius: 0.625rem;
   }
@@ -53,28 +53,51 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
 
-    --primary: 24 95% 53%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 213 31% 91%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 158 64% 14%;
     --accent-foreground: 213 31% 91%;
 
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 24 95% 53%;
+    --ring: 160 84% 39%;
   }
 }
-
 @layer base {
+  html,
+  body {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   * {
     @apply border-border;
+    min-width: 0;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-slate-50 text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }

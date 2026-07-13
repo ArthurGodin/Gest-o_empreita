@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL, formatDateBR } from "@/lib/utils";
-import { formatPhone, whatsappShareLink } from "@/lib/format";
+import { formatPhone, whatsappDirectShareLink } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +82,11 @@ export default async function ApprovedPage({
   const customerLocation = quote.customer
     ? [quote.customer.city, quote.customer.state].filter(Boolean).join("/")
     : "";
-  const contactUrl = quote.company.phone
-    ? whatsappShareLink({
-        phone: quote.company.phone,
-        message: `Olá, ${quote.company.name}. Acabei de aprovar o orçamento ${quote.number} (${quote.title}) e quero combinar os próximos passos.`,
-      })
-    : null;
+  const contactUrl = whatsappDirectShareLink({
+    phone: quote.company.phone,
+    message: `Olá, ${quote.company.name}. Acabei de aprovar o orçamento ${quote.number} (${quote.title}) e quero combinar os próximos passos.`,
+  });
+  const companyPhoneLabel = contactUrl ? formatPhone(quote.company.phone) : null;
 
   return (
     <main className="min-h-screen bg-[#f8fafc] text-[#121826]">
@@ -109,10 +108,10 @@ export default async function ApprovedPage({
             <div className="min-w-0">
               <div className="truncate font-semibold">{quote.company.name}</div>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#475569]">
-                {quote.company.phone && (
+                {companyPhoneLabel && (
                   <span className="inline-flex items-center gap-1">
                     <Phone className="h-3 w-3" />
-                    {formatPhone(quote.company.phone)}
+                    {companyPhoneLabel}
                   </span>
                 )}
                 {companyLocation && <span>{companyLocation}</span>}

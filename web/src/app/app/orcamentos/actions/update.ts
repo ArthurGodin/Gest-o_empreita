@@ -5,19 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
-import { generateShareToken, isShareTokenUrlSafe } from "@/lib/quote-token";
-import { env } from "@/lib/env";
-import { checkSendReadiness } from "@/lib/quote-status";
-import { addDaysBR, todayBR } from "@/lib/dates";
 import { normalizeQuoteUnit } from "@/lib/format";
-import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
-import { createLocalCharges } from "@/lib/billing/asaas";
-import {
-  companyPrefersManualPix,
-  companyUsesManualPix,
-  generatePreferredPixForCharge,
-} from "@/lib/billing/provider";
-import { entryChargeValidationMessage } from "@/lib/billing/entry-percent";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -67,30 +55,6 @@ const updateQuoteSchema = z.object({
 export type QuoteActionResult =
   | { ok: true; id: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
-
-function publicQuoteUrl(token: string) {
-  return `${env.NEXT_PUBLIC_APP_URL}/q/${token}`;
-}
-
-function isMissingRevisionColumn(error: unknown) {
-  const err = error as { code?: string; message?: string; details?: string };
-  const text = `${err?.message ?? ""} ${err?.details ?? ""}`;
-  return (
-    err?.code === "42703" ||
-    err?.code === "PGRST204" ||
-    text.includes("revision_source_id")
-  );
-}
-
-function isMissingWhatsappSentColumn(error: unknown) {
-  const err = error as { code?: string; message?: string; details?: string };
-  const text = `${err?.message ?? ""} ${err?.details ?? ""}`;
-  return (
-    err?.code === "42703" ||
-    err?.code === "PGRST204" ||
-    text.includes("whatsapp_sent_at")
-  );
-}
 
 // ─── Update (draft) ────────────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
 export type AppPlan = "free" | "pro" | "ultimate";
 export type PaidPlan = Exclude<AppPlan, "free">;
+export const FREE_MONTHLY_QUOTE_LIMIT = 3;
 
 export interface PlanDefinition {
   key: AppPlan;
@@ -16,17 +17,19 @@ export interface PlanDefinition {
 export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
   free: {
     key: "free",
-    name: "Starter",
-    label: "Starter",
+    name: "Grátis",
+    label: "Plano Grátis",
     priceCents: 0,
     priceLabel: "Grátis",
-    description: "Para testar o Prumo e enviar as primeiras propostas.",
+    description: "Para conhecer o Prumo e enviar as primeiras propostas.",
     cta: "Plano em uso",
     features: [
       "Até 3 orçamentos por mês",
       "1 obra simultânea",
-      "Link público para o cliente aprovar",
-      "PDF com marca do Prumo",
+      "Link público com aceite digital",
+      "PDF e link com marca Prumo",
+      "Etapas, diário, custos e visão financeira",
+      "Cobrança de entrada e saldo por Pix",
     ],
     checkoutHighlights: [],
   },
@@ -37,21 +40,19 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     priceCents: 9700,
     priceLabel: "R$ 97",
     description:
-      "Para empreiteiros que querem vender melhor, controlar obras e cobrar com Pix.",
+      "Para operar sem limites e apresentar sua própria marca ao cliente.",
     cta: "Assinar Pro",
     features: [
+      "Tudo do Grátis",
       "Orçamentos e obras ilimitadas",
-      "Link público premium com aceite digital",
-      "PDF sem marca d'água",
-      "Cobrança Pix para entrada e saldo",
-      "Diário de obra com fotos",
-      "Dashboard financeiro da obra",
+      "PDF e link público sem marca Prumo",
+      "Cobranças Pix e financeiro sem limite de obras",
+      "Diário de obra com fotos sem limite de obras",
     ],
     checkoutHighlights: [
       "Orçamentos e obras ilimitadas",
-      "Cobrança Pix via Asaas",
-      "PDF e link público sem marca d'água",
-      "Controle financeiro por obra",
+      "PDF e link público sem marca Prumo",
+      "Cobrança Pix e controle financeiro por obra",
     ],
   },
   ultimate: {
@@ -61,21 +62,20 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     priceCents: 24700,
     priceLabel: "R$ 247",
     description:
-      "Para quem quer escala: catálogo em lote, exportação contábil e operação mais profissional.",
+      "Para operações que precisam cadastrar itens em lote e fechar números fora do Prumo.",
     cta: "Assinar Ultimate",
     features: [
       "Tudo do Pro",
       "Importação de catálogo por CSV",
-      "Exportação contábil",
-      "Base de itens pronta para orçar mais rápido",
-      "Acompanhamento prioritário de implantação",
-      "Preparado para times e processos maiores",
+      "Até 500 itens por importação",
+      "Exportação CSV de receitas recebidas e custos",
+      "Catálogo manual e importado no mesmo fluxo",
     ],
     checkoutHighlights: [
-      "Tudo do Pro incluido",
-      "Importação de catálogo por planilha",
-      "Exportação contábil para fechamento mensal",
-      "Acompanhamento prioritário de implantação",
+      "Tudo do Pro incluído",
+      "Importação de catálogo por CSV",
+      "Até 500 itens por arquivo",
+      "Exportação CSV de receitas e custos",
     ],
   },
 };
@@ -101,6 +101,30 @@ export function isPlanAtLeast(current: string | null | undefined, target: AppPla
   return PLAN_ORDER[normalizeAppPlan(current)] >= PLAN_ORDER[target];
 }
 
+export function shouldShowPrumoBrand(plan: string | null | undefined) {
+  return normalizeAppPlan(plan) === "free";
+}
+
+export function getFreeQuoteQuotaMonthStart(
+  now = new Date(),
+  timeZone = "America/Sao_Paulo",
+) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(now);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+
+  if (!year || !month) {
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+      .toISOString();
+  }
+
+  return new Date(`${year}-${month}-01T03:00:00.000Z`).toISOString();
+}
+
 export function formatPlanPrice(plan: AppPlan) {
   const definition = PLAN_DEFINITIONS[plan];
   if (definition.priceCents === 0) return "Grátis";
@@ -124,4 +148,14 @@ export function paidPlanFromSaasSubscriptionReference(
   if (normalized.startsWith("SUB_ULTIMATE_")) return "ultimate";
   if (normalized.startsWith("SUB_PRO_")) return "pro";
   return null;
+}
+
+export function companyIdFromSaasSubscriptionReference(
+  reference: string | null | undefined,
+): string | null {
+  const trimmed = reference?.trim();
+  if (!trimmed) return null;
+
+  const match = /^SUB_(?:PRO|ULTIMATE)_(.+)$/i.exec(trimmed);
+  return match?.[1] ?? null;
 }

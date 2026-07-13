@@ -12,13 +12,19 @@ import { trackProductEvent } from "@/lib/product-analytics";
 
 interface NewQuoteFormProps {
   customers: Customer[];
+  selectedCustomerId?: string;
 }
 
-export function NewQuoteForm({ customers }: NewQuoteFormProps) {
+export function NewQuoteForm({
+  customers,
+  selectedCustomerId,
+}: NewQuoteFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [customerId, setCustomerId] = useState(customers[0]?.id ?? "");
+  const [customerId, setCustomerId] = useState(
+    selectedCustomerId ?? customers[0]?.id ?? "",
+  );
   const [title, setTitle] = useState("");
 
   function onSubmit(e: React.FormEvent) {
@@ -90,9 +96,9 @@ export function NewQuoteForm({ customers }: NewQuoteFormProps) {
       {error && (
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-4 text-sm text-amber-800 dark:text-amber-500 shadow-sm">
           <p className="font-medium mb-3">{error}</p>
-          {error.includes("Limite atingido") && (
+          {error.toLowerCase().includes("limite") && (
             <Button asChild className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white">
-              <Link href="/app/configuracoes/plano">Ver planos e assinar PRO</Link>
+              <Link href="/app/configuracoes/plano">Ver planos e assinar Pro</Link>
             </Button>
           )}
         </div>

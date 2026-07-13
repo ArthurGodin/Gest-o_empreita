@@ -57,7 +57,7 @@ export async function uploadQuotePdf(
   quoteId: string,
   buffer: Buffer,
 ): Promise<{ ok: true; path: string } | { ok: false; error: string }> {
-  const path = `${quoteId}.pdf`;
+  const path = `v2/${quoteId}.pdf`;
   const admin = createAdminClient();
 
   const { error } = await admin.storage

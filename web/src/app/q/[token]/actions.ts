@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { clientErrorFor, logServerError } from "@/lib/log";
+import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { tokensMatch } from "@/lib/quote-token";
 import { effectiveStatus } from "@/lib/quote-status";
 import { notifyCompanyOwner } from "@/lib/email/send";
@@ -214,6 +214,12 @@ export async function approveQuoteAction(input: {
       }),
   });
 
+  logServerEvent("public.quote.approved", {
+    company_id: quote.company_id,
+    quote_id: quote.id,
+    total_cents: quote.total_cents,
+  });
+
   return { ok: true, redirectTo: `/q/${parsed.data.token}/aprovado` };
 }
 
@@ -343,6 +349,12 @@ export async function rejectQuoteAction(input: {
       }),
   });
 
+  logServerEvent("public.quote.rejected", {
+    company_id: quote.company_id,
+    quote_id: quote.id,
+    total_cents: quote.total_cents,
+  });
+
   return { ok: true, redirectTo: `/q/${parsed.data.token}` };
 }
 
@@ -459,6 +471,12 @@ export async function approveDeliveryAction(input: {
   }
 
   revalidateDeliveryPaths(parsed.data.token, quote.project_id);
+  logServerEvent("public.delivery.approved", {
+    company_id: quote.company_id,
+    quote_id: quote.id,
+    project_id: quote.project_id,
+    generated_saldo_pix: saldoCharge.status === "draft",
+  });
   return { ok: true };
 }
 

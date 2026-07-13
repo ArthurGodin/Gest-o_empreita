@@ -1,43 +1,95 @@
-# Guia Definitivo de Deploy - Gestão Empreita (Vercel)
+# Produção do Prumo
 
-Para colocar a Gestão Empreita no ar, você precisará preencher as variáveis abaixo no painel da **Vercel** (`Settings > Environment Variables`).
+Este é o procedimento de publicação. A ordem importa porque o código de faturamento de 13/07/2026 depende de novas colunas no Supabase.
 
-## Variáveis Obrigatórias (Copie e Cole na Vercel)
+## Ordem obrigatória
 
-### 1. Supabase (Banco de Dados e Auth)
-*Vá em: Seu Projeto no Supabase > Project Settings > API*
+1. Aplicar as migrations pendentes no Supabase de produção.
+2. Confirmar que a migration `20260713000001_saas_billing_hardening.sql` foi aplicada sem erro.
+3. Publicar o diretório `web` na Vercel.
+4. Executar o smoke test público e autenticado.
+5. Só então liberar checkout e aquisição de clientes.
 
-*   `NEXT_PUBLIC_SUPABASE_URL` = Sua URL do projeto (Ex: `https://abcd.supabase.co`)
-*   `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Sua chave pública (`anon`, `public`)
-*   `SUPABASE_SERVICE_ROLE_KEY` = Sua chave secreta (`service_role`, `secret`). **NUNCA compartilhe esta chave.**
+Nunca publique essa versão do código antes da migration: checkout e webhook consultam os novos campos de pagamento pendente.
 
-### 2. Informações Base do App
-*   `NEXT_PUBLIC_APP_URL` = A URL final do seu projeto em produção (Ex: `https://www.gestaoempreita.com.br` ou `https://seu-projeto.vercel.app`)
+## Aplicar migrations
 
-### 3. Asaas (Faturamento SaaS Real)
-*Vá em: Sua conta Asaas > Configurações > Integrações > Chaves de API*
+Com acesso ao projeto Supabase de produção:
 
-*   `ASAAS_API_KEY` = A sua chave de produção que começa com `$aact_...`
-*   `ASAAS_API_URL` = Use a URL de produção: `https://api.asaas.com/v3`
-*   `ASAAS_WEBHOOK_TOKEN` = Crie uma senha forte e longa (ex: `GestaoEmpreita2026SuperSecretWebhook!`)
-    *   *Ação no Asaas:* No painel do Asaas, vá em Webhooks > Novo Webhook. A URL do webhook será `https://sua-url.com.br/api/webhooks/asaas`. Cole o mesmo token criado acima lá e marque os eventos (Cobranças: Recebida, Atrasada, Estornada, etc).
+```powershell
+npx supabase@latest login
+npx supabase@latest link --project-ref cpvhtozthoquawjreipk
+npx supabase@latest migration list --linked
+npx supabase@latest db push --linked
+```
 
-### 4. Emails Transacionais (Resend) - *Opcional*
-*Se quiser que os emails saiam com seu domínio próprio*
+O CLI solicitará autenticação e, quando necessário, a senha do banco. Não coloque token ou senha no repositório. Depois do `db push`, execute novamente `migration list --linked` e confirme que a migration local e a remota aparecem na mesma linha.
 
-*   `RESEND_API_KEY` = Chave da API do Resend (Ex: `re_12345...`)
-*   `EMAIL_FROM` = O remetente oficial (Ex: `Gestão Empreita <contato@gestaoempreita.com.br>`)
+## Variáveis obrigatórias na Vercel
 
----
+### Supabase
 
-## 🚀 Como Fazer o Deploy Agora Mesmo (Passo a Passo)
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-1.  Acesse o site da **Vercel** (https://vercel.com) e faça login (com seu GitHub).
-2.  Clique em **"Add New Project"** e importe o repositório `ArthurGodin/Gest-o_empreita`.
-3.  No campo "Framework Preset", certifique-se de que `Next.js` está selecionado.
-4.  No campo "Root Directory", clique em "Edit" e selecione a pasta `web` (já que o projeto não está na raiz do repositório).
-5.  Abra a seção **"Environment Variables"**.
-6.  Copie e cole as variáveis listadas acima (as da seção Supabase são urgentes para o sistema funcionar).
-7.  Clique em **"Deploy"**.
+### Aplicação
 
-Pronto! Em 3 minutos a Vercel vai te dar o link oficial. Se as variáveis estiverem lá, o banco de dados conecta, o auth funciona e a página de login sobe redonda!
+- `NEXT_PUBLIC_APP_URL=https://gestao-empreita.vercel.app`
+
+### Asaas de produção
+
+- `ASAAS_API_KEY`
+- `ASAAS_API_URL=https://api.asaas.com/v3`
+- `ASAAS_WEBHOOK_TOKEN`
+
+O webhook do Asaas deve apontar para:
+
+```text
+https://gestao-empreita.vercel.app/api/asaas/webhook
+```
+
+O token configurado no painel Asaas deve ser exatamente o mesmo de `ASAAS_WEBHOOK_TOKEN`. Use um token diferente da chave de API e nunca o exponha no navegador.
+
+### Meta Ads
+
+- `NEXT_PUBLIC_META_PIXEL_ID`
+- `META_CONVERSIONS_ACCESS_TOKEN`
+- `META_TEST_EVENT_CODE` somente durante a validação
+- `META_GRAPH_API_VERSION` opcional
+
+Não ligar campanhas de conversão antes de testar os eventos no Events Manager e remover `META_TEST_EVENT_CODE` da produção.
+
+### Email e alertas
+
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `ALERT_EMAIL_TO`
+
+`ALERT_EMAIL_TO` deve chegar a alguém que acompanhe checkout e webhook durante o lançamento.
+
+## Publicar na Vercel
+
+O projeto Vercel usa `web` como diretório raiz. Depois da migration e da conferência das variáveis, publique a versão de produção pelo painel ou pela CLI já vinculada ao projeto.
+
+## Smoke test sem gerar cobrança indevida
+
+1. Abrir landing, preços, login, cadastro, termos e privacidade em celular e desktop.
+2. Entrar com uma conta de teste e abrir Início, Orçamentos, Obras, Clientes, Caixa, Configurações e Planos.
+3. Confirmar que a tela de planos mostra o plano atual e que o botão de checkout abre sem erro de banco.
+4. Não concluir uma nova assinatura apenas para testar navegação.
+5. No Asaas, confirmar que webhook e assinatura ativa esperada estão corretos.
+6. Conferir logs da Vercel sem respostas 500 e sem repetição contínua de webhook.
+
+## Teste financeiro controlado
+
+Antes do primeiro anúncio, faça uma única compra controlada usando um pagador diferente do recebedor. Confirme:
+
+- um único link de pagamento;
+- uma única assinatura recorrente;
+- ativação automática do plano pago;
+- upgrade sem cobrança recorrente duplicada;
+- cancelamento dentro do Prumo refletido no Asaas;
+- nenhum rebaixamento causado por evento antigo.
+
+Registre horário, usuário, plano, identificadores Asaas e resultado, sem salvar documentos pessoais ou chaves no repositório.

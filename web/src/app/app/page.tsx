@@ -3,17 +3,13 @@ import type { ReactNode } from "react";
 import {
   ArrowRight,
   CheckCircle2,
-  Circle,
   Clock3,
   FileText,
   HardHat,
   Plus,
-  Rocket,
   Send,
   ShieldCheck,
-  TrendingUp,
   Users,
-  Wallet,
 } from "lucide-react";
 import {
   Card,
@@ -24,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { FirstMoneyGuide, type FirstMoneyStep } from "./first-money-guide";
+import { SampleDataButton } from "./sample-data-button";
 import {
   getBillingCharges,
   type BillingChargeListItem,
@@ -106,9 +103,11 @@ export default async function DashboardPage() {
     projects,
     charges,
   });
+  const isEmptyWorkspace =
+    customers.length === 0 && quotes.length === 0 && projects.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 sm:py-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-4 sm:py-6">
       <PageHeader
         title="Início"
         description="O caminho mais curto para vender, executar e receber."
@@ -122,9 +121,11 @@ export default async function DashboardPage() {
         }
       />
 
+      {isEmptyWorkspace ? <EmptyWorkspaceCard /> : null}
+
       <FirstMoneyGuide steps={firstMoneySteps} />
 
-      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <MetricTile
           icon={<Send className="h-4 w-4" />}
           label="Esperando cliente"
@@ -161,7 +162,7 @@ export default async function DashboardPage() {
         />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_1.15fr]">
+      <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
         <Card className="min-w-0 rounded-xl shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Próximas ações</CardTitle>
@@ -171,10 +172,10 @@ export default async function DashboardPage() {
               <Link
                 key={action.href + action.title}
                 href={action.href}
-                className="group flex items-center justify-between rounded-xl border bg-background px-4 py-3.5 transition-all duration-150 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
+                className="group flex items-center justify-between rounded-lg border bg-background px-3 py-3 transition-all duration-150 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {action.icon}
                   </span>
                   <span className="min-w-0">
@@ -210,10 +211,10 @@ export default async function DashboardPage() {
             ) : (
               <div className="divide-y rounded-xl border">
                 {openProjects.slice(0, 5).map((project) => (
-                  <Link
-                    key={project.id}
-                    href={`/app/obras/${project.id}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-accent"
+                <Link
+                  key={project.id}
+                  href={`/app/obras/${project.id}`}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-accent"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">
@@ -265,7 +266,7 @@ export default async function DashboardPage() {
                 <Link
                   key={quote.id}
                   href={`/app/orcamentos/${quote.id}`}
-                  className="grid gap-2 px-4 py-3 transition-colors hover:bg-accent md:grid-cols-[1fr_auto_auto] md:items-center"
+                  className="grid gap-2 px-3 py-2.5 transition-colors hover:bg-accent md:grid-cols-[1fr_auto_auto] md:items-center"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">
@@ -286,6 +287,37 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function EmptyWorkspaceCard() {
+  return (
+    <section className="overflow-hidden rounded-lg border bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-sm sm:p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm">
+            Comece sem depender de suporte
+          </div>
+          <h2 className="mt-3 text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
+            Monte o primeiro orçamento real ou explore um exemplo pronto.
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            O caminho recomendado é cadastrar um cliente e criar a proposta. Se
+            quiser entender o produto antes, carregue dados de exemplo e veja
+            orçamento, aprovação, obra, custos e cobranças funcionando juntos.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+          <Button asChild>
+            <Link href="/app/clientes/novo">
+              <Plus className="h-4 w-4" />
+              Cadastrar cliente
+            </Link>
+          </Button>
+          <SampleDataButton />
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -320,14 +352,14 @@ function MetricTile({
   }[tone];
 
   return (
-    <div className={`group relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all duration-200 ${borderAccent} hover:shadow-md`}>
+    <div className={`group relative overflow-hidden rounded-lg border bg-card p-4 shadow-sm transition-all duration-200 ${borderAccent} hover:shadow-md`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
-          <div className="mt-2 text-2xl font-bold tracking-tight">{value}</div>
-          <p className="mt-1.5 text-xs text-muted-foreground/80">{hint}</p>
+          <div className="mt-1.5 text-xl font-bold tracking-tight">{value}</div>
+          <p className="mt-1 text-xs text-muted-foreground/80">{hint}</p>
         </div>
-        <span className={`shrink-0 rounded-xl p-2.5 ${iconBg} transition-transform duration-200 group-hover:scale-110`}>{icon}</span>
+        <span className={`shrink-0 rounded-lg p-2 ${iconBg} transition-transform duration-200 group-hover:scale-110`}>{icon}</span>
       </div>
     </div>
   );
@@ -345,7 +377,7 @@ function EmptyLine({
   action: string;
 }) {
   return (
-    <div className="rounded-xl border border-dashed px-5 py-8 text-center">
+    <div className="rounded-lg border border-dashed px-4 py-6 text-center">
       <p className="text-sm font-semibold">{title}</p>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">{detail}</p>
       <Button asChild variant="outline" size="sm" className="mt-5">

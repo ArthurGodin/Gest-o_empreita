@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { PageHeader } from "@/components/app-shell/page-header";
+import { Button } from "@/components/ui/button";
 import { getCustomer } from "@/lib/queries/customers";
 import { CustomerForm } from "../customer-form";
 import { DeleteCustomer } from "./delete-customer";
@@ -44,7 +45,17 @@ export default async function CustomerDetailPage({
       <PageHeader
         title={customer.name}
         description="Edite os dados do cliente. Salvar atualiza tudo de uma vez."
-        actions={<DeleteCustomer id={customer.id} customerName={customer.name} />}
+        actions={
+          <>
+            <Button asChild>
+              <Link href={`/app/orcamentos/novo?cliente=${customer.id}`}>
+                <FileText className="h-4 w-4" />
+                Criar orçamento
+              </Link>
+            </Button>
+            <DeleteCustomer id={customer.id} customerName={customer.name} />
+          </>
+        }
       />
 
       <CustomerForm customer={customer} />

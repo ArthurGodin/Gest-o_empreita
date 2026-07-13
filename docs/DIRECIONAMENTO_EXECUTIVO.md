@@ -1,10 +1,10 @@
-# Direcionamento Executivo - Gestão Empreita
+# Direcionamento Executivo - Prumo
 
 Data: 2026-06-14
 
 ## Veredito Atual
 
-O Gestão Empreita já é um produto demonstrável e vendável em piloto assistido.
+O Prumo já é um produto demonstrável e vendável em piloto assistido.
 Ele ainda não deve ser tratado como SaaS self-service de escala, mas está pronto
 para ser apresentado a donos de pequenas empreiteiras com uma promessa clara:
 
@@ -90,8 +90,9 @@ sandbox é correto porque preserva caixa.
 Vender como piloto assistido, não como assinatura anônima.
 
 - Oferta: "Eu configuro com você e coloco seu primeiro orçamento rodando hoje."
-- Trial: 14 dias sem cartão.
-- Preço alvo: R$ 197/mês.
+- Cadastro: sem cartão, começando pelo Plano Grátis.
+- Preço atual do Pro: R$ 97/mês.
+- Preço atual do Ultimate: R$ 247/mês.
 - Primeira meta: 5 empresas pequenas usando de verdade.
 - Condição de sucesso: pelo menos 1 orçamento enviado, 1 aprovação e 1 obra
   acompanhada com etapa, foto ou custo.

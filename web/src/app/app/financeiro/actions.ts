@@ -1,7 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
+import { createClient } from "@/lib/supabase/server";
 import { formatDateBR } from "@/lib/utils";
 
 interface FinanceExportProject {
@@ -11,7 +11,7 @@ interface FinanceExportProject {
 interface FinanceExportCharge {
   paid_at: string | null;
   created_at: string;
-  description: string | null;
+  kind: string;
   amount_cents: number;
   project: FinanceExportProject | FinanceExportProject[] | null;
 }
@@ -26,14 +26,13 @@ interface FinanceExportCost {
 
 export async function exportFinanceDataAction() {
   const user = await getCurrentUser();
-  if (!user) return { ok: false, error: "Sessão expirada." };
-  
+  if (!user) return { ok: false, error: "Sessao expirada." };
+
   const company = await getActiveCompany();
-  if (!company) return { ok: false, error: "Empresa não encontrada." };
+  if (!company) return { ok: false, error: "Empresa nao encontrada." };
 
   const supabase = createClient();
-  
-  // ─── Paywall: Exclusivo Ultimate ───────────────────────────────────────────
+
   const { data: companyData } = await supabase
     .from("companies")
     .select("plan")
@@ -41,46 +40,61 @@ export async function exportFinanceDataAction() {
     .single();
 
   if (companyData?.plan !== "ultimate") {
-     return { 
-       ok: false, 
-       error: "A Exportação Contábil é uma funcionalidade exclusiva do plano Ultimate. Assine o Ultimate para enviar o relatório para o seu contador." 
-     };
+    return {
+      ok: false,
+      error:
+        "A Exportacao Contabil e exclusiva do plano Ultimate. Assine o Ultimate para enviar o relatorio ao contador.",
+    };
   }
-  // ───────────────────────────────────────────────────────────────────────────
 
-  // Buscar Receitas (Cobranças pagas)
   const { data: charges } = await supabase
-    .from("charges")
-    .select("paid_at, created_at, description, amount_cents, project:projects(name)")
+    .from("billing_charges")
+    .select("paid_at, created_at, kind, amount_cents, project:projects(name)")
     .eq("company_id", company.company_id)
     .in("status", ["received", "confirmed"]);
-    
-  // Buscar Despesas (Custos de obras)
+
   const { data: costs } = await supabase
     .from("project_costs")
     .select("incurred_on, description, category, amount_cents, project:projects(name)")
     .eq("company_id", company.company_id);
 
-  // Usamos ponto e vírgula para compatibilidade nativa com Excel no Brasil
   let csv = "Data;Tipo;Obra;Descricao;Categoria;Valor\n";
-  
+
   if (charges) {
-    (charges as unknown as FinanceExportCharge[]).forEach(c => {
-       const date = c.paid_at || c.created_at;
-       const projectName = projectNameFromRelation(c.project);
-       const val = (c.amount_cents / 100).toFixed(2).replace(".", ",");
-       csv += `"${formatDateBR(date)}";"RECEITA";"${projectName}";"${c.description || 'Cobrança'}";"-";"${val}"\n`;
+    (charges as unknown as FinanceExportCharge[]).forEach((charge) => {
+      const date = charge.paid_at || charge.created_at;
+      const projectName = projectNameFromRelation(charge.project);
+      const value = (charge.amount_cents / 100).toFixed(2).replace(".", ",");
+      const description =
+        charge.kind === "entrada" ? "Entrada da obra" : "Saldo da obra";
+
+      csv += csvRow([
+        formatDateBR(date),
+        "RECEITA",
+        projectName,
+        description,
+        "-",
+        value,
+      ]);
     });
   }
-  
+
   if (costs) {
-    (costs as unknown as FinanceExportCost[]).forEach(c => {
-       const projectName = projectNameFromRelation(c.project);
-       const val = (c.amount_cents / 100).toFixed(2).replace(".", ",");
-       csv += `"${formatDateBR(c.incurred_on)}";"CUSTO";"${projectName}";"${c.description}";"${c.category}";"-${val}"\n`;
+    (costs as unknown as FinanceExportCost[]).forEach((cost) => {
+      const projectName = projectNameFromRelation(cost.project);
+      const value = (cost.amount_cents / 100).toFixed(2).replace(".", ",");
+
+      csv += csvRow([
+        formatDateBR(cost.incurred_on),
+        "CUSTO",
+        projectName,
+        cost.description,
+        cost.category,
+        `-${value}`,
+      ]);
     });
   }
-  
+
   return { ok: true, csv };
 }
 
@@ -89,4 +103,12 @@ function projectNameFromRelation(
 ) {
   const value = Array.isArray(project) ? project[0] : project;
   return value?.name || "Sem Obra";
+}
+
+function csvRow(values: string[]) {
+  return `${values.map(csvCell).join(";")}\n`;
+}
+
+function csvCell(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
 }

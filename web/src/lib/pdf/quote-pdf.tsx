@@ -13,6 +13,7 @@ import {
 } from "@react-pdf/renderer";
 import { env } from "@/lib/env";
 import { formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
+import { shouldShowPrumoBrand } from "@/lib/plans";
 
 const nodeRequire = createRequire(import.meta.url);
 const reactPackageName = process.env.PDF_REACT_PACKAGE_NAME || "react";
@@ -61,6 +62,7 @@ interface QuotePdfProps {
     address: string | null;
     city: string | null;
     state: string | null;
+    plan?: string | null;
   };
   customer: {
     name: string;
@@ -290,6 +292,8 @@ function formatDateBR(iso: string | null): string {
 }
 
 export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
+  const showPrumoBrand = shouldShowPrumoBrand(company.plan);
+
   return (
     <Document
       title={`${quote.number} — ${quote.title}`}
@@ -383,19 +387,33 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
             <Text style={styles.itemPriceCol}>Preço</Text>
             <Text style={styles.itemTotalCol}>Total</Text>
           </View>
-          {items.map((item, idx) => (
-            <View key={idx} style={styles.itemRow}>
-              <Text style={styles.itemDescCol}>{item.description}</Text>
-              <Text style={styles.itemQtyCol}>{formatQuantityBR(item.quantity)}</Text>
-              <Text style={styles.itemUnitCol}>{normalizeQuoteUnit(item.unit)}</Text>
-              <Text style={styles.itemPriceCol}>
-                {formatBRL(item.unit_price_cents)}
-              </Text>
-              <Text style={styles.itemTotalCol}>
-                {formatBRL(item.total_cents)}
-              </Text>
-            </View>
-          ))}
+          {items.map((item, idx) =>
+            createElement(
+              View,
+              { key: `${item.description}-${idx}`, style: styles.itemRow },
+              createElement(Text, { style: styles.itemDescCol }, item.description),
+              createElement(
+                Text,
+                { style: styles.itemQtyCol },
+                formatQuantityBR(item.quantity),
+              ),
+              createElement(
+                Text,
+                { style: styles.itemUnitCol },
+                normalizeQuoteUnit(item.unit),
+              ),
+              createElement(
+                Text,
+                { style: styles.itemPriceCol },
+                formatBRL(item.unit_price_cents),
+              ),
+              createElement(
+                Text,
+                { style: styles.itemTotalCol },
+                formatBRL(item.total_cents),
+              ),
+            ),
+          )}
 
           <View style={styles.totalsRow}>
             <Text style={styles.totalLabel}>Total</Text>
@@ -415,7 +433,7 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
         <Text style={styles.footer} fixed>
           {company.name}
           {quote.valid_until ? ` · Válido até ${formatDateBR(quote.valid_until)}` : ""}
-          {" · Gerado por Prumo"}
+          {showPrumoBrand ? " · Gerado por Prumo" : ""}
         </Text>
       </Page>
     </Document>

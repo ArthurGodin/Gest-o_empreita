@@ -20,6 +20,7 @@ interface BillingSectionProps {
   projectStatus: ProjectStatus;
   budgetCents: number | null;
   deliveryApprovedAt: string | null;
+  conversionBillingAttention?: boolean;
 }
 
 const STATUS_COPY: Record<
@@ -88,6 +89,7 @@ export function BillingSection({
   projectStatus,
   budgetCents,
   deliveryApprovedAt,
+  conversionBillingAttention = false,
 }: BillingSectionProps) {
   const ordered = [...charges].sort((a, b) => {
     if (a.kind === b.kind) return 0;
@@ -119,9 +121,10 @@ export function BillingSection({
     receivedCents,
     pendingCents,
   });
+  const entryCharge = ordered.find((charge) => charge.kind === "entrada") ?? null;
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section id="cobranca" className="scroll-mt-24 rounded-xl border bg-card p-5">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase text-muted-foreground">
@@ -140,6 +143,10 @@ export function BillingSection({
           <strong className="tabular-nums">{formatBRL(totalCents / 100)}</strong>
         </div>
       </div>
+
+      {conversionBillingAttention ? (
+        <ConversionBillingNotice entryCharge={entryCharge} />
+      ) : null}
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <PaymentMetric
@@ -224,6 +231,45 @@ function PaymentMetric({
       </div>
       <div className="mt-2 text-lg font-semibold tabular-nums">{value}</div>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+    </div>
+  );
+}
+
+function ConversionBillingNotice({
+  entryCharge,
+}: {
+  entryCharge: BillingCharge | null;
+}) {
+  const hasGeneratedPix =
+    entryCharge?.status === "pending" &&
+    Boolean(entryCharge.pix_qr_code || entryCharge.invoice_url);
+
+  return (
+    <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+          <div>
+            <div className="text-sm font-semibold">
+              Obra criada. Resolva a entrada antes de começar.
+            </div>
+            <p className="mt-1 text-sm leading-6 text-amber-900/85">
+              {hasGeneratedPix
+                ? "O Pix da entrada já está disponível abaixo. Envie ao cliente e acompanhe o recebimento."
+                : "A cobrança da entrada precisa de atenção. Use o próximo botão desta seção para gerar ou reenviar o Pix."}
+            </p>
+          </div>
+        </div>
+        {entryCharge?.status === "draft" ? (
+          <GenerateChargeButton
+            chargeId={entryCharge.id}
+            label="Gerar Pix da entrada"
+            size="default"
+            variant="default"
+            className="h-11 w-full sm:w-auto"
+          />
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
-# Roteiro de Demo de 20 Minutos - Gestão Empreita
+# Roteiro de Demo de 20 Minutos - Prumo
 
-Objetivo: provar, sem improviso, que o Gestão Empreita resolve venda, execução e cobrança de uma pequena empreiteira.
+Objetivo: provar, sem improviso, que o Prumo resolve venda, execução e cobrança de uma pequena empreiteira.
 
 ## Antes da call
 
@@ -99,7 +99,7 @@ Anote exatamente as palavras do cliente.
 
 Fala:
 
-> Estou abrindo poucos pilotos assistidos. Eu configuro com você, coloco seu primeiro orçamento rodando e acompanho o primeiro uso. Se fizer sentido, a mensalidade inicial é R$ 197.
+> Você pode começar no Plano Grátis e testar o fluxo. Se fizer sentido para sua operação, o Pro libera orçamentos, obras, Pix e financeiro sem limite por R$ 97/mês.
 
 CTA:
 

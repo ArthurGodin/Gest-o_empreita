@@ -102,7 +102,7 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
               type="tel"
               inputMode="tel"
               defaultValue={company.phone ?? ""}
-              placeholder="(86) 99999-0000"
+              placeholder="Digite seu WhatsApp comercial"
             />
           </div>
           <div className="space-y-2">

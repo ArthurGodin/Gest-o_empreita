@@ -2,7 +2,7 @@
 
 Data: 2026-06-12
 
-Objetivo: deixar o Gestão Empreita vendável sem gastar antes da primeira venda.
+Objetivo: deixar o Prumo vendável sem gastar antes da primeira venda.
 O domínio próprio fica para depois; por enquanto o app usa
 `https://gestao-empreita.vercel.app`.
 
@@ -52,6 +52,52 @@ credenciais de sandbox para produção e teste real de baixo valor.
 4. Abrir Vercel > projeto `gestao-empreita` > Analytics.
 5. Confirmar pageviews chegando.
 6. Checar console do navegador: não deve aparecer warning de Web Analytics.
+
+## Meta Ads: Pixel e Conversions API
+
+Estado recomendado antes de investir em Facebook/Instagram Ads:
+
+- Meta Pixel instalado por variável de ambiente.
+- Conversions API ativa no endpoint interno de eventos.
+- Eventos de aquisição deduplicados por `event_id`.
+- Eventos internos de obra/orçamento não enviados para otimização da Meta.
+
+Variáveis de produção:
+
+```env
+NEXT_PUBLIC_META_PIXEL_ID=<id-do-pixel>
+META_CONVERSIONS_ACCESS_TOKEN=<token-capi>
+# temporário para teste no Events Manager
+META_TEST_EVENT_CODE=<codigo-de-teste>
+```
+
+Eventos enviados para Meta:
+
+| Evento Prumo | Evento Meta | Uso |
+| --- | --- | --- |
+| `signup_form_submitted` | `Lead` | Lead de cadastro |
+| `onboarding_completed` | `CompleteRegistration` | Cadastro ativado |
+| `saas_checkout_started` | `InitiateCheckout` | Começou assinatura |
+| `saas_checkout_generated` | `AddPaymentInfo` | Link de pagamento gerado |
+
+Checklist de validação:
+
+1. Criar Pixel no Meta Events Manager.
+2. Gerar token da Conversions API no próprio Events Manager.
+3. Adicionar as variáveis na Vercel em `Production`.
+4. Fazer novo deploy de produção.
+5. Abrir o Events Manager em modo Test Events.
+6. Colocar `META_TEST_EVENT_CODE` temporariamente.
+7. Acessar landing, clicar em CTA, criar conta de teste e concluir onboarding.
+8. Conferir chegada de `PageView`, `Lead` e `CompleteRegistration`.
+9. Iniciar checkout Pro com conta controlada e conferir `InitiateCheckout`.
+10. Remover `META_TEST_EVENT_CODE` da Vercel depois do teste.
+
+Regra de campanha:
+
+- Otimizar campanha inicialmente para `Lead` ou `CompleteRegistration`.
+- Não otimizar para eventos de orçamento aprovado, Pix copiado ou diário de obra.
+- Só otimizar para checkout depois que houver volume real de assinaturas.
 
 ### Speed Insights
 
@@ -121,7 +167,7 @@ Checklist de virada:
 7. Criar cliente real de teste com dados válidos.
 8. Criar cobrança real de baixo valor, sempre com parcela de pelo menos R$ 5,00.
 9. Confirmar pagamento real.
-10. Conferir se o webhook marcou a cobrança como recebida no Gestão Empreita.
+10. Conferir se o webhook marcou a cobrança como recebida no Prumo.
 11. Verificar logs da Vercel por 30 minutos.
 12. Verificar no painel do Asaas se o webhook não ficou penalizado ou pausado.
 13. Registrar o resultado no histórico de QA do projeto.
@@ -169,7 +215,7 @@ Depois da primeira venda:
 2. Criar subdomínio de envio, por exemplo `mail.seudominio.com`.
 3. Verificar DNS no Resend.
 4. Trocar remetente para
-   `Gestão Empreita <notificacoes@mail.seudominio.com>`.
+   `Prumo <notificacoes@mail.seudominio.com>`.
 5. Testar Gmail e Outlook.
 6. Monitorar rejeição, spam e taxa de entrega.
 

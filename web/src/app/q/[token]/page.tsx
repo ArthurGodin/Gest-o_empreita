@@ -36,6 +36,7 @@ interface PublicQuoteData {
     city: string | null;
     state: string | null;
     pix_instructions: string | null;
+    plan: string | null;
   };
   customer: {
     name: string;
@@ -70,7 +71,7 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
       id, number, title, description, status, share_token, project_id, company_id,
       valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
-      company:companies(name, phone, email, logo_url, city, state, pix_instructions),
+      company:companies(name, phone, email, logo_url, city, state, pix_instructions, plan),
       customer:customers(name, city, state),
       items:quote_items(id, position, description, unit, quantity, unit_price_cents, total_cents),
       approvals:quote_approvals(action, signer_name, rejection_reason, created_at)

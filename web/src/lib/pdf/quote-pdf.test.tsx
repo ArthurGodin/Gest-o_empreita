@@ -62,7 +62,9 @@ describe("quote PDF", () => {
       ],
     });
 
-    const buffer = await renderToBuffer(document as unknown as React.ReactElement);
+    const buffer = await renderToBuffer(
+      document as Parameters<typeof renderToBuffer>[0],
+    );
 
     expect(buffer.length).toBeGreaterThan(3000);
     expect(buffer.subarray(0, 5).toString("utf8")).toBe("%PDF-");

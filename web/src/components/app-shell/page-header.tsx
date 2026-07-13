@@ -17,18 +17,24 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between",
+        "flex min-w-0 flex-col gap-3 border-b border-slate-200/70 pb-4 sm:flex-row sm:items-center sm:justify-between",
         className,
       )}
     >
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+      <div className="min-w-0">
+        <h1 className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+          {title}
+        </h1>
         {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
         )}
       </div>
       {actions && (
-        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
+          {actions}
+        </div>
       )}
     </header>
   );

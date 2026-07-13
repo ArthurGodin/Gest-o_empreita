@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
-import { clientErrorFor, logServerError } from "@/lib/log";
+import {
+  clientErrorFor,
+  logServerError,
+  logServerEvent,
+  logServerWarning,
+} from "@/lib/log";
 import { deleteDiaryPhotos } from "@/lib/supabase/storage";
 import { canTransitionStatus } from "@/lib/project-status";
 import { todayBR } from "@/lib/dates";
@@ -1124,7 +1129,15 @@ export async function generateChargePixAction(
       description: `${kindLabel} - ${project?.name ?? "Obra"}`,
     });
 
-    if (result.warning) return { ok: false, error: result.warning };
+    if (result.warning) {
+      logServerWarning("obras.billing.generate_pix_blocked", {
+        company_id: auth.companyId,
+        project_id: charge.project_id,
+        charge_id: charge.id,
+        kind: charge.kind,
+      });
+      return { ok: false, error: result.warning };
+    }
 
     if (charge.kind === "saldo" && !charge.released_at) {
       const releasedAt = new Date().toISOString();
@@ -1149,6 +1162,12 @@ export async function generateChargePixAction(
 
   revalidatePath(`/app/obras/${charge.project_id}`);
   revalidatePath("/app/financeiro");
+  logServerEvent("obras.billing.pix_generated", {
+    company_id: auth.companyId,
+    project_id: charge.project_id,
+    charge_id: charge.id,
+    kind: charge.kind,
+  });
   return { ok: true };
 }
 

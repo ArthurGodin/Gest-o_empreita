@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Building2,
@@ -21,20 +22,54 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { createCompanyAction, type OnboardingResult } from "./actions";
 
 export function OnboardingForm() {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<OnboardingResult | null>(null);
+  const router = useRouter();
 
-  function onSubmit(formData: FormData) {
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setResult(null);
+    const formData = new FormData(event.currentTarget);
+
     startTransition(async () => {
       const url = new URL(window.location.href);
       const plan = url.searchParams.get("plan");
       if (plan) formData.append("plan", plan);
-      const nextResult = await createCompanyAction(formData);
-      if (!nextResult.ok) setResult(nextResult);
+      trackProductEvent("onboarding_submitted", {
+        target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+      });
+
+      try {
+        const nextResult = await createCompanyAction(formData);
+        if (!nextResult.ok) {
+          trackProductEvent("onboarding_failed", {
+            target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+            has_field_errors: Boolean(nextResult.fieldErrors),
+          });
+          setResult(nextResult);
+          return;
+        }
+
+        trackProductEvent("onboarding_completed", {
+          target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+          redirects_to_checkout: nextResult.redirectTo.includes("/checkout"),
+        });
+        router.push(nextResult.redirectTo);
+        router.refresh();
+      } catch {
+        trackProductEvent("onboarding_failed", {
+          target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+          thrown: true,
+        });
+        setResult({
+          ok: false,
+          error: "Nao foi possivel preparar seu painel agora. Tente novamente.",
+        });
+      }
     });
   }
 
@@ -46,7 +81,7 @@ export function OnboardingForm() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(31,41,55,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(31,41,55,0.045)_1px,transparent_1px)] bg-[length:32px_32px]"
       />
-      <div className="relative mx-auto grid min-h-svh w-full max-w-6xl gap-6 px-4 py-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-8 lg:px-8 lg:py-6">
+      <div className="relative mx-auto grid min-h-svh w-full max-w-6xl gap-6 px-4 py-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-8 lg:px-8 lg:py-8">
         <section className="space-y-6 lg:space-y-8">
           <div className="flex items-center gap-2 text-lg font-semibold text-[#17202a]">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#059669] text-white shadow-sm">
@@ -126,7 +161,7 @@ export function OnboardingForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={onSubmit} className="space-y-5">
+            <form onSubmit={onSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da empresa *</Label>
                 <div className="relative">
@@ -158,7 +193,7 @@ export function OnboardingForm() {
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="(11) 99999-0000"
+                    placeholder="Digite seu WhatsApp comercial"
                     aria-invalid={Boolean(fieldErrors?.phone)}
                     aria-describedby="phone-help"
                     className="pl-9"
@@ -218,7 +253,12 @@ export function OnboardingForm() {
                 </p>
               )}
 
-              <Button type="submit" size="lg" className="w-full" disabled={pending}>
+              <Button
+                type="submit"
+                size="lg"
+                className="h-12 w-full bg-[#059669] text-base font-semibold text-white shadow-md shadow-emerald-500/20 hover:bg-[#047857]"
+                disabled={pending}
+              >
                 {pending ? (
                   "Preparando painel…"
                 ) : (

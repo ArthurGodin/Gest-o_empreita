@@ -18,6 +18,7 @@ import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { env } from "@/lib/env";
 import { serverEnv } from "@/lib/env-server";
+import { whatsappLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { DemoKitButton } from "./demo-kit-button";
 
@@ -67,15 +68,22 @@ export default async function ProductionDiagnosticsPage() {
   const appUrlIsProduction =
     !env.NEXT_PUBLIC_APP_URL.includes("localhost") &&
     !env.NEXT_PUBLIC_APP_URL.includes("127.0.0.1");
+  const companyHasPhone = Boolean(company.phone?.trim());
+  const companyWhatsappReady = Boolean(whatsappLink(company.phone));
+  const metaAdsReady = Boolean(
+    env.NEXT_PUBLIC_META_PIXEL_ID && serverEnv.META_CONVERSIONS_ACCESS_TOKEN,
+  );
 
   const items: ReadinessItem[] = [
     {
       title: "Identidade da empresa",
-      detail: company.phone
+      detail: companyWhatsappReady
         ? "Nome e WhatsApp comercial estão prontos para aparecer nos orçamentos."
-        : "Falta WhatsApp comercial. O cliente precisa saber por onde chamar.",
-      status: company.phone ? "ready" : "blocked",
-      action: company.phone
+        : companyHasPhone
+          ? "O telefone cadastrado parece invalido ou de teste. Troque pelo WhatsApp comercial real antes de vender."
+          : "Falta WhatsApp comercial. O cliente precisa saber por onde chamar.",
+      status: companyWhatsappReady ? "ready" : "blocked",
+      action: companyWhatsappReady
         ? "Manter dados revisados antes de cada demo."
         : "Cadastre o telefone em Configurações.",
       icon: MessageCircle,
@@ -101,10 +109,21 @@ export default async function ProductionDiagnosticsPage() {
       icon: BarChart3,
     },
     {
+      title: "Mensuração do Facebook Ads",
+      detail: metaAdsReady
+        ? "Meta Pixel e Conversions API estão configurados para medir o funil com mais confiabilidade."
+        : "Meta Pixel e/ou Conversions API não estão configurados. Anúncios podem vender, mas a Meta não terá mensuração suficiente para otimizar a campanha.",
+      status: metaAdsReady ? "ready" : "blocked",
+      action: metaAdsReady
+        ? "Validar eventos no Gerenciador de Eventos antes de aumentar o orçamento."
+        : "Configurar NEXT_PUBLIC_META_PIXEL_ID e META_CONVERSIONS_ACCESS_TOKEN na Vercel antes de subir campanha.",
+      icon: BarChart3,
+    },
+    {
       title: "Asaas",
       detail: serverEnv.ASAAS_API_KEY
         ? asaasIsSandbox
-          ? "Sandbox configurado e ciclo entrada -> saldo certificado. Ainda não cobra dinheiro real."
+          ? "Sandbox configurado e ciclo entrada -> saldo validado. Ainda não cobra dinheiro real."
           : "Produção configurada. Cobranças podem envolver dinheiro real."
         : "API Key do Asaas não configurada. Pix não será gerado.",
       status: serverEnv.ASAAS_API_KEY
@@ -121,8 +140,9 @@ export default async function ProductionDiagnosticsPage() {
     },
     {
       title: "Webhook Asaas",
-      detail:
-        "Token presente. Webhook já foi validado contra duplicidade, token inválido e baixa de entrada/saldo.",
+      detail: serverEnv.ASAAS_WEBHOOK_TOKEN
+        ? "Token presente. Webhook já foi validado contra duplicidade, token inválido e baixa de entrada/saldo."
+        : "Token ausente. O endpoint não consegue autenticar os eventos enviados pelo Asaas.",
       status: serverEnv.ASAAS_WEBHOOK_TOKEN ? "ready" : "blocked",
       action:
         "Conferir no painel do Asaas se a URL do webhook está ativa e sem fila pausada.",
@@ -138,6 +158,22 @@ export default async function ProductionDiagnosticsPage() {
         ? "Manter WhatsApp como canal principal até comprar domínio."
         : "Configurar RESEND_API_KEY apenas se quiser notificações por email.",
       icon: Mail,
+    },
+    {
+      title: "Alertas operacionais",
+      detail:
+        serverEnv.RESEND_API_KEY && serverEnv.EMAIL_FROM
+          ? "Falhas criticas de webhook, checkout, cadastro, PDF e frontend enviam alerta por email."
+          : "Alertas por email ainda nao estao completos. O app registra logs, mas pode nao avisar voce automaticamente.",
+      status:
+        serverEnv.RESEND_API_KEY && serverEnv.EMAIL_FROM
+          ? "ready"
+          : "attention",
+      action:
+        serverEnv.RESEND_API_KEY && serverEnv.EMAIL_FROM
+          ? "Usa ALERT_EMAIL_TO quando existir; senao envia para o email extraido de EMAIL_FROM."
+          : "Configurar RESEND_API_KEY e EMAIL_FROM na Vercel. ALERT_EMAIL_TO e recomendado como destino dedicado.",
+      icon: AlertTriangle,
     },
     {
       title: "PDF de orçamento",
@@ -168,8 +204,8 @@ export default async function ProductionDiagnosticsPage() {
   const score = Math.round((readyCount / items.length) * 100);
   const pilotStatus =
     blockedItems.length === 0
-      ? "Pronto para demo guiada"
-      : "Ajuste bloqueios antes da demo";
+      ? "Pronto para venda e tráfego controlado"
+      : "Ajuste bloqueios antes de anunciar";
   const financialProof = [
     "Orçamento aprovado vira obra com cobrança de entrada.",
     "Webhook baixa pagamento sem duplicar evento.",
@@ -243,16 +279,17 @@ export default async function ProductionDiagnosticsPage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs font-black uppercase tracking-[0.14em] text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-100">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Ciclo certificado
+              Ciclo validado
             </div>
             <h2 className="mt-4 text-xl font-black tracking-tight text-emerald-950 dark:text-emerald-50">
-              O dinheiro já fecha ponta a ponta no sandbox
+              {asaasIsSandbox
+                ? "O fluxo fecha ponta a ponta no sandbox"
+                : "O fluxo de cobrança está ativo em produção"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-emerald-900/80 dark:text-emerald-100/80">
-              O fluxo técnico de cobrança foi validado até o fim: entrada,
-              obra concluída, saldo, webhooks e financeiro. Para cobrar dinheiro
-              real, falta apenas a virada controlada para Asaas produção e um
-              teste real de baixo valor.
+              {asaasIsSandbox
+                ? "Entrada, conclusão da obra, saldo, webhooks e financeiro podem ser demonstrados sem movimentar dinheiro real."
+                : "O ambiente usa Asaas de produção e pode movimentar dinheiro real. Entrada, saldo, webhooks e financeiro já foram validados; em demos, não conclua uma nova cobrança apenas para apresentar o fluxo."}
             </p>
           </div>
 
@@ -306,7 +343,9 @@ export default async function ProductionDiagnosticsPage() {
                 "Abra o orçamento e mostre a proposta com itens e PDF.",
                 "Abra o link do cliente como se estivesse no WhatsApp.",
                 "Mostre a obra com etapas, diário, custos e cobranças.",
-                "Mostre entrada e saldo no sandbox; produção real só entra no piloto pago.",
+                asaasIsSandbox
+                  ? "Mostre entrada e saldo no sandbox, sem movimentar dinheiro real."
+                  : "Mostre o histórico já validado e não conclua uma cobrança real durante a demo.",
               ].map((step, index) => (
                 <li key={step} className="flex gap-3">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-black text-primary-foreground">
@@ -345,8 +384,12 @@ export default async function ProductionDiagnosticsPage() {
             "Baixar PDF e pedir ajuste.",
             "Criar revisão e reenviar.",
             "Aprovar como cliente.",
-            "Virar obra e gerar Pix sandbox.",
-            "Concluir etapas e liberar saldo sandbox.",
+            asaasIsSandbox
+              ? "Virar obra e gerar Pix sandbox."
+              : "Virar obra e revisar a cobrança sem concluir um novo pagamento real.",
+            asaasIsSandbox
+              ? "Concluir etapas e liberar saldo sandbox."
+              : "Concluir etapas e revisar a liberação do saldo no histórico validado.",
           ].map((step, index) => (
             <li
               key={step}

@@ -80,7 +80,7 @@ Depois da primeira venda ou primeiro piloto comprometido:
 3. Configurar:
 
 ```env
-EMAIL_FROM=Gestão Empreita <contato@mail.seudominio.com.br>
+EMAIL_FROM=Prumo <contato@mail.seudominio.com.br>
 ```
 
 4. Trocar Asaas sandbox por produção.

@@ -133,6 +133,34 @@ export function formatDocumentMasked(raw: string | null | undefined): string | n
   return "Documento cadastrado";
 }
 
+function normalizeBrazilWhatsappDigits(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+
+  if (digits.length === 10 || digits.length === 11) {
+    return digits;
+  }
+
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) {
+    return digits.slice(2);
+  }
+
+  return null;
+}
+
+function isLikelyPlaceholderPhone(localDigits: string): boolean {
+  if (/^(\d)\1+$/.test(localDigits)) return true;
+
+  const subscriber = localDigits.slice(2);
+  if (/^0+$/.test(subscriber)) return true;
+  if (/^9+$/.test(subscriber)) return true;
+
+  // Exemplos comuns em formularios e demos: (11) 9999-0000 / (11) 99999-0000.
+  if (/^9{4,5}0{4}$/.test(subscriber)) return true;
+
+  return false;
+}
+
 /**
  * Monta link wa.me, normalizando para o formato 55 + DDD + número.
  *
@@ -147,20 +175,9 @@ export function formatDocumentMasked(raw: string | null | undefined): string | n
  * melhor não gerar link do que mandar o empreiteiro pra um número errado.
  */
 export function whatsappLink(phone: string | null | undefined): string | null {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-
-  // Sem código do país (Brasil) — DDD + número
-  if (digits.length === 10 || digits.length === 11) {
-    return `https://wa.me/55${digits}`;
-  }
-
-  // Já vem com 55 na frente
-  if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) {
-    return `https://wa.me/${digits}`;
-  }
-
-  return null;
+  const localDigits = normalizeBrazilWhatsappDigits(phone);
+  if (!localDigits || isLikelyPlaceholderPhone(localDigits)) return null;
+  return `https://wa.me/55${localDigits}`;
 }
 
 export function whatsappShareLink({
@@ -171,5 +188,17 @@ export function whatsappShareLink({
   message: string;
 }): string {
   const base = whatsappLink(phone) ?? "https://wa.me/";
+  return `${base}?text=${encodeURIComponent(message)}`;
+}
+
+export function whatsappDirectShareLink({
+  phone,
+  message,
+}: {
+  phone?: string | null;
+  message: string;
+}): string | null {
+  const base = whatsappLink(phone);
+  if (!base) return null;
   return `${base}?text=${encodeURIComponent(message)}`;
 }

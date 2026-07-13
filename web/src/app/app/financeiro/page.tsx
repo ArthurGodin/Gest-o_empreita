@@ -11,7 +11,6 @@ import {
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExportButton } from "./export-button";
 import { getFinanceOverview } from "@/lib/queries/finance";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import type {
@@ -20,6 +19,7 @@ import type {
   CostCategory,
   ProjectStatus,
 } from "@/lib/supabase/types";
+import { ExportButton } from "./export-button";
 
 const CATEGORY_LABEL: Record<CostCategory, string> = {
   material: "Material",
@@ -64,17 +64,20 @@ export default async function FinanceiroPage() {
       : null;
 
   return (
-    <div className="container max-w-6xl space-y-6 py-6">
+    <div className="container max-w-6xl space-y-5 py-5 sm:space-y-6 sm:py-6">
       <PageHeader
         title="Financeiro"
         description="Uma leitura simples do dinheiro que entrou no papel, do que já virou gasto e da margem estimada."
         actions={
-          <Button asChild>
-            <Link href="/app/orcamentos/novo">
-              Novo orçamento
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportButton />
+            <Button asChild>
+              <Link href="/app/orcamentos/novo">
+                Novo orçamento
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -129,8 +132,8 @@ export default async function FinanceiroPage() {
         </div>
       ) : null}
 
-      <Card className="rounded-lg">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+      <Card className="min-w-0 rounded-lg bg-white shadow-sm">
+        <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-base">Cobranças recentes</CardTitle>
           <span className="text-xs text-muted-foreground">
             {overview.charge_rows.length} registro
@@ -144,12 +147,12 @@ export default async function FinanceiroPage() {
               obra, as parcelas aparecem aqui.
             </div>
           ) : (
-            <div className="divide-y rounded-lg border">
+            <div className="min-w-0 divide-y rounded-lg border">
               {overview.charge_rows.slice(0, 10).map((charge) => (
                 <Link
                   key={charge.id}
                   href={`/app/obras/${charge.project_id}`}
-                  className="grid gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
+                  className="grid min-w-0 gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -173,7 +176,7 @@ export default async function FinanceiroPage() {
                       ) : null}
                     </p>
                   </div>
-                  <div className="text-right text-sm font-semibold md:min-w-32">
+                  <div className="text-left text-sm font-semibold md:min-w-32 md:text-right">
                     {formatBRL(charge.amount_cents / 100)}
                   </div>
                 </Link>
@@ -184,8 +187,8 @@ export default async function FinanceiroPage() {
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <Card className="rounded-lg">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
+        <Card className="min-w-0 rounded-lg bg-white shadow-sm">
+          <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-base">Margem por obra</CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/app/obras">Ver obras</Link>
@@ -195,12 +198,12 @@ export default async function FinanceiroPage() {
             {overview.project_rows.length === 0 ? (
               <EmptyFinanceState />
             ) : (
-              <div className="divide-y rounded-lg border">
+              <div className="min-w-0 divide-y rounded-lg border">
                 {overview.project_rows.map((project) => (
                   <Link
                     key={project.id}
                     href={`/app/obras/${project.id}`}
-                    className="grid gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
+                    className="grid min-w-0 gap-3 px-4 py-4 transition-colors hover:bg-accent md:grid-cols-[minmax(0,1fr)_auto]"
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -215,7 +218,7 @@ export default async function FinanceiroPage() {
                           {project.customer_name ?? "Cliente não informado"}
                       </p>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-sm md:min-w-[380px]">
+                    <div className="grid min-w-0 grid-cols-1 gap-2 text-sm min-[420px]:grid-cols-3 md:min-w-[380px] md:gap-3">
                       <MoneyColumn
                         label="Receita"
                         value={project.approved_revenue_cents || project.budget_cents}
@@ -251,7 +254,7 @@ export default async function FinanceiroPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="rounded-lg">
+          <Card className="min-w-0 rounded-lg bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Gastos por tipo</CardTitle>
             </CardHeader>
@@ -282,7 +285,7 @@ export default async function FinanceiroPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg">
+          <Card className="min-w-0 rounded-lg bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Últimos gastos</CardTitle>
             </CardHeader>
@@ -336,19 +339,21 @@ function FinanceMetric({
 }) {
   const toneClass = {
     neutral: "bg-muted text-foreground",
-    blue: "bg-sky-50 text-sky-700",
+    blue: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
     green: "bg-emerald-50 text-emerald-700",
     red: "bg-red-50 text-red-700",
   }[tone];
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="min-w-0 rounded-lg border bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm text-muted-foreground">{label}</span>
         <span className={`rounded-md p-2 ${toneClass}`}>{icon}</span>
       </div>
-      <div className="mt-3 text-2xl font-semibold tracking-normal">{value}</div>
+      <div className="mt-3 break-words text-xl font-semibold tracking-normal text-slate-950 sm:text-2xl">
+        {value}
+      </div>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
   );
@@ -363,7 +368,7 @@ function chargeStatusClass(status: ChargeStatus) {
     return `${base} bg-red-50 text-red-700`;
   }
   if (status === "pending") {
-    return `${base} bg-sky-50 text-sky-700`;
+    return `${base} bg-emerald-50 text-emerald-700`;
   }
   return `${base} bg-muted text-muted-foreground`;
 }

@@ -19,11 +19,14 @@ interface CustomerFormProps {
   customer?: Customer;
   /** Para onde voltar/ir após salvar. */
   cancelHref?: string;
+  /** Quando criado a partir do fluxo de venda, volta direto para novo orçamento. */
+  afterCreate?: "customer" | "quote";
 }
 
 export function CustomerForm({
   customer,
   cancelHref = "/app/clientes",
+  afterCreate = "customer",
 }: CustomerFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -47,7 +50,11 @@ export function CustomerForm({
         return;
       }
 
-      router.push(`/app/clientes/${result.id}`);
+      router.push(
+        !isEdit && afterCreate === "quote"
+          ? `/app/orcamentos/novo?cliente=${result.id}`
+          : `/app/clientes/${result.id}`,
+      );
       router.refresh();
     });
   }
@@ -87,7 +94,7 @@ export function CustomerForm({
               type="tel"
               inputMode="tel"
               defaultValue={customer?.phone ?? ""}
-              placeholder="(86) 99999-0000"
+              placeholder="Digite o WhatsApp do cliente"
             />
           </div>
           <div className="space-y-2">
@@ -208,7 +215,9 @@ export function CustomerForm({
             ? "Salvando…"
             : isEdit
               ? "Salvar alterações"
-              : "Cadastrar cliente"}
+              : afterCreate === "quote"
+                ? "Cadastrar e criar orçamento"
+                : "Cadastrar cliente"}
         </Button>
       </div>
     </form>

@@ -21,7 +21,7 @@ export default function TermsPage() {
           Termos de Uso
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Última atualização: 01/06/2026
+          Última atualização: 13/07/2026
         </p>
 
         <div className="mt-8 space-y-6 leading-7 text-muted-foreground">
@@ -61,7 +61,33 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
-              4. Disponibilidade
+              4. Planos e pagamento
+            </h2>
+            <p className="mt-2">
+              O Plano Grátis possui os limites informados na página de preços.
+              Os planos Pro e Ultimate são assinaturas mensais processadas pelo
+              Asaas e liberadas após a confirmação do pagamento. Falha,
+              estorno, chargeback ou atraso da assinatura ativa pode suspender
+              os recursos pagos e retornar a conta ao Plano Grátis.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
+              5. Cancelamento
+            </h2>
+            <p className="mt-2">
+              O proprietário da empresa pode cancelar a assinatura na tela de
+              planos. A recorrência é encerrada e a conta volta ao Plano Grátis
+              imediatamente. O cancelamento comum não gera reembolso
+              automático, sem prejuízo dos direitos assegurados pela legislação
+              aplicável.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
+              6. Disponibilidade
             </h2>
             <p className="mt-2">
               Buscamos manter o serviço estável, mas interrupções podem ocorrer
@@ -73,7 +99,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
-              5. Limitação
+              7. Limitação
             </h2>
             <p className="mt-2">
               O sistema apoia decisões de gestão, mas não substitui contabilidade,
@@ -84,12 +110,12 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
-              6. Contato
+              8. Contato
             </h2>
             <p className="mt-2">
-              Dúvidas sobre estes termos devem ser enviadas ao responsável pelo
-              produto. Antes de uso comercial em escala, este texto deve ser
-              revisado por assessoria jurídica.
+              Dúvidas, solicitações de cancelamento relacionadas a direitos
+              legais e questões sobre estes termos devem ser enviadas pelo canal
+              de atendimento informado durante a contratação do Prumo.
             </p>
           </section>
         </div>

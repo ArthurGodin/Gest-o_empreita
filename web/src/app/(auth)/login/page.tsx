@@ -62,16 +62,16 @@ function LoginForm() {
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm">
-      <CardHeader className="space-y-2 pb-6">
+    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
+      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
         <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
           Entrar
         </CardTitle>
-        <CardDescription className="text-sm font-medium text-slate-500">
+        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
           Acesse seus orçamentos, obras, cobranças e margem em um só painel.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
         <form action={onSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label
@@ -92,7 +92,7 @@ function LoginForm() {
               placeholder="contato@empresa.com.br"
               aria-invalid={Boolean(fieldErrors?.email)}
               aria-describedby={fieldErrors?.email ? "login-email-error" : undefined}
-              className="h-12 border-slate-200 bg-slate-50 transition-colors focus:border-[#059669] focus:ring-[#059669]"
+              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.email?.[0] ? (
               <p id="login-email-error" className="text-sm font-medium text-red-500">
@@ -113,7 +113,7 @@ function LoginForm() {
                 href="/forgot-password"
                 className="text-xs font-bold text-[#059669] hover:underline"
               >
-                Esqueci minha senha
+                Esqueci a senha
               </Link>
             </div>
             <Input
@@ -128,7 +128,7 @@ function LoginForm() {
               aria-describedby={
                 fieldErrors?.password ? "login-password-error" : undefined
               }
-              className="h-12 border-slate-200 bg-slate-50 transition-colors focus:border-[#059669] focus:ring-[#059669]"
+              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.password?.[0] ? (
               <p id="login-password-error" className="text-sm font-medium text-red-500">
@@ -149,7 +149,7 @@ function LoginForm() {
 
           <Button
             type="submit"
-            className="h-12 w-full rounded-xl bg-[#059669] text-base font-bold shadow-lg shadow-[#059669]/20 transition-all hover:scale-[1.02] hover:bg-[#047857] hover:shadow-xl hover:shadow-[#059669]/30"
+            className="h-[3.25rem] w-full rounded-xl bg-[#059669] text-base font-bold shadow-lg shadow-[#059669]/20 transition-all hover:scale-[1.02] hover:bg-[#047857] hover:shadow-xl hover:shadow-[#059669]/30"
             disabled={pending}
           >
             {pending ? "Entrando..." : "Entrar no painel"}
@@ -173,16 +173,16 @@ function LoginForm() {
 
 function LoginFallback() {
   return (
-    <Card className="overflow-hidden rounded-2xl border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm">
-      <CardHeader className="space-y-2 pb-6">
+    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
+      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
         <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
           Entrar
         </CardTitle>
-        <CardDescription className="text-sm font-medium text-slate-500">
+        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
           Preparando acesso seguro ao painel.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
         <div className="space-y-4">
           <div className="h-12 rounded-xl bg-slate-100" />
           <div className="h-12 rounded-xl bg-slate-100" />

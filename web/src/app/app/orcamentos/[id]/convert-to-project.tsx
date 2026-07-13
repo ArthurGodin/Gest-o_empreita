@@ -6,6 +6,7 @@ import { HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -55,10 +56,7 @@ export function ConvertToProject({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  // Default: primeiro template system (Cobertura nova, se seed rodou)
-  const defaultTemplate =
-    templates.find((t) => t.is_system)?.id ?? NO_TEMPLATE;
-  const [templateId, setTemplateId] = useState(defaultTemplate);
+  const [templateId, setTemplateId] = useState(NO_TEMPLATE);
   const [entryPct, setEntryPct] = useState("30");
   const [cpfCnpj, setCpfCnpj] = useState(customerDocument ?? "");
 
@@ -95,8 +93,23 @@ export function ConvertToProject({
           has_template: Boolean(tpl),
           entry_pct: validEntryPct,
           has_customer_document: Boolean(cpfCnpj.trim()),
+          billing_warning: Boolean(result.billing_warning),
         });
-        router.push(`/app/obras/${result.project_id}`);
+        if (result.billing_warning) {
+          toast({
+            variant: "destructive",
+            title: "Obra criada, cobrança pendente",
+            description: result.billing_warning,
+          });
+          router.push(`/app/obras/${result.project_id}?cobranca=atencao#cobranca`);
+        } else {
+          toast({
+            variant: "success",
+            title: "Obra criada",
+            description: "Confira o Pix da entrada na seção de cobrança.",
+          });
+          router.push(`/app/obras/${result.project_id}#cobranca`);
+        }
         router.refresh();
       } catch (e) {
         console.error("[convert] action threw:", e);

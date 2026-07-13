@@ -16,14 +16,70 @@ export interface LoggableError {
   status?: number | null;
 }
 
-export function logServerError(scope: string, error: LoggableError | unknown) {
+type LogValue = string | number | boolean | null;
+type LogContext = Record<string, LogValue | LogValue[] | undefined>;
+type LogLevel = "info" | "warn" | "error";
+
+export function logServerEvent(message: string, context: LogContext = {}) {
+  writeStructuredLog("info", message, context);
+}
+
+export function logServerWarning(message: string, context: LogContext = {}) {
+  writeStructuredLog("warn", message, context);
+}
+
+export function logServerError(
+  scope: string,
+  error: LoggableError | unknown,
+  context: LogContext = {},
+) {
   const e = (error ?? {}) as LoggableError;
   // Trunca a mensagem pra mitigar leak de PII (Supabase às vezes ecoa fragmentos
   // de payload em mensagens de constraint violation).
   const msg = (e.message ?? String(error)).slice(0, 200);
-  console.error(
-    `[${scope}] ${e.code ?? "no-code"} ${e.name ?? ""} :: ${msg}`,
-  );
+  writeStructuredLog("error", scope, {
+    ...context,
+    scope,
+    error_code: e.code ?? "no-code",
+    error_name: e.name ?? null,
+    error_status: e.status ?? null,
+    error_message: msg,
+  });
+}
+
+function writeStructuredLog(
+  level: LogLevel,
+  message: string,
+  context: LogContext,
+) {
+  const payload = JSON.stringify({
+    level,
+    message,
+    timestamp: new Date().toISOString(),
+    ...compactContext(context),
+  });
+
+  if (level === "error") {
+    console.error(payload);
+    return;
+  }
+
+  if (level === "warn") {
+    console.warn(payload);
+    return;
+  }
+
+  console.log(payload);
+}
+
+function compactContext(context: LogContext) {
+  const compacted: Record<string, LogValue | LogValue[]> = {};
+
+  for (const [key, value] of Object.entries(context)) {
+    if (value !== undefined) compacted[key] = value;
+  }
+
+  return compacted;
 }
 
 /**

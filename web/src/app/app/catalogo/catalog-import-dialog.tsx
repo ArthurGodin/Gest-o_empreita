@@ -100,7 +100,7 @@ export function CatalogImportDialog({
         )}
       >
         <Upload className="h-4 w-4" />
-        Importar planilha
+        Importar CSV
       </Button>
 
       <Dialog
@@ -118,9 +118,9 @@ export function CatalogImportDialog({
             <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700">
               <FileSpreadsheet className="h-5 w-5" />
             </div>
-            <DialogTitle>Importar catálogo por planilha</DialogTitle>
+            <DialogTitle>Importar catálogo por CSV</DialogTitle>
             <DialogDescription>
-              Traga sua tabela antiga de serviços e materiais para o Prumo. O
+              Traga sua base antiga de serviços e materiais para o Prumo. O
               sistema cria itens novos e atualiza itens com a mesma descrição.
             </DialogDescription>
           </DialogHeader>

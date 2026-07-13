@@ -135,10 +135,10 @@ export function QuoteList({ quotes }: QuoteListProps) {
                 aria-pressed={active}
                 onClick={() => onStatusChange(opt.value)}
                 className={cn(
-                  "inline-flex min-h-11 items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
                   active
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-background hover:bg-accent",
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-input bg-white hover:bg-accent hover:text-accent-foreground",
                 )}
               >
                 <span>{opt.label}</span>
@@ -192,9 +192,9 @@ export function QuoteList({ quotes }: QuoteListProps) {
           </div>
         </div>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((quote) => (
-            <li key={quote.id}>
+            <li key={quote.id} className="min-w-0">
               <QuoteCard quote={quote} />
             </li>
           ))}
@@ -209,7 +209,7 @@ function QuoteCard({ quote }: { quote: QuoteListItem }) {
   const colors = COLOR_CLASSES[colorKey];
 
   return (
-    <div className="group relative rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 focus-within:border-primary/40">
+    <div className="group relative min-w-0 overflow-hidden rounded-xl border bg-white p-4 shadow-sm transition-colors hover:border-primary/40 focus-within:border-primary/40">
       <Link
         href={`/app/orcamentos/${quote.id}`}
         aria-label={`Abrir orçamento ${quote.number}`}
@@ -217,18 +217,18 @@ function QuoteCard({ quote }: { quote: QuoteListItem }) {
       />
 
       <div className="pointer-events-none relative space-y-2">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-col gap-2 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
           <div className="min-w-0 flex-1">
             <div className="font-mono text-xs text-muted-foreground">
               {quote.number}
             </div>
-            <h3 className="truncate font-semibold leading-tight">
+            <h3 className="line-clamp-2 break-words font-semibold leading-tight text-slate-950">
               {quote.title}
             </h3>
           </div>
           <span
             className={cn(
-              "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+              "w-fit max-w-full shrink-0 truncate rounded-full px-2 py-0.5 text-xs font-medium",
               colors.bg,
               colors.text,
             )}
@@ -243,13 +243,13 @@ function QuoteCard({ quote }: { quote: QuoteListItem }) {
           </div>
         )}
 
-        <div className="flex items-end justify-between pt-1">
-          <div className="text-xs text-muted-foreground">
+        <div className="flex min-w-0 flex-col gap-1 pt-1 min-[420px]:flex-row min-[420px]:items-end min-[420px]:justify-between">
+          <div className="text-xs leading-5 text-muted-foreground">
             {quote.valid_until
               ? `Válido até ${formatDateBR(quote.valid_until)}`
               : "Sem validade"}
           </div>
-          <div className="text-lg font-bold text-primary">
+          <div className="text-base font-bold text-primary min-[420px]:text-lg">
             {formatBRL(quote.total_cents / 100)}
           </div>
         </div>

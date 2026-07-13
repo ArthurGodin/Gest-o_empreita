@@ -39,20 +39,28 @@ export const ContainerScroll = ({
   const translate = useTransform(scrollYProgressLocal, [0, 1], [0, -100]);
 
   return (
-    <div
-      className="h-[60rem] md:h-[80rem] flex items-center justify-center relative p-2 md:p-20 w-full"
-      ref={containerRef}
-    >
-      <div
-        className="py-10 md:py-40 w-full relative"
-        style={{
-          perspective: "1000px",
-        }}
-      >
-        <Header translate={translate} titleComponent={titleComponent} />
-        <Card rotate={rotate} translate={translate} scale={scale}>
-          {children}
-        </Card>
+    <div className="relative w-full" ref={containerRef}>
+      <div className="flex w-full flex-col items-center px-4 pb-10 pt-2 md:hidden">
+        <div className="w-full max-w-md text-center">{titleComponent}</div>
+        <div className="mt-6 w-full max-w-[19rem] rounded-[1.5rem] border-[5px] border-slate-800 bg-slate-900 p-1.5 shadow-2xl shadow-slate-900/25">
+          <div className="h-[18.5rem] overflow-hidden rounded-[1.1rem] bg-slate-100">
+            {children}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative hidden h-[80rem] w-full items-center justify-center p-20 md:flex">
+        <div
+          className="relative w-full py-40"
+          style={{
+            perspective: "1000px",
+          }}
+        >
+          <Header translate={translate} titleComponent={titleComponent} />
+          <Card rotate={rotate} translate={translate} scale={scale}>
+            {children}
+          </Card>
+        </div>
       </div>
     </div>
   );

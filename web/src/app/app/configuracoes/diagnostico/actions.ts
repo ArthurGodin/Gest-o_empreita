@@ -199,7 +199,15 @@ async function ensureDemoCustomer(
     .maybeSingle();
 
   if (existingError) throw existingError;
-  if (existing?.id) return existing.id;
+  if (existing?.id) {
+    const { error: updateError } = await supabase
+      .from("customers")
+      .update({ phone: null })
+      .eq("id", existing.id)
+      .eq("company_id", companyId);
+    if (updateError) throw updateError;
+    return existing.id;
+  }
 
   const { data, error } = await supabase
     .from("customers")
@@ -207,7 +215,7 @@ async function ensureDemoCustomer(
       company_id: companyId,
       name: DEMO_CUSTOMER_NAME,
       document: "52998224725",
-      phone: "86999990000",
+      phone: null,
       email: "cliente.demo@example.com",
       address: "Rua das Palmeiras, 120",
       city: "Timon",

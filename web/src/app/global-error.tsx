@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { trackProductEvent } from "@/lib/product-analytics";
 
 /**
  * Error boundary global do site (landing, auth, etc).
@@ -13,6 +15,12 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    trackProductEvent("global_error_boundary", {
+      digest: error.digest ?? null,
+    });
+  }, [error]);
+
   return (
     <html lang="pt-BR">
       <body className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-4">

@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { sendOperationalAlert } from "@/lib/alerts";
 import {
   buildBillingChargeWebhookPatch,
   chargeStatusForAsaasEvent,
@@ -7,6 +8,7 @@ import {
 } from "@/lib/asaas/webhook-events";
 import { validateAsaasWebhookToken } from "@/lib/asaas/webhook-verify";
 import type { AsaasWebhookPayload } from "@/lib/asaas/types";
+import { logServerError, logServerEvent, logServerWarning } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdminClient } from "@/lib/supabase/admin";
 import type { ChargeStatus, Json } from "@/lib/supabase/types";
@@ -14,14 +16,25 @@ import type { ChargeStatus, Json } from "@/lib/supabase/types";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const start = Date.now();
+  const requestId = request.headers.get("x-vercel-id");
+
   if (!validateAsaasWebhookToken(request.headers.get("asaas-access-token"))) {
+    logServerWarning("asaas.webhook.unauthorized", {
+      request_id: requestId,
+      ms: Date.now() - start,
+    });
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
   let payload: AsaasWebhookPayload;
   try {
     payload = (await request.json()) as AsaasWebhookPayload;
-  } catch {
+  } catch (error) {
+    logServerError("asaas.webhook.invalid_json", error, {
+      request_id: requestId,
+      ms: Date.now() - start,
+    });
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
@@ -30,6 +43,12 @@ export async function POST(request: Request) {
   const asaasPaymentId = payload.payment?.id ?? null;
 
   if (!asaasEventId || !eventType) {
+    logServerWarning("asaas.webhook.invalid_payload", {
+      request_id: requestId,
+      has_event_id: Boolean(asaasEventId),
+      has_event_type: Boolean(eventType),
+      ms: Date.now() - start,
+    });
     return NextResponse.json(
       { ok: false, error: "invalid_payload" },
       { status: 400 },
@@ -45,18 +64,54 @@ export async function POST(request: Request) {
   });
 
   if (!eventRow.ok) {
+    logServerError("asaas.webhook.event_register_failed", null, {
+      request_id: requestId,
+      event_type: eventType,
+      asaas_event_id: asaasEventId,
+      asaas_payment_id: asaasPaymentId,
+      ms: Date.now() - start,
+    });
+    await sendOperationalAlert({
+      area: "asaas_webhook",
+      severity: "critical",
+      title: "Webhook Asaas nao registrou evento",
+      message:
+        "O webhook recebeu um evento do Asaas, mas nao conseguiu registrar o evento localmente. Pode haver falha de banco ou duplicidade mal resolvida.",
+      dedupeKey: `asaas-register-${eventType}`,
+      context: {
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        request_id: requestId,
+        ms: Date.now() - start,
+      },
+    });
     return NextResponse.json(
       { ok: false, error: "event_register_failed" },
       { status: 500 },
     );
   }
   if (eventRow.duplicateProcessed) {
+    logServerEvent("asaas.webhook.duplicate_processed", {
+      request_id: requestId,
+      event_type: eventType,
+      asaas_event_id: asaasEventId,
+      asaas_payment_id: asaasPaymentId,
+      ms: Date.now() - start,
+    });
     return NextResponse.json({ ok: true, duplicate: true });
   }
 
   const localStatus = chargeStatusForAsaasEvent(eventType);
   if (!localStatus || !asaasPaymentId) {
     await markWebhookEventProcessed(admin, eventRow.id);
+    logServerEvent("asaas.webhook.ignored", {
+      request_id: requestId,
+      event_type: eventType,
+      asaas_event_id: asaasEventId,
+      asaas_payment_id: asaasPaymentId,
+      ms: Date.now() - start,
+    });
     return NextResponse.json({ ok: true, ignored: true });
   }
 
@@ -68,6 +123,30 @@ export async function POST(request: Request) {
 
   if (!chargeResult.ok) {
     await markWebhookEventFailed(admin, eventRow.id, chargeResult.error);
+    logServerError("asaas.webhook.charge_lookup_failed", {
+      message: chargeResult.error,
+    }, {
+      request_id: requestId,
+      event_type: eventType,
+      asaas_event_id: asaasEventId,
+      asaas_payment_id: asaasPaymentId,
+      ms: Date.now() - start,
+    });
+    await sendOperationalAlert({
+      area: "asaas_webhook",
+      severity: "critical",
+      title: "Webhook Asaas falhou ao buscar cobranca",
+      message:
+        "O webhook recebeu pagamento do Asaas, mas falhou ao localizar a cobranca local. A baixa automatica pode nao acontecer.",
+      dedupeKey: `asaas-charge-lookup-${eventType}`,
+      context: {
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        request_id: requestId,
+        ms: Date.now() - start,
+      },
+    });
     return NextResponse.json(
       { ok: false, error: "charge_lookup_failed" },
       { status: 500 },
@@ -77,14 +156,77 @@ export async function POST(request: Request) {
   const charge = chargeResult.charge;
   if (!charge) {
     const { processSaasSubscriptionWebhook } = await import("@/lib/asaas/webhook-saas");
-    const saasHandled = await processSaasSubscriptionWebhook(admin, payload);
+    let saasHandled = false;
+    try {
+      saasHandled = await processSaasSubscriptionWebhook(admin, payload);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "saas_subscription_failed";
+      await markWebhookEventFailed(admin, eventRow.id, message);
+      logServerError("asaas.webhook.saas_subscription_failed", error, {
+        request_id: requestId,
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        ms: Date.now() - start,
+      });
+      await sendOperationalAlert({
+        area: "asaas_webhook",
+        severity: "critical",
+        title: "Webhook nao ativou assinatura SaaS",
+        message:
+          "Um pagamento de assinatura SaaS foi recebido, mas a ativacao/downgrade do plano falhou.",
+        dedupeKey: `asaas-saas-subscription-${eventType}`,
+        context: {
+          event_type: eventType,
+          asaas_event_id: asaasEventId,
+          asaas_payment_id: asaasPaymentId,
+          request_id: requestId,
+          error_name: error instanceof Error ? error.name : "unknown",
+          ms: Date.now() - start,
+        },
+      });
+      return NextResponse.json(
+        { ok: false, error: "saas_subscription_failed" },
+        { status: 500 },
+      );
+    }
     
     if (saasHandled) {
       await markWebhookEventProcessed(admin, eventRow.id);
+      logServerEvent("asaas.webhook.saas_subscription_processed", {
+        request_id: requestId,
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        ms: Date.now() - start,
+      });
       return NextResponse.json({ ok: true, saas_subscription: true });
     }
 
     await markWebhookEventProcessed(admin, eventRow.id);
+    logServerWarning("asaas.webhook.unknown_payment", {
+      request_id: requestId,
+      event_type: eventType,
+      asaas_event_id: asaasEventId,
+      asaas_payment_id: asaasPaymentId,
+      ms: Date.now() - start,
+    });
+    await sendOperationalAlert({
+      area: "asaas_webhook",
+      severity: "warning",
+      title: "Webhook Asaas recebeu pagamento desconhecido",
+      message:
+        "O Asaas enviou um pagamento que nao foi associado a cobranca de obra nem assinatura SaaS.",
+      dedupeKey: `asaas-unknown-payment-${eventType}`,
+      context: {
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        request_id: requestId,
+        ms: Date.now() - start,
+      },
+    });
     return NextResponse.json({ ok: true, unknown_payment: true });
   }
 
@@ -116,6 +258,32 @@ export async function POST(request: Request) {
 
     if (updateError) {
       await markWebhookEventFailed(admin, eventRow.id, updateError.message);
+      logServerError("asaas.webhook.charge_update_failed", updateError, {
+        request_id: requestId,
+        event_type: eventType,
+        asaas_event_id: asaasEventId,
+        asaas_payment_id: asaasPaymentId,
+        charge_id: charge.id,
+        project_id: charge.project_id,
+        ms: Date.now() - start,
+      });
+      await sendOperationalAlert({
+        area: "asaas_webhook",
+        severity: "critical",
+        title: "Webhook Asaas nao atualizou cobranca",
+        message:
+          "O webhook localizou a cobranca, mas falhou ao atualizar status/pagamento. O financeiro pode ficar incorreto.",
+        dedupeKey: `asaas-charge-update-${eventType}`,
+        context: {
+          event_type: eventType,
+          asaas_event_id: asaasEventId,
+          asaas_payment_id: asaasPaymentId,
+          charge_id: charge.id,
+          project_id: charge.project_id,
+          request_id: requestId,
+          ms: Date.now() - start,
+        },
+      });
       return NextResponse.json(
         { ok: false, error: "charge_update_failed" },
         { status: 500 },
@@ -126,6 +294,16 @@ export async function POST(request: Request) {
   await markWebhookEventProcessed(admin, eventRow.id);
   revalidatePath(`/app/obras/${charge.project_id}`);
   revalidatePath("/app/financeiro");
+  logServerEvent("asaas.webhook.charge_processed", {
+    request_id: requestId,
+    event_type: eventType,
+    asaas_event_id: asaasEventId,
+    asaas_payment_id: asaasPaymentId,
+    charge_id: charge.id,
+    project_id: charge.project_id,
+    status: patch.status ?? charge.status,
+    ms: Date.now() - start,
+  });
 
   return NextResponse.json({ ok: true });
 }
@@ -209,7 +387,11 @@ async function registerWebhookEvent(
   }
 
   if (error?.code !== "23505") {
-    console.error("[asaas.webhook] register failed", error);
+    logServerError("asaas.webhook.register_failed", error, {
+      event_type: input.eventType,
+      asaas_event_id: input.asaasEventId,
+      asaas_payment_id: input.asaasPaymentId,
+    });
     return { ok: false };
   }
 
@@ -220,7 +402,11 @@ async function registerWebhookEvent(
     .maybeSingle();
 
   if (existingError || !existing) {
-    console.error("[asaas.webhook] duplicate lookup failed", existingError);
+    logServerError("asaas.webhook.duplicate_lookup_failed", existingError, {
+      event_type: input.eventType,
+      asaas_event_id: input.asaasEventId,
+      asaas_payment_id: input.asaasPaymentId,
+    });
     return { ok: false };
   }
 

@@ -69,6 +69,11 @@ export interface Database {
           saas_asaas_customer_id: string | null;
           saas_asaas_subscription_id: string | null;
           saas_asaas_subscription_plan: string | null;
+          saas_pending_payment_link_id: string | null;
+          saas_pending_payment_link_url: string | null;
+          saas_pending_plan: string | null;
+          saas_pending_checkout_token: string | null;
+          saas_pending_checkout_started_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -94,6 +99,11 @@ export interface Database {
           saas_asaas_customer_id?: string | null;
           saas_asaas_subscription_id?: string | null;
           saas_asaas_subscription_plan?: string | null;
+          saas_pending_payment_link_id?: string | null;
+          saas_pending_payment_link_url?: string | null;
+          saas_pending_plan?: string | null;
+          saas_pending_checkout_token?: string | null;
+          saas_pending_checkout_started_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

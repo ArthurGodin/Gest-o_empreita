@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { sendOperationalAlert } from "@/lib/alerts";
 import { env } from "@/lib/env";
-import { logServerError } from "@/lib/log";
+import { logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
@@ -102,6 +103,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
 }
 
 export async function signupAction(formData: FormData): Promise<AuthResult> {
+  const plan = normalizePaidPlan(formData.get("plan")?.toString());
   const parsed = signupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -126,7 +128,22 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   });
 
   if (error) {
-    logServerError("auth.signup", error);
+    logServerError("auth.signup", error, {
+      target_plan: plan ?? "free",
+    });
+    await sendOperationalAlert({
+      area: "auth",
+      severity: "warning",
+      title: "Falha ao criar conta",
+      message:
+        "Uma tentativa de cadastro falhou no Supabase Auth. Verifique logs de auth e limites do provedor.",
+      dedupeKey: `auth-signup-${error.name ?? "error"}-${error.status ?? "unknown"}`,
+      context: {
+        target_plan: plan ?? "free",
+        error_name: error.name ?? null,
+        error_status: error.status ?? null,
+      },
+    });
     return {
       ok: false,
       error:
@@ -134,7 +151,9 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
     };
   }
 
-  const plan = normalizePaidPlan(formData.get("plan")?.toString());
+  logServerEvent("auth.signup.succeeded", {
+    target_plan: plan ?? "free",
+  });
 
   revalidatePath("/", "layout");
   redirect(plan ? `/onboarding?plan=${plan}` : "/onboarding");

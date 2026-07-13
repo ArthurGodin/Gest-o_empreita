@@ -14,7 +14,7 @@
 --
 -- with new_company as (
 --   insert into public.companies (name, legal_name, phone, city, state)
---   values ('Coberturas do Léo', 'Coberturas do Léo LTDA', '(11) 99999-0000', 'São Paulo', 'SP')
+--   values ('Coberturas do Léo', 'Coberturas do Léo LTDA', null, 'São Paulo', 'SP')
 --   returning id
 -- )
 -- insert into public.company_members (company_id, user_id, role)

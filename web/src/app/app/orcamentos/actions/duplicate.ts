@@ -1,76 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { clientErrorFor, logServerError } from "@/lib/log";
-import { generateShareToken, isShareTokenUrlSafe } from "@/lib/quote-token";
-import { env } from "@/lib/env";
-import { checkSendReadiness } from "@/lib/quote-status";
-import { addDaysBR, todayBR } from "@/lib/dates";
+import { generateShareToken } from "@/lib/quote-token";
+import { addDaysBR } from "@/lib/dates";
 import { normalizeQuoteUnit } from "@/lib/format";
-import { isValidCpfCnpj, normalizeCpfCnpj } from "@/lib/br-documents";
-import { createLocalCharges } from "@/lib/billing/asaas";
 import {
-  companyPrefersManualPix,
-  companyUsesManualPix,
-  generatePreferredPixForCharge,
-} from "@/lib/billing/provider";
-import { entryChargeValidationMessage } from "@/lib/billing/entry-percent";
+  FREE_MONTHLY_QUOTE_LIMIT,
+  getFreeQuoteQuotaMonthStart,
+} from "@/lib/plans";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
-
-const itemDraftSchema = z.object({
-  description: z
-    .string()
-    .trim()
-    .min(1, "Descrição vazia")
-    .max(500, "Descrição muito longa (máx 500 caracteres)"),
-  unit: z.string().trim().max(10).transform(normalizeQuoteUnit),
-  quantity: z
-    .number()
-    .finite()
-    .min(0, "Quantidade não pode ser negativa")
-    .max(1_000_000, "Quantidade muito grande"),
-  unit_price_cents: z.number().int().min(0).max(1_000_000_000_00),
-  catalog_item_id: z.string().uuid().optional().nullable(),
-});
-
-const updateQuoteSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(1, "Adicione um título")
-    .max(200, "Título muito longo (máx 200 caracteres)"),
-  description: z
-    .string()
-    .trim()
-    .max(5000, "Descrição muito longa (máx 5000 caracteres)")
-    .optional()
-    .or(z.literal("")),
-  customer_id: z.string().uuid("Cliente inválido"),
-  valid_until: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (use YYYY-MM-DD)")
-    .optional()
-    .or(z.literal("")),
-  notes: z
-    .string()
-    .trim()
-    .max(5000, "Observações muito longas (máx 5000 caracteres)")
-    .optional()
-    .or(z.literal("")),
-  items: z.array(itemDraftSchema).max(200, "Máximo 200 itens por orçamento"),
-});
 
 export type QuoteActionResult =
   | { ok: true; id: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
-
-function publicQuoteUrl(token: string) {
-  return `${env.NEXT_PUBLIC_APP_URL}/q/${token}`;
-}
 
 function isMissingRevisionColumn(error: unknown) {
   const err = error as { code?: string; message?: string; details?: string };
@@ -82,15 +28,6 @@ function isMissingRevisionColumn(error: unknown) {
   );
 }
 
-function isMissingWhatsappSentColumn(error: unknown) {
-  const err = error as { code?: string; message?: string; details?: string };
-  const text = `${err?.message ?? ""} ${err?.details ?? ""}`;
-  return (
-    err?.code === "42703" ||
-    err?.code === "PGRST204" ||
-    text.includes("whatsapp_sent_at")
-  );
-}
 
 // ─── Duplicate ─────────────────────────────────────────────────────────────
 
@@ -118,16 +55,18 @@ export async function duplicateQuoteAction(
     .single();
 
   if (companyData?.plan === "free") {
-    const FREE_MAX_QUOTES = 5;
+    const quotaStart = getFreeQuoteQuotaMonthStart();
     const { count } = await supabase
       .from("quotes")
       .select("id", { count: "exact", head: true })
-      .eq("company_id", company.company_id);
+      .eq("company_id", company.company_id)
+      .gte("created_at", quotaStart);
 
-    if (count != null && count >= FREE_MAX_QUOTES) {
+    if (count != null && count >= FREE_MONTHLY_QUOTE_LIMIT) {
       return {
         ok: false,
-        error: "Limite atingido! O plano Grátis permite até 5 orçamentos. Faça o upgrade para duplicar e criar orçamentos ilimitados.",
+        error:
+          "Você chegou ao limite do Plano Grátis: 3 orçamentos neste mês. Assine o Pro para duplicar e criar orçamentos sem limite.",
       };
     }
   }

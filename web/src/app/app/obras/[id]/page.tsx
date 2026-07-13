@@ -24,10 +24,14 @@ export async function generateMetadata({
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ cobranca?: string }>;
 }) {
   const { id } = await params;
+  const query = searchParams ? await searchParams : {};
+  const conversionBillingAttention = query.cobranca === "atencao";
   const [project, templates] = await Promise.all([
     getProjectWithRelations(id),
     listTemplates(),
@@ -58,6 +62,7 @@ export default async function ProjectDetailPage({
         projectStatus={project.status}
         budgetCents={project.budget_cents}
         deliveryApprovedAt={project.delivery_approved_at}
+        conversionBillingAttention={conversionBillingAttention}
       />
 
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">

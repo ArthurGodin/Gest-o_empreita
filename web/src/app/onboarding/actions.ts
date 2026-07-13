@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { clientErrorFor, logServerError } from "@/lib/log";
+import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
 
 const schema = z.object({
@@ -21,7 +20,7 @@ const schema = z.object({
 });
 
 export type OnboardingResult =
-  | { ok: true }
+  | { ok: true; redirectTo: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 /** Converte string vazia em null para colunas opcionais. */
@@ -36,6 +35,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 export async function createCompanyAction(
   formData: FormData,
 ): Promise<OnboardingResult> {
+  const plan = normalizePaidPlan(formData.get("plan")?.toString());
   const parsed = schema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -76,7 +76,10 @@ export async function createCompanyAction(
   }
   if (existingMemberships && existingMemberships.length > 0) {
     // Já onboardou — manda pro app. Não retorna erro.
-    redirect("/app");
+    logServerEvent("onboarding.already_completed", {
+      target_plan: plan ?? "free",
+    });
+    return { ok: true, redirectTo: "/app" };
   }
 
   // 3. Bootstrap: cria company + membership via admin (RLS bypass justificado
@@ -119,11 +122,18 @@ export async function createCompanyAction(
     return { ok: false, error: clientErrorFor(memberError) };
   }
 
-  const plan = normalizePaidPlan(formData.get("plan")?.toString());
+  logServerEvent("onboarding.completed", {
+    company_id: companyId,
+    target_plan: plan ?? "free",
+    redirects_to_checkout: Boolean(plan),
+  });
 
   revalidatePath("/", "layout");
   if (plan) {
-    redirect(`/app/configuracoes/plano/checkout?plan=${plan}`);
+    return {
+      ok: true,
+      redirectTo: `/app/configuracoes/plano/checkout?plan=${plan}`,
+    };
   }
-  redirect("/app");
+  return { ok: true, redirectTo: "/app" };
 }

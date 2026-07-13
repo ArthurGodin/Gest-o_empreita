@@ -22,7 +22,7 @@ export interface FirstMoneyStep {
 }
 
 export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const doneCount = steps.filter((step) => step.done).length;
   const nextStep = steps.find((step) => !step.done) ?? steps.at(-1);
@@ -34,21 +34,21 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
     <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 sm:p-5 flex items-center justify-between bg-card hover:bg-accent/50 transition-colors text-left"
+        className="flex w-full items-center justify-between bg-card p-4 text-left transition-colors hover:bg-accent/50"
       >
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary shrink-0">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Rocket className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-base font-semibold">
+            <p className="text-sm font-semibold sm:text-base">
               Roteiro para receber a primeira entrada
             </p>
-            {!isExpanded && (
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {doneCount}/{steps.length} passos concluídos
-              </p>
-            )}
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {!isExpanded
+                ? `${doneCount}/${steps.length} passos concluídos · próximo: ${nextStep.title}`
+                : `${doneCount}/${steps.length} passos concluídos`}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -72,8 +72,8 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="border-t grid gap-0 lg:grid-cols-[minmax(0,1fr)_18rem]">
-              <div className="p-4 sm:p-5">
+            <div className="grid gap-0 border-t lg:grid-cols-[minmax(0,1fr)_17rem]">
+              <div className="p-4">
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
                   Um caminho guiado para sair da proposta enviada até a
                   primeira entrada registrada no financeiro.
@@ -91,7 +91,7 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                     <Link
                       key={step.title}
                       href={step.href}
-                      className={`min-h-[104px] rounded-lg border px-3 py-3 transition-colors hover:border-primary/40 hover:bg-accent ${
+                      className={`min-h-[92px] rounded-lg border px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-accent ${
                         step.done ? "bg-primary/5" : "bg-background"
                       }`}
                     >
@@ -118,7 +118,7 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                 </div>
               </div>
 
-              <aside className="border-t bg-[#fff7ed] p-4 sm:p-5 lg:border-l lg:border-t-0 flex flex-col justify-between">
+              <aside className="flex flex-col justify-between border-t bg-[#fff7ed] p-4 lg:border-l lg:border-t-0">
                 <div>
                   <div className="flex items-start gap-3">
                     <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#2f8f4e]" />
@@ -129,7 +129,7 @@ export function FirstMoneyGuide({ steps }: { steps: FirstMoneyStep[] }) {
                       </p>
                     </div>
                   </div>
-                  <Button asChild className="mt-6 w-full">
+                  <Button asChild className="mt-5 w-full">
                     <Link href={nextStep.href}>
                       {nextStep.action}
                       <ArrowRight className="h-4 w-4" />

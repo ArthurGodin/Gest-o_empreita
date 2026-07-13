@@ -84,7 +84,8 @@ export function PublicBillingView({
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               Veja a entrada, o saldo e o próximo passo de pagamento sem
-              precisar fazer login.
+              precisar fazer login. Depois do pagamento, esta tela mostra o
+              status atualizado assim que a confirmação chega ao sistema.
             </p>
           </div>
         </div>
@@ -308,6 +309,9 @@ function PublicChargeCard({
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Escaneie o QR Code ou copie o código para pagar no app do seu banco.
+                {charge.payment_provider === "asaas"
+                  ? " Pagamento processado com segurança via Asaas."
+                  : " Envie o comprovante para a empreiteira registrar o recebimento."}
               </p>
             </div>
             <CopyButton
@@ -347,12 +351,20 @@ function PublicChargeCard({
       ) : null}
 
       {charge.invoice_url && !paid ? (
-        <Button asChild className="mt-4 h-11 w-full">
-          <a href={charge.invoice_url} target="_blank" rel="noopener noreferrer">
-            Pagar agora
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </Button>
+        <div className="mt-4 space-y-2">
+          {charge.payment_provider === "asaas" ? (
+            <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-950">
+              O pagamento abre em ambiente seguro do Asaas. Quando for
+              confirmado, o Prumo atualiza esta obra automaticamente.
+            </p>
+          ) : null}
+          <Button asChild className="h-11 w-full">
+            <a href={charge.invoice_url} target="_blank" rel="noopener noreferrer">
+              Pagar agora
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
       ) : null}
     </section>
   );

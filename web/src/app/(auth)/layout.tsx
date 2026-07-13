@@ -15,18 +15,18 @@ export default function AuthLayout({
         <div className="absolute left-1/2 top-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#059669]/15 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 container flex min-h-screen flex-col items-center justify-center py-8">
+      <div className="container relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-5 sm:py-8">
         <Link
           href="/"
-          className="mb-8 flex items-center gap-2 text-xl font-semibold tracking-tight"
+          className="mb-5 flex items-center gap-2 text-xl font-semibold tracking-tight sm:mb-8"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-lg shadow-[#059669]/20">
             <HardHat className="h-6 w-6" />
           </div>
           Prumo
         </Link>
-        <div className="w-full max-w-md relative group">
-          <div className="absolute -inset-1 rounded-[1.5rem] bg-gradient-to-br from-[#059669]/20 to-transparent blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="group relative w-full max-w-md">
+          <div className="absolute -inset-1 rounded-[1.5rem] bg-gradient-to-br from-[#059669]/20 to-transparent opacity-40 blur-xl transition-opacity duration-500 group-hover:opacity-100 sm:opacity-50" />
           <div className="relative">
             {children}
           </div>

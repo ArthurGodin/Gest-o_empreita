@@ -8,6 +8,7 @@ import {
   normalizeQuoteUnit,
   parseBRLToCents,
   parseQuantity,
+  whatsappDirectShareLink,
   whatsappLink,
   whatsappShareLink,
 } from "./format";
@@ -59,8 +60,22 @@ describe("format helpers", () => {
     );
     expect(whatsappLink("5511987654321")).toBe("https://wa.me/5511987654321");
     expect(whatsappLink("123")).toBeNull();
+    expect(whatsappLink("(11) 99999-0000")).toBeNull();
+    expect(whatsappLink("5586999990000")).toBeNull();
     expect(whatsappShareLink({ phone: "11987654321", message: "Olá" })).toBe(
       "https://wa.me/5511987654321?text=Ol%C3%A1",
     );
+  });
+
+  it("keeps placeholder phones out of direct public WhatsApp links", () => {
+    expect(
+      whatsappShareLink({ phone: "(11) 99999-0000", message: "Oi" }),
+    ).toBe("https://wa.me/?text=Oi");
+    expect(
+      whatsappDirectShareLink({ phone: "(11) 99999-0000", message: "Oi" }),
+    ).toBeNull();
+    expect(
+      whatsappDirectShareLink({ phone: "11987654321", message: "Oi" }),
+    ).toBe("https://wa.me/5511987654321?text=Oi");
   });
 });

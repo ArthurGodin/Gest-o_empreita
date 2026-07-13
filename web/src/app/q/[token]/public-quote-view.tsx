@@ -16,8 +16,9 @@ import {
   formatPhone,
   formatQuantityBR,
   normalizeQuoteUnit,
-  whatsappShareLink,
+  whatsappDirectShareLink,
 } from "@/lib/format";
+import { shouldShowPrumoBrand } from "@/lib/plans";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import { ApprovalForm } from "./approval-form";
 
@@ -39,6 +40,7 @@ interface PublicQuoteData {
     logo_url: string | null;
     city: string | null;
     state: string | null;
+    plan: string | null;
   };
   customer: {
     name: string;
@@ -78,12 +80,12 @@ export function PublicQuoteView({
     : null;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
   const isDecidable = status === "sent" || status === "viewed";
-  const contactUrl = quote.company.phone
-    ? whatsappShareLink({
-        phone: quote.company.phone,
-        message: `Olá, ${quote.company.name}. Estou vendo o orçamento ${quote.number} (${quote.title}) e quero tirar uma dúvida.`,
-      })
-    : null;
+  const contactUrl = whatsappDirectShareLink({
+    phone: quote.company.phone,
+    message: `Olá, ${quote.company.name}. Estou vendo o orçamento ${quote.number} (${quote.title}) e quero tirar uma dúvida.`,
+  });
+  const companyPhoneLabel = contactUrl ? formatPhone(quote.company.phone) : null;
+  const showPrumoBrand = shouldShowPrumoBrand(quote.company.plan);
   const customerLocation = quote.customer
     ? [quote.customer.city, quote.customer.state].filter(Boolean).join("/")
     : "";
@@ -115,10 +117,10 @@ export function PublicQuoteView({
             <div className="min-w-0">
               <div className="truncate text-lg font-bold tracking-tight text-slate-900">{quote.company.name}</div>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500">
-                {quote.company.phone && (
+                {companyPhoneLabel && (
                   <span className="inline-flex items-center gap-1.5">
                     <Phone className="h-3.5 w-3.5" />
-                    {formatPhone(quote.company.phone)}
+                    {companyPhoneLabel}
                   </span>
                 )}
                 {(quote.company.city || quote.company.state) && (
@@ -392,19 +394,21 @@ export function PublicQuoteView({
               </section>
             )}
 
-            <footer className="pb-8 pt-4 text-center text-xs font-medium text-slate-400">
-              <a
-                href="https://gestaoempreita.com.br"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:text-slate-600 transition-colors"
-              >
-                <span>Tecnologia </span>
-                <span className="font-bold text-slate-600">
-                  Prumo
-                </span>
-              </a>
-            </footer>
+            {showPrumoBrand ? (
+              <footer className="pb-8 pt-4 text-center text-xs font-medium text-slate-400">
+                <a
+                  href="https://gestaoempreita.com.br"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:text-slate-600 transition-colors"
+                >
+                  <span>Tecnologia </span>
+                  <span className="font-bold text-slate-600">
+                    Prumo
+                  </span>
+                </a>
+              </footer>
+            ) : null}
           </div>
         </div>
       </div>

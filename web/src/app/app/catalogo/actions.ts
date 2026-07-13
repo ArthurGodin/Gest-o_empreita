@@ -192,7 +192,7 @@ export async function importCatalogCsvAction(
     return {
       ok: false,
       error:
-        "Importar planilha é uma funcionalidade do plano Ultimate. O catálogo manual continua disponível no seu plano atual.",
+        "Importar catálogo por CSV é uma funcionalidade do plano Ultimate. O catálogo manual continua disponível no seu plano atual.",
     };
   }
 
@@ -216,7 +216,7 @@ export async function importCatalogCsvAction(
   if (!lowerName.endsWith(".csv") && file.type && !file.type.includes("csv")) {
     return {
       ok: false,
-      error: "Por enquanto a importação aceita CSV. Baixe o modelo e salve sua planilha nesse formato.",
+      error: "Por enquanto a importação aceita CSV. Baixe o modelo e salve seu arquivo nesse formato.",
     };
   }
 

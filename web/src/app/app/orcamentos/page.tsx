@@ -14,7 +14,7 @@ export default async function QuotesPage() {
   const quotes = await getQuotes();
 
   return (
-    <div className="container space-y-6 py-6">
+    <div className="container max-w-6xl space-y-5 py-5 sm:space-y-6 sm:py-6">
       <PageHeader
         title="Orçamentos"
         description="Todos os orçamentos da sua empresa. Crie, envie pra cliente aprovar, e quando ele aceitar vira obra com 1 clique."

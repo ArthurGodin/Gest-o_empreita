@@ -46,7 +46,7 @@ describe("catalog import parser", () => {
     );
 
     expect(result.rows).toHaveLength(1);
-    expect(result.rows[0].description).toBe("Manta");
+    expect(result.rows[0]?.description).toBe("Manta");
     expect(result.errors).toEqual([
       {
         row: 2,

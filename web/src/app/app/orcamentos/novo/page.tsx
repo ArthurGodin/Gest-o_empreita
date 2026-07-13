@@ -10,8 +10,18 @@ export const metadata = {
   title: "Novo orçamento — Prumo",
 };
 
-export default async function NewQuotePage() {
+export default async function NewQuotePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ cliente?: string }>;
+}) {
+  const query = searchParams ? await searchParams : {};
   const customers = await getCustomers();
+  const selectedCustomerId = customers.some(
+    (customer) => customer.id === query.cliente,
+  )
+    ? query.cliente
+    : undefined;
 
   return (
     <div className="container max-w-2xl space-y-6 py-6">
@@ -37,12 +47,17 @@ export default async function NewQuotePage() {
           description="Pra criar um orçamento, primeiro cadastre o cliente. É rápido."
           action={
             <Button asChild>
-              <Link href="/app/clientes/novo">Cadastrar primeiro cliente</Link>
+              <Link href="/app/clientes/novo?after=quote">
+                Cadastrar primeiro cliente
+              </Link>
             </Button>
           }
         />
       ) : (
-        <NewQuoteForm customers={customers} />
+        <NewQuoteForm
+          customers={customers}
+          selectedCustomerId={selectedCustomerId}
+        />
       )}
     </div>
   );

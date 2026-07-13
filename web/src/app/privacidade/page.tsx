@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           Política de Privacidade
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Última atualização: 01/06/2026
+          Última atualização: 13/07/2026
         </p>
 
         <div className="mt-8 space-y-6 leading-7 text-muted-foreground">
@@ -33,7 +33,9 @@ export default function PrivacyPage() {
               Podemos tratar dados de conta, empresa, clientes, orçamentos,
               obras, fotos, custos, registros de ponto, informações de contato e
               dados técnicos necessários para autenticação, segurança e operação
-              do serviço.
+              do serviço. O Prumo registra referências e estados de pagamentos,
+              mas dados de cartão e a liquidação financeira são processados pelo
+              Asaas.
             </p>
           </section>
 
@@ -54,8 +56,11 @@ export default function PrivacyPage() {
             </h2>
             <p className="mt-2">
               Dados podem ser processados por provedores de infraestrutura,
-              autenticação, banco de dados, armazenamento, email e pagamento,
-              sempre na medida necessária para operar o serviço.
+              autenticação, banco de dados, armazenamento, email, análise de uso
+              e pagamento, sempre na medida necessária para operar o serviço.
+              Atualmente o produto utiliza serviços como Supabase, Vercel,
+              Resend e Asaas; ferramentas de mensuração da Meta podem ser usadas
+              quando configuradas.
             </p>
           </section>
 
@@ -90,18 +95,45 @@ export default function PrivacyPage() {
               Titulares podem solicitar acesso, correção ou exclusão de dados,
               conforme aplicável. A empresa que cadastrou os dados é a primeira
               responsável por avaliar solicitações dos seus próprios clientes e
-              colaboradores.
+              colaboradores. Solicitações relativas à conta Prumo podem ser
+              enviadas pelo canal informado durante a contratação.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
-              7. Revisão jurídica
+              7. Papéis no tratamento
             </h2>
             <p className="mt-2">
-              Esta política é uma versão operacional inicial. Antes de escalar
-              vendas, deve ser revisada por assessoria jurídica conforme o modelo
-              comercial final.
+              Para dados de clientes, colaboradores e obras inseridos pela
+              empresa usuária, essa empresa define as finalidades e é responsável
+              pelas orientações de tratamento. O Prumo trata esses dados para
+              prestar o serviço. Para dados da própria conta, segurança,
+              faturamento e uso do produto, o responsável pelo Prumo define os
+              tratamentos necessários à operação.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
+              8. Retenção e exclusão
+            </h2>
+            <p className="mt-2">
+              Os dados são mantidos enquanto a conta estiver ativa e pelo tempo
+              necessário para cumprir obrigações legais, resolver disputas,
+              prevenir fraude e proteger o serviço. Solicitações de exclusão são
+              avaliadas conforme esses limites e os direitos aplicáveis.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
+              9. Atualizações
+            </h2>
+            <p className="mt-2">
+              Esta política pode ser atualizada para refletir mudanças no
+              produto, nos provedores ou nas exigências legais. A data no início
+              da página indica a versão vigente.
             </p>
           </section>
         </div>

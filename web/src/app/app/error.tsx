@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { trackProductEvent } from "@/lib/product-analytics";
 
 /**
  * Error boundary global da área autenticada.
@@ -18,6 +19,9 @@ export default function AppError({
 }) {
   useEffect(() => {
     // Em produção, enviar para Sentry/PostHog aqui
+    trackProductEvent("app_error_boundary", {
+      digest: error.digest ?? null,
+    });
     console.error("[app-error-boundary]", error);
   }, [error]);
 

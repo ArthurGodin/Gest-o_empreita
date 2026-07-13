@@ -1,4 +1,4 @@
-# Gestão Empreita
+# Prumo
 
 SaaS web-first para pequenas empreiteiras criarem orçamentos profissionais,
 receberem aprovação digital do cliente e acompanharem obras com etapas, fotos,
@@ -24,7 +24,7 @@ dinheiro na execução da obra**.
 ## Stack
 
 - Next.js 16 App Router
-- React 18
+- React 19
 - TypeScript strict
 - Tailwind CSS + shadcn/ui base
 - Supabase Auth, Postgres, Storage e RLS
@@ -54,7 +54,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-Para gerar cobranças Pix:
+Para desenvolver cobranças sem movimentar dinheiro real, use credenciais de sandbox apenas no ambiente local:
 
 ```env
 ASAAS_API_KEY=
@@ -86,8 +86,12 @@ enviar notificações automáticas por Resend, evitando bloqueios do
 Resend e defina:
 
 ```env
-EMAIL_FROM=Gestao Empreita <contato@mail.seudominio.com.br>
+EMAIL_FROM=Prumo <contato@mail.seudominio.com.br>
+ALERT_EMAIL_TO=voce@seudominio.com.br
 ```
+
+Se `ALERT_EMAIL_TO` não estiver definido, os alertas operacionais usam o email
+extraído de `EMAIL_FROM`.
 
 Guia operacional: `docs/primeira-venda-zero-custo.md`.
 
@@ -103,19 +107,19 @@ npm run build
 
 ## Próxima Grande Entrega
 
-**Validar cobrança em ambiente real e instrumentar venda.**
+**Publicar o endurecimento de faturamento e concluir o gate de aquisição.**
 
-A base operacional do Asaas já existe: converter orçamento aprovado em obra cria
-parcelas, gera Pix de entrada, mostra cobrança no painel da obra, processa
-webhook, mostra cobrança no link público, libera saldo na confirmação de entrega
-e reflete recebido/pendente/atrasado no financeiro.
+O Asaas de produção e uma cobrança real já foram validados. O código de
+13/07/2026 separa checkout pendente da assinatura ativa, evita rebaixamento por
+webhook antigo, cancela recorrência substituída e permite cancelamento pelo
+proprietário dentro do Prumo.
 
-O próximo passo para vender com segurança:
+O próximo passo para escalar vendas com segurança:
 
-1. Validar Asaas sandbox ponta a ponta com webhook real.
-2. Adicionar monitoramento de erro e analytics de funil.
-3. Criar dados demo realistas para pitch e piloto.
-4. Rodar um piloto controlado com 1 a 3 empreiteiros.
+1. Repetir uma compra controlada com pagador diferente e conferir recorrências no Asaas.
+2. Configurar e validar Pixel + Conversions API da Meta.
+3. Publicar a identidade do fornecedor e um contato de suporte/privacidade.
+4. Iniciar vendas assistidas e acompanhar logs e webhooks das primeiras contas.
 
 O desenho completo está em:
 `docs/superpowers/specs/2026-05-25-fase-1-4-cobranca-asaas-design.md`.
@@ -134,7 +138,8 @@ ICP inicial:
 - Pequenas empreiteiras e empresas de cobertura.
 - 3 a 20 funcionários.
 - Dono opera pelo WhatsApp e planilha.
-- Ticket sugerido inicial: R$ 197/mês, trial de 14 dias sem cartão.
+- Planos atuais: Grátis, Pro por R$ 97/mês e Ultimate por R$ 247/mês.
+- Cadastro sem cartão; upgrade quando o cliente precisar de recursos pagos.
 
 ## Documentos Importantes
 
@@ -153,4 +158,5 @@ Antes de vender para mais de 5 pilotos:
 - Vercel Analytics/Speed Insights ativos e monitoramento de erro externo definido.
 - Analytics mínimo de funil.
 - Termos de uso e política de privacidade.
-- Cobrança Asaas em sandbox validada ponta a ponta.
+- Cobrança Asaas de produção e reconciliação de webhook validadas ponta a ponta.
+- Bloqueadores do `docs/CHECKLIST_LANCAMENTO.md` concluídos.

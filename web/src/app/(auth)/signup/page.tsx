@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackProductEvent } from "@/lib/product-analytics";
 import { signupAction, type AuthResult } from "../actions";
 
 function normalizePlan(value: string | null): "pro" | "ultimate" | null {
@@ -37,10 +38,19 @@ function SignupForm() {
   function onSubmit(formData: FormData) {
     setResult(null);
     if (selectedPlan) formData.append("plan", selectedPlan);
+    trackProductEvent("signup_form_submitted", {
+      target_plan: selectedPlan ?? "free",
+    });
 
     startTransition(async () => {
       const nextResult = await signupAction(formData);
-      if (!nextResult.ok) setResult(nextResult);
+      if (!nextResult.ok) {
+        trackProductEvent("signup_failed", {
+          target_plan: selectedPlan ?? "free",
+          has_field_errors: Boolean(nextResult.fieldErrors),
+        });
+        setResult(nextResult);
+      }
     });
   }
 
@@ -53,17 +63,17 @@ function SignupForm() {
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm">
-      <CardHeader className="space-y-2 pb-6">
+    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
+      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
         <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
           Criar conta
         </CardTitle>
-        <CardDescription className="text-sm font-medium text-slate-500">
+        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
           Comece sem cartão e monte o primeiro orçamento com aparência
           profissional.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
         <form action={onSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label
@@ -81,7 +91,7 @@ function SignupForm() {
               placeholder="João da Silva"
               aria-invalid={Boolean(fieldErrors?.name)}
               aria-describedby={fieldErrors?.name ? "signup-name-error" : undefined}
-              className="h-12 border-slate-200 bg-slate-50 transition-colors focus:border-[#059669] focus:ring-[#059669]"
+              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.name?.[0] ? (
               <p id="signup-name-error" className="text-sm font-medium text-red-500">
@@ -109,7 +119,7 @@ function SignupForm() {
               placeholder="contato@empresa.com.br"
               aria-invalid={Boolean(fieldErrors?.email)}
               aria-describedby={fieldErrors?.email ? "signup-email-error" : undefined}
-              className="h-12 border-slate-200 bg-slate-50 transition-colors focus:border-[#059669] focus:ring-[#059669]"
+              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.email?.[0] ? (
               <p id="signup-email-error" className="text-sm font-medium text-red-500">
@@ -138,7 +148,7 @@ function SignupForm() {
               aria-describedby={
                 fieldErrors?.password ? "signup-password-error" : undefined
               }
-              className="h-12 border-slate-200 bg-slate-50 transition-colors focus:border-[#059669] focus:ring-[#059669]"
+              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.password?.[0] ? (
               <p id="signup-password-error" className="text-sm font-medium text-red-500">
@@ -159,7 +169,7 @@ function SignupForm() {
 
           <Button
             type="submit"
-            className="h-12 w-full rounded-xl bg-[#059669] text-base font-bold shadow-lg shadow-[#059669]/20 transition-all hover:scale-[1.02] hover:bg-[#047857] hover:shadow-xl hover:shadow-[#059669]/30"
+            className="h-[3.25rem] w-full rounded-xl bg-[#059669] text-base font-bold shadow-lg shadow-[#059669]/20 transition-all hover:scale-[1.02] hover:bg-[#047857] hover:shadow-xl hover:shadow-[#059669]/30"
             disabled={pending}
           >
             {pending ? "Criando..." : "Criar minha conta"}
@@ -183,16 +193,16 @@ function SignupForm() {
 
 function SignupFallback() {
   return (
-    <Card className="overflow-hidden rounded-2xl border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm">
-      <CardHeader className="space-y-2 pb-6">
+    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
+      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
         <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
           Criar conta
         </CardTitle>
-        <CardDescription className="text-sm font-medium text-slate-500">
+        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
           Preparando criação da sua conta.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
         <div className="space-y-4">
           <div className="h-12 rounded-xl bg-slate-100" />
           <div className="h-12 rounded-xl bg-slate-100" />

@@ -29,10 +29,10 @@ export function Sidebar({ companyName }: { companyName: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden border-r bg-card md:flex md:w-64 md:flex-col">
-      <div className="flex h-16 items-center border-b px-6">
+    <aside className="hidden border-r border-slate-200/70 bg-white md:flex md:w-64 md:flex-col">
+      <div className="flex h-16 items-center border-b border-slate-200/70 px-6">
         <Link href="/app" className="flex items-center gap-2 font-semibold">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-sm shadow-[#059669]/20">
             <HardHat className="h-4 w-4" />
           </div>
           <span className="truncate">{companyName}</span>
@@ -52,8 +52,8 @@ export function Sidebar({ companyName }: { companyName: string }) {
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  ? "bg-emerald-50 text-emerald-800"
+                  : "text-muted-foreground hover:bg-emerald-50 hover:text-emerald-800",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -63,10 +63,10 @@ export function Sidebar({ companyName }: { companyName: string }) {
         })}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="border-t border-slate-200/70 p-3">
         <Link
           href="/app/configuracoes/plano"
-          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-amber-600 dark:text-amber-500 hover:bg-amber-500/10 transition-colors"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-[#f47721] transition-colors hover:bg-orange-50"
         >
           <Crown className="h-4 w-4" />
           Meu Plano

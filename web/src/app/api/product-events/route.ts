@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sendOperationalAlert } from "@/lib/alerts";
+import { logServerEvent, logServerWarning } from "@/lib/log";
+import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
 import { isProductEventName } from "@/lib/product-event-names";
 
 const propertyValueSchema = z.union([
@@ -11,6 +14,7 @@ const propertyValueSchema = z.union([
 
 const payloadSchema = z.object({
   name: z.string().min(1).max(80),
+  eventId: z.string().min(8).max(160).optional(),
   path: z.string().min(1).max(160).optional(),
   properties: z.record(z.string().max(48), propertyValueSchema).default({}),
 });
@@ -25,29 +29,55 @@ export async function POST(request: Request) {
     }
 
     const path = sanitizePath(payload.data.path ?? "");
-    console.log(
-      JSON.stringify({
-        level: "info",
-        message: "product_event",
-        event: payload.data.name,
-        path,
-        properties: payload.data.properties,
-        requestId: request.headers.get("x-vercel-id"),
-        ms: Date.now() - start,
-      }),
-    );
+    logServerEvent("product_event", {
+      event: payload.data.name,
+      event_id: payload.data.eventId ?? null,
+      path,
+      request_id: request.headers.get("x-vercel-id"),
+      ms: Date.now() - start,
+      ...prefixProperties(payload.data.properties),
+    });
+
+    if (
+      payload.data.name === "app_error_boundary" ||
+      payload.data.name === "global_error_boundary"
+    ) {
+      await sendOperationalAlert({
+        area: "frontend",
+        severity: "critical",
+        title:
+          payload.data.name === "app_error_boundary"
+            ? "Erro na area autenticada"
+            : "Erro global no site",
+        message:
+          "Uma error boundary do Next/React capturou erro no navegador. Verifique logs de runtime e evento product_event.",
+        dedupeKey: `frontend-${payload.data.name}-${path}-${String(payload.data.properties.digest ?? "no-digest")}`,
+        context: {
+          event: payload.data.name,
+          path,
+          digest: payload.data.properties.digest ?? null,
+          request_id: request.headers.get("x-vercel-id"),
+        },
+      });
+    }
+
+    await sendMetaConversionsEvent({
+      name: payload.data.name,
+      properties: payload.data.properties,
+      eventId:
+        payload.data.eventId ??
+        `${payload.data.name}-${request.headers.get("x-vercel-id") ?? start}`,
+      path,
+      request,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        level: "error",
-        message: "product_event_failed",
-        error: error instanceof Error ? error.message : String(error),
-        requestId: request.headers.get("x-vercel-id"),
-        ms: Date.now() - start,
-      }),
-    );
+    logServerWarning("product_event_invalid_request", {
+      request_id: request.headers.get("x-vercel-id"),
+      reason: error instanceof Error ? error.name : "unknown",
+      ms: Date.now() - start,
+    });
 
     return NextResponse.json({ ok: false }, { status: 400 });
   }
@@ -55,4 +85,12 @@ export async function POST(request: Request) {
 
 function sanitizePath(path: string) {
   return path.replace(/^\/q\/[^/]+/, "/q/[token]");
+}
+
+function prefixProperties(
+  properties: Record<string, string | number | boolean | null>,
+) {
+  return Object.fromEntries(
+    Object.entries(properties).map(([key, value]) => [`prop_${key}`, value]),
+  );
 }

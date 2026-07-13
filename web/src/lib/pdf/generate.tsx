@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadQuotePdf, downloadQuotePdf } from "@/lib/supabase/storage";
+import { sendOperationalAlert } from "@/lib/alerts";
 import { logServerError } from "@/lib/log";
 import { QuotePdf } from "./quote-pdf";
 
@@ -14,6 +15,7 @@ const reactModule = Reflect.apply(nodeRequire, undefined, [
   reactPackageName,
 ]) as typeof import("react");
 const { createElement } = reactModule;
+const CURRENT_PDF_CACHE_PREFIX = "v2/";
 
 /**
  * Carrega quote completo e gera o PDF. Caching: se quote.pdf_storage_path
@@ -34,7 +36,7 @@ export async function generateQuotePdfBuffer(
       id, number, title, description, valid_until, notes,
       subtotal_cents, discount_cents, total_cents, created_at, updated_at,
       pdf_storage_path, pdf_generated_at,
-      company:companies(name, legal_name, cnpj, phone, email, logo_url, address, city, state),
+      company:companies(name, legal_name, cnpj, phone, email, logo_url, address, city, state, plan),
       customer:customers(name, document, phone, email, address, city, state),
       items:quote_items(description, unit, quantity, unit_price_cents, total_cents, position)
     `,
@@ -44,6 +46,20 @@ export async function generateQuotePdfBuffer(
 
   if (error || !data) {
     logServerError("pdf.fetch-quote", error);
+    if (error) {
+      await sendOperationalAlert({
+        area: "pdf",
+        severity: "warning",
+        title: "PDF nao carregou orcamento",
+        message:
+          "A geracao de PDF falhou ao buscar o orcamento no banco. Pode afetar proposta ou link publico.",
+        dedupeKey: "pdf-fetch-quote",
+        context: {
+          quote_id: quoteId,
+          error_code: error.code ?? null,
+        },
+      });
+    }
     return { ok: false, error: "Orçamento não encontrado." };
   }
 
@@ -82,7 +98,10 @@ export async function generateQuotePdfBuffer(
   // pdf_generated_at ao editar — entrar aqui significa cache válido.
   // Defense-in-depth: também comparamos timestamps caso pdf_storage_path
   // sobreviva por algum bug.
-  if (quote.pdf_storage_path && quote.pdf_generated_at) {
+  if (
+    quote.pdf_storage_path?.startsWith(CURRENT_PDF_CACHE_PREFIX) &&
+    quote.pdf_generated_at
+  ) {
     const generated = new Date(quote.pdf_generated_at).getTime();
     const updated = new Date(quote.updated_at).getTime();
     if (generated >= updated) {
@@ -130,6 +149,18 @@ export async function generateQuotePdfBuffer(
     return { ok: true, buffer };
   } catch (e) {
     logServerError("pdf.render", e);
+    await sendOperationalAlert({
+      area: "pdf",
+      severity: "critical",
+      title: "Falha ao renderizar PDF",
+      message:
+        "A renderizacao do PDF de orcamento falhou. Isso pode atrapalhar envio de proposta e aprovacao do cliente.",
+      dedupeKey: "pdf-render",
+      context: {
+        quote_id: quoteId,
+        error_name: e instanceof Error ? e.name : "unknown",
+      },
+    });
     return { ok: false, error: "Falha ao gerar PDF." };
   }
 }

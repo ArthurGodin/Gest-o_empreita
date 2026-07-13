@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowUpRight,
+  CheckCircle2,
   ClipboardCheck,
   Copy,
   Plus,
@@ -17,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { normalizeQuoteUnit } from "@/lib/format";
+import { checkSendReadiness } from "@/lib/quote-status";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { updateQuoteAction } from "../actions/update";
 import { ItemRow, type ItemDraft } from "./item-row";
@@ -81,6 +83,52 @@ export function QuoteEditor({
       ),
     [items],
   );
+  const filledItems = useMemo(
+    () => items.filter((it) => it.description.trim()),
+    [items],
+  );
+  const readiness = useMemo(
+    () =>
+      checkSendReadiness({
+        title,
+        customer_id: customerId,
+        valid_until: validUntil || null,
+        itemsCount: filledItems.length,
+        total_cents: total,
+      }),
+    [customerId, filledItems.length, title, total, validUntil],
+  );
+  const readinessChecks = useMemo(
+    () => [
+      {
+        label: "Título preenchido",
+        ok: Boolean(title.trim()),
+        help: "Dê um nome fácil de reconhecer no WhatsApp e no PDF.",
+      },
+      {
+        label: "Cliente escolhido",
+        ok: Boolean(customerId),
+        help: "O cliente aparece no link público e na aprovação.",
+      },
+      {
+        label: "Validade definida",
+        ok: Boolean(validUntil),
+        help: "A validade evita orçamento antigo sendo aprovado depois.",
+      },
+      {
+        label: "Pelo menos 1 item",
+        ok: filledItems.length > 0,
+        help: "Adicione o serviço, material ou etapa que será vendido.",
+      },
+      {
+        label: "Total maior que zero",
+        ok: total > 0,
+        help: "Informe quantidade e preço para gerar uma proposta real.",
+      },
+    ],
+    [customerId, filledItems.length, title, total, validUntil],
+  );
+  const nextBlocker = readiness.blockers[0] ?? null;
   const selectedCustomer =
     customers.find((customer) => customer.id === customerId) ?? quote.customer;
 
@@ -118,7 +166,6 @@ export function QuoteEditor({
   async function doSave(options: { quiet?: boolean } = {}): Promise<boolean> {
     setError(null);
 
-    const filledItems = items.filter((it) => it.description.trim());
     if (filledItems.length === 0) {
       const message = "Adicione ao menos um item com descrição.";
       setError(message);
@@ -251,6 +298,12 @@ export function QuoteEditor({
         </div>
       </section>
 
+      <SendReadinessPanel
+        ready={readiness.ready}
+        blockers={readiness.blockers}
+        checks={readinessChecks}
+      />
+
       {/* ── Itens ──────────────────────────────────────────────── */}
       <section className="rounded-xl border bg-card p-5">
         <div className="mb-4 flex items-center justify-between">
@@ -258,8 +311,7 @@ export function QuoteEditor({
             Itens do orçamento
           </h2>
           <span className="text-xs text-muted-foreground">
-            {items.filter((i) => i.description.trim()).length}{" "}
-            {items.filter((i) => i.description.trim()).length === 1 ? "item" : "itens"}
+            {filledItems.length} {filledItems.length === 1 ? "item" : "itens"}
           </span>
         </div>
 
@@ -337,13 +389,30 @@ export function QuoteEditor({
           <div className="flex min-w-0 items-center justify-between gap-4 rounded-lg bg-muted/50 px-3 py-2 lg:bg-transparent lg:p-0">
             <div className="min-w-0">
               <div className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {revisionSource ? "Revisão pronta para reenvio" : "Próximo passo"}
+                {readiness.ready
+                  ? revisionSource
+                    ? "Revisão pronta para reenvio"
+                    : "Pronto para enviar"
+                  : `${readiness.blockers.length} ${
+                      readiness.blockers.length === 1 ? "ajuste" : "ajustes"
+                    } antes do envio`}
               </div>
               <div className="truncate text-sm font-medium text-foreground">
-                <span className="sm:hidden">WhatsApp pronto</span>
-                <span className="hidden sm:inline">
-                  Salve e abra o WhatsApp com a mensagem pronta.
-                </span>
+                {readiness.ready ? (
+                  <>
+                    <span className="sm:hidden">WhatsApp pronto</span>
+                    <span className="hidden sm:inline">
+                      Salve e abra o WhatsApp com a mensagem pronta.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="sm:hidden">Falta ajustar</span>
+                    <span className="hidden sm:inline">
+                      Antes de enviar: {nextBlocker}.
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="shrink-0 text-right">
@@ -383,7 +452,7 @@ export function QuoteEditor({
               customerPhone={selectedCustomer?.phone}
               whatsappSentAt={quote.whatsapp_sent_at}
               onBeforeSend={() => doSave({ quiet: true })}
-              disabled={pending}
+              disabled={pending || !readiness.ready}
               label={
                 revisionSource ? (
                   <>
@@ -406,6 +475,78 @@ export function QuoteEditor({
         </div>
       </div>
     </div>
+  );
+}
+
+function SendReadinessPanel({
+  ready,
+  blockers,
+  checks,
+}: {
+  ready: boolean;
+  blockers: string[];
+  checks: Array<{ label: string; ok: boolean; help: string }>;
+}) {
+  return (
+    <section
+      className={
+        ready
+          ? "rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 text-emerald-950"
+          : "rounded-xl border border-amber-200 bg-amber-50/70 p-5 text-amber-950"
+      }
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div
+            className={
+              ready
+                ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700"
+                : "flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700"
+            }
+          >
+            {ready ? (
+              <CheckCircle2 className="h-5 w-5" />
+            ) : (
+              <AlertCircle className="h-5 w-5" />
+            )}
+          </div>
+          <div>
+            <div className="text-sm font-bold">
+              {ready ? "Pronto para enviar pelo WhatsApp" : "Falta pouco para enviar"}
+            </div>
+            <p className="mt-1 text-sm leading-6 opacity-85">
+              {ready
+                ? "O orçamento já tem as informações mínimas para salvar, gerar o link e abrir a mensagem pronta."
+                : "Complete os pontos abaixo antes de mandar a proposta para o cliente."}
+            </p>
+          </div>
+        </div>
+
+        {!ready ? (
+          <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2 text-sm font-medium text-amber-950 lg:max-w-sm">
+            Próximo ajuste: {blockers[0]}.
+          </div>
+        ) : null}
+      </div>
+
+      <ul className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        {checks.map((check) => (
+          <li key={check.label} className="flex items-start gap-2 text-sm">
+            {check.ok ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+            ) : (
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            )}
+            <span>
+              <span className="block font-semibold">{check.label}</span>
+              <span className="mt-0.5 block text-xs leading-5 opacity-75">
+                {check.help}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

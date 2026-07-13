@@ -25,7 +25,7 @@ export default async function ProjectsPage() {
     <div className="container space-y-6 py-6">
       <PageHeader
         title="Obras"
-        description="Suas obras em andamento. A obra é criada automaticamente quando um orçamento é aprovado pelo cliente."
+        description="Suas obras em andamento. Um orçamento aprovado pode virar obra com 1 clique."
       />
 
       {projects.length === 0 ? (
