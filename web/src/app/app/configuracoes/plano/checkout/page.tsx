@@ -41,6 +41,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   const active = await getActiveCompany();
   if (!active) redirect("/app");
+  if (active.role !== "owner") redirect("/app/configuracoes/plano");
 
   const supabase = createClient();
   const [{ data: companyRecord }, subscriptionStatus] = await Promise.all([

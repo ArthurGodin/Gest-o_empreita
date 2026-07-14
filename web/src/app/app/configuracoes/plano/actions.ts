@@ -81,6 +81,12 @@ export async function checkoutPlanAction(
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa nÃ£o encontrada." };
+  if (company.role !== "owner") {
+    return {
+      ok: false,
+      error: "Somente o proprietario da empresa pode contratar um plano.",
+    };
+  }
 
   try {
     const result = await createSaasSubscriptionCheckout({

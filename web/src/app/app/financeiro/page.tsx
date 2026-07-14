@@ -11,7 +11,10 @@ import {
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { normalizeAppPlan } from "@/lib/plans";
+import { getActiveCompany } from "@/lib/queries/company";
 import { getFinanceOverview } from "@/lib/queries/finance";
+import { createClient } from "@/lib/supabase/server";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import type {
   ChargeKind,
@@ -55,7 +58,19 @@ export const metadata = {
 };
 
 export default async function FinanceiroPage() {
-  const overview = await getFinanceOverview();
+  const [overview, activeCompany] = await Promise.all([
+    getFinanceOverview(),
+    getActiveCompany(),
+  ]);
+  const supabase = createClient();
+  const { data: companyData } = activeCompany
+    ? await supabase
+        .from("companies")
+        .select("plan")
+        .eq("id", activeCompany.company_id)
+        .single()
+    : { data: null };
+  const currentPlan = normalizeAppPlan(companyData?.plan);
   const marginPct =
     overview.approved_revenue_cents > 0
       ? Math.round(
@@ -70,7 +85,7 @@ export default async function FinanceiroPage() {
         description="Acompanhe recebimentos, gastos e margem estimada das obras."
         actions={
           <div className="flex flex-wrap gap-2">
-            <ExportButton />
+            <ExportButton currentPlan={currentPlan} />
             <Button asChild>
               <Link href="/app/orcamentos/novo">
                 Novo orçamento
