@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "test:e2e:ui": "node scripts/run-e2e.mjs --ui",
+    "test:e2e:install": "playwright install chromium",
     "audit:ci": "npm audit --audit-level=moderate"
   },
   "dependencies": {
@@ -41,6 +44,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.17",
@@ -48,6 +52,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.10",
     "postcss": "^8",
+    "supabase": "^2.109.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "vitest": "^4.1.7"

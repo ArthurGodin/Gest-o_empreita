@@ -112,6 +112,14 @@ export function clientErrorFor(error: LoggableError | unknown): string {
     return "Informe um CPF/CNPJ válido no cliente antes de gerar a cobrança Pix.";
   }
 
+  if (message.includes("free_quote_limit_reached")) {
+    return "Você chegou ao limite do Plano Grátis: 3 orçamentos neste mês. Assine o Pro para criar orçamentos e obras sem limite.";
+  }
+
+  if (message.includes("free_active_project_limit_reached")) {
+    return "O Plano Grátis permite 1 obra simultânea. Conclua a obra atual ou assine o Pro para controlar obras sem limite.";
+  }
+
   switch (e.code) {
     case "23505": // unique_violation
       return "Já existe um registro com esses dados.";

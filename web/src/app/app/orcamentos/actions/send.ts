@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import {
@@ -160,8 +159,6 @@ export async function sendQuoteAction(id: string): Promise<SendQuoteResult> {
     return { ok: false, error: "Falha ao gerar link compartilhável." };
   }
 
-  revalidatePath("/app/orcamentos");
-  revalidatePath(`/app/orcamentos/${id}`);
   logServerEvent("quotes.sent", {
     company_id: company.company_id,
     quote_id: id,

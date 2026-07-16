@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
@@ -17,6 +18,8 @@ const itemClassName =
   "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-950 focus:bg-slate-100 focus:text-slate-950";
 
 export function MobileTopbar({ companyName }: { companyName: string }) {
+  const [signingOut, startSignout] = useTransition();
+
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b bg-white/95 pt-[env(safe-area-inset-top)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur lg:hidden">
       <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-3">
@@ -85,14 +88,19 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="my-1 h-px bg-slate-200" />
-              <form action={signoutAction}>
-                <DropdownMenu.Item asChild>
-                  <button type="submit" className={itemClassName}>
-                    <LogOut className="h-4 w-4" />
-                    Sair da conta
-                  </button>
-                </DropdownMenu.Item>
-              </form>
+              <DropdownMenu.Item
+                disabled={signingOut}
+                onSelect={(event) => {
+                  event.preventDefault();
+                  startSignout(async () => {
+                    await signoutAction();
+                  });
+                }}
+                className={itemClassName}
+              >
+                <LogOut className="h-4 w-4" />
+                {signingOut ? "Saindo..." : "Sair da conta"}
+              </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>

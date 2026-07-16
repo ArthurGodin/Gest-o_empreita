@@ -29,9 +29,11 @@ export async function POST(request: Request) {
     }
 
     const path = sanitizePath(payload.data.path ?? "");
+    const eventId =
+      payload.data.eventId ?? `${payload.data.name}-${crypto.randomUUID()}`;
     logServerEvent("product_event", {
       event: payload.data.name,
-      event_id: payload.data.eventId ?? null,
+      event_id: eventId,
       path,
       request_id: request.headers.get("x-vercel-id"),
       ms: Date.now() - start,
@@ -54,6 +56,7 @@ export async function POST(request: Request) {
         dedupeKey: `frontend-${payload.data.name}-${path}-${String(payload.data.properties.digest ?? "no-digest")}`,
         context: {
           event: payload.data.name,
+          event_id: eventId,
           path,
           digest: payload.data.properties.digest ?? null,
           request_id: request.headers.get("x-vercel-id"),
@@ -64,9 +67,7 @@ export async function POST(request: Request) {
     await sendMetaConversionsEvent({
       name: payload.data.name,
       properties: payload.data.properties,
-      eventId:
-        payload.data.eventId ??
-        `${payload.data.name}-${request.headers.get("x-vercel-id") ?? start}`,
+      eventId,
       path,
       request,
     });

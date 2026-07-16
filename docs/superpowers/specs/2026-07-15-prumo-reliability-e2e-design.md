@@ -77,12 +77,13 @@ As validacoes atuais fazem `count` e depois `insert`, permitindo que duas
 requisicoes simultaneas ultrapassem a cota. A protecao definitiva ficara no
 PostgreSQL, cobrindo qualquer caminho de insercao.
 
-Uma migration criara dois triggers `before insert`:
+Uma migration criara dois triggers transacionais:
 
 - `quotes`: adquire lock transacional por empresa, consulta o plano e impede
   mais de tres orcamentos no mes civil de `America/Sao_Paulo`;
-- `projects`: adquire lock transacional por empresa, consulta o plano e impede
-  mais de uma obra com status `planning`, `in_progress` ou `paused`.
+- `projects`: antes de inserir ou reativar uma obra, adquire lock transacional
+  por empresa, consulta o plano e impede mais de uma obra com status
+  `planning`, `in_progress` ou `paused`.
 
 Empresas Pro e Ultimate passam sem limite. As mensagens do banco usarao codigos
 estaveis, convertidos pelas server actions para os textos comerciais atuais.
