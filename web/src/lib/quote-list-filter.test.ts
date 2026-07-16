@@ -49,6 +49,12 @@ describe("quote list filter", () => {
         (quote) => quote.number,
       ),
     ).toEqual(["ORC-002"]);
+
+    expect(
+      filterQuotes(quotes, { status: "all", query: "joao" }).map(
+        (quote) => quote.number,
+      ),
+    ).toEqual(["ORC-002"]);
   });
 
   it("counts all status chips from the unfiltered dataset", () => {

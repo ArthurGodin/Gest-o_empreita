@@ -1,4 +1,5 @@
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
+import { normalizeSearch } from "@/lib/search";
 
 export type QuoteListStatusFilter = "all" | EffectiveQuoteStatus;
 
@@ -77,8 +78,4 @@ export function countQuotesByStatus<T extends QuoteListFilterItem>(
   }
 
   return counts;
-}
-
-function normalizeSearch(value: string): string {
-  return value.trim().toLocaleLowerCase("pt-BR");
 }

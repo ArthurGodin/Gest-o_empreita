@@ -2,10 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MapPin, MessageCircle, Phone, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { MapPin, MessageCircle, Phone } from "lucide-react";
+import {
+  ListEmptyState,
+  ListToolbar,
+} from "@/components/app-shell/list-toolbar";
 import { formatDocumentMasked, formatPhone, whatsappLink } from "@/lib/format";
 import type { Customer } from "@/lib/queries/customers";
+import { normalizeSearch } from "@/lib/search";
 
 interface CustomerListProps {
   customers: Customer[];
@@ -16,57 +20,50 @@ export function CustomerList({ customers }: CustomerListProps) {
 
   const filtered = useMemo(() => {
     if (!query.trim()) return customers;
-    const q = query.trim().toLowerCase();
+    const q = normalizeSearch(query);
     const qDigits = q.replace(/\D/g, "");
     return customers.filter((customer) => {
-      if (customer.name.toLowerCase().includes(q)) return true;
+      if (normalizeSearch(customer.name).includes(q)) return true;
       if (qDigits && customer.phone?.replace(/\D/g, "").includes(qDigits)) {
         return true;
       }
       if (qDigits && customer.document?.replace(/\D/g, "").includes(qDigits)) {
         return true;
       }
-      if (customer.city?.toLowerCase().includes(q)) return true;
-      if (customer.state?.toLowerCase().includes(q)) return true;
-      if (customer.email?.toLowerCase().includes(q)) return true;
+      if (normalizeSearch(customer.city ?? "").includes(q)) return true;
+      if (normalizeSearch(customer.state ?? "").includes(q)) return true;
+      if (normalizeSearch(customer.email ?? "").includes(q)) return true;
       return false;
     });
   }, [customers, query]);
 
   return (
     <div className="space-y-3">
-      <section
-        aria-label="Busca de clientes"
-        className="rounded-lg border bg-card p-3 shadow-[0_1px_2px_rgba(15,23,42,0.035)]"
-      >
-        <div className="relative">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            type="search"
-            name="customer-search"
-            inputMode="search"
-            autoComplete="off"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nome, telefone ou cidade…"
-            aria-label="Buscar clientes"
-            className="pl-9"
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground" aria-live="polite">
-          {filtered.length === customers.length
-            ? `${customers.length} ${customers.length === 1 ? "cliente" : "clientes"}`
-            : `${filtered.length} de ${customers.length}`}
-        </p>
-      </section>
+      <ListToolbar
+        ariaLabel="Busca de clientes"
+        search={{
+          value: query,
+          onValueChange: setQuery,
+          name: "customer-search",
+          label: "Buscar clientes",
+          placeholder: "Buscar por nome, telefone ou cidade…",
+        }}
+        summary={
+          <p>
+            {filtered.length === customers.length
+              ? `${customers.length} ${customers.length === 1 ? "cliente" : "clientes"}`
+              : `${filtered.length} de ${customers.length}`}
+          </p>
+        }
+      />
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed bg-card px-4 py-8 text-center text-sm text-muted-foreground">
-          Nenhum cliente encontrado para “{query}”.
-        </div>
+        <ListEmptyState
+          title="Nenhum cliente encontrado"
+          description={`Não encontramos cliente para “${query.trim()}”.`}
+          actionLabel="Limpar busca"
+          onAction={() => setQuery("")}
+        />
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
           <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.7fr)_auto] gap-4 border-b bg-slate-50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
@@ -133,7 +130,7 @@ function CustomerRow({ customer }: { customer: Customer }) {
           aria-label={`Abrir WhatsApp de ${customer.name}`}
           className="pointer-events-auto relative col-start-2 row-span-2 row-start-2 inline-flex h-11 w-11 items-center justify-center self-center justify-self-end rounded-md text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:col-start-4 md:row-span-1 md:row-start-1"
         >
-          <MessageCircle className="h-4 w-4" />
+          <MessageCircle aria-hidden="true" className="h-4 w-4" />
         </a>
       ) : (
         <span className="pointer-events-none col-start-2 row-span-2 row-start-2 self-center justify-self-end text-xs text-muted-foreground md:col-start-4 md:row-span-1 md:row-start-1">

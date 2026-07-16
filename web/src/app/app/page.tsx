@@ -18,6 +18,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  MetricStrip,
+  MetricTile,
+} from "@/components/app-shell/metric-strip";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { FirstMoneyGuide, type FirstMoneyStep } from "./first-money-guide";
@@ -115,7 +119,7 @@ export default async function DashboardPage() {
         actions={
           <Button asChild>
             <Link href="/app/orcamentos/novo">
-              <Plus className="h-4 w-4" />
+              <Plus aria-hidden="true" className="h-4 w-4" />
               Novo orçamento
             </Link>
           </Button>
@@ -126,7 +130,7 @@ export default async function DashboardPage() {
 
       <FirstMoneyGuide steps={firstMoneySteps} />
 
-      <section className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)] xl:grid-cols-4">
+      <MetricStrip ariaLabel="Resumo da operação">
         <MetricTile
           className="border-b border-r xl:border-b-0"
           icon={<Send className="h-4 w-4" />}
@@ -164,7 +168,7 @@ export default async function DashboardPage() {
           hint="Base cadastrada da empresa"
           tone="neutral"
         />
-      </section>
+      </MetricStrip>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
         <Card className="min-w-0">
@@ -179,7 +183,10 @@ export default async function DashboardPage() {
                 className="group flex min-h-16 items-center justify-between px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
               >
                 <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
+                  >
                     {action.icon}
                   </span>
                   <span className="min-w-0">
@@ -191,7 +198,7 @@ export default async function DashboardPage() {
                     </span>
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
               </Link>
             ))}
           </CardContent>
@@ -314,7 +321,7 @@ function EmptyWorkspaceCard() {
         <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
           <Button asChild>
             <Link href="/app/clientes/novo">
-              <Plus className="h-4 w-4" />
+              <Plus aria-hidden="true" className="h-4 w-4" />
               Cadastrar cliente
             </Link>
           </Button>
@@ -325,43 +332,6 @@ function EmptyWorkspaceCard() {
   );
 }
 
-
-function MetricTile({
-  className = "",
-  icon,
-  label,
-  value,
-  hint,
-  tone,
-}: {
-  className?: string;
-  icon: ReactNode;
-  label: string;
-  value: string;
-  hint: string;
-  tone: "neutral" | "blue" | "amber" | "green" | "red";
-}) {
-  const iconBg = {
-    neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-    blue: "bg-sky-100 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400",
-    amber: "bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400",
-    green: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400",
-    red: "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400",
-  }[tone];
-
-  return (
-    <div className={`min-w-0 p-3.5 sm:p-4 ${className}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
-          <div className="mt-1 text-lg font-bold tabular-nums text-slate-950 sm:text-xl">{value}</div>
-          <p className="mt-1 text-xs leading-4 text-muted-foreground">{hint}</p>
-        </div>
-        <span className={`shrink-0 rounded-md p-2 ${iconBg}`}>{icon}</span>
-      </div>
-    </div>
-  );
-}
 
 function EmptyLine({
   title,

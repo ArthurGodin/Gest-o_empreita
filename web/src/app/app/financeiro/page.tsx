@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,6 +7,10 @@ import {
   HardHat,
   TrendingUp,
 } from "lucide-react";
+import {
+  MetricStrip,
+  MetricTile,
+} from "@/components/app-shell/metric-strip";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,15 +93,15 @@ export default async function FinanceiroPage() {
             <Button asChild>
               <Link href="/app/orcamentos/novo">
                 Novo orçamento
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
             </Button>
           </div>
         }
       />
 
-      <section className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)] xl:grid-cols-4">
-        <FinanceMetric
+      <MetricStrip ariaLabel="Resumo financeiro">
+        <MetricTile
           className="border-b border-r xl:border-b-0"
           icon={<FileCheck2 className="h-4 w-4" />}
           label="Recebido Pix"
@@ -106,7 +109,7 @@ export default async function FinanceiroPage() {
           hint="Cobranças recebidas ou confirmadas"
           tone="green"
         />
-        <FinanceMetric
+        <MetricTile
           className="border-b xl:border-b-0 xl:border-r"
           icon={<Banknote className="h-4 w-4" />}
           label="A receber"
@@ -114,7 +117,7 @@ export default async function FinanceiroPage() {
           hint="Pix pendente ou ainda não gerado"
           tone="blue"
         />
-        <FinanceMetric
+        <MetricTile
           className="border-r xl:border-r"
           icon={<TrendingUp className="h-4 w-4" />}
           label="Margem estimada"
@@ -126,18 +129,18 @@ export default async function FinanceiroPage() {
           }
           tone={overview.margin_cents < 0 ? "red" : "amber"}
         />
-        <FinanceMetric
+        <MetricTile
           icon={<AlertTriangle className="h-4 w-4" />}
           label="Atrasado"
           value={formatBRL(overview.overdue_charge_cents / 100)}
           hint="Cobranças vencidas sem baixa"
           tone={overview.overdue_charge_cents > 0 ? "red" : "neutral"}
         />
-      </section>
+      </MetricStrip>
 
       {overview.approved_without_project_cents > 0 ? (
         <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="space-y-1 text-sm">
             <p className="font-medium">
               Existem aprovados que ainda não viraram obra.
@@ -343,43 +346,6 @@ export default async function FinanceiroPage() {
   );
 }
 
-function FinanceMetric({
-  className = "",
-  icon,
-  label,
-  value,
-  hint,
-  tone,
-}: {
-  className?: string;
-  icon: ReactNode;
-  label: string;
-  value: string;
-  hint: string;
-  tone: "neutral" | "blue" | "amber" | "green" | "red";
-}) {
-  const toneClass = {
-    neutral: "bg-muted text-foreground",
-    blue: "bg-sky-100 text-sky-700",
-    amber: "bg-amber-50 text-amber-700",
-    green: "bg-emerald-50 text-emerald-700",
-    red: "bg-red-50 text-red-700",
-  }[tone];
-
-  return (
-    <div className={`min-w-0 p-3.5 sm:p-4 ${className}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <span className={`rounded-md p-2 ${toneClass}`}>{icon}</span>
-      </div>
-      <div className="mt-1 break-words text-lg font-bold tabular-nums text-slate-950 sm:text-xl">
-        {value}
-      </div>
-      <p className="mt-1 text-xs leading-4 text-muted-foreground">{hint}</p>
-    </div>
-  );
-}
-
 function chargeStatusClass(status: ChargeStatus) {
   const base = "rounded-md px-2 py-1 text-xs";
   if (status === "received" || status === "confirmed") {
@@ -416,7 +382,7 @@ function MoneyColumn({
 function EmptyFinanceState() {
   return (
     <div className="px-4 py-8 text-center">
-      <HardHat className="mx-auto h-8 w-8 text-muted-foreground" />
+      <HardHat aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
       <p className="mt-3 text-sm font-medium">Ainda não há financeiro para ler.</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
         Crie um orçamento, envie para o cliente e transforme o aprovado em obra.
