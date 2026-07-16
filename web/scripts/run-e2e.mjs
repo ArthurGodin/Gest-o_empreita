@@ -56,10 +56,13 @@ function ensureLocalNetwork() {
 function startSupabaseIfNeeded() {
   if (localStatus().status === 0) return;
 
-  ensureLocalNetwork();
-  const started = supabase(["start", "--network-id", "prumo-local"], {
-    stdio: "inherit",
-  });
+  const startArgs = ["start"];
+  if (!process.env.CI) {
+    ensureLocalNetwork();
+    startArgs.push("--network-id", "prumo-local");
+  }
+
+  const started = supabase(startArgs, { stdio: "inherit" });
   if (started.status !== 0) {
     throw new Error(
       "Supabase local nao iniciou. Confirme que o Docker Desktop esta ativo.",
@@ -91,7 +94,11 @@ function stopSupabaseIfOwned() {
 let exitCode = 1;
 try {
   startSupabaseIfNeeded();
-  resetLocalDatabase();
+  // A fresh CI start already applies every migration and seed. Resetting it
+  // immediately can race Docker DNS while Supabase restarts its services.
+  if (!process.env.CI || !startedSupabase) {
+    resetLocalDatabase();
+  }
   const local = readLocalEnvironment();
   const testEnv = {
     ...process.env,
@@ -126,4 +133,3 @@ try {
 }
 
 process.exit(exitCode);
-
