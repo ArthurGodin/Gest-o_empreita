@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getQuotes } from "@/lib/queries/quotes";
@@ -14,7 +15,7 @@ export default async function QuotesPage() {
   const quotes = await getQuotes();
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Orçamentos"
         description="Crie, envie e acompanhe as propostas da sua empresa."
@@ -47,6 +48,6 @@ export default async function QuotesPage() {
       ) : (
         <QuoteList quotes={quotes} />
       )}
-    </div>
+    </PageContainer>
   );
 }

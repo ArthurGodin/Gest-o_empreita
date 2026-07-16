@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Button } from "@/components/ui/button";
 import { getCustomers } from "@/lib/queries/customers";
@@ -68,7 +69,7 @@ export default async function QuoteDetailPage({
   const latestRevision = revisions[0] ?? null;
 
   return (
-    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
+    <PageContainer spacing="compact">
       <div>
         <Link
           href="/app/orcamentos"
@@ -132,6 +133,6 @@ export default async function QuoteDetailPage({
           paymentProvider={company?.payment_provider ?? "asaas"}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

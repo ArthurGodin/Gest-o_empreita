@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HardHat } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ export default async function ProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Obras"
         description="Acompanhe execução, prazo, custos e cobranças em um só lugar."
@@ -104,6 +105,6 @@ export default async function ProjectsPage() {
           </div>
         </section>
       )}
-    </div>
+    </PageContainer>
   );
 }

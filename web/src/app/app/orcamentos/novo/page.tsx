@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getCustomers } from "@/lib/queries/customers";
@@ -24,7 +25,7 @@ export default async function NewQuotePage({
     : undefined;
 
   return (
-    <div className="container max-w-3xl space-y-4 py-5 sm:py-6">
+    <PageContainer size="narrow" spacing="compact">
       <div>
         <Link
           href="/app/orcamentos"
@@ -59,6 +60,6 @@ export default async function NewQuotePage({
           selectedCustomerId={selectedCustomerId}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

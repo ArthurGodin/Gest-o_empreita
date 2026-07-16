@@ -1,3 +1,4 @@
+import { PageLoadingShell } from "@/components/app-shell/page-loading-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -5,12 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export default function FinanceiroLoading() {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-36" />
-        <Skeleton className="h-5 w-72" />
-      </div>
-
+    <PageLoadingShell showAction={false}>
       {/* Metric cards */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -31,6 +27,6 @@ export default function FinanceiroLoading() {
           ))}
         </div>
       </div>
-    </div>
+    </PageLoadingShell>
   );
 }

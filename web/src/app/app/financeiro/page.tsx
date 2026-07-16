@@ -8,6 +8,7 @@ import {
   HardHat,
   TrendingUp,
 } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,7 +80,7 @@ export default async function FinanceiroPage() {
       : null;
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Financeiro"
         description="Acompanhe recebimentos, gastos e margem estimada das obras."
@@ -338,7 +339,7 @@ export default async function FinanceiroPage() {
           </Card>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }
 

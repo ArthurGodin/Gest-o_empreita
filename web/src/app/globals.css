@@ -82,14 +82,24 @@
     overflow-x: hidden;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   * {
     @apply border-border;
     min-width: 0;
   }
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
     font-feature-settings: "rlig" 1, "calt" 1;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.12);
+  }
+
+  .dark {
+    color-scheme: dark;
   }
 
   button,
@@ -98,6 +108,11 @@
   select,
   textarea {
     touch-action: manipulation;
+  }
+
+  select {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
   }
 
   @media (max-width: 767px) {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BarChart3, ChevronRight, ClipboardList } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { CompanyForm } from "./company-form";
@@ -16,7 +17,7 @@ export default async function SettingsPage() {
   if (!company) redirect("/onboarding");
 
   return (
-    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
+    <PageContainer size="medium" spacing="compact">
       <PageHeader
         title="Configurações"
         description="Dados da empresa que aparecem nos orçamentos enviados pra clientes."
@@ -50,7 +51,7 @@ export default async function SettingsPage() {
           />
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getCustomers } from "@/lib/queries/customers";
@@ -14,7 +15,7 @@ export default async function CustomersPage() {
   const customers = await getCustomers();
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Clientes"
         description="Cadastre uma vez e reutilize os dados em orçamentos e obras."
@@ -47,6 +48,6 @@ export default async function CustomersPage() {
       ) : (
         <CustomerList customers={customers} />
       )}
-    </div>
+    </PageContainer>
   );
 }

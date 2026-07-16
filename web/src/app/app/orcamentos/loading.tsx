@@ -1,3 +1,4 @@
+import { PageLoadingShell } from "@/components/app-shell/page-loading-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -5,15 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export default function OrcamentosLoading() {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-5 w-64" />
-        </div>
-        <Skeleton className="h-10 w-40 rounded-md" />
-      </div>
-
+    <PageLoadingShell>
       {/* Filter tabs */}
       <div className="flex gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -34,6 +27,6 @@ export default function OrcamentosLoading() {
           </div>
         ))}
       </div>
-    </div>
+    </PageLoadingShell>
   );
 }

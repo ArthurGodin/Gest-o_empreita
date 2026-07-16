@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { FirstMoneyGuide, type FirstMoneyStep } from "./first-money-guide";
 import { SampleDataButton } from "./sample-data-button";
@@ -107,7 +108,7 @@ export default async function DashboardPage() {
     customers.length === 0 && quotes.length === 0 && projects.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Início"
         description="O caminho mais curto para vender, executar e receber."
@@ -289,7 +290,7 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }
 

@@ -1,4 +1,5 @@
 import { Package } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getCatalogItems } from "@/lib/queries/catalog";
@@ -30,7 +31,7 @@ export default async function CatalogPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1184px] space-y-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <PageContainer>
       <PageHeader
         title="Catálogo de itens"
         description="Reutilize serviços, materiais, unidades e preços nos seus orçamentos."
@@ -46,6 +47,6 @@ export default async function CatalogPage() {
       ) : (
         <CatalogList items={items} currentPlan={currentPlan} />
       )}
-    </div>
+    </PageContainer>
   );
 }

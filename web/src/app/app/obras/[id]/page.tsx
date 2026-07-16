@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { getProjectWithRelations } from "@/lib/queries/projects";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { ProjectHeader } from "./project-header";
@@ -40,7 +41,7 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
 
   return (
-    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
+    <PageContainer spacing="compact">
       <ProjectHeader project={project} />
 
       <StatusSuggestion
@@ -86,6 +87,6 @@ export default async function ProjectDetailPage({
       />
 
       <PublicLinkCallout shareToken={project.share_token} />
-    </div>
+    </PageContainer>
   );
 }

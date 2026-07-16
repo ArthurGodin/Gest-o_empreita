@@ -17,12 +17,12 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "flex min-w-0 flex-col gap-3 border-b pb-4 sm:flex-row sm:items-end sm:justify-between",
+        "flex min-w-0 flex-col gap-3 border-b pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6",
         className,
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-xl font-bold text-slate-950 text-balance sm:text-2xl">
+        <h1 className="text-balance text-[22px] font-bold leading-7 text-slate-950 sm:text-2xl">
           {title}
         </h1>
         {description && (
@@ -32,7 +32,7 @@ export function PageHeader({
         )}
       </div>
       {actions && (
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
           {actions}
         </div>
       )}

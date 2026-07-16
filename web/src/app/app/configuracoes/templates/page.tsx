@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -40,7 +41,7 @@ export default async function TemplatesPage() {
   const templates = await loadTemplates();
 
   return (
-    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
+    <PageContainer size="medium" spacing="compact">
       <Link
         href="/app/configuracoes"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -55,6 +56,6 @@ export default async function TemplatesPage() {
       />
 
       <TemplateList templates={templates} />
-    </div>
+    </PageContainer>
   );
 }

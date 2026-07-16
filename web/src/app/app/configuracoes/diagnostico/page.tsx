@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { env } from "@/lib/env";
@@ -215,7 +216,7 @@ export default async function ProductionDiagnosticsPage() {
   ];
 
   return (
-    <div className="container max-w-6xl space-y-4 py-5 sm:py-6">
+    <PageContainer spacing="compact">
       <PageHeader
         title="Diagnóstico de produção"
         description="Painel objetivo para saber se o Prumo está pronto para demonstrar, vender e cobrar sem improviso."
@@ -403,7 +404,7 @@ export default async function ProductionDiagnosticsPage() {
           ))}
         </ol>
       </section>
-    </div>
+    </PageContainer>
   );
 }
 

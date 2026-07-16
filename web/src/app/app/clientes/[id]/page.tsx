@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Button } from "@/components/ui/button";
 import { getCustomer } from "@/lib/queries/customers";
@@ -31,7 +32,7 @@ export default async function CustomerDetailPage({
   if (!customer) notFound();
 
   return (
-    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
+    <PageContainer size="medium" spacing="compact">
       <div>
         <Link
           href="/app/clientes"
@@ -59,6 +60,6 @@ export default async function CustomerDetailPage({
       />
 
       <CustomerForm customer={customer} />
-    </div>
+    </PageContainer>
   );
 }

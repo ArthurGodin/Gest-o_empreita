@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { CustomerForm } from "../customer-form";
 
@@ -16,7 +17,7 @@ export default async function NewCustomerPage({
   const continueToQuote = query.after === "quote";
 
   return (
-    <div className="container max-w-4xl space-y-4 py-5 sm:py-6">
+    <PageContainer size="medium" spacing="compact">
       <div>
         <Link
           href={continueToQuote ? "/app/orcamentos/novo" : "/app/clientes"}
@@ -40,6 +41,6 @@ export default async function NewCustomerPage({
         cancelHref={continueToQuote ? "/app/orcamentos/novo" : "/app/clientes"}
         afterCreate={continueToQuote ? "quote" : "customer"}
       />
-    </div>
+    </PageContainer>
   );
 }

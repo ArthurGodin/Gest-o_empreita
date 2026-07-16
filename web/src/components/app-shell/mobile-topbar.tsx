@@ -25,13 +25,16 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
       <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-3">
         <Link href="/app" className="flex min-h-11 min-w-0 items-center gap-2.5">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-white shadow-[0_1px_2px_rgba(15,23,42,0.14)]">
-            <HardHat className="h-4 w-4" />
+            <HardHat aria-hidden="true" className="h-4 w-4" />
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-bold leading-4 text-slate-950">
               Prumo
             </span>
-            <span className="block max-w-[13rem] truncate text-[11px] leading-4 text-muted-foreground">
+            <span
+              className="block max-w-[13rem] truncate text-[11px] leading-4 text-muted-foreground"
+              title={companyName}
+            >
               {companyName}
             </span>
           </span>
@@ -43,24 +46,28 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
               type="button"
               aria-label="Abrir menu da conta"
               title="Menu da conta"
-              className="inline-flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-md border bg-white text-slate-700 shadow-[0_1px_1px_rgba(15,23,42,0.04)] outline-none transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-md border bg-white text-slate-700 shadow-[0_1px_1px_rgba(15,23,42,0.04)] outline-none transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-ring active:bg-slate-100 data-[state=open]:bg-slate-100"
             >
-              <MenuIcon className="h-4 w-4" />
+              <MenuIcon aria-hidden="true" className="h-4 w-4" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
               sideOffset={8}
-              className="z-50 min-w-64 rounded-lg border bg-white p-1.5 shadow-lg"
+              collisionPadding={12}
+              className="z-50 max-h-[calc(100dvh-5rem-env(safe-area-inset-top))] w-[min(16rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-lg border bg-white p-1.5 shadow-lg"
             >
               <DropdownMenu.Label className="flex min-w-0 items-center gap-2 px-3 py-2">
-                <Building2 className="h-4 w-4 shrink-0 text-slate-500" />
+                <Building2 aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500" />
                 <span className="min-w-0">
                   <span className="block text-[10px] font-semibold uppercase text-muted-foreground">
                     Empresa
                   </span>
-                  <span className="block truncate text-xs font-semibold text-slate-800">
+                  <span
+                    className="block truncate text-xs font-semibold text-slate-800"
+                    title={companyName}
+                  >
                     {companyName}
                   </span>
                 </span>
@@ -68,7 +75,7 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
               <DropdownMenu.Separator className="my-1 h-px bg-slate-200" />
               <DropdownMenu.Item asChild>
                 <Link href="/app/catalogo" className={itemClassName}>
-                  <Package className="h-4 w-4" />
+                  <Package aria-hidden="true" className="h-4 w-4" />
                   Catálogo
                 </Link>
               </DropdownMenu.Item>
@@ -77,13 +84,13 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
                   href="/app/configuracoes/plano"
                   className={itemClassName}
                 >
-                  <CreditCard className="h-4 w-4" />
+                  <CreditCard aria-hidden="true" className="h-4 w-4" />
                   Planos e assinatura
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Item asChild>
                 <Link href="/app/configuracoes" className={itemClassName}>
-                  <Settings className="h-4 w-4" />
+                  <Settings aria-hidden="true" className="h-4 w-4" />
                   Configurações
                 </Link>
               </DropdownMenu.Item>
@@ -98,7 +105,7 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
                 }}
                 className={itemClassName}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut aria-hidden="true" className="h-4 w-4" />
                 {signingOut ? "Saindo..." : "Sair da conta"}
               </DropdownMenu.Item>
             </DropdownMenu.Content>

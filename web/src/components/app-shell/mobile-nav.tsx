@@ -31,13 +31,13 @@ export function MobileNav() {
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex min-w-0 touch-manipulation flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-semibold leading-none transition-colors after:absolute after:inset-x-3 after:top-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                "relative flex min-w-0 touch-manipulation flex-col items-center justify-center gap-1 px-0.5 text-[10px] font-semibold leading-none transition-colors after:absolute after:inset-x-3 after:top-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-slate-100",
                 active
                   ? "text-emerald-800 after:opacity-100"
                   : "text-slate-500 hover:text-slate-800",
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon aria-hidden="true" className="h-5 w-5" />
               <span className="max-w-full truncate px-0.5">{item.label}</span>
             </Link>
           );
