@@ -1,5 +1,6 @@
 import { formDraftSignature } from "@/lib/form-draft";
 import type { CompanyFull } from "@/lib/queries/company-settings";
+import { isBrazilStateCode } from "@/lib/brazil-states";
 
 export interface CompanyDraft {
   name: string;
@@ -66,8 +67,8 @@ export function validateCompanyDraft(draft: CompanyDraft) {
   ) {
     add("email", "Informe um email válido.");
   }
-  if (normalized.state.length > 2) {
-    add("state", "UF deve ter no máximo 2 letras.");
+  if (normalized.state && !isBrazilStateCode(normalized.state)) {
+    add("state", "Selecione uma UF valida.");
   }
 
   return {

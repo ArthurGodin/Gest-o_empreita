@@ -21,6 +21,8 @@ comerciais so mudam no ultimo gate.
 - Registrar nome, URL, SHA-256, competencia, planilhas e cabecalhos encontrados.
 - Conferir amostras de insumos, composicoes, UFs, regimes, unidades, valores
   ausentes e origens de preco.
+- Validar o cruzamento das composicoes sinteticas com os cabecalhos da aba
+  analitica, pois o valor armazenado na coluna de codigo e zero.
 - Comparar pelo menos cinco linhas de cada tipo com a consulta/PDF oficial.
 - Nao escrever parser baseado em nome presumido de aba.
 - Criar um manifest de layout explicito depois da inspecao real.
@@ -191,7 +193,15 @@ Verificacao:
 
 - Converter linhas oficiais para o dominio normalizado.
 - Agregar os 27 precos por entrada, tipo, codigo e regime.
+- Suportar `ISD`, `ICD`, `ISE`, `CSD`, `CCD` e `CSE` como os tres regimes
+  oficiais observados.
+- Cruzar CSD/CCD/CSE com as linhas canonicas da aba `Analitico` e bloquear a
+  importacao se grupo, descricao, unidade, ordem ou contagem divergirem.
+- Preservar origem de preco dos insumos e `%AS` das composicoes em
+  `price_metadata`.
 - Manter ausencia de chave para preco nao publicado.
+- Interpretar custo zero com `%AS` vazio como composicao sem custo, nao como
+  preco zero.
 - Detectar codigo duplicado, unidade vazia, UF desconhecida, negativo, decimal
   invalido e competencia divergente.
 - Calcular contagens por tipo, regime e UF.

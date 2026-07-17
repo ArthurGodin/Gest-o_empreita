@@ -79,7 +79,7 @@ Regras de produto:
 - publicacoes versionadas por competencia e revisao;
 - insumos e composicoes;
 - precos para as 27 UFs quando publicados na fonte;
-- regime desonerado e nao desonerado para referencias em que isso se aplica;
+- regimes sem desoneracao, com desoneracao e sem encargos sociais;
 - busca protegida por codigo e descricao;
 - filtros por tipo, UF, competencia e regime;
 - inclusao no catalogo e no editor de orcamento;
@@ -209,10 +209,12 @@ Criar os seguintes enums PostgreSQL:
 
 - `sinapi_release_status`: `staging`, `published`, `superseded`, `rejected`;
 - `sinapi_reference_kind`: `input`, `composition`;
-- `sinapi_regime`: `reference`, `desonerado`, `nao_desonerado`.
+- `sinapi_regime`: `sem_desoneracao`, `com_desoneracao`,
+  `sem_encargos_sociais`.
 
-`reference` e usado quando o regime nao altera aquela referencia. A interface
-nao pede uma escolha sem efeito para insumos.
+Os tres regimes aparecem nos relatorios oficiais de insumos e composicoes. A
+interface usa os mesmos nomes da fonte e inicia em `sem_desoneracao`, sem
+esconder a escolha do usuario.
 
 ### 8.2 `sinapi_releases`
 
@@ -275,7 +277,8 @@ Campos:
 - `unit text not null`;
 - `regime sinapi_regime not null`;
 - `prices_cents jsonb not null`, como `{ "PI": 12345, "SP": 14590 }`;
-- `price_origins jsonb not null default '{}'` quando a fonte trouxer origem;
+- `price_metadata jsonb not null default '{}'` para origem do preco de insumos
+  e percentual atribuido a Sao Paulo (`%AS`) nas composicoes;
 - `search_text text not null`, normalizado sem acentos pelo importador;
 - `created_at timestamptz not null`.
 
@@ -512,7 +515,30 @@ Textos proibidos:
 
 ## 13. Ingestao e retificacao
 
-### 13.1 Dry run obrigatorio
+### 13.1 Layout oficial observado
+
+O pacote `SINAPI-2026-06-formato-xlsx.zip`, publicado pela CAIXA, foi inspecionado
+com SHA-256
+`83A133D782A18CC091E95011829341659D1A599DC27DF90D63385BC296D925D9`.
+
+O arquivo `SINAPI_Referencia_2026_06.xlsx` contem:
+
+- `ISD`, `ICD` e `ISE`: 4.876 insumos em cada regime;
+- `CSD`, `CCD` e `CSE`: 10.454 composicoes em cada regime;
+- `Analitico`: 66.111 linhas de composicoes e seus itens;
+- 27 colunas de UF para insumos;
+- pares de custo e `%AS` para as 27 UFs nas composicoes.
+
+Os codigos nas tres abas sinteticas de composicoes sao formulas cujo valor
+armazenado no arquivo e zero. O importador deve obter os codigos das 10.454
+linhas de cabecalho da aba analitica e exigir correspondencia exata, na mesma
+ordem, de grupo, descricao e unidade. A inspecao de junho/2026 encontrou zero
+divergencias e nenhuma chave canonica duplicada.
+
+Nas composicoes, custo zero acompanhado de `%AS` vazio representa custo nao
+calculado. Essa combinacao vira ausencia de preco, nunca `R$ 0,00`.
+
+### 13.2 Dry run obrigatorio
 
 O comando padrao apenas analisa e gera relatorio. Publicar exige uma flag ou
 comando separado. O relatorio inclui:
@@ -530,7 +556,7 @@ comando separado. O relatorio inclui:
 - amostra das maiores variacoes de preco;
 - erros bloqueantes e avisos.
 
-### 13.2 Publicacao
+### 13.3 Publicacao
 
 1. Criar release `staging`.
 2. Inserir entradas em lotes idempotentes.
@@ -543,7 +569,7 @@ comando separado. O relatorio inclui:
 Se qualquer lote falhar, a release de staging pode ser removida sem tocar nas
 publicadas. Reexecutar o mesmo hash nao cria duplicata.
 
-### 13.3 Operacao inicial
+### 13.4 Operacao inicial
 
 A descoberta e o download do arquivo sao manuais nesta versao. Isso evita
 acoplamento a HTML e nomes de arquivo externos. A importacao e validacao sao

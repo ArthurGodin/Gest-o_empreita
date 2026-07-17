@@ -28,6 +28,7 @@ Thumbs.db
 # generated QA artifacts
 screenshots/
 dogfood-output/
+web/.sinapi/
 
 # local env files
 .env

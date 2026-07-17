@@ -38,7 +38,7 @@ describe("company draft", () => {
 
   it("returns the first invalid field in visual order", () => {
     const validation = validateCompanyDraft(
-      draft({ name: " ", email: "invalido", state: "PIA" }),
+      draft({ name: " ", email: "invalido", state: "XX" }),
     );
 
     expect(validation.valid).toBe(false);

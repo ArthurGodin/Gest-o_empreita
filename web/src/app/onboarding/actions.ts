@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
+import { isBrazilStateCode } from "@/lib/brazil-states";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Informe o nome da empresa"),
@@ -14,7 +15,10 @@ const schema = z.object({
   state: z
     .string()
     .trim()
-    .max(2, "UF tem 2 letras")
+    .refine(
+      (value): boolean => value === "" || isBrazilStateCode(value),
+      "Selecione uma UF valida",
+    )
     .optional()
     .or(z.literal("")),
 });

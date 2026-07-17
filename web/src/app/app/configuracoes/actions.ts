@@ -9,6 +9,7 @@ import { uploadCompanyLogo } from "@/lib/supabase/storage";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { normalizePixKey } from "@/lib/pix/br-code";
 import { isValidCpfCnpj } from "@/lib/br-documents";
+import { isBrazilStateCode } from "@/lib/brazil-states";
 
 // ─── Update dados da empresa ────────────────────────────────────────────────
 
@@ -23,7 +24,10 @@ const companySchema = z.object({
   state: z
     .string()
     .trim()
-    .max(2, "UF tem 2 letras")
+    .refine(
+      (value): boolean => value === "" || isBrazilStateCode(value),
+      "Selecione uma UF valida",
+    )
     .optional()
     .or(z.literal("")),
   zip_code: z.string().trim().optional().or(z.literal("")),

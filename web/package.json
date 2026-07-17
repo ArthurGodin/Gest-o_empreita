@@ -51,9 +51,12 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.10",
+    "fflate": "^0.8.3",
     "postcss": "^8",
+    "read-excel-file": "^9.3.2",
     "supabase": "^2.109.1",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.7"
   },
