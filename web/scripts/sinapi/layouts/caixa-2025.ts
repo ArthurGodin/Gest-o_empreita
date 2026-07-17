@@ -118,7 +118,7 @@ export const CAIXA_SINAPI_2025_LAYOUT = {
     },
   ] satisfies SinapiSheetLayout[],
   analyticalSheet: {
-    sheetName: "Analítico",
+    sheetName: "Anal\u00edtico",
     headerRow: 9,
     dataStartRow: 10,
     groupColumn: 0,
