@@ -687,7 +687,14 @@ function normalizeRemoteSubscriptionStatus(
 ): "active" | "inactive" | "expired" | "unknown" {
   const normalized = normalizeProviderStatus(status);
   if (normalized === "ACTIVE") return "active";
-  if (normalized === "INACTIVE") return "inactive";
+  if (
+    normalized === "INACTIVE" ||
+    normalized === "CANCELED" ||
+    normalized === "CANCELLED" ||
+    normalized === "DELETED"
+  ) {
+    return "inactive";
+  }
   if (normalized === "EXPIRED") return "expired";
   return "unknown";
 }

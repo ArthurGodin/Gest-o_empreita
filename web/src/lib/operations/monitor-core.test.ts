@@ -288,6 +288,14 @@ describe("monitor core", () => {
     ).toBe("healthy");
   });
 
+  it("trata assinatura cancelada como inativa", () => {
+    const result = evaluateSubscriptionReconciliation(
+      subscription({ plan: "pro" }),
+      { kind: "found", value: { status: "CANCELED" } },
+    );
+    expect(result.state).toBe("critical");
+  });
+
   it("abre aviso quando a reconciliacao excede a capacidade", () => {
     const result = evaluateReconciliationCapacity("payment", 21, 20);
     expect(result.state).toBe("warning");

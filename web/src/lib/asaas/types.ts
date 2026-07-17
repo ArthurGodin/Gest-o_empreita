@@ -48,3 +48,18 @@ export interface AsaasWebhookPayload {
   event?: string;
   payment?: AsaasWebhookPayment;
 }
+
+export interface AsaasListResponse<T> {
+  data?: T[];
+}
+
+export interface AsaasReadPayment {
+  id?: string;
+  status?: string | null;
+}
+
+export interface AsaasReadSubscription {
+  id?: string;
+  status?: string | null;
+  deleted?: boolean | null;
+}

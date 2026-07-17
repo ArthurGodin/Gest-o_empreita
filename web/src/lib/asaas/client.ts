@@ -4,6 +4,17 @@ import { serverEnv } from "@/lib/env-server";
 
 type RequestBody = Record<string, unknown>;
 
+export interface AsaasRequestInit {
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  body?: RequestBody;
+  signal?: AbortSignal;
+}
+
+export type AsaasRequest = <T>(
+  path: string,
+  init?: AsaasRequestInit,
+) => Promise<T>;
+
 interface AsaasErrorBody {
   errors?: Array<{ code?: string; description?: string }>;
 }
@@ -29,7 +40,7 @@ export class AsaasApiError extends Error {
 
 export async function asaasRequest<T>(
   path: string,
-  init: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: RequestBody } = {},
+  init: AsaasRequestInit = {},
 ): Promise<T> {
   if (!serverEnv.ASAAS_API_KEY) {
     throw new AsaasConfigError();
@@ -45,6 +56,7 @@ export async function asaasRequest<T>(
       "user-agent": "GestaoEmpreita/1.0",
     },
     body: init.body ? JSON.stringify(init.body) : undefined,
+    signal: init.signal,
     cache: "no-store",
   });
 
