@@ -1,4 +1,4 @@
-export type AlertSeverity = "critical" | "warning";
+export type AlertSeverity = "critical" | "warning" | "resolved";
 
 export type AlertContextValue = string | number | boolean | null;
 export type AlertContext = Record<
@@ -63,8 +63,13 @@ export function formatOperationalAlertEmail(input: OperationalAlertEmailInput) {
     })
     .join("");
 
-  const severityLabel =
-    input.severity === "critical" ? "Critico" : "Atencao";
+  const severityStyle =
+    input.severity === "critical"
+      ? { label: "Critico", color: "#991b1b" }
+      : input.severity === "warning"
+        ? { label: "Atencao", color: "#92400e" }
+        : { label: "Resolvido", color: "#047857" };
+  const severityLabel = severityStyle.label;
   const subject = `[Prumo][${severityLabel}] ${input.title}`;
   const text = [
     `${severityLabel}: ${input.title}`,
@@ -82,7 +87,7 @@ export function formatOperationalAlertEmail(input: OperationalAlertEmailInput) {
   const html = `
     <div style="font-family:Arial,sans-serif;background:#f8fafc;padding:24px;color:#111827;">
       <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
-        <div style="padding:18px 22px;background:${input.severity === "critical" ? "#991b1b" : "#92400e"};color:white;">
+        <div style="padding:18px 22px;background:${severityStyle.color};color:white;">
           <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;">Prumo ${severityLabel}</div>
           <h1 style="margin:8px 0 0;font-size:20px;line-height:1.3;">${escapeHtml(input.title)}</h1>
         </div>

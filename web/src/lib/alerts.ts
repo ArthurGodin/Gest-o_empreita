@@ -12,7 +12,7 @@ import {
   type AlertSeverity,
 } from "@/lib/alerts-core";
 
-interface OperationalAlertInput {
+export interface OperationalAlertInput {
   area: string;
   severity: AlertSeverity;
   title: string;

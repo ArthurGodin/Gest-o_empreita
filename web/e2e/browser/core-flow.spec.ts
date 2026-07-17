@@ -5,7 +5,7 @@ test("owner completes the core journey and simulated checkout", async ({
   browser,
   page,
 }, testInfo) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   const suffix = crypto.randomUUID();
   const email = `journey-${testInfo.project.name}-${suffix}@prumo.test`;

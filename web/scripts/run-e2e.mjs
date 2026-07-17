@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -86,6 +87,62 @@ function resetLocalDatabase() {
   }
 }
 
+function restartLocalGateway(apiUrl) {
+  const port = new URL(apiUrl).port;
+  const gateway = spawnSync(
+    "docker",
+    [
+      "ps",
+      "--filter",
+      "name=supabase_kong_",
+      "--filter",
+      "publish=" + port,
+      "--format",
+      "{{.ID}}",
+    ],
+    { encoding: "utf8" },
+  );
+  const ids = gateway.stdout?.trim().split(/\r?\n/).filter(Boolean) ?? [];
+  if (gateway.status !== 0 || ids.length !== 1) {
+    throw new Error("Nao foi possivel identificar o gateway Supabase local.");
+  }
+
+  const restarted = spawnSync("docker", ["restart", ids[0]], {
+    stdio: "ignore",
+  });
+  if (restarted.status !== 0) {
+    throw new Error("Nao foi possivel reiniciar o gateway Supabase local.");
+  }
+}
+
+async function waitForLocalAuth(apiUrl) {
+  const healthUrl = new URL("/auth/v1/health", apiUrl);
+  const deadline = Date.now() + 60_000;
+  let consecutiveHealthyResponses = 0;
+
+  while (Date.now() < deadline) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3_000);
+    try {
+      const response = await fetch(healthUrl, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      consecutiveHealthyResponses = response.ok
+        ? consecutiveHealthyResponses + 1
+        : 0;
+      if (consecutiveHealthyResponses >= 2) return;
+    } catch {
+      consecutiveHealthyResponses = 0;
+    } finally {
+      clearTimeout(timeout);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 750));
+  }
+
+  throw new Error("Supabase Auth local nao ficou saudavel apos o reset.");
+}
+
 function stopSupabaseIfOwned() {
   if (!startedSupabase || keepSupabase) return;
   supabase(["stop"], { stdio: "inherit" });
@@ -96,10 +153,16 @@ try {
   startSupabaseIfNeeded();
   // A fresh CI start already applies every migration and seed. Resetting it
   // immediately can race Docker DNS while Supabase restarts its services.
-  if (!process.env.CI || !startedSupabase) {
+  const shouldResetDatabase = !process.env.CI || !startedSupabase;
+  if (shouldResetDatabase) {
     resetLocalDatabase();
   }
+  rmSync(path.join(webDir, ".next"), { recursive: true, force: true });
   const local = readLocalEnvironment();
+  if (shouldResetDatabase) {
+    restartLocalGateway(local.API_URL);
+  }
+  await waitForLocalAuth(local.API_URL);
   const testEnv = {
     ...process.env,
     NEXT_PUBLIC_SUPABASE_URL: local.API_URL,
@@ -111,6 +174,7 @@ try {
     ASAAS_API_KEY: "",
     ASAAS_API_URL: "http://127.0.0.1:3999/v3",
     ASAAS_WEBHOOK_TOKEN: "prumo-e2e-webhook-token",
+    CRON_SECRET: "prumo-e2e-operational-cron-secret-2026-07-17",
     RESEND_API_KEY: "",
     ALERT_EMAIL_TO: "",
     META_CONVERSIONS_ACCESS_TOKEN: "",

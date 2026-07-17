@@ -37,4 +37,17 @@ describe("operational alerts core", () => {
     expect(email.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(email.html).not.toContain("<script>alert(1)</script>");
   });
+
+  it("formats resolved alerts with a recovery identity", () => {
+    const email = formatOperationalAlertEmail({
+      appUrl: "https://gestao-empreita.vercel.app",
+      area: "monitoramento",
+      severity: "resolved",
+      title: "Operacao recuperada",
+      message: "O estado voltou ao normal.",
+    });
+
+    expect(email.subject).toContain("[Prumo][Resolvido]");
+    expect(email.html).toContain("#047857");
+  });
 });

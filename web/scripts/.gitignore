@@ -3,5 +3,6 @@
 !.gitignore
 !next-build.mjs
 !run-e2e.mjs
+!send-operational-test-alert.ts
 !sinapi/
 !sinapi/**
