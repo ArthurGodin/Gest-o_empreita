@@ -10,6 +10,10 @@ import { CostsSection } from "./costs-section";
 import { TimeSection } from "./time-section";
 import { PublicLinkCallout } from "./public-link-callout";
 import { BillingSection } from "./billing-section";
+import { ProjectSectionNav } from "./project-section-nav";
+
+const sectionAnchorClass =
+  "min-w-0 scroll-mt-[calc(7.75rem+env(safe-area-inset-top))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:scroll-mt-24";
 
 export async function generateMetadata({
   params,
@@ -50,13 +54,17 @@ export default async function ProjectDetailPage({
         stages={project.stages}
       />
 
-      <StagesSection
-        projectId={project.id}
-        stages={project.stages}
-        progressPct={project.progress_pct}
-        startsOn={project.starts_on}
-        templates={templates}
-      />
+      <ProjectSectionNav />
+
+      <div id="etapas" tabIndex={-1} className={sectionAnchorClass}>
+        <StagesSection
+          projectId={project.id}
+          stages={project.stages}
+          progressPct={project.progress_pct}
+          startsOn={project.starts_on}
+          templates={templates}
+        />
+      </div>
 
       <BillingSection
         charges={project.charges}
@@ -67,24 +75,30 @@ export default async function ProjectDetailPage({
       />
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(20rem,0.85fr)]">
-        <DiarySection
-          projectId={project.id}
-          entries={project.diary}
-          total={project.diary_total}
-        />
-        <CostsSection
-          projectId={project.id}
-          costs={project.costs}
-          summary={project.cost_summary}
-          stages={project.stages}
-        />
+        <div id="diario" tabIndex={-1} className={sectionAnchorClass}>
+          <DiarySection
+            projectId={project.id}
+            entries={project.diary}
+            total={project.diary_total}
+          />
+        </div>
+        <div id="custos" tabIndex={-1} className={sectionAnchorClass}>
+          <CostsSection
+            projectId={project.id}
+            costs={project.costs}
+            summary={project.cost_summary}
+            stages={project.stages}
+          />
+        </div>
       </div>
 
-      <TimeSection
-        projectId={project.id}
-        today={project.time_today}
-        historyCount={project.time_history_count}
-      />
+      <div id="equipe" tabIndex={-1} className={sectionAnchorClass}>
+        <TimeSection
+          projectId={project.id}
+          today={project.time_today}
+          historyCount={project.time_history_count}
+        />
+      </div>
 
       <PublicLinkCallout shareToken={project.share_token} />
     </PageContainer>

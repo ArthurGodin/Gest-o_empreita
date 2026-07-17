@@ -28,21 +28,21 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
     <div className="space-y-3">
       <Link
         href="/app/obras"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="-ml-2 inline-flex min-h-11 touch-manipulation items-center gap-1 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <ArrowLeft className="h-3.5 w-3.5" />
+        <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
         Voltar para obras
       </Link>
 
-      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+          <h1 className="break-words text-xl font-bold text-foreground text-balance sm:text-2xl">
             {project.name}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             {project.address && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                 {project.address}
               </span>
             )}
@@ -51,13 +51,13 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
             )}
             {startedFmt && <span>Iniciada {startedFmt}</span>}
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${pillClass}`}
+              className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${pillClass}`}
             >
               {PROJECT_STATUS_LABEL[project.status]}
             </span>
           </div>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 self-stretch sm:self-auto">
           <StatusMenu projectId={project.id} current={project.status} />
         </div>
       </div>

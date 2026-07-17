@@ -124,7 +124,11 @@ export function BillingSection({
   const entryCharge = ordered.find((charge) => charge.kind === "entrada") ?? null;
 
   return (
-    <section id="cobranca" className="scroll-mt-24 rounded-lg border bg-card p-4 sm:p-5">
+    <section
+      id="cobranca"
+      tabIndex={-1}
+      className="scroll-mt-[calc(7.75rem+env(safe-area-inset-top))] rounded-lg border bg-card p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:p-5 lg:scroll-mt-24"
+    >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="text-sm font-semibold text-foreground">

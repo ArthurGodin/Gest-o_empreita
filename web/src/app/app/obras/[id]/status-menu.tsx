@@ -84,7 +84,7 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
         disabled={pending}
       >
         Mudar status
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
