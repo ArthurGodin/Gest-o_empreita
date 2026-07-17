@@ -5,8 +5,11 @@ import { Loader2, PackageSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { suggestCatalogAction } from "@/app/app/catalogo/actions";
-import type { CatalogItem } from "@/lib/queries/catalog";
+import { suggestQuoteItemsAction } from "@/app/app/catalogo/actions";
+import type {
+  QuoteItemSuggestion,
+  SinapiSuggestionStatus,
+} from "@/lib/quote-item-suggestions";
 
 interface CatalogAutocompleteProps {
   id?: string;
@@ -15,8 +18,8 @@ interface CatalogAutocompleteProps {
   value: string;
   /** Disparado a cada keystroke (mantém input controlado) */
   onValueChange: (value: string) => void;
-  /** Disparado quando usuário escolhe um item do catálogo */
-  onSelectItem: (item: CatalogItem) => void;
+  /** Disparado quando usuário escolhe catálogo ou referência SINAPI. */
+  onSelectItem: (item: QuoteItemSuggestion) => void;
   placeholder?: string;
   required?: boolean;
   className?: string;
@@ -53,7 +56,10 @@ export function CatalogAutocomplete({
   const generatedId = useId();
   const inputId = id ?? `${generatedId}-input`;
   const listboxId = `${generatedId}-listbox`;
-  const [suggestions, setSuggestions] = useState<CatalogItem[]>([]);
+  const [suggestions, setSuggestions] = useState<QuoteItemSuggestion[]>([]);
+  const [sinapiStatus, setSinapiStatus] =
+    useState<SinapiSuggestionStatus>("enabled");
+  const [sinapiUf, setSinapiUf] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
@@ -82,10 +88,12 @@ export function CatalogAutocomplete({
     setSuggestions([]);
 
     debounceRef.current = setTimeout(() => {
-      suggestCatalogAction(q)
+      suggestQuoteItemsAction(q)
         .then((results) => {
           if (requestSeqRef.current !== requestSeq) return;
-          setSuggestions(results);
+          setSuggestions(results.items);
+          setSinapiStatus(results.sinapiStatus);
+          setSinapiUf(results.sinapiUf);
           setOpen(focused);
           setHighlight(0);
         })
@@ -101,7 +109,7 @@ export function CatalogAutocomplete({
 
   const visibleSuggestions = value.trim().length >= 2 ? suggestions : [];
 
-  function pick(item: CatalogItem) {
+  function pick(item: QuoteItemSuggestion) {
     selectedValueRef.current = item.description;
     onValueChange(item.description);
     onSelectItem(item);
@@ -201,7 +209,7 @@ export function CatalogAutocomplete({
               aria-selected="false"
               className="px-3 py-2 text-sm text-muted-foreground"
             >
-              Buscando no catálogo…
+              Buscando itens…
             </li>
           )}
           {!loading && visibleSuggestions.length === 0 && (
@@ -233,21 +241,61 @@ export function CatalogAutocomplete({
                   : "hover:bg-accent/50",
               )}
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate font-medium">{item.description}</span>
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">
+                    {item.description}
+                  </span>
+                  <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="rounded-sm bg-muted px-1.5 py-0.5 font-medium uppercase tracking-normal">
+                      {item.source === "sinapi"
+                        ? `SINAPI ${item.uf}`
+                        : "Meu catálogo"}
+                    </span>
+                    {item.source === "sinapi" ? (
+                      <span>
+                        Código {item.code} · {formatCompetence(item.competence)}
+                      </span>
+                    ) : item.usage_count > 0 ? (
+                      <span>usado {item.usage_count}x</span>
+                    ) : null}
+                  </span>
+                </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {formatBRL(item.default_price_cents / 100)}/{item.unit}
+                  {formatBRL(item.unit_price_cents / 100)}/{item.unit}
                 </span>
               </div>
-              {item.usage_count > 0 && (
-                <div className="mt-0.5 text-xs text-muted-foreground">
-                  usado {item.usage_count}× no catálogo
-                </div>
-              )}
             </li>
           ))}
+          {!loading && sinapiStatus !== "enabled" && (
+            <li
+              role="option"
+              aria-disabled="true"
+              aria-selected="false"
+              className="border-t px-3 py-2 text-xs text-muted-foreground"
+            >
+              {sinapiNotice(sinapiStatus, sinapiUf)}
+            </li>
+          )}
         </ul>
       )}
     </div>
   );
+}
+
+function formatCompetence(value: string) {
+  const [year, month] = value.split("-");
+  return month && year ? `${month}/${year}` : value;
+}
+
+function sinapiNotice(status: SinapiSuggestionStatus, uf: string | null) {
+  if (status === "locked") {
+    return "SINAPI oficial disponível no plano Ultimate.";
+  }
+  if (status === "missing_state") {
+    return "Defina a UF da empresa para buscar preços SINAPI.";
+  }
+  return uf
+    ? `SINAPI ${uf} indisponível agora. Tente novamente em instantes.`
+    : "SINAPI indisponível agora. Tente novamente em instantes.";
 }

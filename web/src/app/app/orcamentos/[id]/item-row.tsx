@@ -18,11 +18,11 @@ import {
   createCatalogItemAction,
   recordCatalogUsageAction,
 } from "@/app/app/catalogo/actions";
+import type { QuoteItemSuggestion } from "@/lib/quote-item-suggestions";
 import type {
   ItemDraft,
   QuoteDraftItemField,
 } from "./quote-draft";
-import type { CatalogItem } from "@/lib/queries/catalog";
 
 interface ItemRowProps {
   index: number;
@@ -81,18 +81,44 @@ export function ItemRow({
 
   const lineTotal = Math.round(item.quantity * item.unit_price_cents);
   const canSaveToCatalog =
-    item.description.trim().length >= 2 && !item.catalog_item_id && !disabled;
+    item.description.trim().length >= 2 &&
+    !item.catalog_item_id &&
+    !item.sinapi_entry_id &&
+    !disabled;
 
-  function handleSelectFromCatalog(catItem: CatalogItem) {
+  function handleSelectSuggestion(suggestion: QuoteItemSuggestion) {
+    if (suggestion.source === "sinapi") {
+      onChange((current) => ({
+        ...current,
+        catalog_item_id: null,
+        description: suggestion.description,
+        unit: suggestion.unit,
+        unit_price_cents: suggestion.unit_price_cents,
+        sinapi_entry_id: suggestion.entry_id,
+        reference_uf: suggestion.uf,
+        reference_code: suggestion.code,
+        reference_competence: suggestion.competence,
+        reference_cost_cents: suggestion.cost_cents,
+        reference_adjustment_basis_points: 0,
+      }));
+      return;
+    }
+
     onChange((current) => ({
       ...current,
-      catalog_item_id: catItem.id,
-      description: catItem.description,
-      unit: catItem.unit,
-      unit_price_cents: catItem.default_price_cents,
+      catalog_item_id: suggestion.id,
+      description: suggestion.description,
+      unit: suggestion.unit,
+      unit_price_cents: suggestion.unit_price_cents,
+      sinapi_entry_id: null,
+      reference_uf: null,
+      reference_code: null,
+      reference_competence: null,
+      reference_cost_cents: null,
+      reference_adjustment_basis_points: null,
     }));
     startRecordingUsage(() => {
-      void recordCatalogUsageAction(catItem.id);
+      void recordCatalogUsageAction(suggestion.id);
     });
   }
 
@@ -141,9 +167,15 @@ export function ItemRow({
                 ...current,
                 description: v,
                 catalog_item_id: null,
+                sinapi_entry_id: null,
+                reference_uf: null,
+                reference_code: null,
+                reference_competence: null,
+                reference_cost_cents: null,
+                reference_adjustment_basis_points: null,
               }))
             }
-            onSelectItem={handleSelectFromCatalog}
+            onSelectItem={handleSelectSuggestion}
             placeholder="Ex: Telha cerâmica romana"
             disabled={disabled}
             ariaInvalid={Boolean(errors?.description)}
@@ -362,12 +394,18 @@ export function ItemRow({
         </div>
       </div>
 
-      {item.catalog_item_id && (
+      {item.sinapi_entry_id ? (
+        <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 lg:mt-1">
+          <Save className="h-3 w-3" aria-hidden="true" />
+          SINAPI {item.reference_uf}
+          {item.reference_code ? ` · ${item.reference_code}` : null}
+        </div>
+      ) : item.catalog_item_id ? (
         <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary lg:mt-1">
           <Save className="h-3 w-3" aria-hidden="true" />
           Salvo no catálogo
         </div>
-      )}
+      ) : null}
     </li>
   );
 }

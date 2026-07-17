@@ -18,6 +18,12 @@ export interface ItemDraft {
   unit: string;
   quantity: number;
   unit_price_cents: number;
+  sinapi_entry_id: string | null;
+  reference_uf: string | null;
+  reference_code: string | null;
+  reference_competence: string | null;
+  reference_cost_cents: number | null;
+  reference_adjustment_basis_points: number | null;
 }
 
 export interface QuoteDraft {
@@ -34,6 +40,9 @@ export interface PersistedQuoteItemDraft {
   unit: string;
   quantity: number;
   unit_price_cents: number;
+  sinapi_entry_id: string | null;
+  reference_uf: string | null;
+  reference_adjustment_basis_points: number | null;
 }
 
 export interface PersistedQuoteDraft {
@@ -92,6 +101,10 @@ export function toPersistedQuoteDraft(draft: QuoteDraft): PersistedQuoteDraft {
         unit: normalizeQuoteUnit(item.unit),
         quantity: item.quantity,
         unit_price_cents: item.unit_price_cents,
+        sinapi_entry_id: item.sinapi_entry_id,
+        reference_uf: item.reference_uf,
+        reference_adjustment_basis_points:
+          item.reference_adjustment_basis_points,
       })),
   };
 }

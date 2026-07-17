@@ -66,6 +66,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     cta: "Assinar Ultimate",
     features: [
       "Tudo do Pro",
+      "Consulta SINAPI oficial por UF no editor de orçamento",
       "Importação de catálogo por CSV",
       "Até 500 itens por importação",
       "Exportação CSV de receitas recebidas e custos",
@@ -73,6 +74,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     ],
     checkoutHighlights: [
       "Tudo do Pro incluído",
+      "Consulta SINAPI oficial por UF",
       "Importação de catálogo por CSV",
       "Até 500 itens por arquivo",
       "Exportação CSV de receitas e custos",

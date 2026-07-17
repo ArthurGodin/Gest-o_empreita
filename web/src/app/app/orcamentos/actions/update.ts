@@ -23,6 +23,37 @@ const itemDraftSchema = z.object({
     .max(1_000_000, "Quantidade muito grande"),
   unit_price_cents: z.number().int().min(0).max(1_000_000_000_00),
   catalog_item_id: z.string().uuid().optional().nullable(),
+  sinapi_entry_id: z.string().uuid().optional().nullable(),
+  reference_uf: z
+    .string()
+    .trim()
+    .length(2)
+    .transform((value) => value.toUpperCase())
+    .optional()
+    .nullable(),
+  reference_adjustment_basis_points: z
+    .number()
+    .int()
+    .min(0)
+    .max(100_000)
+    .optional()
+    .nullable(),
+}).superRefine((item, ctx) => {
+  if (!item.sinapi_entry_id) return;
+  if (!item.reference_uf) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["reference_uf"],
+      message: "UF obrigatória para item SINAPI",
+    });
+  }
+  if (item.reference_adjustment_basis_points == null) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["reference_adjustment_basis_points"],
+      message: "Ajuste obrigatório para item SINAPI",
+    });
+  }
 });
 
 const updateQuoteSchema = z.object({
@@ -70,6 +101,9 @@ interface UpdateInput {
     quantity: number;
     unit_price_cents: number;
     catalog_item_id?: string | null;
+    sinapi_entry_id?: string | null;
+    reference_uf?: string | null;
+    reference_adjustment_basis_points?: number | null;
   }>;
 }
 
@@ -140,6 +174,9 @@ export async function updateQuoteAction(
       unit: it.unit,
       quantity: it.quantity,
       unit_price_cents: it.unit_price_cents,
+      sinapi_entry_id: it.sinapi_entry_id,
+      reference_uf: it.reference_uf,
+      reference_adjustment_basis_points: it.reference_adjustment_basis_points,
     })),
   });
 

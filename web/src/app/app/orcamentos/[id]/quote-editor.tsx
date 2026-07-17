@@ -39,6 +39,12 @@ function newDraft(key = crypto.randomUUID()): ItemDraft {
     unit: "un",
     quantity: 1,
     unit_price_cents: 0,
+    sinapi_entry_id: null,
+    reference_uf: null,
+    reference_code: null,
+    reference_competence: null,
+    reference_cost_cents: null,
+    reference_adjustment_basis_points: null,
   };
 }
 
@@ -51,6 +57,12 @@ function initialItems(quote: QuoteWithRelations): ItemDraft[] {
     unit: item.unit,
     quantity: item.quantity,
     unit_price_cents: item.unit_price_cents,
+    sinapi_entry_id: item.sinapi_entry_id,
+    reference_uf: item.reference_uf,
+    reference_code: item.reference_code,
+    reference_competence: item.reference_competence,
+    reference_cost_cents: item.reference_cost_cents,
+    reference_adjustment_basis_points: item.reference_adjustment_basis_points,
   }));
 }
 

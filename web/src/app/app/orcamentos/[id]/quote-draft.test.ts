@@ -16,6 +16,12 @@ function item(overrides: Partial<ItemDraft> = {}): ItemDraft {
     unit: "un",
     quantity: 1,
     unit_price_cents: 0,
+    sinapi_entry_id: null,
+    reference_uf: null,
+    reference_code: null,
+    reference_competence: null,
+    reference_cost_cents: null,
+    reference_adjustment_basis_points: null,
     ...overrides,
   };
 }
@@ -67,8 +73,38 @@ describe("quote draft model", () => {
           unit: "m2",
           quantity: 12.5,
           unit_price_cents: 8500,
+          sinapi_entry_id: null,
+          reference_uf: null,
+          reference_adjustment_basis_points: null,
         },
       ],
+    });
+  });
+
+  it("persists the minimal SINAPI reference needed for snapshot resolution", () => {
+    const result = toPersistedQuoteDraft(
+      draft({
+        items: [
+          item({
+            description: "Concreto FCK 25MPA",
+            unit: "m3",
+            quantity: 2,
+            unit_price_cents: 65000,
+            sinapi_entry_id: "30000000-0000-0000-0000-000000000001",
+            reference_uf: "PI",
+            reference_code: "94965",
+            reference_competence: "2026-06-01",
+            reference_cost_cents: 64138,
+            reference_adjustment_basis_points: 0,
+          }),
+        ],
+      }),
+    );
+
+    expect(result.items[0]).toMatchObject({
+      sinapi_entry_id: "30000000-0000-0000-0000-000000000001",
+      reference_uf: "PI",
+      reference_adjustment_basis_points: 0,
     });
   });
 

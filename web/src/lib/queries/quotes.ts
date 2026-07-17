@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { QuoteStatus } from "@/lib/supabase/types";
+import type {
+  QuoteStatus,
+  SinapiReferenceKind,
+  SinapiRegime,
+} from "@/lib/supabase/types";
 import {
   effectiveStatus,
   type EffectiveQuoteStatus,
@@ -17,6 +21,19 @@ export interface QuoteItem {
   unit_price_cents: number;
   total_cents: number;
   created_at: string;
+  reference_source: string | null;
+  sinapi_entry_id: string | null;
+  reference_code: string | null;
+  reference_kind: SinapiReferenceKind | null;
+  reference_uf: string | null;
+  reference_competence: string | null;
+  reference_revision: number | null;
+  reference_regime: SinapiRegime | null;
+  reference_description: string | null;
+  reference_unit: string | null;
+  reference_cost_cents: number | null;
+  reference_adjustment_basis_points: number | null;
+  reference_release_sha256: string | null;
 }
 
 export interface Quote {

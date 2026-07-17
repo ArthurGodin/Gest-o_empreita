@@ -3,10 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeBrazilStateCode } from "@/lib/brazil-states";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { suggestCatalogItems, type CatalogItem } from "@/lib/queries/catalog";
 import { clientErrorFor, logServerError } from "@/lib/log";
 import { normalizeQuoteUnit } from "@/lib/format";
+import type {
+  QuoteItemSuggestion,
+  QuoteItemSuggestionResult,
+  SinapiSuggestionStatus,
+} from "@/lib/quote-item-suggestions";
 import {
   CATALOG_IMPORT_MAX_ROWS,
   type CatalogImportError,
@@ -387,6 +393,129 @@ export async function suggestCatalogAction(
     logServerError("catalog.suggest", e);
     return [];
   }
+}
+
+export async function suggestQuoteItemsAction(
+  query: string,
+): Promise<QuoteItemSuggestionResult> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { items: [], sinapiStatus: "unavailable", sinapiUf: null };
+  }
+
+  const q = query.trim();
+  if (q.length < 2) {
+    return { items: [], sinapiStatus: "enabled", sinapiUf: null };
+  }
+
+  const company = await getActiveCompany();
+  if (!company) {
+    return { items: [], sinapiStatus: "unavailable", sinapiUf: null };
+  }
+
+  const catalogSuggestions = await safeCatalogSuggestions(q);
+  const supabase = createClient();
+  const { data: companyData, error: companyError } = await supabase
+    .from("companies")
+    .select("plan, state")
+    .eq("id", company.company_id)
+    .single();
+
+  if (companyError) {
+    logServerError("sinapi.suggest.company", companyError);
+    return {
+      items: catalogSuggestions,
+      sinapiStatus: "unavailable",
+      sinapiUf: null,
+    };
+  }
+
+  if ((companyData as { plan?: string | null } | null)?.plan !== "ultimate") {
+    return {
+      items: catalogSuggestions,
+      sinapiStatus: "locked",
+      sinapiUf: null,
+    };
+  }
+
+  const uf = normalizeBrazilStateCode(
+    (companyData as { state?: string | null } | null)?.state,
+  );
+  if (!uf) {
+    return {
+      items: catalogSuggestions,
+      sinapiStatus: "missing_state",
+      sinapiUf: null,
+    };
+  }
+
+  const { data, error } = await supabase.rpc("search_sinapi", {
+    p_company_id: company.company_id,
+    p_query: q,
+    p_uf: uf,
+    p_limit: 6,
+  });
+
+  if (error) {
+    logServerError("sinapi.suggest.search", error, {
+      company_id: company.company_id,
+      uf,
+    });
+    return {
+      items: catalogSuggestions,
+      sinapiStatus: sinapiStatusFromError(error),
+      sinapiUf: uf,
+    };
+  }
+
+  const sinapiSuggestions = (data ?? []).map((item) => ({
+    source: "sinapi" as const,
+    id: `sinapi:${item.entry_id}:${item.uf}`,
+    entry_id: item.entry_id,
+    code: item.code,
+    kind: item.kind,
+    regime: item.regime,
+    uf: item.uf,
+    competence: item.competence,
+    revision: item.revision,
+    description: item.description,
+    unit: item.unit,
+    unit_price_cents: item.cost_cents,
+    cost_cents: item.cost_cents,
+    source_label: item.source_label,
+  }));
+
+  return {
+    items: [...catalogSuggestions, ...sinapiSuggestions],
+    sinapiStatus: "enabled",
+    sinapiUf: uf,
+  };
+}
+
+async function safeCatalogSuggestions(
+  query: string,
+): Promise<QuoteItemSuggestion[]> {
+  try {
+    const suggestions = await suggestCatalogItems(query, 4);
+    return suggestions.map((item) => ({
+      source: "catalog" as const,
+      id: item.id,
+      description: item.description,
+      unit: item.unit,
+      unit_price_cents: item.default_price_cents,
+      usage_count: item.usage_count,
+    }));
+  } catch (error) {
+    logServerError("catalog.suggest", error);
+    return [];
+  }
+}
+
+function sinapiStatusFromError(error: { code?: string; details?: string | null }) {
+  if (error.details === "SINAPI_ULTIMATE_REQUIRED" || error.code === "P0001") {
+    return "locked";
+  }
+  return "unavailable" satisfies SinapiSuggestionStatus;
 }
 
 function normalizeCatalogKey(description: string): string {

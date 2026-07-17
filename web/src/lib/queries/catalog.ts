@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { rankCatalogSuggestions } from "@/lib/catalog-ranking";
 import { createClient } from "@/lib/supabase/server";
+import type { SinapiReferenceKind, SinapiRegime } from "@/lib/supabase/types";
 
 export interface CatalogItem {
   id: string;
@@ -12,6 +13,19 @@ export interface CatalogItem {
   last_used_at: string | null;
   created_at: string;
   updated_at: string;
+  reference_source: string | null;
+  sinapi_entry_id: string | null;
+  reference_code: string | null;
+  reference_kind: SinapiReferenceKind | null;
+  reference_uf: string | null;
+  reference_competence: string | null;
+  reference_revision: number | null;
+  reference_regime: SinapiRegime | null;
+  reference_description: string | null;
+  reference_unit: string | null;
+  reference_cost_cents: number | null;
+  reference_adjustment_basis_points: number | null;
+  reference_release_sha256: string | null;
 }
 
 /**
