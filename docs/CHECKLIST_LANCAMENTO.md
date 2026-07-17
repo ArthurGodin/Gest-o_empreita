@@ -1,6 +1,6 @@
 # Checklist de lançamento - Prumo
 
-Atualizado em 13/07/2026. Este documento separa o que está validado localmente do que já está efetivamente em produção.
+Atualizado em 17/07/2026. Este documento separa o que está validado localmente do que já está efetivamente em produção.
 
 ## Estado atual
 
@@ -8,7 +8,9 @@ Atualizado em 13/07/2026. Este documento separa o que está validado localmente 
 - [x] Asaas de produção configurado e cobrança real já validada no fluxo anterior.
 - [x] Planos Grátis, Pro e Ultimate revisados para prometer somente recursos existentes.
 - [x] Checkout, webhook, cancelamento e proteção de plano endurecidos no código local.
-- [x] `typecheck`, testes, `build`, `lint` e auditoria de dependências aprovados localmente em 13/07/2026.
+- [x] `typecheck`, 129 testes, `build`, `lint` e auditoria de dependências aprovados localmente em 17/07/2026.
+- [x] Nove jornadas E2E aprovadas em desktop/mobile, incluindo o fluxo comercial completo.
+- [x] Cliente, configurações, modelos, etapa, gasto e ponto protegidos contra perda acidental de digitação.
 - [x] Migrations `20260713000000`, `20260713000001` e `20260713000002` aplicadas no Supabase de produção.
 - [x] Código de 13/07/2026 publicado na Vercel depois das migrations.
 - [x] Smoke test público e autenticado executado na nova versão de produção.
@@ -69,7 +71,8 @@ Não iniciar tráfego pago enquanto qualquer item abaixo estiver pendente:
 - [x] Dependências sem vulnerabilidades conhecidas pelo `npm audit` local.
 - [ ] Monitorar logs da Vercel e entregas do webhook durante as primeiras vendas.
 - [ ] Definir responsável por responder alertas e prazo máximo de atendimento.
-- [ ] Manter backup e procedimento de recuperação do Supabase documentados.
+- [x] Manter backup e procedimento de recuperação do Supabase documentados.
+- [ ] Guardar backup recente fora da produção e registrar ensaio de restauração em ambiente separado.
 
 ## Comercial e jurídico
 
@@ -82,4 +85,4 @@ Não iniciar tráfego pago enquanto qualquer item abaixo estiver pendente:
 
 ## Autorização de lançamento
 
-O Prumo está liberado para **vendas assistidas**, com acompanhamento das primeiras empresas. Tráfego pago ainda deve esperar Meta Ads, identificação pública do fornecedor e a compra controlada final com outro pagador.
+O código candidato à V1 está aprovado localmente e o Prumo está liberado para **vendas assistidas**, com acompanhamento das primeiras empresas. Tráfego pago em escala ainda deve esperar Meta Ads, identificação pública do fornecedor, revisão jurídica e a compra controlada final com outro pagador.

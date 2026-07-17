@@ -1,99 +1,156 @@
 # Auditoria de lançamento seguro - Prumo
 
-Data: 13/07/2026
+Atualizada em 17/07/2026.
 
 ## Resumo executivo
 
-O produto tem fluxo real, cobrança real e base suficiente para vender. As correções foram aplicadas no Supabase e publicadas na Vercel. O Prumo pode iniciar **vendas assistidas**, mas ainda não deve receber tráfego pago até concluir mensuração, identificação pública e a compra controlada final.
+O Prumo possui uma V1 funcional e tecnicamente consistente para cadastro,
+orçamento, aprovação pública, PDF, obra, diário, custos, equipe, financeiro e
+assinatura SaaS. O gate local de qualidade está aprovado e o produto pode ser
+publicado para vendas acompanhadas sem incluir promessa de recurso inexistente.
 
-Estado da decisão:
+A liberação de tráfego pago em escala ainda depende de evidências externas que
+não podem ser confirmadas pelo repositório: identificação pública do fornecedor,
+canal de suporte, revisão jurídica, mensuração da Meta e conferência financeira
+final no painel Asaas.
 
-- venda assistida: liberada com acompanhamento das primeiras empresas;
-- tráfego pago: liberar depois dos itens anteriores, Meta Ads validado e identificação pública do fornecedor;
-- reformulação completa de UI/UX: executar depois do gate comercial, sem misturar com a publicação crítica.
+Decisão atual:
 
-## Crítico
+- código candidato à V1: **aprovado localmente**;
+- publicação: **liberada após CI, deploy e smoke verdes**;
+- vendas assistidas: **liberadas com monitoramento**;
+- tráfego pago em escala: **pendente do gate operacional externo**.
 
-### Resolvido no código local
+## Riscos críticos resolvidos
 
-- Alteração indevida de `companies.plan` por cliente autenticado: bloqueada por trigger de banco.
-- Checkout pendente sobrescrevendo a assinatura ativa: campos separados na nova migration.
-- Cliques concorrentes criando links duplicados: reserva de checkout e reutilização de link ativo.
-- Webhook antigo rebaixando plano superior: evento obsoleto agora é ignorado e limpo.
-- Upgrade mantendo duas recorrências: assinatura substituída é cancelada.
-- Upgrade vencido deixando uma nova recorrência aberta: assinatura pendente agora também é cancelada.
-- Boleto aparecendo antes da escolha no gateway: o Prumo cria link recorrente com forma indefinida; Pix, cartão ou boleto são escolhidos no Asaas.
-- Cancelamento dependente de contato manual: proprietário ganhou cancelamento dentro da tela de plano.
+- Alteração indevida de `companies.plan` por cliente autenticado foi bloqueada
+  no banco.
+- Checkout pendente não substitui mais os dados da assinatura ativa.
+- Cliques concorrentes reutilizam a reserva de checkout em vez de criar links
+  duplicados.
+- Webhook antigo ou fora de ordem não rebaixa plano superior.
+- Upgrade cancela a recorrência substituída e limpa assinatura pendente vencida.
+- O Prumo não solicita boleto antes da escolha do cliente no gateway; Pix,
+  cartão ou boleto são escolhidos no Asaas.
+- Proprietário pode cancelar a assinatura pela tela de plano.
+- Cotas do Grátis usam proteção atômica por empresa no banco.
+- Segredos do Supabase, Asaas e webhook permanecem no servidor.
 
-### Pendente fora do código
+## Produto e UX resolvidos
 
-- Executar compra controlada e confirmar ausência de recorrência duplicada no painel Asaas.
+- Landing e preços usam a mesma definição de planos dos bloqueios internos.
+- Prova social, garantias, prioridades e automações não verificáveis foram
+  removidas.
+- Navegação mobile oferece acesso a plano, configurações e logout.
+- Navegação inferior possui cinco destinos e respeita safe area.
+- Zoom do navegador permanece permitido e campos mobile evitam ampliação
+  automática por fonte pequena.
+- Shell, listas, detalhes de obra e editor de orçamento foram convergidos para a
+  identidade visual da landing.
+- Editor de orçamento possui salvamento explícito, erro inline, desfazer e
+  proteção de saída.
+- Cliente, empresa e forma de recebimento informam estado salvo, alterações
+  pendentes, falha e horário da última confirmação.
+- Modelos de obra usam itens com identidade estável, validação por campo e
+  confirmação de descarte.
+- Etapa, gasto e ponto não descartam mais digitação relevante silenciosamente.
+- Diário mantém rascunho em `sessionStorage` e upload com retry.
 
-## Alto
+## Operação resolvida no repositório
 
-### Resolvido no código local
-
-- Preços duplicados e sujeitos a divergência: página comercial usa a mesma definição dos bloqueios do produto.
-- Promessas sem implementação: removidas prioridade de implantação, escala vaga, trial, garantia inventada e automações inexistentes.
-- Prova social falsa: avatares, números e depoimentos não verificáveis foram removidos.
-- Landing excessivamente alta: removida animação de `80rem`; produto e CTAs ficam contínuos no primeiro acesso.
-- Mobile sem acesso claro a configurações e saída: menu contém Catálogo, Plano, Configurações e Sair.
-- Seis itens na navegação inferior: reduzidos a cinco comandos principais.
-- Zoom bloqueado e formulários ampliando de modo incoerente: removido bloqueio de zoom e aplicado tamanho móvel estável aos campos.
-- Navegação sobre área segura do aparelho: adicionados espaçamentos de safe area.
-
-### Pendente fora do código
-
-- `NEXT_PUBLIC_META_PIXEL_ID` não está configurado na produção.
-- `META_CONVERSIONS_ACCESS_TOKEN` não está configurado na produção.
-- Não há identidade pública do fornecedor nem contato público de suporte/privacidade.
-- QA autenticado descartável concluído e removido sem alterar a conta do Asafe.
-
-## Médio
-
-- Limites gratuitos de orçamento e obra ainda usam contagem seguida de inserção; sob concorrência extrema podem ultrapassar a cota. Deve virar operação atômica no banco antes de grande escala.
-- Cancelamento encerra o plano imediatamente. Uma evolução comercial melhor é cancelamento no fim do período já pago, o que exige registrar vigência.
-- Falta monitoramento externo dedicado de erros; atualmente existem logs e alertas operacionais por email.
-- Falta rotina documentada de backup, restauração e resposta a incidente.
-- Termos e Privacidade precisam de revisão jurídica antes de escala, além do preenchimento da identidade do fornecedor.
-
-## Baixo e evolução
-
-- Remover componentes visuais não utilizados depois da reformulação para reduzir manutenção.
-- Uniformizar componentes antigos que ainda usam raios, sombras e espaçamentos maiores que o novo padrão.
-- Criar importação em lote de clientes e obras somente após validar demanda; hoje o Ultimate importa catálogo CSV e exporta relatório contábil CSV.
-- Avaliar XLSX nativo depois de observar uso real do CSV.
+- CI executa lint, typecheck, Vitest, auditoria, build e E2E com Supabase
+  isolado.
+- Logs estruturados, error boundaries e alertas operacionais por email existem.
+- Diagnóstico autenticado verifica integrações sem expor credenciais.
+- Runbook de backup, restauração e incidente está documentado em
+  `docs/operacao-backup-restauracao.md`.
+- Scripts de backup exigem destino externo e criptografia; o projeto de
+  produção não é destino de ensaio de restauração.
 
 ## Planos auditados
 
-- Grátis: 3 orçamentos por mês, 1 obra simultânea, link público, PDF com marca e fluxo operacional básico.
-- Pro: limites de orçamento e obra removidos, marca removida e uso sem limite dos fluxos já existentes de diário, Pix e financeiro.
-- Ultimate: tudo do Pro, importação de catálogo CSV de até 500 linhas e exportação CSV contábil de receitas recebidas e custos.
+### Grátis
 
-Nenhum plano anuncia SINAPI, múltiplos usuários com permissões avançadas, XLSX nativo, suporte VIP ou importação em lote de clientes/obras.
+- 3 orçamentos por mês;
+- 1 obra simultânea;
+- link público para aprovação;
+- PDF com marca Prumo;
+- fluxo operacional básico.
 
-## Validação concluída
+### Pro
 
+- orçamentos e obras sem os limites do Grátis;
+- PDF e link sem marca d'água;
+- diário, custos, equipe, cobrança Pix e financeiro existentes no produto.
+
+### Ultimate
+
+- tudo do Pro;
+- importação de catálogo CSV de até 500 linhas;
+- exportação CSV contábil de receitas recebidas e custos.
+
+Nenhum plano anuncia SINAPI, XLSX nativo, importação em lote de clientes/obras,
+múltiplos usuários com permissões avançadas ou suporte VIP. SINAPI permanece
+uma evolução posterior, sem promessa pública antes de fonte, atualização e UX
+serem validadas.
+
+## Evidência local de 17/07/2026
+
+- Lint: aprovado sem erros ou avisos.
 - TypeScript: aprovado.
-- Testes: 19 arquivos e 81 testes aprovados.
-- Lint: aprovado sem aviso de código.
-- Build Next.js 16.2.10: aprovado, 28 páginas estáticas geradas.
-- Dependências: `npm audit` com zero vulnerabilidades moderadas ou superiores.
-- QA visual: landing e preços em 390x844 e 1440x900, sem rolagem horizontal ou erro de página.
-- Evidências locais: `dogfood-output/runtime-qa/landing-mobile-viewport.png` e `dogfood-output/runtime-qa/landing-desktop-compact.png`.
-- Produção: deployment `dpl_2FYkxYS3iPBqH4XN55gZGHFrrgEX`, estado `READY`, publicado em `https://gestao-empreita.vercel.app`.
-- Smoke autenticado: app, menu mobile, plano, diagnóstico e checkout Pro abriram sem gerar cobrança.
-- Webhook sem token: rejeitado com HTTP 401.
-- Logs depois do QA: nenhuma resposta HTTP 500 encontrada.
+- Vitest: 32 arquivos e 129 testes aprovados.
+- Auditoria: `npm audit --audit-level=moderate` com 0 vulnerabilidades.
+- Build: Next.js 16.2.10 aprovado; 28 páginas estáticas geradas.
+- Browser E2E: 9 jornadas aprovadas e 5 skips intencionais.
+- Core flow: aprovado em desktop e mobile.
+- QA operacional: modelos, etapa, gasto e ponto aprovados em 375/390 px.
+- QA responsivo: referências de 375, 390, 768 e 1440 px sem overflow
+  horizontal bloqueante.
+- Checkout nos testes: simulação local; nenhum gateway externo foi acionado.
+- Worktree: deve permanecer limpo no commit de release.
 
-## Sequência de publicação
+## Pendências externas obrigatórias
 
-1. Realizar uma compra controlada com outro pagador.
-2. Confirmar no Asaas que não existe recorrência duplicada.
-3. Configurar e validar Meta Ads.
-4. Preencher identidade e contato públicos.
-5. Iniciar anúncios com orçamento pequeno e acompanhar logs e webhooks.
+### Financeiro
 
-## Segunda fase: UI/UX
+- Registrar uma compra controlada com pagador diferente do recebedor.
+- Confirmar no Asaas uma única assinatura e uma única recorrência.
+- Conferir ativação, upgrade e cancelamento no painel.
+- Confirmar webhook ativo e sem entregas penalizadas.
 
-Depois da publicação segura, a reformulação deve começar por tokens visuais e shell do aplicativo, seguir para dashboard e listas, depois formulários e detalhes, e terminar em landing e páginas públicas. Cada lote deve ser comparado em mobile e desktop sem alterar contratos de login, banco, Asaas ou PDF.
+### Identidade e jurídico
+
+- Informar nome legal ou empresarial verdadeiro do fornecedor.
+- Publicar email funcional de suporte e privacidade.
+- Revisar Termos, Privacidade, cancelamento e reembolso com orientação jurídica.
+
+### Operação
+
+- Guardar um backup recente fora do projeto de produção.
+- Registrar um ensaio de restauração em ambiente separado nos últimos 30 dias.
+- Testar o recebimento dos alertas no endereço de `ALERT_EMAIL_TO`.
+- Definir responsável e prazo de resposta para incidentes e pagamentos.
+
+### Aquisição
+
+- Configurar e testar Pixel e Conversions API da Meta quando Asafe iniciar as
+  campanhas.
+- Remover `META_TEST_EVENT_CODE` depois da validação.
+- Começar com orçamento pequeno e acompanhar conversão, logs e webhook.
+
+## Sequência segura
+
+1. Enviar o commit candidato e aguardar o CI.
+2. Confirmar deployment `Ready` na Vercel.
+3. Executar smoke público e autenticado na produção.
+4. Conferir logs sem HTTP 500 recorrente e webhook sem repetição anormal.
+5. Concluir as evidências externas acima.
+6. Só então ampliar tráfego pago e declarar lançamento comercial completo.
+
+## Próxima evolução de produto
+
+Depois do gate da V1, especificar o SINAPI Lite como recurso separado e
+inicialmente voltado ao Ultimate: busca por código/descrição, UF e competência,
+fonte visível, ajuste de margem e snapshot imutável no orçamento. Nenhuma base
+deve ser copiada ou prometida sem processo de ingestão mensal e validação da
+fonte oficial.
