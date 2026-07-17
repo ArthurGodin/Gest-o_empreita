@@ -589,6 +589,96 @@ export type Database = {
           },
         ]
       }
+      operational_incidents: {
+        Row: {
+          check_name: string
+          created_at: string
+          fingerprint: string
+          first_seen_at: string
+          last_notified_at: string | null
+          last_seen_at: string
+          occurrence_count: number
+          resolved_at: string | null
+          safe_context: Json
+          severity: string
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          check_name: string
+          created_at?: string
+          fingerprint: string
+          first_seen_at?: string
+          last_notified_at?: string | null
+          last_seen_at?: string
+          occurrence_count?: number
+          resolved_at?: string | null
+          safe_context?: Json
+          severity: string
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          check_name?: string
+          created_at?: string
+          fingerprint?: string
+          first_seen_at?: string
+          last_notified_at?: string | null
+          last_seen_at?: string
+          occurrence_count?: number
+          resolved_at?: string | null
+          safe_context?: Json
+          severity?: string
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      operational_monitor_runs: {
+        Row: {
+          alert_count: number
+          check_counts: Json
+          created_at: string
+          error_code: string | null
+          finished_at: string | null
+          id: string
+          incident_count: number
+          run_key: string
+          started_at: string
+          status: string
+          trigger: string
+        }
+        Insert: {
+          alert_count?: number
+          check_counts?: Json
+          created_at?: string
+          error_code?: string | null
+          finished_at?: string | null
+          id?: string
+          incident_count?: number
+          run_key: string
+          started_at?: string
+          status?: string
+          trigger: string
+        }
+        Update: {
+          alert_count?: number
+          check_counts?: Json
+          created_at?: string
+          error_code?: string | null
+          finished_at?: string | null
+          id?: string
+          incident_count?: number
+          run_key?: string
+          started_at?: string
+          status?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
       project_costs: {
         Row: {
           amount_cents: number

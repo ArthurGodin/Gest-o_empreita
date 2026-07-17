@@ -68,6 +68,14 @@ Não ligar campanhas de conversão antes de testar os eventos no Events Manager 
 
 `ALERT_EMAIL_TO` deve chegar a alguém que acompanhe checkout e webhook durante o lançamento.
 
+### Monitoramento operacional
+
+- `CRON_SECRET` com pelo menos 32 bytes aleatorios, somente em Production
+
+O cron diario chama `/api/cron/operational-health` com `Authorization: Bearer
+<CRON_SECRET>`. Nunca reutilize a chave do Asaas, service role ou token do
+webhook e nunca grave o valor no repositorio.
+
 ## Publicar na Vercel
 
 O projeto Vercel usa `web` como diretório raiz. Depois da migration e da conferência das variáveis, publique a versão de produção pelo painel ou pela CLI já vinculada ao projeto.

@@ -14,6 +14,7 @@ export const serverEnvSchema = z.object({
   RESEND_API_KEY: optionalString(z.string().min(1)),
   EMAIL_FROM: optionalString(z.string().min(3)),
   ALERT_EMAIL_TO: optionalString(z.string().min(3)),
+  CRON_SECRET: optionalString(z.string().min(32)),
   ASAAS_API_KEY: optionalString(z.string().min(1)),
   ASAAS_API_URL: stringWithDefault(
     z.string().url(),
@@ -61,6 +62,7 @@ export function parseServerEnv(input: ServerEnvInput): ServerEnvParseResult {
       RESEND_API_KEY: parseField("RESEND_API_KEY"),
       EMAIL_FROM: parseField("EMAIL_FROM"),
       ALERT_EMAIL_TO: parseField("ALERT_EMAIL_TO"),
+      CRON_SECRET: parseField("CRON_SECRET"),
       ASAAS_API_KEY: parseField("ASAAS_API_KEY"),
       ASAAS_API_URL: parseField("ASAAS_API_URL"),
       ASAAS_WEBHOOK_TOKEN: parseField("ASAAS_WEBHOOK_TOKEN"),

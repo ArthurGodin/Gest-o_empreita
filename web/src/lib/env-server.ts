@@ -17,6 +17,7 @@ const input: ServerEnvInput = SKIP
       RESEND_API_KEY: process.env.RESEND_API_KEY,
       EMAIL_FROM: process.env.EMAIL_FROM,
       ALERT_EMAIL_TO: process.env.ALERT_EMAIL_TO,
+      CRON_SECRET: process.env.CRON_SECRET,
       ASAAS_API_KEY: process.env.ASAAS_API_KEY,
       ASAAS_API_URL: process.env.ASAAS_API_URL,
       ASAAS_WEBHOOK_TOKEN: process.env.ASAAS_WEBHOOK_TOKEN,
