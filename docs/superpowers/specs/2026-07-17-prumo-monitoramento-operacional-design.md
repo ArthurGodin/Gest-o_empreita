@@ -1,7 +1,7 @@
 # Prumo - Monitoramento operacional v1
 
 Data: 2026-07-17
-Status: desenho aprovado para especificacao
+Status: desenho aprovado
 
 ## 1. Contexto
 
@@ -111,6 +111,12 @@ Orquestra as verificacoes, limita concorrencia, agrega incidentes e envia no
 maximo um resumo por severidade em cada execucao. Ele podera ser chamado pela
 rota cron e diretamente em testes.
 
+Cada execucao recebe um `run_key`. Para o cron, a chave sera
+`cron:<AAAA-MM-DD UTC>`; para execucao manual, `manual:<uuid>`. A unicidade da
+chave impede que entregas duplicadas da Vercel processem e notifiquem duas
+vezes a mesma janela. Uma duplicata valida retorna 200 com resultado
+sanitizado `skipped`.
+
 ### 5.5 Rota cron
 
 `GET /api/cron/operational-health`
@@ -123,6 +129,11 @@ rota cron e diretamente em testes.
 - retorna 200 quando o monitor executou, mesmo que tenha encontrado incidentes;
 - retorna 500 apenas quando o proprio monitor nao conseguiu concluir;
 - nunca retorna detalhes de incidente, IDs ou erros internos na resposta.
+
+Depois de autenticar o segredo, o handler classifica o trigger como `cron`
+somente quando o user-agent for `vercel-cron/1.0`; qualquer outra invocacao
+autorizada e registrada como `manual`. O user-agent nunca participa da
+decisao de autorizacao.
 
 ### 5.6 Agendamento
 
@@ -147,9 +158,11 @@ O horario e UTC. No Hobby, a execucao pode ocorrer em qualquer minuto entre
 
 ### 6.1 `operational_monitor_runs`
 
-Historico imutavel e sanitizado de cada execucao:
+Historico privado e sanitizado de cada execucao. Cada linha aceita somente a
+transicao controlada de `running` para um estado final:
 
 - `id uuid primary key`;
+- `run_key text unique`;
 - `trigger text`: `cron` ou `manual`;
 - `status text`: `running`, `healthy`, `warning`, `critical` ou `failed`;
 - `started_at timestamptz`;
@@ -215,12 +228,17 @@ O erro sera classificado por codigo interno. Corpo da resposta nao sera salvo.
 
 ### 7.4 Cobrancas de obra
 
-O monitor selecionara no maximo 25 cobrancas Asaas suspeitas por execucao:
+O monitor selecionara no maximo 20 cobrancas Asaas suspeitas por execucao:
 
 - possuem `asaas_payment_id`;
 - usam `payment_provider = 'asaas'`;
-- estao em estado local nao terminal ou possuem vencimento relevante;
-- registros mais antigos e mais proximos do vencimento tem prioridade.
+- estao em `draft` ha mais de 15 minutos, em `pending` com vencimento ate o dia
+  corrente, em `overdue`, ou foram pagas localmente nos ultimos sete dias;
+- estados nao pagos mais antigos tem prioridade, seguidos pelos pagamentos
+  locais mais recentes.
+
+Se houver mais de 20 candidatas, a reconciliacao avalia as 20 prioritarias e
+abre o aviso `asaas:payment:reconciliation-truncated` com a contagem excedente.
 
 Cada cobranca sera recuperada individualmente no Asaas:
 
@@ -245,6 +263,11 @@ Empresas com acesso parceiro/manual sem assinatura Asaas nao geram alerta.
 
 A consulta sera individual e limitada. O monitor nao ativa, rebaixa, cancela
 ou recria plano.
+
+No maximo 20 assinaturas serao consultadas por execucao, priorizando as que
+possuem checkout recente e depois as empresas atualizadas mais recentemente.
+Volume superior abre `saas:subscription:reconciliation-truncated` para deixar
+explicita a cobertura parcial.
 
 ### 7.6 Competencia SINAPI
 
@@ -291,6 +314,9 @@ A chave de idempotencia do Resend incluira tipo do resumo e dia UTC. O campo
 o envio falhar, o incidente permanece notificavel e a falha aparece no run e
 no log estruturado.
 
+O formatador atual de alertas sera estendido com severidade visual
+`resolved`, usada apenas nos resumos de recuperacao.
+
 ## 10. Tratamento de falhas
 
 - Falha em uma consulta Asaas nao interrompe as verificacoes locais.
@@ -300,7 +326,9 @@ no log estruturado.
   Resend sem incluir detalhes do erro.
 - Se banco e Resend falharem juntos, a Vercel ainda registra status 500 e log.
 - Um timeout global encerra o monitor antes do limite da Function.
-- O processamento de registros suspeitos tem limite e concorrencia pequena.
+- Consultas Asaas terao timeout de quatro segundos, concorrencia maxima de
+  quatro requisicoes e orcamento global de 45 segundos para o executor.
+- Entrega duplicada do cron e absorvida por `run_key` sem segunda notificacao.
 - Nenhum erro causa mutacao no Asaas ou nos estados financeiros locais.
 
 ## 11. Seguranca e privacidade
@@ -322,6 +350,11 @@ necessarios para localizar o registro, mas nunca acompanhados de PII.
 O `CRON_SECRET` sera aleatorio, com pelo menos 32 bytes, Production-only. A
 rota nao confiara somente no user-agent da Vercel.
 
+`CRON_SECRET` e `ALERT_EMAIL_TO` entrarao no schema server-side de ambiente.
+Builds continuarao tolerando integracoes opcionais ausentes, mas a execucao do
+monitor falhara de forma explicita se configuracoes obrigatorias de producao
+nao estiverem presentes.
+
 ## 12. Testes
 
 ### 12.1 Unidade
@@ -329,6 +362,7 @@ rota nao confiara somente no user-agent da Vercel.
 - classificacao de todos os limites;
 - normalizacao dos estados Asaas;
 - selecao e limite de registros suspeitos;
+- aviso quando cobrancas ou assinaturas excederem o limite de reconciliacao;
 - fingerprint sem PII;
 - abertura, repeticao, reenvio e resolucao;
 - contexto e email escapados;
@@ -341,7 +375,8 @@ rota nao confiara somente no user-agent da Vercel.
 - segredo correto chama o executor;
 - incidentes encontrados retornam 200;
 - falha estrutural retorna 500 sem detalhes;
-- resposta nao expoe IDs ou contexto.
+- resposta nao expoe IDs ou contexto;
+- entrega cron duplicada retorna 200 e nao executa alertas novamente.
 
 ### 12.3 Integracao local
 
@@ -377,9 +412,25 @@ O deploy nao criara cobranca e nao alterara plano. Se for necessario reverter,
 remove-se o cron de `vercel.json` e publica-se novamente. As tabelas podem
 permanecer sem risco, pois sao privadas e aditivas.
 
-## 14. Criterios de aceite
+## 14. Riscos residuais
 
-- existe uma execucao registrada a cada janela diaria esperada;
+O monitor roda dentro da propria Vercel. Se a plataforma deixar de invocar o
+cron por completo, ele nao consegue enviar um alerta sobre a propria ausencia.
+Nesta versao, o painel Cron Jobs e os logs da Vercel sao a evidencia dessa
+invocacao. Um watchdog externo ou um segundo agendador independente permanece
+como evolucao quando a receita justificar outro fornecedor.
+
+No plano Hobby, a conciliacao e diaria e pode ocorrer em qualquer minuto da
+hora configurada. Os alertas reativos do webhook continuam sendo a defesa
+imediata; a varredura diaria e a rede de seguranca.
+
+Os limites de 20 cobrancas e 20 assinaturas tornam a duracao previsivel. Quando
+forem ultrapassados, o aviso de truncamento torna obrigatoria a revisao de
+capacidade antes que a cobertura parcial seja tratada como completa.
+
+## 15. Criterios de aceite
+
+- cada invocacao observada do cron gera exatamente um run por janela UTC;
 - webhook travado acima de 10 minutos abre incidente critico;
 - divergencia remota nao altera dados e gera alerta sanitizado;
 - incidentes iguais nao geram mais de um resumo por 24 horas;
@@ -390,7 +441,7 @@ permanecer sem risco, pois sao privadas e aditivas.
 - email de teste chega ao destino operacional;
 - todos os gates locais e CI permanecem verdes.
 
-## 15. Evolucao futura
+## 16. Evolucao futura
 
 Quando volume ou receita justificarem:
 
