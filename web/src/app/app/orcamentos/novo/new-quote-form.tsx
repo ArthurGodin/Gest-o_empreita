@@ -22,6 +22,10 @@ export function NewQuoteForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    customer_id?: string;
+    title?: string;
+  }>({});
   const [customerId, setCustomerId] = useState(
     selectedCustomerId ?? customers[0]?.id ?? "",
   );
@@ -30,9 +34,13 @@ export function NewQuoteForm({
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     if (!customerId) {
-      setError("Escolha um cliente.");
+      setFieldErrors({ customer_id: "Escolha o cliente deste orçamento." });
+      window.requestAnimationFrame(() => {
+        document.getElementById("customer")?.focus();
+      });
       return;
     }
 
@@ -44,6 +52,12 @@ export function NewQuoteForm({
 
       if (!result.ok) {
         setError(result.error);
+        if (result.fieldErrors) {
+          setFieldErrors({
+            customer_id: result.fieldErrors.customer_id?.[0],
+            title: result.fieldErrors.title?.[0],
+          });
+        }
         return;
       }
 
@@ -64,10 +78,24 @@ export function NewQuoteForm({
         </Label>
         <select
           id="customer"
+          name="customer_id"
           value={customerId}
-          onChange={(e) => setCustomerId(e.target.value)}
+          onChange={(e) => {
+            setCustomerId(e.target.value);
+            setFieldErrors((current) => ({
+              ...current,
+              customer_id: undefined,
+            }));
+          }}
           required
-          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+          autoComplete="off"
+          aria-invalid={Boolean(fieldErrors.customer_id) || undefined}
+          aria-describedby={
+            fieldErrors.customer_id ? "customer-error" : undefined
+          }
+          className={`flex h-11 w-full rounded-md border bg-card px-3 py-2 text-base ring-offset-background transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${
+            fieldErrors.customer_id ? "border-destructive" : "border-input"
+          }`}
         >
           {customers.map((c) => (
             <option key={c.id} value={c.id}>
@@ -77,24 +105,49 @@ export function NewQuoteForm({
             </option>
           ))}
         </select>
+        {fieldErrors.customer_id && (
+          <p id="customer-error" className="text-xs text-destructive">
+            {fieldErrors.customer_id}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="title">Título do orçamento</Label>
         <Input
           id="title"
+          name="title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Ex: Cobertura nova — Casa Maria Santos"
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setFieldErrors((current) => ({ ...current, title: undefined }));
+          }}
+          placeholder="Ex: Cobertura nova — Casa Maria Santos…"
+          maxLength={200}
+          autoComplete="off"
+          aria-invalid={Boolean(fieldErrors.title) || undefined}
+          aria-describedby={fieldErrors.title ? "title-error" : "title-help"}
+          className={fieldErrors.title ? "border-destructive" : undefined}
         />
-        <p className="text-xs text-muted-foreground">
-          Você pode editar depois. Se deixar vazio, viramos &quot;Novo orçamento&quot;.
-        </p>
+        {fieldErrors.title ? (
+          <p id="title-error" className="text-xs text-destructive">
+            {fieldErrors.title}
+          </p>
+        ) : (
+          <p id="title-help" className="text-xs text-muted-foreground">
+            Você pode editar depois. Se deixar vazio, usamos &quot;Novo
+            orçamento&quot;.
+          </p>
+        )}
       </div>
 
       {error && (
-        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-4 text-sm text-amber-800 dark:text-amber-500 shadow-sm">
-          <p className="font-medium mb-3">{error}</p>
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-4 text-sm text-amber-800 shadow-sm dark:text-amber-500"
+        >
+          <p className="mb-3 font-medium">{error}</p>
           {error.toLowerCase().includes("limite") && (
             <Button asChild className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white">
               <Link href="/app/configuracoes/plano">Ver planos e assinar Pro</Link>

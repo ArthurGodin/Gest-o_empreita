@@ -18,18 +18,11 @@ import {
   createCatalogItemAction,
   recordCatalogUsageAction,
 } from "@/app/app/catalogo/actions";
+import type {
+  ItemDraft,
+  QuoteDraftItemField,
+} from "./quote-draft";
 import type { CatalogItem } from "@/lib/queries/catalog";
-
-export interface ItemDraft {
-  /** Local-only key pra React render (UUID). Não vai pro DB. */
-  key: string;
-  /** Se veio do catálogo, guarda o id pra incrementar usage_count no save. */
-  catalog_item_id: string | null;
-  description: string;
-  unit: string;
-  quantity: number;
-  unit_price_cents: number;
-}
 
 interface ItemRowProps {
   index: number;
@@ -39,8 +32,8 @@ interface ItemRowProps {
   onRemove: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
-  onSavedToCatalog: () => void;
   disabled?: boolean;
+  errors?: Partial<Record<QuoteDraftItemField, string>>;
 }
 
 export function ItemRow({
@@ -51,8 +44,8 @@ export function ItemRow({
   onRemove,
   onMoveUp,
   onMoveDown,
-  onSavedToCatalog,
   disabled,
+  errors,
 }: ItemRowProps) {
   const [savingCatalog, startSavingCatalog] = useTransition();
   const [, startRecordingUsage] = useTransition();
@@ -112,7 +105,6 @@ export function ItemRow({
       });
       if (result.ok) {
         onChange((current) => ({ ...current, catalog_item_id: result.id }));
-        onSavedToCatalog();
         toast({
           variant: "success",
           title: "Item salvo no catálogo",
@@ -129,7 +121,7 @@ export function ItemRow({
   }
 
   return (
-    <li className="rounded-lg border bg-background p-3 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-3 lg:py-3">
+    <li className="rounded-lg border bg-background p-3 focus-within:border-primary/40 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-3 lg:py-3">
       {/* Layout responsivo: mobile = stack vertical com labels, desktop = grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1fr_84px_78px_132px_118px_auto] lg:items-end lg:gap-2">
         {/* Descrição (com autocomplete) */}
@@ -142,6 +134,7 @@ export function ItemRow({
           </Label>
           <CatalogAutocomplete
             id={`description-${item.key}`}
+            name={`items.${index}.description`}
             value={item.description}
             onValueChange={(v) =>
               onChange((current) => ({
@@ -153,7 +146,22 @@ export function ItemRow({
             onSelectItem={handleSelectFromCatalog}
             placeholder="Ex: Telha cerâmica romana"
             disabled={disabled}
+            ariaInvalid={Boolean(errors?.description)}
+            ariaDescribedBy={
+              errors?.description ? `description-${item.key}-error` : undefined
+            }
+            inputClassName={
+              errors?.description ? "border-destructive" : undefined
+            }
           />
+          {errors?.description && (
+            <p
+              id={`description-${item.key}-error`}
+              className="mt-1.5 text-xs text-destructive"
+            >
+              {errors.description}
+            </p>
+          )}
         </div>
 
         {/* Quantidade (aceita "1,5" notação BR) */}
@@ -163,6 +171,7 @@ export function ItemRow({
           </Label>
           <Input
             id={`qty-${item.key}`}
+            name={`items.${index}.quantity`}
             type="text"
             inputMode="decimal"
             value={qtyText}
@@ -180,7 +189,21 @@ export function ItemRow({
               onChange((current) => ({ ...current, quantity: qty }));
             }}
             disabled={disabled}
+            autoComplete="off"
+            aria-invalid={Boolean(errors?.quantity) || undefined}
+            aria-describedby={
+              errors?.quantity ? `qty-${item.key}-error` : undefined
+            }
+            className={errors?.quantity ? "border-destructive" : undefined}
           />
+          {errors?.quantity && (
+            <p
+              id={`qty-${item.key}-error`}
+              className="mt-1.5 text-xs text-destructive"
+            >
+              {errors.quantity}
+            </p>
+          )}
         </div>
 
         {/* Unidade */}
@@ -190,6 +213,7 @@ export function ItemRow({
           </Label>
           <Input
             id={`unit-${item.key}`}
+            name={`items.${index}.unit`}
             value={item.unit}
             onChange={(e) =>
               onChange((current) => ({ ...current, unit: e.target.value }))
@@ -204,12 +228,21 @@ export function ItemRow({
             maxLength={10}
             list="common-units-editor"
             disabled={disabled}
+            autoComplete="off"
+            aria-invalid={Boolean(errors?.unit) || undefined}
+            aria-describedby={
+              errors?.unit ? `unit-${item.key}-error` : undefined
+            }
+            className={errors?.unit ? "border-destructive" : undefined}
           />
-          <datalist id="common-units-editor">
-            {["un", "m²", "m", "kg", "h", "dia", "saco"].map((u) => (
-              <option key={u} value={u} />
-            ))}
-          </datalist>
+          {errors?.unit && (
+            <p
+              id={`unit-${item.key}-error`}
+              className="mt-1.5 text-xs text-destructive"
+            >
+              {errors.unit}
+            </p>
+          )}
         </div>
 
         {/* Preço unitário (controlled — reage a updates do catálogo) */}
@@ -219,6 +252,7 @@ export function ItemRow({
           </Label>
           <Input
             id={`price-${item.key}`}
+            name={`items.${index}.unit_price`}
             inputMode="decimal"
             value={priceText}
             onChange={(e) => {
@@ -246,7 +280,25 @@ export function ItemRow({
             }}
             placeholder="0,00"
             disabled={disabled}
+            autoComplete="off"
+            aria-invalid={Boolean(errors?.unit_price_cents) || undefined}
+            aria-describedby={
+              errors?.unit_price_cents
+                ? `price-${item.key}-error`
+                : undefined
+            }
+            className={
+              errors?.unit_price_cents ? "border-destructive" : undefined
+            }
           />
+          {errors?.unit_price_cents && (
+            <p
+              id={`price-${item.key}-error`}
+              className="mt-1.5 text-xs text-destructive"
+            >
+              {errors.unit_price_cents}
+            </p>
+          )}
         </div>
 
         {/* Total da linha (read-only) */}
@@ -270,7 +322,7 @@ export function ItemRow({
               title="Salvar no meu catálogo"
               className="text-primary hover:text-primary"
             >
-              <Save className="h-4 w-4" />
+              <Save aria-hidden="true" className="h-4 w-4" />
             </Button>
           )}
           <Button
@@ -280,8 +332,9 @@ export function ItemRow({
             onClick={onMoveUp}
             disabled={index === 0 || disabled}
             aria-label="Mover pra cima"
+            title="Mover pra cima"
           >
-            <ArrowUp className="h-4 w-4" />
+            <ArrowUp aria-hidden="true" className="h-4 w-4" />
           </Button>
           <Button
             type="button"
@@ -290,8 +343,9 @@ export function ItemRow({
             onClick={onMoveDown}
             disabled={index === total - 1 || disabled}
             aria-label="Mover pra baixo"
+            title="Mover pra baixo"
           >
-            <ArrowDown className="h-4 w-4" />
+            <ArrowDown aria-hidden="true" className="h-4 w-4" />
           </Button>
           <Button
             type="button"
@@ -300,15 +354,16 @@ export function ItemRow({
             onClick={onRemove}
             disabled={disabled}
             aria-label="Remover item"
+            title="Remover item"
             className="text-destructive hover:text-destructive"
           >
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {item.catalog_item_id && (
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary lg:mt-1">
+        <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary lg:mt-1">
           <Save className="h-3 w-3" aria-hidden="true" />
           Salvo no catálogo
         </div>

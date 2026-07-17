@@ -10,6 +10,7 @@ import type { CatalogItem } from "@/lib/queries/catalog";
 
 interface CatalogAutocompleteProps {
   id?: string;
+  name?: string;
   /** Valor controlado do input */
   value: string;
   /** Disparado a cada keystroke (mantém input controlado) */
@@ -19,8 +20,11 @@ interface CatalogAutocompleteProps {
   placeholder?: string;
   required?: boolean;
   className?: string;
+  inputClassName?: string;
   /** Disabled enquanto outra ação está pending no editor */
   disabled?: boolean;
+  ariaInvalid?: boolean;
+  ariaDescribedBy?: string;
 }
 
 /**
@@ -34,13 +38,17 @@ interface CatalogAutocompleteProps {
  */
 export function CatalogAutocomplete({
   id,
+  name,
   value,
   onValueChange,
   onSelectItem,
   placeholder,
   required,
   className,
+  inputClassName,
   disabled,
+  ariaInvalid,
+  ariaDescribedBy,
 }: CatalogAutocompleteProps) {
   const generatedId = useId();
   const inputId = id ?? `${generatedId}-input`;
@@ -134,6 +142,7 @@ export function CatalogAutocomplete({
       />
       <Input
         id={inputId}
+        name={name}
         type="text"
         value={value}
         onChange={(e) => handleValueChange(e.target.value)}
@@ -156,7 +165,7 @@ export function CatalogAutocomplete({
         required={required}
         disabled={disabled}
         autoComplete="off"
-        className="pl-9 pr-9"
+        className={cn("pl-9 pr-9", inputClassName)}
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls={open ? listboxId : undefined}
@@ -167,6 +176,8 @@ export function CatalogAutocomplete({
         }
         aria-haspopup="listbox"
         aria-busy={loading}
+        aria-invalid={ariaInvalid || undefined}
+        aria-describedby={ariaDescribedBy}
         role="combobox"
       />
 
