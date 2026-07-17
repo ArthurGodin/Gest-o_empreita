@@ -1,21 +1,26 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Loader2, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { ConfirmDiscardDialog } from "@/components/forms/confirm-discard-dialog";
+import { FormSaveBar } from "@/components/forms/form-save-bar";
+import type { FormSaveStatus } from "@/components/forms/form-save-status";
+import { ProtectedFormNavigation } from "@/components/forms/protected-form-navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatSavedTime } from "@/lib/form-draft";
+import { createTemplateAction, updateTemplateAction } from "./actions";
 import {
-  createTemplateAction,
-  updateTemplateAction,
-} from "./actions";
-
-interface ItemDraft {
-  name: string;
-  est_days: string;
-}
+  initialTemplateDraft,
+  templateDraftPayload,
+  templateDraftSignature,
+  validateTemplateDraft,
+  type TemplateDraft,
+  type TemplateItemDraft,
+} from "./template-draft";
 
 interface TemplateFormProps {
   templateId?: string;
@@ -35,205 +40,383 @@ export function TemplateForm({
   onCancel,
 }: TemplateFormProps) {
   const router = useRouter();
-  const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
-  const [items, setItems] = useState<ItemDraft[]>(
-    initialItems.map((i) => ({
-      name: i.name,
-      est_days: i.est_days?.toString() ?? "",
-    })),
-  );
   const [pending, startTransition] = useTransition();
+  const [draft, setDraft] = useState<TemplateDraft>(() =>
+    initialTemplateDraft(initialName, initialDescription, initialItems),
+  );
+  const [savedSignature, setSavedSignature] = useState(() =>
+    templateDraftSignature(
+      initialTemplateDraft(initialName, initialDescription, initialItems),
+    ),
+  );
+  const [operationState, setOperationState] = useState<
+    "idle" | "saving" | "error"
+  >("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [focusTarget, setFocusTarget] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+
+  const currentSignature = useMemo(
+    () => templateDraftSignature(draft),
+    [draft],
+  );
+  const validation = useMemo(() => validateTemplateDraft(draft), [draft]);
+  const isDirty = currentSignature !== savedSignature;
+  const saving = pending || operationState === "saving";
+  const saveStatus: FormSaveStatus = saving
+    ? "saving"
+    : operationState === "error"
+      ? "error"
+      : isDirty
+        ? "dirty"
+        : "saved";
+
+  useEffect(() => {
+    if (!focusTarget) return;
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(focusTarget);
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ block: "center", inline: "nearest" });
+      setFocusTarget(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusTarget]);
+
+  function updateDraft(patch: Partial<TemplateDraft>) {
+    setDraft((current) => ({ ...current, ...patch }));
+    setOperationState("idle");
+    setError(null);
+  }
 
   function addItem() {
-    setItems((prev) => [...prev, { name: "", est_days: "" }]);
+    if (draft.items.length >= 30) {
+      setError("Cada modelo pode ter no máximo 30 etapas.");
+      setOperationState("error");
+      return;
+    }
+    const item: TemplateItemDraft = {
+      key: crypto.randomUUID(),
+      name: "",
+      estDays: "",
+    };
+    updateDraft({ items: [...draft.items, item] });
+    setFocusTarget(`template-item-name-${item.key}`);
   }
 
-  function removeItem(idx: number) {
-    setItems((prev) => prev.filter((_, i) => i !== idx));
-  }
-
-  function updateItem(idx: number, patch: Partial<ItemDraft>) {
-    setItems((prev) =>
-      prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)),
-    );
-  }
-
-  function move(idx: number, dir: "up" | "down") {
-    const swap = dir === "up" ? idx - 1 : idx + 1;
-    if (swap < 0 || swap >= items.length) return;
-    setItems((prev) => {
-      const cp = [...prev];
-      const a = cp[idx];
-      const b = cp[swap];
-      if (!a || !b) return prev;
-      cp[idx] = b;
-      cp[swap] = a;
-      return cp;
+  function updateItem(key: string, patch: Partial<TemplateItemDraft>) {
+    updateDraft({
+      items: draft.items.map((item) =>
+        item.key === key ? { ...item, ...patch } : item,
+      ),
     });
+  }
+
+  function removeItem(key: string) {
+    if (draft.items.length <= 1) return;
+    updateDraft({ items: draft.items.filter((item) => item.key !== key) });
+  }
+
+  function moveItem(index: number, direction: "up" | "down") {
+    const destination = direction === "up" ? index - 1 : index + 1;
+    if (destination < 0 || destination >= draft.items.length) return;
+    const items = [...draft.items];
+    const sourceItem = items[index];
+    const destinationItem = items[destination];
+    if (!sourceItem || !destinationItem) return;
+    items[index] = destinationItem;
+    items[destination] = sourceItem;
+    updateDraft({ items });
+  }
+
+  function requestCancel() {
+    if (saving) return;
+    if (isDirty) {
+      setConfirmDiscardOpen(true);
+      return;
+    }
+    onCancel();
   }
 
   function submit() {
     setError(null);
-    const trimmedName = name.trim();
-    if (trimmedName.length === 0) {
-      setError("Nome do template é obrigatório.");
+    setShowValidationErrors(true);
+    if (!validation.ok) {
+      setOperationState("error");
+      setFocusTarget(validation.firstFieldId);
       return;
     }
-    const validItems: Array<{ name: string; est_days: number | null }> = [];
-    for (const it of items) {
-      const n = it.name.trim();
-      if (n.length === 0) continue;
-      const days = it.est_days === "" ? null : Number.parseInt(it.est_days, 10);
-      if (days !== null && (Number.isNaN(days) || days < 1)) {
-        setError(`Dias previstos inválidos em "${n}".`);
-        return;
-      }
-      validItems.push({ name: n, est_days: days });
-    }
-    if (validItems.length === 0) {
-      setError("Adicione pelo menos uma etapa.");
-      return;
-    }
+    if (!isDirty || saving) return;
 
+    setOperationState("saving");
     startTransition(async () => {
-      const payload = {
-        name: trimmedName,
-        description: description.trim(),
-        items: validItems,
-      };
-      const r = templateId
-        ? await updateTemplateAction(templateId, payload)
-        : await createTemplateAction(payload);
-      if (!r.ok) {
-        setError(r.error);
-        return;
+      try {
+        const payload = templateDraftPayload(draft);
+        const result = templateId
+          ? await updateTemplateAction(templateId, payload)
+          : await createTemplateAction(payload);
+        if (!result.ok) {
+          setError(result.error);
+          setOperationState("error");
+          return;
+        }
+
+        setSavedSignature(currentSignature);
+        setLastSavedAt(new Date());
+        setShowValidationErrors(false);
+        setOperationState("idle");
+        router.refresh();
+        onSaved();
+      } catch {
+        setError(
+          "Não foi possível salvar o modelo agora. Verifique sua conexão e tente novamente.",
+        );
+        setOperationState("error");
       }
-      router.refresh();
-      onSaved();
     });
   }
 
+  const visibleErrors = showValidationErrors ? validation.errors : {};
+
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-4 sm:p-5">
-      <div className="space-y-1.5">
-        <Label htmlFor="template-name">Nome do template</Label>
-        <Input
-          id="template-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Ex: Telhado industrial"
-          maxLength={100}
-          disabled={pending}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="template-description">
-          Descrição <span className="text-xs text-muted-foreground">(opcional)</span>
-        </Label>
-        <Textarea
-          id="template-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Pra que tipo de obra serve"
-          maxLength={500}
-          rows={2}
-          disabled={pending}
-        />
-      </div>
+    <>
+      <form
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+        className="space-y-4 rounded-lg border bg-card p-4 sm:p-5"
+      >
+        <ProtectedFormNavigation dirty={isDirty} contentLabel="neste modelo" />
 
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Etapas (em ordem)</div>
-        <ul className="space-y-2">
-          {items.map((it, idx) => (
-            <li
-              key={idx}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border bg-background p-2 sm:grid-cols-[auto_minmax(0,1fr)_6rem_auto]"
-            >
-              <div className="row-span-2 flex flex-col sm:row-span-1">
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 w-10"
-                  onClick={() => move(idx, "up")}
-                  disabled={pending || idx === 0}
-                  aria-label={`Mover etapa ${idx + 1} para cima`}
-                >
-                  <ChevronUp className="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 w-10"
-                  onClick={() => move(idx, "down")}
-                  disabled={pending || idx === items.length - 1}
-                  aria-label={`Mover etapa ${idx + 1} para baixo`}
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </div>
-              <Input
-                aria-label={`Nome da etapa ${idx + 1}`}
-                value={it.name}
-                onChange={(e) => updateItem(idx, { name: e.target.value })}
-                placeholder="Ex: Remoção do telhado antigo"
-                disabled={pending}
-                className="flex-1"
-              />
-              <Input
-                aria-label={`Dias previstos da etapa ${idx + 1}`}
-                type="number"
-                min={1}
-                max={365}
-                value={it.est_days}
-                onChange={(e) => updateItem(idx, { est_days: e.target.value })}
-                placeholder="dias"
-                disabled={pending}
-                className="col-start-2 w-full sm:col-start-auto"
-              />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="row-span-2 h-10 w-10 text-muted-foreground hover:text-destructive sm:row-span-1"
-                onClick={() => removeItem(idx)}
-                disabled={pending || items.length <= 1}
-                aria-label="Remover etapa"
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
+          <div className="space-y-1.5">
+            <Label htmlFor="template-name">Nome do modelo</Label>
+            <Input
+              id="template-name"
+              name="template-name"
+              value={draft.name}
+              onChange={(event) => updateDraft({ name: event.target.value })}
+              placeholder="Ex: Telhado industrial"
+              maxLength={100}
+              disabled={saving}
+              aria-invalid={Boolean(visibleErrors.name)}
+              aria-describedby={visibleErrors.name ? "template-name-error" : undefined}
+            />
+            {visibleErrors.name && (
+              <p id="template-name-error" className="text-xs text-destructive">
+                {visibleErrors.name}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="template-description">
+              Descrição <span className="text-xs text-muted-foreground">(opcional)</span>
+            </Label>
+            <Textarea
+              id="template-description"
+              name="template-description"
+              value={draft.description}
+              onChange={(event) =>
+                updateDraft({ description: event.target.value })
+              }
+              placeholder="Quando este modelo deve ser usado"
+              maxLength={500}
+              rows={2}
+              disabled={saving}
+              aria-invalid={Boolean(visibleErrors.description)}
+              aria-describedby={
+                visibleErrors.description ? "template-description-error" : undefined
+              }
+            />
+            {visibleErrors.description && (
+              <p
+                id="template-description-error"
+                className="text-xs text-destructive"
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </li>
-          ))}
-        </ul>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addItem}
-          disabled={pending}
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar etapa
-        </Button>
-      </div>
-
-      {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
+                {visibleErrors.description}
+              </p>
+            )}
+          </div>
         </div>
-      )}
 
-      <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-end">
-        <Button variant="outline" onClick={onCancel} disabled={pending}>
-          Cancelar
-        </Button>
-        <Button onClick={submit} disabled={pending}>
-          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar"}
-        </Button>
-      </div>
-    </div>
+        <section className="space-y-2.5" aria-labelledby="template-items-title">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 id="template-items-title" className="text-sm font-medium">
+                Etapas em ordem
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {draft.items.length} de 30 etapas
+              </p>
+            </div>
+            <Button
+              id="add-template-item"
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10"
+              onClick={addItem}
+              disabled={saving || draft.items.length >= 30}
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              Adicionar
+            </Button>
+          </div>
+
+          <ol className="space-y-2">
+            {draft.items.map((item, index) => {
+              const itemErrors = visibleErrors.items?.[item.key];
+              const nameId = `template-item-name-${item.key}`;
+              const daysId = `template-item-days-${item.key}`;
+              return (
+                <li
+                  key={item.key}
+                  className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-start gap-2 rounded-md border bg-background p-2 sm:grid-cols-[2.75rem_minmax(0,1fr)_6.5rem_2.75rem]"
+                >
+                  <div className="flex flex-col" aria-label={`Ordenar etapa ${index + 1}`}>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-11 w-11"
+                      onClick={() => moveItem(index, "up")}
+                      disabled={saving || index === 0}
+                      aria-label={`Mover etapa ${index + 1} para cima`}
+                    >
+                      <ChevronUp aria-hidden="true" className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-11 w-11"
+                      onClick={() => moveItem(index, "down")}
+                      disabled={saving || index === draft.items.length - 1}
+                      aria-label={`Mover etapa ${index + 1} para baixo`}
+                    >
+                      <ChevronDown aria-hidden="true" className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor={nameId} className="sr-only">
+                      Nome da etapa {index + 1}
+                    </Label>
+                    <Input
+                      id={nameId}
+                      name={nameId}
+                      value={item.name}
+                      onChange={(event) =>
+                        updateItem(item.key, { name: event.target.value })
+                      }
+                      placeholder={`Etapa ${index + 1}: ex. Montagem`}
+                      maxLength={200}
+                      disabled={saving}
+                      aria-invalid={Boolean(itemErrors?.name)}
+                      aria-describedby={itemErrors?.name ? `${nameId}-error` : undefined}
+                    />
+                    {itemErrors?.name && (
+                      <p id={`${nameId}-error`} className="text-xs text-destructive">
+                        {itemErrors.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="col-start-2 space-y-1 sm:col-start-auto">
+                    <Label htmlFor={daysId} className="sr-only">
+                      Dias previstos da etapa {index + 1}
+                    </Label>
+                    <Input
+                      id={daysId}
+                      name={daysId}
+                      type="number"
+                      min={1}
+                      max={365}
+                      inputMode="numeric"
+                      value={item.estDays}
+                      onChange={(event) =>
+                        updateItem(item.key, { estDays: event.target.value })
+                      }
+                      placeholder="Dias"
+                      disabled={saving}
+                      aria-invalid={Boolean(itemErrors?.estDays)}
+                      aria-describedby={
+                        itemErrors?.estDays ? `${daysId}-error` : undefined
+                      }
+                    />
+                    {itemErrors?.estDays && (
+                      <p id={`${daysId}-error`} className="text-xs text-destructive">
+                        {itemErrors.estDays}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="row-span-2 h-11 w-11 text-muted-foreground hover:text-destructive sm:row-span-1"
+                    onClick={() => removeItem(item.key)}
+                    disabled={saving || draft.items.length <= 1}
+                    aria-label={`Remover etapa ${index + 1}`}
+                  >
+                    <Trash2 aria-hidden="true" className="h-4 w-4" />
+                  </Button>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {error}
+          </div>
+        )}
+
+        <FormSaveBar
+          status={saveStatus}
+          lastSavedLabel={formatSavedTime(lastSavedAt)}
+          onSave={submit}
+          saveDisabled={saving || !isDirty}
+          saveLabel="Salvar modelo"
+          savingLabel="Salvando modelo…"
+          savedLabel={templateId ? "Modelo atualizado" : "Novo modelo ainda vazio"}
+          savedHint={
+            templateId
+              ? "Este modelo está sincronizado com o servidor."
+              : "Preencha os campos para criar o modelo."
+          }
+          dirtyHint="Salve o modelo para preservar a ordem e as etapas."
+          secondaryAction={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={requestCancel}
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+          }
+        />
+      </form>
+
+      <ConfirmDiscardDialog
+        open={confirmDiscardOpen}
+        onOpenChange={setConfirmDiscardOpen}
+        contentLabel="deste modelo"
+        onConfirm={() => {
+          setConfirmDiscardOpen(false);
+          onCancel();
+        }}
+      />
+    </>
   );
 }

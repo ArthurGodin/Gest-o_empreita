@@ -37,7 +37,7 @@ export default async function SettingsPage() {
           <SettingsLink
             href="/app/configuracoes/templates"
             icon={ClipboardList}
-            title="Templates de obra"
+            title="Modelos de obra"
             description="Modelos de etapas pra acelerar a abertura de novas obras"
           />
         </div>

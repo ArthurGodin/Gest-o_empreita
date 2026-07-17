@@ -33,7 +33,7 @@ const templateSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Nome do template não pode ser vazio")
+    .min(1, "Nome do modelo não pode ser vazio")
     .max(100, "Nome muito longo"),
   description: z
     .string()
@@ -138,9 +138,9 @@ export async function updateTemplateAction(
     .eq("company_id", auth.companyId)
     .maybeSingle();
 
-  if (!existing) return { ok: false, error: "Template não encontrado." };
+  if (!existing) return { ok: false, error: "Modelo não encontrado." };
   if ((existing as { is_system: boolean }).is_system) {
-    return { ok: false, error: "Modelos do sistema não podem ser editados." };
+    return { ok: false, error: "Modelos prontos do Prumo não podem ser editados." };
   }
 
   const { error: updErr } = await supabase
@@ -201,9 +201,9 @@ export async function deleteTemplateAction(
     .eq("company_id", auth.companyId)
     .maybeSingle();
 
-  if (!existing) return { ok: false, error: "Template não encontrado." };
+  if (!existing) return { ok: false, error: "Modelo não encontrado." };
   if ((existing as { is_system: boolean }).is_system) {
-    return { ok: false, error: "Modelos do sistema não podem ser apagados." };
+    return { ok: false, error: "Modelos prontos do Prumo não podem ser apagados." };
   }
 
   // Bloqueia delete se template está em uso por algum project
@@ -215,7 +215,7 @@ export async function deleteTemplateAction(
   if ((count ?? 0) > 0) {
     return {
       ok: false,
-      error: `Esse template está em uso em ${count} obra${count === 1 ? "" : "s"}. Desvincule antes de apagar.`,
+      error: `Esse modelo está em uso em ${count} obra${count === 1 ? "" : "s"}. Desvincule antes de apagar.`,
     };
   }
 

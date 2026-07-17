@@ -52,7 +52,7 @@ export function TemplateList({ templates }: TemplateListProps) {
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-base font-semibold">Templates de etapas</h2>
+          <h2 className="text-base font-semibold">Modelos de etapas</h2>
           <p className="text-sm text-muted-foreground">
             Crie modelos próprios pra acelerar a abertura de novas obras.
           </p>
@@ -64,7 +64,7 @@ export function TemplateList({ templates }: TemplateListProps) {
             size="sm"
           >
             <Plus className="h-4 w-4" />
-            Novo template
+            Novo modelo
           </Button>
         )}
       </div>
@@ -78,11 +78,11 @@ export function TemplateList({ templates }: TemplateListProps) {
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Meus templates
+          Meus modelos
         </h3>
         {customTemplates.length === 0 ? (
           <div className="rounded-md border border-dashed bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
-            Nenhum template customizado ainda.
+            Nenhum modelo personalizado ainda.
           </div>
         ) : (
           <ul className="space-y-2">
@@ -126,7 +126,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                       onClick={() =>
                         setState({ mode: "editing", templateId: template.id })
                       }
-                      aria-label="Editar template"
+                      aria-label="Editar modelo"
                     className="h-10 w-10"
                     >
                       <Pencil className="h-4 w-4" />
@@ -161,7 +161,7 @@ export function TemplateList({ templates }: TemplateListProps) {
                         size="icon"
                         variant="ghost"
                         onClick={() => setConfirmId(template.id)}
-                        aria-label="Apagar template"
+                        aria-label="Apagar modelo"
                         className="h-10 w-10 text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function TemplateList({ templates }: TemplateListProps) {
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Modelos do sistema
+          Modelos prontos do Prumo
         </h3>
         <ul className="space-y-2">
           {systemTemplates.map(({ template, items }) => (

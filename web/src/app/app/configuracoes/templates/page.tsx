@@ -10,7 +10,7 @@ import type {
 import { TemplateList } from "./template-list";
 
 export const metadata = {
-  title: "Templates de obra — Configurações",
+  title: "Modelos de obra — Configurações",
 };
 
 interface TemplateWithItems {
@@ -51,7 +51,7 @@ export default async function TemplatesPage() {
       </Link>
 
       <PageHeader
-        title="Templates de obra"
+        title="Modelos de obra"
         description="Modelos de etapas pra acelerar a abertura de novas obras."
       />
 
