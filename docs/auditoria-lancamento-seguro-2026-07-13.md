@@ -109,6 +109,16 @@ serem validadas.
 - Checkout nos testes: simulação local; nenhum gateway externo foi acionado.
 - Worktree: deve permanecer limpo no commit de release.
 
+## Evidência remota de 17/07/2026
+
+- GitHub Actions `29585213704`: gate web e E2E com Supabase isolado aprovados.
+- Vercel `dpl_2kyRkcm2uUxVBNGzGnzBmgeCzCYr`: estado `Ready` no alias principal.
+- Smoke público: aprovado em desktop e mobile.
+- Smoke autenticado mobile: onboarding, cliente, configurações, modelos, plano
+  e menu de conta aprovados; conta temporária removida.
+- Webhook sem token: rejeitado com HTTP 401.
+- Nenhuma action de checkout ou cobrança externa foi usada no smoke.
+
 ## Pendências externas obrigatórias
 
 ### Financeiro
@@ -140,12 +150,9 @@ serem validadas.
 
 ## Sequência segura
 
-1. Enviar o commit candidato e aguardar o CI.
-2. Confirmar deployment `Ready` na Vercel.
-3. Executar smoke público e autenticado na produção.
-4. Conferir logs sem HTTP 500 recorrente e webhook sem repetição anormal.
-5. Concluir as evidências externas acima.
-6. Só então ampliar tráfego pago e declarar lançamento comercial completo.
+1. Concluir as evidências externas acima.
+2. Conferir logs e entregas do webhook durante as primeiras vendas.
+3. Só então ampliar tráfego pago e declarar lançamento comercial completo.
 
 ## Próxima evolução de produto
 

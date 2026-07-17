@@ -4,11 +4,12 @@ Data da avaliação: 17/07/2026.
 
 ## Decisão
 
-**Gate técnico local: APROVADO.**
+**Gate técnico local e remoto: APROVADO.**
 
-O código está apto a seguir para CI, deploy e smoke de produção. A declaração de
-lançamento comercial completo permanece **PENDENTE EXTERNO** até as evidências
-financeiras, operacionais, jurídicas e de identidade serem registradas.
+O código foi aprovado pelo CI, publicado na Vercel e validado por smoke público
+e autenticado. A declaração de lançamento comercial completo permanece
+**PENDENTE EXTERNO** até as evidências financeiras, operacionais, jurídicas e de
+identidade serem registradas.
 
 ## Escopo entregue
 
@@ -38,13 +39,27 @@ aprovação pública ou regras de cobrança.
 | E2E mobile | Aprovado | core flow e páginas públicas |
 | QA 375/390 px | Aprovado | formulários operacionais sem overflow |
 | QA 768/1440 px | Aprovado | shell, listas, detalhe e editor |
-| CI remoto | Pendente | executar após push |
-| Deploy Vercel | Pendente | confirmar deployment `Ready` |
-| Smoke produção | Pendente | público e autenticado |
+| CI remoto | Aprovado | run `29585213704` |
+| Deploy Vercel | Aprovado | `dpl_2kyRkcm2uUxVBNGzGnzBmgeCzCYr` `Ready` |
+| Smoke produção | Aprovado | público desktop/mobile e autenticado mobile |
 
 Os 5 skips da suíte são intencionais: testes que percorrem manualmente todos os
 viewports rodam uma vez no projeto desktop, enquanto o core flow e o smoke
 público também rodam no projeto mobile.
+
+## Evidência remota
+
+- Commit candidato validado: `a842987441d7c8f4633d0f6fdf6286cc4dbc1ffe`.
+- GitHub Actions: `https://github.com/ArthurGodin/Gest-o_empreita/actions/runs/29585213704`.
+- `Web quality gate`: aprovado.
+- `Supabase and browser E2E`: aprovado.
+- Deployment Vercel: `dpl_2kyRkcm2uUxVBNGzGnzBmgeCzCYr`, estado `Ready`.
+- Alias principal: `https://gestao-empreita.vercel.app`.
+- Smoke público: landing, preços e páginas públicas aprovadas em desktop e
+  mobile.
+- Smoke autenticado: onboarding, novo cliente, configurações, modelos, plano e
+  menu mobile aprovados; usuário e empresa temporários removidos.
+- Webhook sem token: HTTP 401 com `{"ok":false}`.
 
 ## Invariantes conferidos
 
@@ -75,13 +90,13 @@ público também rodam no projeto mobile.
 
 ## Regra de publicação
 
-1. Commit de release com worktree limpo.
-2. Push para `main`.
-3. CI integral aprovado.
-4. Vercel com deployment `Ready` no alias principal.
-5. Smoke público e autenticado sem HTTP 500 recorrente.
-6. Tag `v1.0.0` somente depois dos cinco itens anteriores.
-7. Tráfego pago em escala somente depois do gate operacional externo.
+1. Commit de release com worktree limpo: concluído.
+2. Push para `main`: concluído.
+3. CI integral aprovado: concluído.
+4. Vercel com deployment `Ready` no alias principal: concluído.
+5. Smoke público e autenticado: concluído.
+6. Tag `v1.0.0`: autorizada pelo gate técnico.
+7. Tráfego pago em escala: aguardar o gate operacional externo.
 
 ## Próximo ciclo
 
