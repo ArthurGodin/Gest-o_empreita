@@ -4,9 +4,7 @@ import { BarChart3, ChevronRight, ClipboardList } from "lucide-react";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
-import { CompanyForm } from "./company-form";
-import { LogoUpload } from "./logo-upload";
-import { PaymentSettingsForm } from "./payment-settings-form";
+import { SettingsForms } from "./settings-forms";
 
 export const metadata = {
   title: "Configurações — Prumo",
@@ -23,14 +21,7 @@ export default async function SettingsPage() {
         description="Dados da empresa que aparecem nos orçamentos enviados pra clientes."
       />
 
-      <LogoUpload
-        companyName={company.name}
-        currentLogoUrl={company.logo_url}
-      />
-
-      <CompanyForm company={company} />
-
-      <PaymentSettingsForm company={company} />
+      <SettingsForms company={company} />
 
       <section>
         <h2 className="mb-2 text-sm font-semibold text-foreground">

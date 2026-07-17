@@ -1,90 +1,207 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FormSaveBar } from "@/components/forms/form-save-bar";
+import type { FormSaveStatus } from "@/components/forms/form-save-status";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateCompanyAction } from "./actions";
+import { formatSavedTime } from "@/lib/form-draft";
 import type { CompanyFull } from "@/lib/queries/company-settings";
+import { updateCompanyAction } from "./actions";
+import {
+  companyDraftSignature,
+  initialCompanyDraft,
+  normalizedCompanyDraft,
+  validateCompanyDraft,
+  type CompanyDraft,
+  type CompanyDraftField,
+} from "./company-draft";
 
-export function CompanyForm({ company }: { company: CompanyFull }) {
+interface CompanyFormProps {
+  company: CompanyFull;
+  onDirtyChange: (dirty: boolean) => void;
+}
+
+export function CompanyForm({ company, onDirtyChange }: CompanyFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [draft, setDraft] = useState<CompanyDraft>(() =>
+    initialCompanyDraft(company),
+  );
+  const [savedSignature, setSavedSignature] = useState(() =>
+    companyDraftSignature(initialCompanyDraft(company)),
+  );
+  const [operationState, setOperationState] = useState<
+    "idle" | "saving" | "error"
+  >("idle");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [serverFieldErrors, setServerFieldErrors] = useState<
+    Partial<Record<CompanyDraftField, string>>
+  >({});
+  const [focusTarget, setFocusTarget] = useState<CompanyDraftField | null>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const currentSignature = useMemo(
+    () => companyDraftSignature(draft),
+    [draft],
+  );
+  const validation = useMemo(() => validateCompanyDraft(draft), [draft]);
+  const isDirty = currentSignature !== savedSignature;
+  const saving = pending || operationState === "saving";
+  const status: FormSaveStatus = saving
+    ? "saving"
+    : operationState === "error"
+      ? "error"
+      : isDirty
+        ? "dirty"
+        : "saved";
+  const visibleErrors: Partial<Record<CompanyDraftField, string>> = {
+    ...(showValidationErrors ? validation.errors : {}),
+    ...serverFieldErrors,
+  };
+
+  useEffect(() => {
+    onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    return () => onDirtyChange(false);
+  }, [onDirtyChange]);
+
+  useEffect(() => {
+    if (!focusTarget) return;
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(focusTarget);
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ block: "center", inline: "nearest" });
+      setFocusTarget(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusTarget]);
+
+  function updateField(field: CompanyDraftField, value: string) {
+    setDraft((current) => ({ ...current, [field]: value }));
+    setServerFieldErrors((current) => ({ ...current, [field]: undefined }));
     setError(null);
-    setSuccess(false);
+    setOperationState((current) => (current === "error" ? "idle" : current));
+  }
 
-    const formData = new FormData(e.currentTarget);
-    const payload = {
-      name: (formData.get("name") as string) ?? "",
-      legal_name: (formData.get("legal_name") as string) ?? "",
-      cnpj: (formData.get("cnpj") as string) ?? "",
-      phone: (formData.get("phone") as string) ?? "",
-      email: (formData.get("email") as string) ?? "",
-      address: (formData.get("address") as string) ?? "",
-      city: (formData.get("city") as string) ?? "",
-      state: (formData.get("state") as string) ?? "",
-      zip_code: (formData.get("zip_code") as string) ?? "",
-    };
+  function submit() {
+    setError(null);
+    setServerFieldErrors({});
 
+    if (!validation.valid) {
+      setShowValidationErrors(true);
+      setFocusTarget(validation.firstField);
+      return;
+    }
+    if (!isDirty) return;
+
+    setOperationState("saving");
     startTransition(async () => {
-      const result = await updateCompanyAction(payload);
-      if (!result.ok) {
-        setError(result.error);
-        return;
+      try {
+        const result = await updateCompanyAction(normalizedCompanyDraft(draft));
+        if (!result.ok) {
+          const mapped = mapServerFieldErrors(result.fieldErrors);
+          setServerFieldErrors(mapped);
+          setError(Object.keys(mapped).length > 0 ? null : result.error);
+          setOperationState("error");
+          const firstServerField = COMPANY_FIELDS.find(
+            (field) => mapped[field],
+          );
+          if (firstServerField) setFocusTarget(firstServerField);
+          return;
+        }
+
+        setSavedSignature(currentSignature);
+        setLastSavedAt(new Date());
+        setShowValidationErrors(false);
+        setOperationState("idle");
+        router.refresh();
+      } catch {
+        setError("Não foi possível salvar agora. Verifique sua conexão e tente novamente.");
+        setOperationState("error");
       }
-      setSuccess(true);
-      router.refresh();
-      setTimeout(() => setSuccess(false), 3000);
     });
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5 rounded-lg border bg-card p-4 sm:p-5">
+    <form
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+      className="space-y-5 rounded-lg border bg-card p-4 sm:p-5"
+    >
       <fieldset className="space-y-4 border-b pb-5">
         <legend className="mb-3 text-sm font-semibold text-foreground">
           Identificação
         </legend>
 
-        <div className="space-y-2">
-          <Label htmlFor="name">
-            Nome da empresa <span className="text-destructive">*</span>
-          </Label>
+        <CompanyField
+          id="name"
+          label="Nome da empresa"
+          required
+          error={visibleErrors.name}
+        >
           <Input
             id="name"
             name="name"
-            required
-            defaultValue={company.name}
+            value={draft.name}
+            onChange={(event) => updateField("name", event.target.value)}
             placeholder="Coberturas do Léo"
+            maxLength={200}
+            autoComplete="organization"
+            aria-invalid={Boolean(visibleErrors.name) || undefined}
+            aria-describedby={visibleErrors.name ? "name-error" : undefined}
+            className={visibleErrors.name ? "border-destructive" : undefined}
           />
-        </div>
+        </CompanyField>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="legal_name">Razão social</Label>
+          <CompanyField
+            id="legal_name"
+            label="Razão social"
+            error={visibleErrors.legal_name}
+          >
             <Input
               id="legal_name"
               name="legal_name"
-              defaultValue={company.legal_name ?? ""}
+              value={draft.legal_name}
+              onChange={(event) =>
+                updateField("legal_name", event.target.value)
+              }
               placeholder="Coberturas do Léo LTDA"
+              maxLength={200}
+              autoComplete="organization"
+              aria-invalid={Boolean(visibleErrors.legal_name) || undefined}
+              aria-describedby={
+                visibleErrors.legal_name ? "legal_name-error" : undefined
+              }
+              className={
+                visibleErrors.legal_name ? "border-destructive" : undefined
+              }
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cnpj">CNPJ</Label>
+          </CompanyField>
+
+          <CompanyField id="cnpj" label="CNPJ" error={visibleErrors.cnpj}>
             <Input
               id="cnpj"
               name="cnpj"
               inputMode="numeric"
-              defaultValue={company.cnpj ?? ""}
+              value={draft.cnpj}
+              onChange={(event) => updateField("cnpj", event.target.value)}
               placeholder="00.000.000/0001-00"
+              maxLength={18}
+              autoComplete="off"
+              aria-invalid={Boolean(visibleErrors.cnpj) || undefined}
+              aria-describedby={visibleErrors.cnpj ? "cnpj-error" : undefined}
+              className={visibleErrors.cnpj ? "border-destructive" : undefined}
             />
-          </div>
+          </CompanyField>
         </div>
       </fieldset>
 
@@ -94,27 +211,55 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
         </legend>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefone / WhatsApp</Label>
+          <CompanyField
+            id="phone"
+            label="Telefone / WhatsApp"
+            error={visibleErrors.phone}
+          >
             <Input
               id="phone"
               name="phone"
               type="tel"
               inputMode="tel"
-              defaultValue={company.phone ?? ""}
+              value={draft.phone}
+              onChange={(event) => updateField("phone", event.target.value)}
               placeholder="Digite seu WhatsApp comercial"
+              maxLength={30}
+              autoComplete="tel"
+              aria-invalid={Boolean(visibleErrors.phone) || undefined}
+              aria-describedby={
+                visibleErrors.phone ? "phone-error" : undefined
+              }
+              className={
+                visibleErrors.phone ? "border-destructive" : undefined
+              }
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          </CompanyField>
+
+          <CompanyField
+            id="email"
+            label="Email"
+            error={visibleErrors.email}
+          >
             <Input
               id="email"
               name="email"
               type="email"
-              defaultValue={company.email ?? ""}
+              inputMode="email"
+              value={draft.email}
+              onChange={(event) => updateField("email", event.target.value)}
               placeholder="contato@empresa.com.br"
+              maxLength={254}
+              autoComplete="email"
+              aria-invalid={Boolean(visibleErrors.email) || undefined}
+              aria-describedby={
+                visibleErrors.email ? "email-error" : undefined
+              }
+              className={
+                visibleErrors.email ? "border-destructive" : undefined
+              }
             />
-          </div>
+          </CompanyField>
         </div>
       </fieldset>
 
@@ -123,68 +268,172 @@ export function CompanyForm({ company }: { company: CompanyFull }) {
           Endereço
         </legend>
 
-        <div className="space-y-2">
-          <Label htmlFor="address">Rua, número e bairro</Label>
+        <CompanyField
+          id="address"
+          label="Rua, número e bairro"
+          error={visibleErrors.address}
+        >
           <Input
             id="address"
             name="address"
-            defaultValue={company.address ?? ""}
+            value={draft.address}
+            onChange={(event) => updateField("address", event.target.value)}
             placeholder="Av. Frei Serafim, 123 — Centro"
+            maxLength={300}
+            autoComplete="street-address"
+            aria-invalid={Boolean(visibleErrors.address) || undefined}
+            aria-describedby={
+              visibleErrors.address ? "address-error" : undefined
+            }
+            className={
+              visibleErrors.address ? "border-destructive" : undefined
+            }
           />
-        </div>
+        </CompanyField>
 
         <div className="grid gap-4 md:grid-cols-[1fr_auto_140px]">
-          <div className="space-y-2">
-            <Label htmlFor="city">Cidade</Label>
+          <CompanyField
+            id="city"
+            label="Cidade"
+            error={visibleErrors.city}
+          >
             <Input
               id="city"
               name="city"
-              defaultValue={company.city ?? ""}
+              value={draft.city}
+              onChange={(event) => updateField("city", event.target.value)}
               placeholder="Teresina"
+              maxLength={120}
+              autoComplete="address-level2"
+              aria-invalid={Boolean(visibleErrors.city) || undefined}
+              aria-describedby={visibleErrors.city ? "city-error" : undefined}
+              className={
+                visibleErrors.city ? "border-destructive" : undefined
+              }
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="state">UF</Label>
+          </CompanyField>
+
+          <CompanyField
+            id="state"
+            label="UF"
+            error={visibleErrors.state}
+          >
             <Input
               id="state"
               name="state"
-              maxLength={2}
-              defaultValue={company.state ?? ""}
+              value={draft.state}
+              onChange={(event) => updateField("state", event.target.value)}
               placeholder="PI"
-              className="w-20 uppercase"
+              maxLength={2}
+              autoComplete="address-level1"
+              aria-invalid={Boolean(visibleErrors.state) || undefined}
+              aria-describedby={
+                visibleErrors.state ? "state-error" : undefined
+              }
+              className={`uppercase ${
+                visibleErrors.state ? "border-destructive" : ""
+              }`}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="zip_code">CEP</Label>
+          </CompanyField>
+
+          <CompanyField
+            id="zip_code"
+            label="CEP"
+            error={visibleErrors.zip_code}
+          >
             <Input
               id="zip_code"
               name="zip_code"
               inputMode="numeric"
-              defaultValue={company.zip_code ?? ""}
+              value={draft.zip_code}
+              onChange={(event) => updateField("zip_code", event.target.value)}
               placeholder="64000-000"
+              maxLength={10}
+              autoComplete="postal-code"
+              aria-invalid={Boolean(visibleErrors.zip_code) || undefined}
+              aria-describedby={
+                visibleErrors.zip_code ? "zip_code-error" : undefined
+              }
+              className={
+                visibleErrors.zip_code ? "border-destructive" : undefined
+              }
             />
-          </div>
+          </CompanyField>
         </div>
       </fieldset>
 
       {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+        <div
+          className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          role="status"
+          aria-live="polite"
+        >
           {error}
         </div>
       )}
-      {success && (
-        <div className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-100" role="status" aria-live="polite">
-          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-          Dados salvos.
-        </div>
-      )}
 
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 -mb-4 flex justify-end border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0">
-        <Button type="submit" disabled={pending}>
-          <Save className="h-4 w-4" />
-          {pending ? "Salvando…" : "Salvar alterações"}
-        </Button>
-      </div>
+      <FormSaveBar
+        status={status}
+        lastSavedLabel={formatSavedTime(lastSavedAt)}
+        onSave={submit}
+        saveDisabled={saving || !isDirty}
+        savedLabel="Dados da empresa salvos"
+        savedHint="Estas informações aparecem nos documentos e telas do cliente."
+        dirtyHint="Salve para atualizar a identificação da empresa."
+      />
     </form>
   );
+}
+
+function CompanyField({
+  id,
+  label,
+  required,
+  error,
+  children,
+}: {
+  id: CompanyDraftField;
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </Label>
+      {children}
+      {error && (
+        <p id={`${id}-error`} className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+const COMPANY_FIELDS: CompanyDraftField[] = [
+  "name",
+  "legal_name",
+  "cnpj",
+  "phone",
+  "email",
+  "address",
+  "city",
+  "state",
+  "zip_code",
+];
+
+function mapServerFieldErrors(
+  fieldErrors?: Record<string, string[]>,
+): Partial<Record<CompanyDraftField, string>> {
+  if (!fieldErrors) return {};
+  const mapped: Partial<Record<CompanyDraftField, string>> = {};
+  for (const field of COMPANY_FIELDS) {
+    const message = fieldErrors[field]?.[0];
+    if (message) mapped[field] = message;
+  }
+  return mapped;
 }

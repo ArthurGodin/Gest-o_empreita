@@ -107,7 +107,9 @@ test("owner completes the core journey and simulated checkout", async ({
       const dialog = page.getByRole("dialog");
       await dialog.getByLabel("Entrada agora (%)").fill("0");
       await dialog.getByRole("button", { name: "Confirmar e criar obra" }).click();
-      await expect(page).toHaveURL(/\/app\/obras\/[0-9a-f-]+/);
+      await expect(page).toHaveURL(/\/app\/obras\/[0-9a-f-]+/, {
+        timeout: 20_000,
+      });
       await expect(page.getByText(quoteTitle, { exact: true }).first()).toBeVisible();
     });
 

@@ -18,6 +18,7 @@ interface FormSaveBarProps {
   saveLabel?: string;
   savingLabel?: string;
   savedLabel?: string;
+  savedHint?: string;
   dirtyHint?: string;
   secondaryAction?: ReactNode;
 }
@@ -30,16 +31,15 @@ export function FormSaveBar({
   saveLabel = "Salvar alterações",
   savingLabel = "Salvando…",
   savedLabel = "Dados salvos",
+  savedHint = "As informações desta seção estão atualizadas.",
   dirtyHint = "Salve antes de sair desta tela.",
   secondaryAction,
 }: FormSaveBarProps) {
   const content = saveStatusContent(status, lastSavedLabel, savedLabel);
 
   return (
-    <>
-      <div aria-hidden="true" className="h-24 sm:hidden" />
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 -mx-4 -mb-4 border-t bg-background/95 px-4 py-3 shadow-[0_-8px_20px_rgba(15,23,42,0.06)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 -mx-4 -mb-4 border-t bg-background/95 px-4 py-3 shadow-[0_-8px_20px_rgba(15,23,42,0.06)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0" aria-live="polite">
             <div
               className={`flex items-center gap-1.5 text-xs font-semibold ${content.className}`}
@@ -53,8 +53,8 @@ export function FormSaveBar({
                 : status === "error"
                   ? "Revise o erro e tente novamente."
                   : status === "saving"
-                    ? "Aguarde a confirmação do servidor."
-                    : "As informações desta seção estão atualizadas."}
+                  ? "Aguarde a confirmação do servidor."
+                    : savedHint}
             </p>
           </div>
 
@@ -70,9 +70,8 @@ export function FormSaveBar({
               {status === "saving" ? savingLabel : saveLabel}
             </Button>
           </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 }
 
