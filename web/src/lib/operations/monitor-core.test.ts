@@ -215,6 +215,18 @@ describe("monitor core", () => {
     ).toBe("critical");
   });
 
+  it("fecha incidente quando a cobranca cancelada nao existe mais no Asaas", () => {
+    const result = evaluatePaymentReconciliation(
+      payment({ status: "cancelled" }),
+      { kind: "not_found" },
+    );
+
+    expect(result.state).toBe("healthy");
+    expect(result.issues).toEqual([]);
+    expect(result.managedFingerprints).toContain(
+      "asaas:payment:remote-missing:" + UUIDS.a,
+    );
+  });
   it("nao propaga estado remoto arbitrario nem id invalido", () => {
     const result = evaluatePaymentReconciliation(
       payment({ id: "cpf-06024377339" }),

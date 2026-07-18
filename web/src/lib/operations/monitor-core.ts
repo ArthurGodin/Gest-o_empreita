@@ -300,6 +300,9 @@ export function evaluatePaymentReconciliation(
   }
 
   if (remote.kind === "not_found") {
+    if (local.status === "cancelled") {
+      return checkResult("asaas_payment", [], Object.values(fingerprints));
+    }
     return checkResult(
       "asaas_payment",
       [
