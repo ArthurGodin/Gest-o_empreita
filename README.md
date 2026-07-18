@@ -107,22 +107,25 @@ npm run build
 
 ## Próxima Grande Entrega
 
-**Publicar o endurecimento de faturamento e concluir o gate de aquisição.**
+**Fechar o gate operacional externo e vender com acompanhamento.**
 
-O Asaas de produção e uma cobrança real já foram validados. O código de
-13/07/2026 separa checkout pendente da assinatura ativa, evita rebaixamento por
-webhook antigo, cancela recorrência substituída e permite cancelamento pelo
-proprietário dentro do Prumo.
+O faturamento SaaS, o checkout Asaas, o webhook, o SINAPI Ultimate e o
+monitoramento operacional diário já foram endurecidos, publicados e testados. O
+código está pronto para vendas assistidas; o que ainda separa o Prumo de uma
+escala agressiva de anúncios são evidências externas: identidade pública,
+suporte, domínio de email, conferência no painel Asaas e acompanhamento das
+primeiras contas pagas.
 
 O próximo passo para escalar vendas com segurança:
 
-1. Repetir uma compra controlada com pagador diferente e conferir recorrências no Asaas.
-2. Configurar e validar Pixel + Conversions API da Meta.
-3. Publicar a identidade do fornecedor e um contato de suporte/privacidade.
-4. Iniciar vendas assistidas e acompanhar logs e webhooks das primeiras contas.
+1. Verificar domínio no Resend e trocar `EMAIL_FROM` para um remetente profissional do Prumo.
+2. Confirmar no Asaas que webhook, assinatura ativa e recorrências estão sem duplicidade.
+3. Publicar a identidade do fornecedor e um contato real de suporte/privacidade.
+4. Configurar e validar Pixel + Conversions API da Meta com o responsável por tráfego.
+5. Iniciar vendas assistidas e acompanhar o monitor operacional diariamente.
 
-O desenho completo está em:
-`docs/superpowers/specs/2026-05-25-fase-1-4-cobranca-asaas-design.md`.
+O status executivo atualizado está em:
+`docs/status-venda-segura-2026-07-18.md`.
 
 ## Direção Comercial
 
