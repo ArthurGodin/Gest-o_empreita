@@ -32,6 +32,8 @@ export const PRODUCT_EVENT_NAMES = [
   "help_topic_opened",
   "help_search_used",
   "support_email_clicked",
+  "pendency_center_opened",
+  "pendency_clicked",
 ] as const;
 
 export type ProductEventName = (typeof PRODUCT_EVENT_NAMES)[number];

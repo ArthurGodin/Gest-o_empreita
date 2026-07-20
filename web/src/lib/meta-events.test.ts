@@ -12,3 +12,12 @@ describe("help center Meta events", () => {
     expect(metaEventForProductEvent(eventName, {})).toBeNull();
   });
 });
+
+describe("pendency Meta events", () => {
+  it.each<ProductEventName>([
+    "pendency_center_opened",
+    "pendency_clicked",
+  ])("does not map %s to a Meta conversion", (eventName) => {
+    expect(metaEventForProductEvent(eventName, {})).toBeNull();
+  });
+});

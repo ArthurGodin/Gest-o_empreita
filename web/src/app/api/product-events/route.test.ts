@@ -119,6 +119,40 @@ describe("POST /api/product-events", () => {
     );
     expect(mocks.sendOperationalAlert).not.toHaveBeenCalled();
   });
+
+  it("accepts pendency clicks without operational content", async () => {
+    const response = await POST(
+      productRequest({
+        name: "pendency_clicked",
+        path: "/app/pendencias",
+        properties: {
+          type: "billing_overdue",
+          category: "billing",
+          priority: "critical",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.logServerEvent).toHaveBeenCalledWith(
+      "product_event",
+      expect.objectContaining({
+        event: "pendency_clicked",
+        path: "/app/pendencias",
+        prop_type: "billing_overdue",
+        prop_category: "billing",
+        prop_priority: "critical",
+      }),
+    );
+    expect(mocks.logServerEvent.mock.calls[0]?.[1]).not.toEqual(
+      expect.objectContaining({
+        prop_id: expect.anything(),
+        prop_value: expect.anything(),
+        prop_title: expect.anything(),
+      }),
+    );
+    expect(mocks.sendOperationalAlert).not.toHaveBeenCalled();
+  });
 });
 
 function productRequest(body: Record<string, unknown>) {
