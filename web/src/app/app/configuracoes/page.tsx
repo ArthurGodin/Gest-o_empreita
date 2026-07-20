@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BarChart3, ChevronRight, ClipboardList } from "lucide-react";
+import { Activity, BarChart3, ChevronRight, ClipboardList } from "lucide-react";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
+import { getCurrentUser } from "@/lib/queries/company";
+import { hasOperationalAdminAccess } from "@/lib/operations/operational-admin";
 import { SettingsForms } from "./settings-forms";
 
 export const metadata = {
@@ -13,6 +15,8 @@ export const metadata = {
 export default async function SettingsPage() {
   const company = await getActiveCompanyFull();
   if (!company) redirect("/onboarding");
+  const user = await getCurrentUser();
+  const showOperationalHealth = hasOperationalAdminAccess(user);
 
   return (
     <PageContainer size="medium" spacing="compact">
@@ -34,6 +38,14 @@ export default async function SettingsPage() {
             title="Diagnóstico de produção"
             description="Checklist para demo, venda, Analytics, Asaas, Resend e PDF"
           />
+          {showOperationalHealth && (
+            <SettingsLink
+              href="/app/configuracoes/saude-operacional"
+              icon={Activity}
+              title="Saúde do Prumo"
+              description="Monitor privado de pagamentos, assinaturas, webhook e SINAPI"
+            />
+          )}
           <SettingsLink
             href="/app/configuracoes/templates"
             icon={ClipboardList}
@@ -63,13 +75,13 @@ function SettingsLink({
       className="flex min-h-16 items-center justify-between gap-3 p-4 transition-colors hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <Icon className="h-5 w-5 text-muted-foreground" />
+        <Icon aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
         <div className="min-w-0">
           <div className="font-medium">{title}</div>
           <div className="text-xs leading-5 text-muted-foreground">{description}</div>
         </div>
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      <ChevronRight aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
     </Link>
   );
 }

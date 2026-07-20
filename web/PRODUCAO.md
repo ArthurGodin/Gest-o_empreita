@@ -71,10 +71,16 @@ Não ligar campanhas de conversão antes de testar os eventos no Events Manager 
 ### Monitoramento operacional
 
 - `CRON_SECRET` com pelo menos 32 bytes aleatorios, somente em Production
+- `OPERATIONAL_ADMIN_EMAILS` com os emails autorizados a consultar o painel
+  privado de saude, separados por virgula
 
 O cron diario chama `/api/cron/operational-health` com `Authorization: Bearer
 <CRON_SECRET>`. Nunca reutilize a chave do Asaas, service role ou token do
 webhook e nunca grave o valor no repositorio.
+
+`OPERATIONAL_ADMIN_EMAILS` nao usa o prefixo `NEXT_PUBLIC_`. Em producao,
+configure somente contas internas que podem visualizar a saude global do
+Prumo; owners de empresas clientes nao devem entrar nessa lista.
 
 ## Publicar na Vercel
 

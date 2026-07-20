@@ -7,6 +7,7 @@ describe("parseServerEnv", () => {
       SUPABASE_SERVICE_ROLE_KEY: "service-role-valida",
       ASAAS_API_KEY: "",
       RESEND_API_KEY: "   ",
+      OPERATIONAL_ADMIN_EMAILS: "",
       CRON_SECRET: "",
     });
 
@@ -14,6 +15,7 @@ describe("parseServerEnv", () => {
     expect(result.data.SUPABASE_SERVICE_ROLE_KEY).toBe("service-role-valida");
     expect(result.data.ASAAS_API_KEY).toBeUndefined();
     expect(result.data.RESEND_API_KEY).toBeUndefined();
+    expect(result.data.OPERATIONAL_ADMIN_EMAILS).toBeUndefined();
     expect(result.data.CRON_SECRET).toBeUndefined();
   });
 
@@ -48,5 +50,13 @@ describe("parseServerEnv", () => {
     expect(invalid.data.CRON_SECRET).toBeUndefined();
     expect(valid.fieldErrors).toEqual({});
     expect(valid.data.CRON_SECRET).toBe(validSecret);
+  });
+
+  it("preserva a allowlist operacional somente no ambiente server-side", () => {
+    const emails = "arthur@example.com,operacao@example.com";
+    const result = parseServerEnv({ OPERATIONAL_ADMIN_EMAILS: emails });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.data.OPERATIONAL_ADMIN_EMAILS).toBe(emails);
   });
 });

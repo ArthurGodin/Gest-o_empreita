@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -80,10 +80,55 @@ function readLocalEnvironment() {
   return JSON.parse(status.stdout);
 }
 
-function resetLocalDatabase() {
-  const reset = supabase(["db", "reset", "--local"], { stdio: "inherit" });
-  if (reset.status !== 0) {
+async function resetLocalDatabase() {
+  const reset = spawn(
+    process.execPath,
+    [supabaseCli, "db", "reset", "--local", "--workdir", repoDir],
+    { cwd: repoDir, env: process.env, stdio: "inherit" },
+  );
+  const reconnectTimer = process.env.CI
+    ? null
+    : setInterval(() => reconnectLocalDatabase(true), 500);
+  const status = await new Promise((resolve) => reset.once("close", resolve));
+  if (reconnectTimer) clearInterval(reconnectTimer);
+  if (status !== 0) {
     throw new Error("As migrations nao reconstruiram o Supabase local.");
+  }
+}
+
+function reconnectLocalDatabase(optional = false) {
+  if (process.env.CI) return;
+
+  const databaseContainer = "supabase_db_gestao-empreita";
+  const inspect = spawnSync(
+    "docker",
+    ["network", "inspect", "prumo-local", "--format", "{{json .Containers}}"],
+    { encoding: "utf8" },
+  );
+  if (inspect.status !== 0) {
+    if (optional) return;
+    throw new Error("Nao foi possivel inspecionar a rede local do Supabase.");
+  }
+  if (inspect.stdout.includes(databaseContainer)) return;
+
+  const container = spawnSync(
+    "docker",
+    ["inspect", databaseContainer, "--format", "{{.State.Status}}"],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+  );
+  if (container.status !== 0) {
+    if (optional) return;
+    throw new Error("O container local do banco nao foi encontrado.");
+  }
+
+  const connected = spawnSync(
+    "docker",
+    ["network", "connect", "prumo-local", databaseContainer],
+    { stdio: optional ? "ignore" : "inherit" },
+  );
+  if (connected.status !== 0) {
+    if (optional) return;
+    throw new Error("Nao foi possivel reconectar o banco a rede local isolada.");
   }
 }
 
@@ -155,7 +200,8 @@ try {
   // immediately can race Docker DNS while Supabase restarts its services.
   const shouldResetDatabase = !process.env.CI || !startedSupabase;
   if (shouldResetDatabase) {
-    resetLocalDatabase();
+    await resetLocalDatabase();
+    reconnectLocalDatabase();
   }
   rmSync(path.join(webDir, ".next"), { recursive: true, force: true });
   const local = readLocalEnvironment();
@@ -177,6 +223,7 @@ try {
     CRON_SECRET: "prumo-e2e-operational-cron-secret-2026-07-17",
     RESEND_API_KEY: "",
     ALERT_EMAIL_TO: "",
+    OPERATIONAL_ADMIN_EMAILS: "health-admin@prumo.test",
     META_CONVERSIONS_ACCESS_TOKEN: "",
   };
 
