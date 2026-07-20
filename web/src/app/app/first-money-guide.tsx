@@ -43,9 +43,9 @@ export function FirstMoneyGuide({
               <ListChecks className="h-4 w-4" />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-foreground sm:text-base">
+              <h2 className="text-sm font-semibold text-foreground sm:text-base">
                 Caminho até a primeira venda
-              </span>
+              </h2>
               <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
                 {doneCount} de {totalCount} concluídos · próximo: {nextStep.title}
               </span>

@@ -25,11 +25,15 @@ test("owner completes the core journey and simulated checkout", async ({
       await expect(page).toHaveURL(/\/onboarding/);
 
       await page.getByLabel(/Nome da empresa/).fill(companyName);
-      await page.getByLabel("Telefone comercial").fill("11999990000");
+      await page.getByLabel("WhatsApp comercial").fill("11999990000");
       await page.getByLabel("Cidade").fill("Sao Paulo");
       await page.getByLabel("UF").fill("SP");
       await page.getByRole("button", { name: "Entrar no painel" }).click();
       await expect(page).toHaveURL(/\/app(?:\?|$)/);
+      await expect(
+        page.getByRole("heading", { name: "Caminho até a primeira venda" }),
+      ).toBeVisible();
+      await expect(page.getByText(/próximo: Cliente/i)).toBeVisible();
     });
 
     await test.step("create customer through the app", async () => {
@@ -40,6 +44,9 @@ test("owner completes the core journey and simulated checkout", async ({
       await page.locator("#address").fill("Rua QA, 100");
       await page.getByRole("button", { name: "Cadastrar cliente" }).click();
       await expect(page).toHaveURL(/\/app\/clientes\/[0-9a-f-]+$/);
+
+      await page.goto("/app");
+      await expect(page.getByText(/próximo: Orçamento/i)).toBeVisible();
     });
 
     let quoteUrl = "";
@@ -83,6 +90,9 @@ test("owner completes the core journey and simulated checkout", async ({
         .single();
       expect(quoteRecordError).toBeNull();
       companyId = quoteRecord?.company_id ?? "";
+
+      await page.goto("/app");
+      await expect(page.getByText(/próximo: Aprovação/i)).toBeVisible();
     });
 
     await test.step("customer approves from the public link", async () => {
