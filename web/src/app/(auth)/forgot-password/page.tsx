@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
                 inputMode="email"
                 spellCheck={false}
                 required
-                placeholder="contato@empresa.com.br"
+                placeholder="contato@empresa.com.br…"
                 aria-invalid={Boolean(fieldErrors?.email)}
                 aria-describedby={
                   fieldErrors?.email ? "forgot-email-error" : undefined

@@ -95,22 +95,20 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
   return (
     <section
       id="decisao"
-      className="scroll-mt-4 rounded-3xl border border-slate-200/60 bg-white p-6 md:p-8 shadow-lg shadow-slate-200/40 relative overflow-hidden"
+      className="scroll-mt-4 rounded-lg border bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)]"
     >
-      <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-[40px] pointer-events-none" />
-      
-      <div className="flex items-start gap-4 relative z-10">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-md shadow-emerald-500/20">
-          <CheckCircle2 className="h-6 w-6" />
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-400">
+          <div className="text-xs font-semibold text-muted-foreground">
             Decisão do cliente
           </div>
-          <h2 className="mt-1 text-xl font-black tracking-tight text-slate-900">
+          <h2 className="mt-1 text-base font-semibold">
             Aprovar ou pedir ajuste
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-slate-500 font-medium">
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
             Sua resposta fica registrada para {companyName}. Você não precisa
             criar conta.
           </p>
@@ -118,38 +116,39 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
       </div>
 
       {mode === "idle" && (
-        <div className="mt-8 space-y-6 relative z-10">
+        <div className="mt-5 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="signer-name" className="text-xs font-bold uppercase tracking-wider text-slate-600">Seu nome completo</Label>
+            <Label htmlFor="signer-name">Seu nome completo</Label>
             <Input
               id="signer-name"
               value={signerName}
               onChange={(e) => setSignerName(e.target.value)}
-              placeholder="Maria Santos"
+              placeholder="Maria Santos…"
               autoComplete="name"
               required
               disabled={pending}
-              className="h-12 text-base bg-slate-50 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 transition-colors"
             />
           </div>
 
           {error && (
             <div
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+              className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
               role="alert"
+              aria-live="polite"
             >
               {error}
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Button
               type="button"
               onClick={handleApprove}
               disabled={pending}
-              className="h-14 w-full rounded-2xl bg-[#2f8f4e] text-base font-bold text-white shadow-lg shadow-[#2f8f4e]/20 hover:bg-[#236b3a] hover:scale-[1.02] hover:shadow-xl hover:shadow-[#2f8f4e]/30 transition-all"
+              size="lg"
+              className="w-full"
             >
-              <CheckCircle2 className="h-5 w-5 mr-2" />
+              <CheckCircle2 aria-hidden="true" />
               {pending ? "Aprovando…" : "Aprovar orçamento agora"}
             </Button>
             <Button
@@ -163,13 +162,14 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
                 setMode("rejecting");
               }}
               disabled={pending}
-              className="h-14 w-full rounded-2xl border-slate-200 text-base font-bold text-slate-700 hover:bg-slate-50 transition-all"
+              size="lg"
+              className="w-full"
             >
-              <PencilLine className="h-5 w-5 mr-2" />
+              <PencilLine aria-hidden="true" />
               Pedir mudanças no orçamento
             </Button>
             {contactUrl && (
-              <Button asChild variant="ghost" className="h-12 w-full rounded-xl text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 mt-2">
+              <Button asChild variant="ghost" className="w-full">
                 <a
                   href={contactUrl}
                   target="_blank"
@@ -180,15 +180,15 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
                     })
                   }
                 >
-                  <MessageCircle className="h-4 w-4 mr-2" />
+                  <MessageCircle aria-hidden="true" />
                   Falar antes no WhatsApp
                 </a>
               </Button>
             )}
           </div>
 
-          <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-500 font-medium">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-start gap-2 border-t pt-3 text-xs leading-5 text-muted-foreground">
+            <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               Ao aprovar, {companyName} recebe o aviso no sistema e pode seguir
               para combinar início, pagamento e execução.
@@ -198,42 +198,41 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
       )}
 
       {mode === "rejecting" && (
-        <div className="mt-6 space-y-6 relative z-10">
-          <div className="rounded-xl bg-amber-50 border border-amber-100 p-4">
-            <p className="text-sm text-amber-800 font-medium leading-relaxed">
+        <div className="mt-5 space-y-4">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+            <p className="text-sm leading-5 text-amber-900">
               Escreva o ajuste que você quer. Isso ajuda {companyName} a reenviar
               uma versão melhor sem perder contexto no WhatsApp.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reject-name" className="text-xs font-bold uppercase tracking-wider text-slate-600">Seu nome completo</Label>
+            <Label htmlFor="reject-name">Seu nome completo</Label>
             <Input
               id="reject-name"
               value={signerName}
               onChange={(e) => setSignerName(e.target.value)}
-              placeholder="Maria Santos"
+              placeholder="Maria Santos…"
               autoComplete="name"
               required
               disabled={pending}
-              className="h-12 text-base bg-slate-50 border-slate-200 focus:border-amber-500 focus:ring-amber-500 transition-colors"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reason" className="text-xs font-bold uppercase tracking-wider text-slate-600">O que precisa mudar?</Label>
+            <Label htmlFor="reason">O que precisa mudar?</Label>
             <Textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Ex: O preço da mão de obra ficou alto. Posso pagar até R$ 6.000."
+              placeholder="Ex.: Ajustar prazo ou condição de pagamento…"
               rows={4}
               maxLength={1000}
               required
               disabled={pending}
-              className="resize-none bg-slate-50 border-slate-200 focus:border-amber-500 focus:ring-amber-500 transition-colors text-base"
+              className="resize-none"
             />
-            <div className="flex justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="flex justify-between gap-3 text-[11px] text-muted-foreground">
               <span>Seja direto: preço, prazo, item ou condição.</span>
               <span>{reason.length}/1000</span>
             </div>
@@ -241,21 +240,23 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
 
           {error && (
             <div
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+              className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
               role="alert"
+              aria-live="polite"
             >
               {error}
             </div>
           )}
 
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2 pt-1">
             <Button
               type="button"
               onClick={handleReject}
               disabled={pending}
-              className="h-14 w-full rounded-2xl bg-amber-500 text-base font-bold text-white shadow-lg shadow-amber-500/20 hover:bg-amber-600 hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/30 transition-all"
+              size="lg"
+              className="w-full bg-amber-500 text-white hover:bg-amber-600"
             >
-              <MessageCircle className="h-5 w-5 mr-2" />
+              <MessageCircle aria-hidden="true" />
               {pending ? "Enviando…" : "Enviar pedido de ajuste"}
             </Button>
             
@@ -269,12 +270,12 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
                   setReason("");
                 }}
                 disabled={pending}
-                className="h-12 flex-1 rounded-xl font-bold text-slate-600"
+                className="flex-1"
               >
                 Cancelar
               </Button>
               {contactUrl && (
-                <Button asChild variant="outline" className="h-12 flex-1 rounded-xl font-bold text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100">
+                <Button asChild variant="outline" className="flex-1 border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100">
                   <a
                     href={contactUrl}
                     target="_blank"
@@ -295,18 +296,18 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
       )}
 
       {mode === "rejected" && (
-        <div className="mt-6 rounded-2xl border-2 border-amber-500/20 bg-amber-50/50 p-5 backdrop-blur-sm relative z-10">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-              <MessageCircle className="h-5 w-5" />
+        <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-100 text-amber-700">
+              <MessageCircle aria-hidden="true" className="h-4 w-4" />
             </div>
             <div>
-              <div className="font-bold text-amber-900 tracking-tight text-lg">Pedido de mudança enviado!</div>
-              <p className="mt-1 text-sm font-medium text-amber-800/80 leading-relaxed">
+              <div className="text-sm font-semibold text-amber-950">Pedido de mudança enviado</div>
+              <p className="mt-1 text-sm leading-5 text-amber-800">
                 {companyName} recebeu sua solicitação e vai analisar o seu pedido.
               </p>
               {contactUrl && (
-                <Button asChild className="mt-4 h-11 rounded-xl bg-white text-amber-900 border border-amber-200 font-bold hover:bg-amber-100 shadow-sm transition-all">
+                <Button asChild variant="outline" className="mt-4 border-amber-200 bg-white text-amber-900 hover:bg-amber-100">
                   <a
                     href={contactUrl}
                     target="_blank"
@@ -317,7 +318,7 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
                       })
                     }
                   >
-                    <MessageCircle className="h-4 w-4 mr-2" />
+                    <MessageCircle aria-hidden="true" />
                     Chamar no WhatsApp
                   </a>
                 </Button>

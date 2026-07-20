@@ -91,7 +91,7 @@ export function OnboardingForm() {
         <div className="grid gap-5 pt-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start lg:gap-10 lg:pt-10">
           <section className="lg:pt-3">
             <p className="text-sm font-semibold text-primary">Sua empresa</p>
-            <h1 className="mt-2 max-w-md text-2xl font-bold leading-tight sm:text-3xl">
+            <h1 className="mt-2 max-w-md text-balance text-2xl font-bold leading-tight sm:text-3xl">
               Prepare a identificação das suas propostas
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
@@ -142,9 +142,8 @@ export function OnboardingForm() {
                       name="name"
                       type="text"
                       required
-                      autoFocus
                       autoComplete="organization"
-                      placeholder="Ex.: Construtora Horizonte"
+                      placeholder="Ex.: Construtora Horizonte…"
                       aria-invalid={Boolean(fieldErrors?.name)}
                       aria-describedby={
                         fieldErrors?.name ? "onboarding-name-error" : undefined
@@ -175,7 +174,7 @@ export function OnboardingForm() {
                       type="tel"
                       inputMode="tel"
                       autoComplete="tel"
-                      placeholder="(11) 99999-0000"
+                      placeholder="(11) 99999-0000…"
                       aria-invalid={Boolean(fieldErrors?.phone)}
                       aria-describedby="onboarding-phone-help onboarding-phone-error"
                       className="pl-9"
@@ -210,7 +209,7 @@ export function OnboardingForm() {
                         name="city"
                         type="text"
                         autoComplete="address-level2"
-                        placeholder="Fortaleza"
+                        placeholder="Fortaleza…"
                         aria-invalid={Boolean(fieldErrors?.city)}
                         aria-describedby={
                           fieldErrors?.city
@@ -239,7 +238,7 @@ export function OnboardingForm() {
                       maxLength={2}
                       autoComplete="address-level1"
                       autoCapitalize="characters"
-                      placeholder="CE"
+                      placeholder="CE…"
                       aria-invalid={Boolean(fieldErrors?.state)}
                       aria-describedby={
                         fieldErrors?.state ? "onboarding-state-error" : undefined
@@ -276,7 +275,7 @@ export function OnboardingForm() {
                   className="w-full"
                   disabled={pending}
                 >
-                  {pending ? "Preparando painel..." : "Entrar no painel"}
+                  {pending ? "Preparando painel…" : "Entrar no painel"}
                   {!pending ? <ArrowRight aria-hidden="true" /> : null}
                 </Button>
               </form>

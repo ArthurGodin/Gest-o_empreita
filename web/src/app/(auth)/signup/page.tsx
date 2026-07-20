@@ -63,23 +63,20 @@ function SignupForm() {
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   return (
-    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
-      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
-        <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
+    <Card className="overflow-hidden">
+      <CardHeader className="space-y-1.5 border-b">
+        <CardTitle className="text-xl">
           Criar conta
         </CardTitle>
-        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
+        <CardDescription className="leading-6">
           Comece sem cartão e monte o primeiro orçamento com aparência
           profissional.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
-        <form action={onSubmit} className="space-y-5">
+      <CardContent className="pt-4">
+        <form action={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label
-              htmlFor="name"
-              className="text-xs font-bold uppercase tracking-wider text-slate-600"
-            >
+            <Label htmlFor="name">
               Seu nome
             </Label>
             <Input
@@ -88,23 +85,19 @@ function SignupForm() {
               type="text"
               autoComplete="name"
               required
-              placeholder="João da Silva"
+              placeholder="João da Silva…"
               aria-invalid={Boolean(fieldErrors?.name)}
               aria-describedby={fieldErrors?.name ? "signup-name-error" : undefined}
-              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.name?.[0] ? (
-              <p id="signup-name-error" className="text-sm font-medium text-red-500">
+              <p id="signup-name-error" className="text-sm text-destructive">
                 {fieldErrors.name[0]}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="text-xs font-bold uppercase tracking-wider text-slate-600"
-            >
+            <Label htmlFor="email">
               E-mail
             </Label>
             <Input
@@ -116,23 +109,19 @@ function SignupForm() {
               inputMode="email"
               spellCheck={false}
               required
-              placeholder="contato@empresa.com.br"
+              placeholder="contato@empresa.com.br…"
               aria-invalid={Boolean(fieldErrors?.email)}
               aria-describedby={fieldErrors?.email ? "signup-email-error" : undefined}
-              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.email?.[0] ? (
-              <p id="signup-email-error" className="text-sm font-medium text-red-500">
+              <p id="signup-email-error" className="text-sm text-destructive">
                 {fieldErrors.email[0]}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="password"
-              className="text-xs font-bold uppercase tracking-wider text-slate-600"
-            >
+            <Label htmlFor="password">
               Senha
             </Label>
             <Input
@@ -143,15 +132,14 @@ function SignupForm() {
               spellCheck={false}
               required
               minLength={6}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 6 caracteres…"
               aria-invalid={Boolean(fieldErrors?.password)}
               aria-describedby={
                 fieldErrors?.password ? "signup-password-error" : undefined
               }
-              className="h-[3.25rem] border-slate-200 bg-slate-50 text-base transition-colors focus:border-[#059669] focus:ring-[#059669]"
             />
             {fieldErrors?.password?.[0] ? (
-              <p id="signup-password-error" className="text-sm font-medium text-red-500">
+              <p id="signup-password-error" className="text-sm text-destructive">
                 {fieldErrors.password[0]}
               </p>
             ) : null}
@@ -159,7 +147,7 @@ function SignupForm() {
 
           {result && !result.ok ? (
             <p
-              className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm font-medium text-red-500"
+              className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive"
               role="alert"
               aria-live="polite"
             >
@@ -169,18 +157,19 @@ function SignupForm() {
 
           <Button
             type="submit"
-            className="h-[3.25rem] w-full rounded-xl bg-[#059669] text-base font-bold shadow-lg shadow-[#059669]/20 transition-all hover:scale-[1.02] hover:bg-[#047857] hover:shadow-xl hover:shadow-[#059669]/30"
+            size="lg"
+            className="w-full"
             disabled={pending}
           >
-            {pending ? "Criando..." : "Criar minha conta"}
+            {pending ? "Criando…" : "Criar minha conta"}
           </Button>
 
-          <p className="pt-4 text-center text-sm font-medium text-slate-500">
+          <p className="pt-2 text-center text-sm text-muted-foreground">
             Já tem conta?{" "}
             <Link
               href="/login"
               onClick={onLoginClick}
-              className="font-bold text-[#059669] hover:underline"
+              className="font-semibold text-primary hover:underline"
             >
               Entrar
             </Link>
@@ -193,21 +182,21 @@ function SignupForm() {
 
 function SignupFallback() {
   return (
-    <Card className="overflow-hidden rounded-[1.25rem] border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-sm sm:rounded-2xl">
-      <CardHeader className="space-y-2 p-5 pb-4 sm:p-6 sm:pb-6">
-        <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
+    <Card className="overflow-hidden">
+      <CardHeader className="space-y-1.5 border-b">
+        <CardTitle className="text-xl">
           Criar conta
         </CardTitle>
-        <CardDescription className="text-sm font-medium leading-6 text-slate-500">
+        <CardDescription className="leading-6">
           Preparando criação da sua conta.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-5 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="pt-4">
         <div className="space-y-4">
-          <div className="h-12 rounded-xl bg-slate-100" />
-          <div className="h-12 rounded-xl bg-slate-100" />
-          <div className="h-12 rounded-xl bg-slate-100" />
-          <div className="h-12 rounded-xl bg-emerald-100" />
+          <div className="h-11 rounded-md bg-muted" />
+          <div className="h-11 rounded-md bg-muted" />
+          <div className="h-11 rounded-md bg-muted" />
+          <div className="h-12 rounded-md bg-primary/10" />
         </div>
       </CardContent>
     </Card>

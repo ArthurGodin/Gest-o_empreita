@@ -54,7 +54,7 @@ export function CancelPlanButton() {
       ) : (
         <XCircle className="h-4 w-4" />
       )}
-      {pending ? "Cancelando..." : "Cancelar assinatura"}
+      {pending ? "Cancelando…" : "Cancelar assinatura"}
     </Button>
   );
 }

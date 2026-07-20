@@ -95,7 +95,7 @@ export function PaymentForm({
   if (pendingCheckoutUrl) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
           <div className="flex items-start gap-3 text-sm">
             <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
             <div>
@@ -113,7 +113,7 @@ export function PaymentForm({
         <Button
           asChild
           size="lg"
-          className="h-12 w-full rounded-xl bg-amber-600 text-base font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-700"
+          className="w-full bg-amber-600 text-white hover:bg-amber-700"
         >
           <a href={pendingCheckoutUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-5 w-5" />
@@ -127,7 +127,7 @@ export function PaymentForm({
   return (
     <div className="space-y-5">
       {pendingOtherPlan || replacesLegacyPending ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
           <div className="flex items-start gap-3 text-sm">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
             <div>
@@ -143,7 +143,7 @@ export function PaymentForm({
         </div>
       ) : null}
 
-      <div className="rounded-xl border bg-slate-50 p-3">
+      <div className="rounded-md border bg-muted/50 p-3">
         <div className="flex items-start gap-3 text-sm">
           <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
           <div>
@@ -163,14 +163,14 @@ export function PaymentForm({
         size="lg"
         onClick={handlePayment}
         disabled={loading}
-        className="h-12 w-full rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-700"
+        className="w-full"
       >
         {loading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <ShieldCheck className="h-5 w-5" />
         )}
-        {loading ? "Abrindo Asaas..." : "Ir para pagamento seguro"}
+        {loading ? "Abrindo Asaas…" : "Ir para pagamento seguro"}
       </Button>
     </div>
   );

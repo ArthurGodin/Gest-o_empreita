@@ -87,7 +87,8 @@ export function PublicToggle({
   }
 
   return (
-    <div>
+    <div className="min-h-svh bg-background px-4 py-4 text-foreground sm:px-6 sm:py-6">
+      <div className="mx-auto w-full max-w-5xl">
       <div
         className="mx-auto mb-4 flex max-w-2xl gap-2 rounded-lg border bg-card p-1 shadow-sm"
         role="tablist"
@@ -105,7 +106,7 @@ export function PublicToggle({
               aria-selected={active}
               aria-controls={`public-panel-${tab.value}`}
               onClick={() => selectView(tab.value)}
-              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-sm font-medium transition-colors ${
+              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted"
@@ -141,6 +142,7 @@ export function PublicToggle({
             nowMs={nowMs}
           />
         )}
+      </div>
       </div>
     </div>
   );

@@ -2,17 +2,16 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   AlertCircle,
-  Blocks,
-  Building2,
   Check,
   Clock3,
   Crown,
   ExternalLink,
-  FileText,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/app-shell/page-container";
+import { PageHeader } from "@/components/app-shell/page-header";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCompany } from "@/lib/queries/company";
 import {
@@ -52,30 +51,17 @@ export default async function PlanPage() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 py-8">
-      <header className="grid gap-6 rounded-2xl border bg-gradient-to-br from-emerald-50 via-white to-white p-6 shadow-sm md:grid-cols-[1fr_auto] md:items-end md:p-8">
-        <div>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-800">
-            <ShieldCheck className="h-3.5 w-3.5" />
+    <PageContainer>
+      <PageHeader
+        title="Planos e assinatura"
+        description="Compare os recursos disponíveis e gerencie sua assinatura pelo Asaas."
+        actions={
+          <div className="inline-flex h-10 items-center gap-2 rounded-md border bg-card px-3 text-sm font-semibold text-foreground">
+            <ShieldCheck aria-hidden="true" className="h-4 w-4 text-primary" />
             Plano atual: {currentDefinition.label}
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
-            Escolha o plano certo para vender, executar e cobrar melhor.
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-            O Grátis serve para conhecer o fluxo. O Pro é o plano principal
-            para vender, executar e receber melhor. O Ultimate acelera orçamento
-            em escala com importação de catálogo e exportação contábil.
-          </p>
-        </div>
-        <div className="rounded-xl border border-emerald-200 bg-white p-4 text-sm shadow-sm">
-          <div className="font-semibold text-slate-950">Próximo ganho prático</div>
-          <p className="mt-1 max-w-xs leading-6 text-muted-foreground">
-            Menos digitação repetida, cobrança mais clara e orçamento com cara
-            de empresa profissional.
-          </p>
-        </div>
-      </header>
+        }
+      />
 
       <SubscriptionStatusPanel status={subscriptionStatus} />
 
@@ -95,7 +81,7 @@ export default async function PlanPage() {
         </section>
       ) : null}
 
-      <section className="grid gap-5 lg:grid-cols-3">
+      <section className="grid gap-4 lg:grid-cols-3">
         {PLAN_SEQUENCE.map((plan) => (
           <PlanCard
             key={plan}
@@ -107,24 +93,7 @@ export default async function PlanPage() {
         ))}
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
-        <FeatureHighlight
-          icon={<FileText className="h-5 w-5" />}
-          title="Orçamentos que vendem"
-          text="Link público, PDF profissional e aceite digital para reduzir ida e volta no WhatsApp."
-        />
-        <FeatureHighlight
-          icon={<Building2 className="h-5 w-5" />}
-          title="Obra sob controle"
-          text="O orçamento aprovado vira obra, cronograma, diário, custos e cobrança sem retrabalho."
-        />
-        <FeatureHighlight
-          icon={<Blocks className="h-5 w-5" />}
-          title="Escala com catálogo"
-          text="No Ultimate, seu CSV antigo vira base de itens para orçar mais rápido e com menos erro."
-        />
-      </section>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -153,9 +122,8 @@ function PlanCard({
   return (
     <article
       className={cn(
-        "relative flex min-h-[500px] flex-col rounded-xl border bg-white p-5 shadow-sm",
-        featured && "border-emerald-500 shadow-lg shadow-emerald-500/10",
-        plan === "ultimate" && "bg-slate-950 text-white",
+        "relative flex flex-col rounded-lg border bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)]",
+        featured && "border-slate-900 bg-slate-950 text-white",
       )}
     >
       {featured ? (
@@ -170,23 +138,23 @@ function PlanCard({
         </div>
       ) : null}
 
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <div
             className={cn(
-              "mb-4 flex h-11 w-11 items-center justify-center rounded-xl",
-              plan === "ultimate"
+              "mb-3 flex h-9 w-9 items-center justify-center rounded-md",
+              featured
                 ? "bg-white/10 text-emerald-300"
                 : "bg-emerald-50 text-emerald-700",
             )}
           >
             <Icon className="h-5 w-5" />
           </div>
-          <h2 className="text-2xl font-bold">{definition.name}</h2>
+          <h2 className="text-xl font-bold">{definition.name}</h2>
           <p
             className={cn(
-              "mt-2 min-h-[72px] text-sm leading-6",
-              plan === "ultimate" ? "text-slate-300" : "text-muted-foreground",
+              "mt-2 min-h-[60px] text-sm leading-5",
+              featured ? "text-slate-300" : "text-muted-foreground",
             )}
           >
             {definition.description}
@@ -194,16 +162,16 @@ function PlanCard({
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-5">
         <div className="flex items-end gap-1">
-          <span className="text-4xl font-black tracking-tight">
+          <span className="text-3xl font-bold">
             {formatPlanPrice(plan)}
           </span>
           {plan !== "free" ? (
             <span
               className={cn(
                 "mb-1 text-sm font-medium",
-                plan === "ultimate" ? "text-slate-400" : "text-muted-foreground",
+                featured ? "text-slate-400" : "text-muted-foreground",
               )}
             >
               /mês
@@ -212,13 +180,13 @@ function PlanCard({
         </div>
       </div>
 
-      <ul className="mb-8 flex-1 space-y-3">
+      <ul className="mb-6 flex-1 space-y-2.5">
         {definition.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3 text-sm leading-6">
             <Check
               className={cn(
                 "mt-0.5 h-4 w-4 shrink-0",
-                plan === "ultimate" ? "text-emerald-300" : "text-emerald-600",
+                featured ? "text-emerald-300" : "text-emerald-600",
               )}
             />
             <span>{feature}</span>
@@ -231,7 +199,7 @@ function PlanCard({
           <Button
             asChild
             size="lg"
-            className="h-12 w-full rounded-xl bg-amber-600 text-base font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-700"
+            className="w-full bg-amber-600 text-white hover:bg-amber-700"
           >
             <a
               href={subscriptionStatus.checkoutUrl}
@@ -246,8 +214,8 @@ function PlanCard({
         ) : canUpgrade && hasPendingPaymentLink ? (
           <div
             className={cn(
-              "flex h-12 items-center justify-center rounded-xl border text-sm font-semibold",
-              plan === "ultimate"
+              "flex h-11 items-center justify-center rounded-md border text-sm font-semibold",
+              featured
                 ? "border-white/15 bg-white/10 text-white"
                 : "bg-muted/50 text-muted-foreground",
             )}
@@ -259,8 +227,8 @@ function PlanCard({
         ) : (
           <div
             className={cn(
-              "flex h-12 items-center justify-center rounded-xl border text-sm font-semibold",
-              plan === "ultimate"
+              "flex h-11 items-center justify-center rounded-md border text-sm font-semibold",
+              featured
                 ? "border-white/15 bg-white/10 text-white"
                 : "bg-muted/50 text-muted-foreground",
             )}
@@ -277,7 +245,7 @@ function PlanCard({
           <p
             className={cn(
               "text-center text-xs leading-5",
-              plan === "ultimate" ? "text-slate-400" : "text-muted-foreground",
+              featured ? "text-slate-400" : "text-muted-foreground",
             )}
           >
             Pagamento seguro via Asaas. Sem fidelidade.
@@ -285,26 +253,6 @@ function PlanCard({
         ) : null}
       </div>
     </article>
-  );
-}
-
-function FeatureHighlight({
-  icon,
-  title,
-  text,
-}: {
-  icon: ReactNode;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-2xl border bg-card p-5 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-        {icon}
-      </div>
-      <h3 className="font-semibold text-slate-950">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
-    </div>
   );
 }
 
@@ -411,7 +359,7 @@ function StatusCard({
   return (
     <section
       className={cn(
-        "flex flex-col gap-4 rounded-2xl border p-5 shadow-sm md:flex-row md:items-center md:justify-between",
+        "flex flex-col gap-3 rounded-lg border p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)] md:flex-row md:items-center md:justify-between",
         tone === "success" && "border-emerald-200 bg-emerald-50",
         tone === "warning" && "border-amber-200 bg-amber-50",
         tone === "neutral" && "bg-card",
@@ -420,7 +368,7 @@ function StatusCard({
       <div className="flex items-start gap-3">
         <div
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
             tone === "success" && "bg-emerald-100 text-emerald-700",
             tone === "warning" && "bg-amber-100 text-amber-700",
             tone === "neutral" && "bg-muted text-muted-foreground",

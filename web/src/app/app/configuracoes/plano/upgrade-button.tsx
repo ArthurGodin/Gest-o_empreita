@@ -20,7 +20,7 @@ export function UpgradeButton({ plan, className }: UpgradeButtonProps) {
       asChild
       size="lg"
       className={cn(
-        "h-12 w-full rounded-xl border-0 text-base font-semibold text-white shadow-md",
+        "w-full border-0 text-white",
         plan === "ultimate"
           ? "bg-slate-950 shadow-slate-900/15 hover:bg-slate-800"
           : "bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-700",

@@ -73,7 +73,7 @@ export function PublicBillingView({
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <section className="rounded-xl border bg-card p-5">
+      <section className="rounded-lg border bg-card p-4">
         <div className="flex items-start gap-3">
           <span className="rounded-md bg-primary/10 p-2 text-primary">
             <WalletCards className="h-5 w-5" />
@@ -90,7 +90,7 @@ export function PublicBillingView({
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid overflow-hidden rounded-md border sm:grid-cols-3">
           <PublicMetric label="Pago" value={formatBRL(paidCents / 100)} />
           <PublicMetric
             label="Pendente"
@@ -147,7 +147,7 @@ export function PublicBillingView({
       ) : null}
 
       {ordered.length === 0 ? (
-        <section className="rounded-xl border border-dashed bg-card p-5 text-sm leading-6 text-muted-foreground">
+        <section className="rounded-lg border border-dashed bg-card p-4 text-sm leading-6 text-muted-foreground">
           A empreiteira ainda não liberou nenhuma cobrança para esta obra.
         </section>
       ) : (
@@ -167,7 +167,7 @@ export function PublicBillingView({
 
 function PublicMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border bg-background p-3">
+    <div className="border-b p-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
@@ -198,7 +198,7 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
   }
 
   return (
-    <section className="rounded-xl border border-green-300 bg-green-50 p-5 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
+    <section className="rounded-lg border border-green-300 bg-green-50 p-4 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100">
       <div className="flex items-start gap-3">
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
         <div className="flex-1 space-y-3">
@@ -251,7 +251,7 @@ function PublicChargeCard({
   const instruction = publicChargeInstruction(charge, deliveryApprovedAt);
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-lg border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase text-muted-foreground">
@@ -336,6 +336,8 @@ function PublicChargeCard({
               <img
                 src={`data:image/png;base64,${charge.pix_qr_image_b64}`}
                 alt="QR Code Pix"
+                width={128}
+                height={128}
                 className="h-32 w-32 rounded-md border bg-white p-2"
               />
             ) : (

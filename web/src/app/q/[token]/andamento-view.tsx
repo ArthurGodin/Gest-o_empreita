@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, CheckCircle2, ClipboardList, MapPin, Pause, X } from "lucide-react";
+import {
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  MapPin,
+  Pause,
+  X,
+} from "lucide-react";
 import { formatDateBR } from "@/lib/utils";
 import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
 import type {
@@ -133,7 +142,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-xl border bg-card p-5">
+      <section className="rounded-lg border bg-card p-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground">
             {view.name}
@@ -175,7 +184,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
       </section>
 
       {stages.length > 0 && (
-        <section className="rounded-xl border bg-card p-5">
+        <section className="rounded-lg border bg-card p-4">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <ClipboardList className="h-4 w-4" />
             Etapas
@@ -230,7 +239,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
       )}
 
       {view.diary.length > 0 && (
-        <section className="rounded-xl border bg-card p-5">
+        <section className="rounded-lg border bg-card p-4">
           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
             Diário da obra ({view.diary_total} registro
             {view.diary_total === 1 ? "" : "s"})
@@ -266,6 +275,8 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                           <img
                             src={`/q/${shareToken}/photo/${photo.id}`}
                             alt={`Foto ${pi + 1} do diário da obra`}
+                            width={320}
+                            height={320}
                             loading="lazy"
                             className="h-full w-full object-cover"
                           />
@@ -305,14 +316,16 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
 
       {currentPhotoId && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setLightboxIdx(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Foto ampliada do diário da obra"
+          className="fixed inset-0 z-50 flex overscroll-contain items-center justify-center bg-black/90 p-4"
         >
           <button
             type="button"
             onClick={() => setLightboxIdx(null)}
             aria-label="Fechar"
-            className="absolute right-4 top-4 rounded-md p-2 text-white hover:bg-white/10"
+            className="absolute right-4 top-4 rounded-md p-2 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -320,8 +333,9 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
           <img
             src={`/q/${shareToken}/photo/${currentPhotoId}`}
             alt="Foto ampliada do diário da obra"
+            width={1600}
+            height={1200}
             className="max-h-full max-w-full object-contain"
-            onClick={(e) => e.stopPropagation()}
           />
           {allPhotos.length > 1 && (
             <>
@@ -331,10 +345,10 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                   e.stopPropagation();
                   navLightbox(-1);
                 }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md p-3 text-white hover:bg-white/10"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md p-3 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Anterior"
               >
-                ←
+                <ChevronLeft aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -342,10 +356,10 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                   e.stopPropagation();
                   navLightbox(1);
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-3 text-white hover:bg-white/10"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-3 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Próxima"
               >
-                →
+                <ChevronRight aria-hidden="true" />
               </button>
             </>
           )}

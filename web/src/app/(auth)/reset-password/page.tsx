@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
               spellCheck={false}
               required
               minLength={8}
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Mínimo 8 caracteres…"
               aria-invalid={Boolean(fieldErrors?.password)}
               aria-describedby={
                 fieldErrors?.password ? "reset-password-error" : undefined
@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
               spellCheck={false}
               required
               minLength={8}
-              placeholder="Digite a senha novamente"
+              placeholder="Digite a senha novamente…"
               aria-invalid={Boolean(fieldErrors?.confirmPassword)}
               aria-describedby={
                 fieldErrors?.confirmPassword

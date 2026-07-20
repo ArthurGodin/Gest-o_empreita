@@ -10,116 +10,76 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Link de orçamento indisponível — Prumo",
+  title: "Link de orçamento indisponível - Prumo",
 };
 
-const requestNewLinkHref =
-  `https://wa.me/?text=${encodeURIComponent(
-    "Olá, recebi um link de orçamento indisponível. Você pode me enviar o link atualizado?",
-  )}`;
+const requestNewLinkHref = `https://wa.me/?text=${encodeURIComponent(
+  "Olá, recebi um link de orçamento indisponível. Você pode me enviar o link atualizado?",
+)}`;
 
 export default function PublicQuoteNotFound() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f6f8fb] text-[#17202a]">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(31,41,55,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(31,41,55,0.045)_1px,transparent_1px)] bg-[length:32px_32px]"
-      />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6 sm:py-8">
-        <header className="flex h-14 items-center justify-between">
+    <main className="min-h-svh bg-background text-foreground">
+      <div className="mx-auto flex min-h-svh w-full max-w-3xl flex-col px-4 py-4 sm:px-6 sm:py-6">
+        <header className="flex h-11 items-center justify-between border-b pb-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#059669] text-white shadow-sm">
-              <HardHat className="h-5 w-5" />
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <HardHat aria-hidden="true" className="h-4 w-4" />
             </span>
-            <span>Prumo</span>
+            Prumo
           </Link>
           <Button asChild variant="ghost" size="sm">
             <Link href="/login">
-              <LayoutDashboard className="h-4 w-4" />
+              <LayoutDashboard aria-hidden="true" />
               Painel
             </Link>
           </Button>
         </header>
 
-        <section className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_23rem]">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-md border border-[#d8e0ea] bg-white px-3 py-2 text-sm font-semibold text-[#374151] shadow-sm">
-              <AlertCircle className="h-4 w-4" />
-              Link indisponível
+        <div className="flex flex-1 items-center py-8">
+          <section className="w-full rounded-lg border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.035)] sm:p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-amber-100 text-amber-800">
+              <AlertCircle aria-hidden="true" className="h-5 w-5" />
             </div>
-
-            <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight tracking-normal sm:text-5xl">
-              Este orçamento foi atualizado ou saiu do ar.
+            <h1 className="mt-4 text-balance text-2xl font-bold leading-tight">
+              Este orçamento não está mais disponível
             </h1>
-
-            <p className="mt-5 max-w-xl text-base leading-7 text-[#52606f]">
-              O prestador pode ter gerado uma versão nova, corrigido a proposta
-              ou removido o acesso antigo por segurança. Antes de aprovar,
-              recusar ou pagar qualquer valor, peça o link atualizado.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              A proposta pode ter sido atualizada, substituída ou removida. Peça
+              ao prestador o link mais recente antes de aprovar ou pagar.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="h-12 bg-[#059669] px-6 text-base hover:bg-[#c85b17]"
-              >
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <Button asChild>
                 <a
                   href={requestNewLinkHref}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle aria-hidden="true" />
                   Pedir novo link
                 </a>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="h-12 border-[#d8e0ea] bg-white px-6 text-base"
-              >
+              <Button asChild variant="outline">
                 <Link href="/">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft aria-hidden="true" />
                   Voltar ao início
                 </Link>
               </Button>
             </div>
-          </div>
 
-          <aside className="rounded-lg border border-[#d8e0ea] bg-white p-5 shadow-sm">
-            <div className="flex items-start gap-3 border-b border-[#e3e8ef] pb-4">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#218653]" />
-              <div>
-                <p className="font-semibold">Como seguir com segurança</p>
-                <p className="mt-1 text-sm leading-6 text-[#52606f]">
-                  Use sempre o link mais recente enviado pelo prestador.
-                </p>
-              </div>
+            <div className="mt-6 flex items-start gap-3 border-t pt-4">
+              <ShieldCheck
+                aria-hidden="true"
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+              />
+              <p className="text-sm leading-5 text-muted-foreground">
+                Confira se o novo link veio do contato do prestador e revise a
+                proposta completa antes de tomar uma decisão.
+              </p>
             </div>
-
-            <ol className="mt-4 space-y-3 text-sm leading-6">
-              <li className="flex gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#fff4eb] text-xs font-bold text-[#c85b17]">
-                  1
-                </span>
-                <span>Confira se o link veio do WhatsApp do prestador.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#fff4eb] text-xs font-bold text-[#c85b17]">
-                  2
-                </span>
-                <span>Peça reenvio se o orçamento foi ajustado ou expirou.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#fff4eb] text-xs font-bold text-[#c85b17]">
-                  3
-                </span>
-                <span>Aprove ou pague somente depois de ver a proposta completa.</span>
-              </li>
-            </ol>
-          </aside>
-        </section>
+          </section>
+        </div>
       </div>
     </main>
   );
