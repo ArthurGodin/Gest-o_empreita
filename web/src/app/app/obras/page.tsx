@@ -26,14 +26,14 @@ export default async function ProjectsPage() {
       {projects.length === 0 ? (
         <EmptyState
           icon={<HardHat />}
-          title="Nenhuma obra ainda"
+          title="Nenhuma obra criada"
           description={
-            "Quando um or\u00e7amento for aprovado, transforme-o em obra para acompanhar etapas, di\u00e1rio, custos e cobran\u00e7a."
+            "Uma obra nasce de um or\u00e7amento aprovado. Abra suas propostas para acompanhar um aceite ou fazer a convers\u00e3o."
           }
           action={
             <Button asChild>
               <Link href="/app/orcamentos">
-                {"Ver or\u00e7amentos"}
+                {"Abrir or\u00e7amentos"}
               </Link>
             </Button>
           }

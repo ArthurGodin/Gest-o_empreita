@@ -5,6 +5,7 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  secondaryAction?: React.ReactNode;
   className?: string;
 }
 
@@ -13,12 +14,13 @@ export function EmptyState({
   title,
   description,
   action,
+  secondaryAction,
   className,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-lg border border-dashed bg-card px-5 py-8 text-center sm:py-9",
+        "flex flex-col items-center justify-center rounded-lg border border-dashed bg-card px-5 py-7 text-center",
         className,
       )}
     >
@@ -34,7 +36,12 @@ export function EmptyState({
           {description}
         </p>
       )}
-      {action && <div className="mt-4">{action}</div>}
+      {action || secondaryAction ? (
+        <div className="mt-4 flex flex-col items-center justify-center gap-2 sm:flex-row">
+          {action}
+          {secondaryAction}
+        </div>
+      ) : null}
     </div>
   );
 }

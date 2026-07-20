@@ -34,13 +34,13 @@ export default async function CustomersPage() {
       {customers.length === 0 ? (
         <EmptyState
           icon={<Users className="h-6 w-6" />}
-          title="Ainda sem clientes por aqui"
-          description="Cadastre seu primeiro cliente para começar a fazer orçamentos e obras."
+          title="Cadastre seu primeiro cliente"
+          description="Os dados serão reutilizados nas propostas e obras, sem precisar digitar tudo novamente."
           action={
             <Button asChild>
               <Link href="/app/clientes/novo">
                 <Plus className="h-4 w-4" />
-                Cadastrar primeiro cliente
+                Cadastrar cliente
               </Link>
             </Button>
           }

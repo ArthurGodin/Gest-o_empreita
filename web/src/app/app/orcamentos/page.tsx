@@ -34,13 +34,13 @@ export default async function QuotesPage() {
       {quotes.length === 0 ? (
         <EmptyState
           icon={<FileText className="h-6 w-6" />}
-          title="Nenhum orçamento ainda"
-          description="Crie seu primeiro orçamento profissional. Vai levar 5 minutos — e quando você mandar pelo WhatsApp, o cliente vai abrir um link bonito no celular pra aprovar."
+          title="Crie sua primeira proposta"
+          description="Adicione os serviços e envie um link para o cliente revisar e aprovar pelo celular."
           action={
             <Button asChild>
               <Link href="/app/orcamentos/novo">
                 <Plus className="h-4 w-4" />
-                Criar primeiro orçamento
+                Criar orçamento
               </Link>
             </Button>
           }

@@ -7,6 +7,7 @@ import { getActiveCompany } from "@/lib/queries/company";
 import { createClient } from "@/lib/supabase/server";
 import { CatalogList } from "./catalog-list";
 import { CreateFirstItem } from "./create-first-item";
+import { CatalogImportDialog } from "./catalog-import-dialog";
 
 export const metadata = {
   title: "Catálogo — Prumo",
@@ -40,9 +41,10 @@ export default async function CatalogPage() {
       {items.length === 0 ? (
         <EmptyState
           icon={<Package className="h-6 w-6" />}
-          title="Catálogo vazio"
-          description="Cadastre itens recorrentes para montar orçamentos mais rápido e manter preços consistentes. Você também pode salvar um item no catálogo enquanto cria uma proposta."
-          action={<CreateFirstItem currentPlan={currentPlan} />}
+          title="Crie seu primeiro item padrão"
+          description="Salve serviços e materiais recorrentes para reutilizar descrição, unidade e preço nos orçamentos."
+          action={<CreateFirstItem />}
+          secondaryAction={<CatalogImportDialog currentPlan={currentPlan} />}
         />
       ) : (
         <CatalogList items={items} currentPlan={currentPlan} />
