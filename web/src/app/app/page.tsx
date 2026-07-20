@@ -24,19 +24,17 @@ import {
 } from "@/components/app-shell/metric-strip";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
-import { FirstMoneyGuide, type FirstMoneyStep } from "./first-money-guide";
+import { FirstMoneyGuide } from "./first-money-guide";
 import { SampleDataButton } from "./sample-data-button";
-import {
-  getBillingCharges,
-  type BillingChargeListItem,
-} from "@/lib/queries/billing-charges";
+import { getBillingCharges } from "@/lib/queries/billing-charges";
 import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
+import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import {
-  getActiveCompanyFull,
-  type CompanyFull,
-} from "@/lib/queries/company-settings";
+  buildActivationProgress,
+  isCompanyPaymentReady,
+} from "@/lib/activation/activation-core";
 import { todayBR } from "@/lib/dates";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { STATUS_LABEL } from "@/lib/quote-status";
@@ -47,8 +45,6 @@ const OPEN_PROJECT_STATUSES: ProjectStatus[] = [
   "in_progress",
   "paused",
 ];
-const PAID_CHARGE_STATUSES = new Set(["received", "confirmed"]);
-
 const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
   planning: "Planejada",
   in_progress: "Em execução",
@@ -101,7 +97,7 @@ export default async function DashboardPage() {
     approvedWithoutProject,
     openProjects,
   });
-  const firstMoneySteps = buildFirstMoneySteps({
+  const activation = buildActivationProgress({
     company,
     customersCount: customers.length,
     quotes,
@@ -128,7 +124,7 @@ export default async function DashboardPage() {
 
       {isEmptyWorkspace ? <EmptyWorkspaceCard /> : null}
 
-      <FirstMoneyGuide steps={firstMoneySteps} />
+      <FirstMoneyGuide progress={activation} />
 
       <MetricStrip ariaLabel="Resumo da operação">
         <MetricTile
@@ -303,19 +299,15 @@ export default async function DashboardPage() {
 
 function EmptyWorkspaceCard() {
   return (
-    <section className="overflow-hidden rounded-lg border border-l-[3px] border-l-primary bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+    <section className="rounded-lg border bg-card px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
-          <div className="text-xs font-semibold uppercase text-primary">
-            Comece sem depender de suporte
-          </div>
-          <h2 className="mt-2 text-lg font-bold text-slate-950 sm:text-xl">
-            Monte o primeiro orçamento real ou explore um exemplo pronto.
+          <h2 className="text-sm font-semibold text-foreground">
+            Comece com um cliente real
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            O caminho recomendado é cadastrar um cliente e criar a proposta. Se
-            quiser entender o produto antes, carregue dados de exemplo e veja
-            orçamento, aprovação, obra, custos e cobranças funcionando juntos.
+          <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">
+            Cadastre quem receberá sua primeira proposta. O exemplo é opcional e
+            fica separado dos seus dados reais.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
@@ -394,15 +386,6 @@ function buildNextActions({
     icon: ReactNode;
   }> = [];
 
-  if (!paymentReady) {
-    actions.push({
-      href: "/app/configuracoes",
-      title: "Configurar recebimento",
-      detail: "Cadastre a chave Pix antes da primeira entrada.",
-      icon: <ShieldCheck className="h-4 w-4" />,
-    });
-  }
-
   if (customersCount === 0) {
     actions.push({
       href: "/app/clientes/novo",
@@ -429,6 +412,15 @@ function buildNextActions({
       title: "Transformar aprovado em obra",
       detail: approved.title,
       icon: <HardHat className="h-4 w-4" />,
+    });
+  }
+
+  if (!paymentReady && openProjects.length > 0) {
+    actions.push({
+      href: "/app/configuracoes",
+      title: "Configurar recebimento",
+      detail: "Prepare o Pix antes de gerar a primeira cobrança.",
+      icon: <ShieldCheck className="h-4 w-4" />,
     });
   }
 
@@ -462,211 +454,6 @@ function buildNextActions({
   }
 
   return actions.slice(0, 4);
-}
-
-function buildFirstMoneySteps({
-  company,
-  customersCount,
-  quotes,
-  projects,
-  charges,
-}: {
-  company: CompanyFull | null;
-  customersCount: number;
-  quotes: Array<{
-    id: string;
-    title: string;
-    status: string;
-    effective_status: string;
-    project_id: string | null;
-    sent_at: string | null;
-    viewed_at: string | null;
-    approved_at: string | null;
-  }>;
-  projects: Array<{ id: string }>;
-  charges: BillingChargeListItem[];
-}): FirstMoneyStep[] {
-  const firstQuote = quotes[0];
-  const firstDraft = quotes.find((quote) => quote.status === "draft");
-  const firstShared = quotes.find(
-    (quote) =>
-      quote.sent_at ||
-      quote.viewed_at ||
-      quote.approved_at ||
-      quote.effective_status === "sent" ||
-      quote.effective_status === "viewed" ||
-      quote.effective_status === "approved",
-  );
-  const firstApproved = quotes.find(
-    (quote) => quote.effective_status === "approved",
-  );
-  const firstProject =
-    (firstApproved?.project_id
-      ? projects.find((project) => project.id === firstApproved.project_id)
-      : null) ?? projects[0];
-  const entryCharge =
-    (firstProject
-      ? charges.find(
-          (charge) =>
-            charge.project_id === firstProject.id && charge.kind === "entrada",
-        )
-      : null) ?? charges.find((charge) => charge.kind === "entrada");
-  const entryPaid = entryCharge
-    ? PAID_CHARGE_STATUSES.has(entryCharge.status)
-    : false;
-  const entryChargeHref = firstProject
-    ? `/app/obras/${firstProject.id}`
-    : firstApproved
-      ? `/app/orcamentos/${firstApproved.id}`
-      : "/app/orcamentos";
-  const entryStep = buildEntryStep({
-    projectId: firstProject?.id ?? null,
-    charge: entryCharge ?? null,
-    fallbackHref: entryChargeHref,
-    paid: entryPaid,
-  });
-  const paymentReady = isCompanyPaymentReady(company);
-
-  return [
-    {
-      title: "Recebimento",
-      detail: paymentReady
-        ? "Pix pronto para cobrar."
-        : "Configure Pix primeiro.",
-      href: "/app/configuracoes",
-      action: paymentReady ? "Revisar recebimento" : "Configurar Pix",
-      done: paymentReady,
-    },
-    {
-      title: "Cliente",
-      detail: "Quem recebe a proposta.",
-      href: customersCount > 0 ? "/app/clientes" : "/app/clientes/novo",
-      action: "Cadastrar cliente",
-      done: customersCount > 0,
-    },
-    {
-      title: "Orçamento",
-      detail: "Itens, prazo e total.",
-      href: firstQuote ? `/app/orcamentos/${firstQuote.id}` : "/app/orcamentos/novo",
-      action: firstDraft
-        ? "Finalizar orçamento"
-        : firstQuote
-          ? "Abrir orçamento"
-          : "Criar orçamento",
-      done: quotes.length > 0,
-    },
-    {
-      title: "Link",
-      detail: "Envio pelo WhatsApp.",
-      href: firstShared
-        ? `/app/orcamentos/${firstShared.id}`
-        : firstQuote
-          ? `/app/orcamentos/${firstQuote.id}`
-          : "/app/orcamentos/novo",
-      action: "Enviar link ao cliente",
-      done: Boolean(firstShared),
-    },
-    {
-      title: "Aprovação",
-      detail: "Aceite registrado.",
-      href: firstApproved
-        ? `/app/orcamentos/${firstApproved.id}`
-        : firstShared
-          ? `/app/orcamentos/${firstShared.id}`
-          : "/app/orcamentos",
-      action: "Acompanhar aprovação",
-      done: Boolean(firstApproved),
-    },
-    {
-      title: "Obra",
-      detail: "Execução criada.",
-      href: firstProject
-        ? `/app/obras/${firstProject.id}`
-        : firstApproved
-          ? `/app/orcamentos/${firstApproved.id}`
-          : "/app/orcamentos",
-      action: firstProject ? "Abrir obra" : "Transformar em obra",
-      done: Boolean(firstProject),
-    },
-    {
-      title: "Entrada",
-      detail: entryStep.detail,
-      href: entryStep.href,
-      action: entryStep.action,
-      done: entryPaid,
-    },
-  ];
-}
-
-function isCompanyPaymentReady(company: CompanyFull | null): boolean {
-  if (!company) return false;
-  if (company.payment_provider === "asaas") return true;
-  return Boolean(
-    company.pix_key_type &&
-      company.pix_key?.trim() &&
-      company.pix_receiver_name?.trim() &&
-      company.pix_receiver_city?.trim(),
-  );
-}
-
-function buildEntryStep({
-  projectId,
-  charge,
-  fallbackHref,
-  paid,
-}: {
-  projectId: string | null;
-  charge: BillingChargeListItem | null;
-  fallbackHref: string;
-  paid: boolean;
-}) {
-  if (!projectId) {
-    return {
-      detail: "Primeiro transforme o aprovado em obra.",
-      href: fallbackHref,
-      action: "Transformar em obra",
-    };
-  }
-
-  const projectHref = `/app/obras/${projectId}`;
-
-  if (!charge || charge.status === "draft") {
-    return {
-      detail: "Gere o Pix e envie no WhatsApp.",
-      href: projectHref,
-      action: "Gerar Pix da entrada",
-    };
-  }
-
-  if (paid) {
-    return {
-      detail: "Pagamento confirmado no financeiro.",
-      href: "/app/financeiro",
-      action: "Ver financeiro",
-    };
-  }
-
-  if (charge.status === "overdue") {
-    return {
-      detail: "Entrada atrasada. Reenvie a cobrança.",
-      href: projectHref,
-      action: "Revisar cobrança",
-    };
-  }
-
-  if (charge.status === "cancelled") {
-    return {
-      detail: "Cobrança cancelada. Gere outra.",
-      href: projectHref,
-      action: "Gerar nova entrada",
-    };
-  }
-
-  return {
-    detail: "Pix gerado, aguardando confirmação.",
-    href: projectHref,
-    action: "Acompanhar cobrança",
-  };
 }
 
 function isSameBrazilMonth(value: string): boolean {
