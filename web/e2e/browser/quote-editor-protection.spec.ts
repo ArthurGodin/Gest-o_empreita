@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { completeCompanyOnboarding } from "../helpers/onboarding";
 
 test("quote editor protects explicit draft saving", async ({ page }, testInfo) => {
   test.skip(
@@ -154,12 +155,7 @@ async function createWorkspaceAndCustomer(
   await page.getByRole("button", { name: "Criar minha conta" }).click();
   await expect(page).toHaveURL(/\/onboarding/);
 
-  await page.getByLabel(/Nome da empresa/).fill("Prumo QA Editor Protegido");
-  await page.getByLabel("Telefone comercial").fill("11999990000");
-  await page.getByLabel("Cidade").fill("São Paulo");
-  await page.getByLabel("UF").fill("SP");
-  await page.getByRole("button", { name: "Entrar no painel" }).click();
-  await expect(page).toHaveURL(/\/app(?:\?|$)/);
+  await completeCompanyOnboarding(page, "Prumo QA Editor Protegido");
 
   await page.goto("/app/clientes/novo");
   await page.locator("#name").fill(customerName);

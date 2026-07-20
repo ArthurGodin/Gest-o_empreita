@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { completeCompanyOnboarding } from "../helpers/onboarding";
 
 test("app shell fits every reference viewport", async ({ page }, testInfo) => {
   test.skip(
@@ -20,12 +21,7 @@ test("app shell fits every reference viewport", async ({ page }, testInfo) => {
     await page.getByRole("button", { name: "Criar minha conta" }).click();
     await expect(page).toHaveURL(/\/onboarding/);
 
-    await page.getByLabel(/Nome da empresa/).fill("Prumo QA Responsivo");
-    await page.getByLabel("Telefone comercial").fill("11999990000");
-    await page.getByLabel("Cidade").fill("Sao Paulo");
-    await page.getByLabel("UF").fill("SP");
-    await page.getByRole("button", { name: "Entrar no painel" }).click();
-    await expect(page).toHaveURL(/\/app(?:\?|$)/);
+    await completeCompanyOnboarding(page, "Prumo QA Responsivo");
 
     await checkViewport(page, testInfo, {
       width: 375,

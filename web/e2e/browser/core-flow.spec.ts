@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
+import { completeCompanyOnboarding } from "../helpers/onboarding";
 
 test("owner completes the core journey and simulated checkout", async ({
   browser,
@@ -24,12 +25,7 @@ test("owner completes the core journey and simulated checkout", async ({
       await page.getByRole("button", { name: "Criar minha conta" }).click();
       await expect(page).toHaveURL(/\/onboarding/);
 
-      await page.getByLabel(/Nome da empresa/).fill(companyName);
-      await page.getByLabel("WhatsApp comercial").fill("11999990000");
-      await page.getByLabel("Cidade").fill("Sao Paulo");
-      await page.getByLabel("UF").fill("SP");
-      await page.getByRole("button", { name: "Entrar no painel" }).click();
-      await expect(page).toHaveURL(/\/app(?:\?|$)/);
+      await completeCompanyOnboarding(page, companyName);
       await expect(
         page.getByRole("heading", { name: "Caminho até a primeira venda" }),
       ).toBeVisible();

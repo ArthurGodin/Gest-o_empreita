@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { completeCompanyOnboarding } from "../helpers/onboarding";
 
 const ADMIN_EMAIL = "health-admin@prumo.test";
 const PASSWORD = "Prumo-E2E-Health-2026!";
@@ -58,12 +59,7 @@ async function createWorkspace(page: Page, email: string, companyName: string) {
   await page.getByRole("button", { name: "Criar minha conta" }).click();
   await expect(page).toHaveURL(/\/onboarding/);
 
-  await page.getByLabel(/Nome da empresa/).fill(companyName);
-  await page.getByLabel("Telefone comercial").fill("11999990000");
-  await page.getByLabel("Cidade").fill("Sao Paulo");
-  await page.getByLabel("UF").fill("SP");
-  await page.getByRole("button", { name: "Entrar no painel" }).click();
-  await expect(page).toHaveURL(/\/app(?:\?|$)/);
+  await completeCompanyOnboarding(page, companyName);
 }
 
 async function seedOperationalState() {

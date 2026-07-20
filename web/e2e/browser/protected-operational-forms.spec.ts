@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { completeCompanyOnboarding } from "../helpers/onboarding";
 
 test("operational forms protect and persist user input", async ({ page }, testInfo) => {
   test.skip(
@@ -165,12 +166,7 @@ async function createWorkspaceWithDemoProject(
   await page.getByRole("button", { name: "Criar minha conta" }).click();
   await expect(page).toHaveURL(/\/onboarding/);
 
-  await page.getByLabel(/Nome da empresa/).fill("Prumo QA Formulários Protegidos");
-  await page.getByLabel("Telefone comercial").fill("11999990000");
-  await page.getByLabel("Cidade").fill("São Paulo");
-  await page.getByLabel("UF").fill("SP");
-  await page.getByRole("button", { name: "Entrar no painel" }).click();
-  await expect(page).toHaveURL(/\/app(?:\?|$)/, { timeout: 30_000 });
+  await completeCompanyOnboarding(page, "Prumo QA Formulários Protegidos");
 
   await page.getByRole("button", { name: "Explorar com exemplo" }).click();
   await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/, {
