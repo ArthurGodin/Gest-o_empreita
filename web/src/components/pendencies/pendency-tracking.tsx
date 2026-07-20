@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, type ComponentProps } from "react";
+import { useEffect, useRef, type ComponentProps } from "react";
 import type {
   OperationalPendencyCategory,
   OperationalPendencyPriority,
@@ -18,7 +18,11 @@ export function PendencyCenterTracker({
   category: PendencyFilter;
   count: number;
 }) {
+  const tracked = useRef(false);
+
   useEffect(() => {
+    if (tracked.current) return;
+    tracked.current = true;
     trackProductEvent("pendency_center_opened", {
       category,
       count: Math.min(Math.max(count, 0), 100),
