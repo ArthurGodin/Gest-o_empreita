@@ -94,6 +94,31 @@ describe("POST /api/product-events", () => {
     expect(mocks.sendOperationalAlert).not.toHaveBeenCalled();
     expect(mocks.sendMetaConversionsEvent).not.toHaveBeenCalled();
   });
+
+  it("accepts help events without requiring or logging the search text", async () => {
+    const response = await POST(
+      productRequest({
+        name: "help_search_used",
+        path: "/ajuda",
+        properties: { has_results: true, result_count: 2 },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.logServerEvent).toHaveBeenCalledWith(
+      "product_event",
+      expect.objectContaining({
+        event: "help_search_used",
+        path: "/ajuda",
+        prop_has_results: true,
+        prop_result_count: 2,
+      }),
+    );
+    expect(mocks.logServerEvent.mock.calls[0]?.[1]).not.toHaveProperty(
+      "prop_query",
+    );
+    expect(mocks.sendOperationalAlert).not.toHaveBeenCalled();
+  });
 });
 
 function productRequest(body: Record<string, unknown>) {

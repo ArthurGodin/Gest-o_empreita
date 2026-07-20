@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { Mail } from "lucide-react";
+import { SupportContactLink } from "@/components/support-contact-link";
 import { Button } from "@/components/ui/button";
 import { trackProductEvent } from "@/lib/product-analytics";
 
@@ -59,6 +61,12 @@ export default function AppError({
             onClick={() => (window.location.href = "/app")}
           >
             Voltar ao início
+          </Button>
+          <Button asChild variant="ghost">
+            <SupportContactLink source="app_error">
+              <Mail aria-hidden="true" />
+              Pedir ajuda
+            </SupportContactLink>
           </Button>
         </div>
         {error.digest && (

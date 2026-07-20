@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { SupportContactLink } from "@/components/support-contact-link";
 
 export const metadata = {
   title: "Termos de Uso - Prumo",
@@ -114,8 +115,14 @@ export default function TermsPage() {
             </h2>
             <p className="mt-2">
               Dúvidas, solicitações de cancelamento relacionadas a direitos
-              legais e questões sobre estes termos devem ser enviadas pelo canal
-              de atendimento informado durante a contratação do Prumo.
+              legais e questões sobre estes termos podem ser enviadas pela{" "}
+              <SupportContactLink
+                source="terms"
+                className="font-semibold text-primary underline underline-offset-4"
+              >
+                central de atendimento do Prumo
+              </SupportContactLink>
+              . Consulte também a <Link href="/ajuda" className="font-semibold text-primary underline underline-offset-4">Central de Ajuda</Link>.
             </p>
           </section>
         </div>

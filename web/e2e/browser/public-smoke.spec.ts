@@ -5,6 +5,7 @@ const publicRoutes = [
   "/precos",
   "/login",
   "/signup",
+  "/ajuda",
   "/termos",
   "/privacidade",
 ];

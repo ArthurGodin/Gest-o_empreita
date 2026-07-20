@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { HardHat, Home, LayoutDashboard, LogIn, SearchX } from "lucide-react";
+import {
+  HardHat,
+  Home,
+  LayoutDashboard,
+  LifeBuoy,
+  LogIn,
+  SearchX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
@@ -79,6 +86,12 @@ export default function NotFound() {
                 <Link href="/app">
                   <LayoutDashboard className="h-4 w-4" />
                   Abrir painel
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="lg" className="h-12 px-5">
+                <Link href="/ajuda">
+                  <LifeBuoy aria-hidden="true" className="h-4 w-4" />
+                  Central de Ajuda
                 </Link>
               </Button>
             </div>

@@ -567,6 +567,9 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm font-semibold text-slate-400 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
           <div className="flex gap-6">
+            <Link href="/ajuda" className="transition-colors hover:text-[#059669]">
+              Ajuda
+            </Link>
             <Link href="/precos" className="transition-colors hover:text-[#059669]">
               Preços
             </Link>

@@ -39,6 +39,9 @@ test("app shell fits every reference viewport", async ({ page }, testInfo) => {
       page.getByRole("menuitem", { name: /Configura..es/ }),
     ).toBeVisible();
     await expect(
+      page.getByRole("menuitem", { name: "Ajuda e suporte" }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("menuitem", { name: "Sair da conta" }),
     ).toBeVisible();
     await page.keyboard.press("Escape");
@@ -68,6 +71,9 @@ test("app shell fits every reference viewport", async ({ page }, testInfo) => {
       screenshot: "app-1440x900",
     });
     await expect(page.locator("aside")).toBeVisible();
+    await expect(
+      page.locator("aside").getByRole("link", { name: "Ajuda e suporte" }),
+    ).toBeVisible();
     await expect(page.getByLabel("Abrir menu da conta")).toBeHidden();
   } finally {
     await cleanupAccount(email);

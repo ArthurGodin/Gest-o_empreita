@@ -77,6 +77,17 @@ export default function PricingPage() {
           volta ao Grátis imediatamente. O cancelamento comum não gera
           reembolso automático, sem prejuízo dos direitos previstos em lei.
         </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-500">
+          <Link href="/ajuda" className="hover:text-emerald-700 hover:underline">
+            Central de Ajuda
+          </Link>
+          <Link href="/termos" className="hover:text-emerald-700 hover:underline">
+            Termos
+          </Link>
+          <Link href="/privacidade" className="hover:text-emerald-700 hover:underline">
+            Privacidade
+          </Link>
+        </div>
       </section>
     </main>
   );

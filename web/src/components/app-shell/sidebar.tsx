@@ -7,6 +7,7 @@ import {
   FileText,
   HardHat,
   Home,
+  LifeBuoy,
   LogOut,
   Package,
   Settings,
@@ -103,6 +104,13 @@ export function Sidebar({ companyName }: { companyName: string }) {
         >
           <Settings aria-hidden="true" className="h-4 w-4" />
           Configurações
+        </Link>
+        <Link
+          href="/ajuda"
+          className="mt-1 flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+        >
+          <LifeBuoy aria-hidden="true" className="h-4 w-4" />
+          Ajuda e suporte
         </Link>
         <form action={signoutAction}>
           <button

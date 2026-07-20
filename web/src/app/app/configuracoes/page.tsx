@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, BarChart3, ChevronRight, ClipboardList } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  ChevronRight,
+  ClipboardList,
+  LifeBuoy,
+} from "lucide-react";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
@@ -32,6 +38,12 @@ export default async function SettingsPage() {
           Mais ajustes
         </h2>
         <div className="divide-y rounded-lg border bg-card">
+          <SettingsLink
+            href="/ajuda"
+            icon={LifeBuoy}
+            title="Ajuda e suporte"
+            description="Respostas rápidas e contato seguro com o Prumo"
+          />
           <SettingsLink
             href="/app/configuracoes/diagnostico"
             icon={BarChart3}

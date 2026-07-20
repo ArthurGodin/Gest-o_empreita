@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { SupportContactLink } from "@/components/support-contact-link";
 
 export const metadata = {
   title: "Política de Privacidade - Prumo",
@@ -96,7 +97,14 @@ export default function PrivacyPage() {
               conforme aplicável. A empresa que cadastrou os dados é a primeira
               responsável por avaliar solicitações dos seus próprios clientes e
               colaboradores. Solicitações relativas à conta Prumo podem ser
-              enviadas pelo canal informado durante a contratação.
+              enviadas pela{" "}
+              <SupportContactLink
+                source="privacy"
+                className="font-semibold text-primary underline underline-offset-4"
+              >
+                central de atendimento do Prumo
+              </SupportContactLink>
+              . Para orientações de uso, consulte a <Link href="/ajuda" className="font-semibold text-primary underline underline-offset-4">Central de Ajuda</Link>.
             </p>
           </section>
 

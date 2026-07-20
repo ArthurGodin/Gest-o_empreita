@@ -7,6 +7,7 @@ import {
   Building2,
   CreditCard,
   HardHat,
+  LifeBuoy,
   LogOut,
   Menu as MenuIcon,
   Package,
@@ -92,6 +93,12 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
                 <Link href="/app/configuracoes" className={itemClassName}>
                   <Settings aria-hidden="true" className="h-4 w-4" />
                   Configurações
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item asChild>
+                <Link href="/ajuda" className={itemClassName}>
+                  <LifeBuoy aria-hidden="true" className="h-4 w-4" />
+                  Ajuda e suporte
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="my-1 h-px bg-slate-200" />

@@ -19,6 +19,17 @@ export default function AuthLayout({
           Prumo
         </Link>
         {children}
+        <footer className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-muted-foreground">
+          <Link href="/ajuda" className="hover:text-foreground hover:underline">
+            Ajuda
+          </Link>
+          <Link href="/termos" className="hover:text-foreground hover:underline">
+            Termos
+          </Link>
+          <Link href="/privacidade" className="hover:text-foreground hover:underline">
+            Privacidade
+          </Link>
+        </footer>
       </div>
     </main>
   );

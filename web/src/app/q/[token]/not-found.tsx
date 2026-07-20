@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   HardHat,
   LayoutDashboard,
+  LifeBuoy,
   MessageCircle,
   ShieldCheck,
 } from "lucide-react";
@@ -64,6 +65,12 @@ export default function PublicQuoteNotFound() {
                 <Link href="/">
                   <ArrowLeft aria-hidden="true" />
                   Voltar ao início
+                </Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link href="/ajuda?topico=link-de-orcamento-invalido">
+                  <LifeBuoy aria-hidden="true" />
+                  Entender o problema
                 </Link>
               </Button>
             </div>
