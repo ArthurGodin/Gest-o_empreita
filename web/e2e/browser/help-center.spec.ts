@@ -3,6 +3,12 @@ import { expect, test } from "@playwright/test";
 test("help center resolves common questions without leaking search text", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "sendBeacon", {
+      configurable: true,
+      value: undefined,
+    });
+  });
   const analyticsPayloads: Array<Record<string, unknown>> = [];
   page.on("request", (request) => {
     if (!request.url().includes("/api/product-events")) return;
@@ -43,7 +49,7 @@ test("help center resolves common questions without leaking search text", async 
   expect(supportHref).toMatch(/^mailto:arthurgodinho155@gmail\.com\?/);
   expect(decodeURIComponent(supportHref ?? "")).not.toContain(privateSearch);
 
-  await page.getByRole("button", { name: "Limpar busca" }).click();
+  await page.getByRole("button", { name: "Limpar busca" }).last().click();
   await page.getByRole("button", { name: "Cobranças" }).click();
   await expect(
     page.getByText("Qual a diferença entre Pix manual e Asaas?"),

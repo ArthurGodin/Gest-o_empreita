@@ -118,11 +118,18 @@ export default function TermsPage() {
               legais e questões sobre estes termos podem ser enviadas pela{" "}
               <SupportContactLink
                 source="terms"
-                className="font-semibold text-primary underline underline-offset-4"
+                className="font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 central de atendimento do Prumo
               </SupportContactLink>
-              . Consulte também a <Link href="/ajuda" className="font-semibold text-primary underline underline-offset-4">Central de Ajuda</Link>.
+              . Consulte também a{" "}
+              <Link
+                href="/ajuda"
+                className="font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Central de Ajuda
+              </Link>
+              .
             </p>
           </section>
         </div>

@@ -104,10 +104,11 @@ export function HelpCenter({ initialTopicId }: { initialTopicId: string | null }
               />
               <Input
                 id="help-search"
+                name="help-search"
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Ex.: Pix, orçamento, SINAPI ou cancelar"
+                placeholder="Ex.: Pix, orçamento, SINAPI ou cancelar…"
                 className="pl-9 pr-10"
                 autoComplete="off"
               />
@@ -157,7 +158,7 @@ export function HelpCenter({ initialTopicId }: { initialTopicId: string | null }
                   id={topic.id}
                   key={topic.id}
                   open={openTopicIds.has(topic.id)}
-                  className="group border-b last:border-b-0"
+                  className="group scroll-mt-20 border-b last:border-b-0"
                   onToggle={(event) => {
                     const isOpen = event.currentTarget.open;
                     setOpenTopicIds((current) => {

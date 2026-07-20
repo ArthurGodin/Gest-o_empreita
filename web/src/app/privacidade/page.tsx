@@ -100,11 +100,18 @@ export default function PrivacyPage() {
               enviadas pela{" "}
               <SupportContactLink
                 source="privacy"
-                className="font-semibold text-primary underline underline-offset-4"
+                className="font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 central de atendimento do Prumo
               </SupportContactLink>
-              . Para orientações de uso, consulte a <Link href="/ajuda" className="font-semibold text-primary underline underline-offset-4">Central de Ajuda</Link>.
+              . Para orientações de uso, consulte a{" "}
+              <Link
+                href="/ajuda"
+                className="font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Central de Ajuda
+              </Link>
+              .
             </p>
           </section>
 
