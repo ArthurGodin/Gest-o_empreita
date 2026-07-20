@@ -1,14 +1,9 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import {
-  ArrowRight,
   CheckCircle2,
-  Clock3,
-  FileText,
   HardHat,
   Plus,
   Send,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 import {
@@ -24,6 +19,7 @@ import {
 } from "@/components/app-shell/metric-strip";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
+import { PendencySummary } from "@/components/pendencies/pendency-summary";
 import { FirstMoneyGuide } from "./first-money-guide";
 import { SampleDataButton } from "./sample-data-button";
 import { getBillingCharges } from "@/lib/queries/billing-charges";
@@ -31,11 +27,9 @@ import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
-import {
-  buildActivationProgress,
-  isCompanyPaymentReady,
-} from "@/lib/activation/activation-core";
+import { buildActivationProgress } from "@/lib/activation/activation-core";
 import { todayBR } from "@/lib/dates";
+import { buildOperationalPendencies } from "@/lib/operational-pendencies-core";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { STATUS_LABEL } from "@/lib/quote-status";
 import type { ProjectStatus } from "@/lib/supabase/types";
@@ -61,17 +55,11 @@ export default async function DashboardPage() {
     getBillingCharges(),
     getActiveCompanyFull(),
   ]);
-  const paymentReady = isCompanyPaymentReady(company);
-
   const today = todayBR();
   const pendingQuotes = quotes.filter(
     (quote) =>
       quote.effective_status === "sent" ||
       quote.effective_status === "viewed",
-  );
-  const draftQuotes = quotes.filter((quote) => quote.status === "draft");
-  const approvedWithoutProject = quotes.filter(
-    (quote) => quote.effective_status === "approved" && !quote.project_id,
   );
   const openProjects = projects.filter((project) =>
     OPEN_PROJECT_STATUSES.includes(project.status),
@@ -89,13 +77,11 @@ export default async function DashboardPage() {
     0,
   );
 
-  const nextActions = buildNextActions({
-    paymentReady,
-    customersCount: customers.length,
-    pendingQuotes,
-    draftQuotes,
-    approvedWithoutProject,
-    openProjects,
+  const pendencies = buildOperationalPendencies({
+    today,
+    quotes,
+    projects,
+    charges,
   });
   const activation = buildActivationProgress({
     company,
@@ -167,38 +153,7 @@ export default async function DashboardPage() {
       </MetricStrip>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <Card className="min-w-0">
-          <CardHeader className="border-b py-3.5">
-            <CardTitle className="text-base">Próximas ações</CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y p-0">
-            {nextActions.map((action) => (
-              <Link
-                key={action.href + action.title}
-                href={action.href}
-                className="group flex min-h-16 items-center justify-between px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-                  >
-                    {action.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium leading-5">
-                      {action.title}
-                    </span>
-                    <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                      {action.detail}
-                    </span>
-                  </span>
-                </span>
-                <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
+        <PendencySummary pendencies={pendencies} />
 
         <Card className="min-w-0">
           <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
@@ -362,98 +317,6 @@ function StatusPill({ label }: { label: string }) {
       {label}
     </span>
   );
-}
-
-function buildNextActions({
-  paymentReady,
-  customersCount,
-  pendingQuotes,
-  draftQuotes,
-  approvedWithoutProject,
-  openProjects,
-}: {
-  paymentReady: boolean;
-  customersCount: number;
-  pendingQuotes: Array<{ id: string; title: string }>;
-  draftQuotes: Array<{ id: string; title: string }>;
-  approvedWithoutProject: Array<{ id: string; title: string }>;
-  openProjects: Array<{ id: string; name: string }>;
-}) {
-  const actions: Array<{
-    href: string;
-    title: string;
-    detail: string;
-    icon: ReactNode;
-  }> = [];
-
-  if (customersCount === 0) {
-    actions.push({
-      href: "/app/clientes/novo",
-      title: "Cadastrar primeiro cliente",
-      detail: "Tenha nome e WhatsApp prontos para enviar a proposta.",
-      icon: <Users className="h-4 w-4" />,
-    });
-  }
-
-  const pending = pendingQuotes[0];
-  if (pending) {
-    actions.push({
-      href: `/app/orcamentos/${pending.id}`,
-      title: "Acompanhar orçamento enviado",
-      detail: pending.title,
-      icon: <Clock3 className="h-4 w-4" />,
-    });
-  }
-
-  const approved = approvedWithoutProject[0];
-  if (approved) {
-    actions.push({
-      href: `/app/orcamentos/${approved.id}`,
-      title: "Transformar aprovado em obra",
-      detail: approved.title,
-      icon: <HardHat className="h-4 w-4" />,
-    });
-  }
-
-  if (!paymentReady && openProjects.length > 0) {
-    actions.push({
-      href: "/app/configuracoes",
-      title: "Configurar recebimento",
-      detail: "Prepare o Pix antes de gerar a primeira cobrança.",
-      icon: <ShieldCheck className="h-4 w-4" />,
-    });
-  }
-
-  const draft = draftQuotes[0];
-  if (draft) {
-    actions.push({
-      href: `/app/orcamentos/${draft.id}`,
-      title: "Finalizar rascunho",
-      detail: draft.title,
-      icon: <FileText className="h-4 w-4" />,
-    });
-  }
-
-  const openProject = openProjects[0];
-  if (openProject) {
-    actions.push({
-      href: `/app/obras/${openProject.id}`,
-      title: "Atualizar obra em andamento",
-      detail: openProject.name,
-      icon: <HardHat className="h-4 w-4" />,
-    });
-  }
-
-  if (actions.length === 0) {
-    actions.push({
-      href: "/app/orcamentos/novo",
-      title: "Criar primeiro orçamento",
-      detail: "Comece pelo que o cliente precisa aprovar.",
-      icon: <Plus className="h-4 w-4" />,
-    });
-  }
-
-  return actions.slice(0, 4);
 }
 
 function isSameBrazilMonth(value: string): boolean {
