@@ -6,6 +6,7 @@ import { buildQuoteViewedEmail } from "@/lib/email/templates";
 import { env } from "@/lib/env";
 import { PublicToggle } from "./public-toggle";
 import type { PublicProjectView } from "./andamento-view";
+import type { PublicQuoteViewData } from "./public-quote-view";
 import type { ProjectStatus, QuoteStatus, StageStatus } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -135,7 +136,6 @@ async function loadPublicProjectView(
   if (!projectRes.data) return null;
 
   const p = projectRes.data as unknown as {
-    id: string;
     name: string;
     status: ProjectStatus;
     starts_on: string | null;
@@ -146,7 +146,6 @@ async function loadPublicProjectView(
   };
 
   return {
-    id: p.id,
     name: p.name,
     status: p.status,
     starts_on: p.starts_on,
@@ -155,22 +154,34 @@ async function loadPublicProjectView(
     progress_pct: p.progress_pct,
     last_diary_at: p.last_diary_at,
     delivery_approved_at: p.delivery_approved_at,
-    charges: (chargesRes.data ?? []) as PublicProjectView["charges"],
-    stages: (stagesRes.data ?? []) as Array<{
-      id: string;
-      position: number;
-      name: string;
-      status: StageStatus;
-      est_days: number | null;
-      started_on: string | null;
-      completed_on: string | null;
-    }>,
-    diary: (diaryRes.data ?? []) as unknown as Array<{
-      id: string;
-      body: string;
-      created_at: string;
-      photos: Array<{ id: string; position: number }>;
-    }>,
+    charges: (chargesRes.data ?? []).map((charge) => ({
+      kind: charge.kind,
+      status: charge.status,
+      amount_cents: charge.amount_cents,
+      payment_provider: charge.payment_provider,
+      pix_qr_code: charge.pix_qr_code,
+      pix_qr_image_b64: charge.pix_qr_image_b64,
+      invoice_url: charge.invoice_url,
+      due_date: charge.due_date,
+      paid_at: charge.paid_at,
+      released_at: charge.released_at,
+    })) as PublicProjectView["charges"],
+    stages: (stagesRes.data ?? []).map((stage) => ({
+      position: stage.position,
+      name: stage.name,
+      status: stage.status as StageStatus,
+      est_days: stage.est_days,
+      started_on: stage.started_on,
+      completed_on: stage.completed_on,
+    })),
+    diary: (diaryRes.data ?? []).map((entry) => ({
+      body: entry.body,
+      created_at: entry.created_at,
+      photos: (entry.photos ?? []).map((photo) => ({
+        id: photo.id,
+        position: photo.position,
+      })),
+    })),
     diary_total: diaryCountRes.count ?? 0,
   };
 }
@@ -254,11 +265,54 @@ export default async function PublicQuotePage({
 
   return (
     <PublicToggle
-      quote={quote}
+      quote={toPublicQuoteViewData(quote)}
       status={status}
       project={project}
       shareToken={quote.share_token}
       nowMs={new Date().getTime()}
     />
   );
+}
+
+function toPublicQuoteViewData(quote: PublicQuoteData): PublicQuoteViewData {
+  return {
+    number: quote.number,
+    title: quote.title,
+    description: quote.description,
+    valid_until: quote.valid_until,
+    approved_at: quote.approved_at,
+    rejected_at: quote.rejected_at,
+    notes: quote.notes,
+    total_cents: quote.total_cents,
+    company: {
+      name: quote.company.name,
+      phone: quote.company.phone,
+      logo_url: quote.company.logo_url,
+      city: quote.company.city,
+      state: quote.company.state,
+      pix_instructions: quote.company.pix_instructions,
+      plan: quote.company.plan,
+    },
+    customer: quote.customer
+      ? {
+          name: quote.customer.name,
+          city: quote.customer.city,
+          state: quote.customer.state,
+        }
+      : null,
+    items: quote.items.map((item) => ({
+      position: item.position,
+      description: item.description,
+      unit: item.unit,
+      quantity: item.quantity,
+      unit_price_cents: item.unit_price_cents,
+      total_cents: item.total_cents,
+    })),
+    approvals: quote.approvals.map((approval) => ({
+      action: approval.action,
+      signer_name: approval.signer_name,
+      rejection_reason: approval.rejection_reason,
+      created_at: approval.created_at,
+    })),
+  };
 }

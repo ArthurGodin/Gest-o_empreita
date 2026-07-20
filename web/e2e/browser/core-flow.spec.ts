@@ -44,6 +44,8 @@ test("owner completes the core journey and simulated checkout", async ({
 
     let quoteUrl = "";
     let shareUrl = "";
+    let quoteId = "";
+    let companyId = "";
     await test.step("create, price and send a quote", async () => {
       await page.goto("/app/orcamentos/novo");
       await page.locator("#customer").selectOption({ label: customerName });
@@ -51,6 +53,7 @@ test("owner completes the core journey and simulated checkout", async ({
       await page.getByRole("button", { name: /Criar or.amento/ }).click();
       await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/);
       quoteUrl = page.url();
+      quoteId = new URL(quoteUrl).pathname.split("/").at(-1) ?? "";
 
       await page.locator('input[id^="description-"]').fill("Servico de reforma");
       await page.locator('input[id^="qty-"]').fill("2");
@@ -71,6 +74,15 @@ test("owner completes the core journey and simulated checkout", async ({
       const linkInput = dialog.locator('input[readonly][value*="/q/"]');
       shareUrl = await linkInput.inputValue();
       expect(shareUrl).toMatch(/\/q\/[A-Za-z0-9_-]{32,}/);
+
+      const admin = adminClient();
+      const { data: quoteRecord, error: quoteRecordError } = await admin
+        .from("quotes")
+        .select("company_id")
+        .eq("id", quoteId)
+        .single();
+      expect(quoteRecordError).toBeNull();
+      companyId = quoteRecord?.company_id ?? "";
     });
 
     await test.step("customer approves from the public link", async () => {
@@ -80,6 +92,11 @@ test("owner completes the core journey and simulated checkout", async ({
         const publicErrors = collectBrowserErrors(publicPage);
 
         await publicPage.goto(shareUrl);
+        const publicHtml = await publicPage.content();
+        expect(publicHtml).not.toContain(quoteId);
+        expect(publicHtml).not.toContain(companyId);
+        expect(publicHtml).not.toContain("company_id");
+        expect(publicHtml).not.toContain("project_id");
         await publicPage
           .getByLabel("Seu nome completo")
           .fill("Cliente Aprovador QA");
@@ -158,11 +175,7 @@ function collectBrowserErrors(page: Page) {
 }
 
 async function cleanupAccount(email: string) {
-  const admin = createClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const admin = adminClient();
   const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   const user = data.users.find((candidate) => candidate.email === email);
   if (!user) return;
@@ -175,6 +188,14 @@ async function cleanupAccount(email: string) {
     await admin.from("companies").delete().eq("id", membership.company_id);
   }
   await admin.auth.admin.deleteUser(user.id);
+}
+
+function adminClient() {
+  return createClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
 }
 
 function requiredEnv(name: string) {

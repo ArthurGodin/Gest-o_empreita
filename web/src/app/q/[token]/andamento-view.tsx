@@ -12,7 +12,6 @@ import type {
 } from "@/lib/supabase/types";
 
 export interface PublicBillingCharge {
-  id: string;
   kind: ChargeKind;
   status: ChargeStatus;
   amount_cents: number;
@@ -26,7 +25,6 @@ export interface PublicBillingCharge {
 }
 
 export interface PublicProjectView {
-  id: string;
   name: string;
   status: ProjectStatus;
   starts_on: string | null;
@@ -37,7 +35,6 @@ export interface PublicProjectView {
   delivery_approved_at: string | null;
   charges: PublicBillingCharge[];
   stages: Array<{
-    id: string;
     position: number;
     name: string;
     status: StageStatus;
@@ -46,7 +43,6 @@ export interface PublicProjectView {
     completed_on: string | null;
   }>;
   diary: Array<{
-    id: string;
     body: string;
     created_at: string;
     photos: Array<{ id: string; position: number }>;
@@ -193,7 +189,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                 : "";
               return (
                 <li
-                  key={stage.id}
+                  key={`${stage.position}-${stage.name}`}
                   className={`flex items-center gap-3 border-b py-2.5 last:border-0 ${rowClass}`}
                 >
                   <span
@@ -241,7 +237,10 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
           </h3>
           <div className="divide-y">
             {view.diary.map((entry, ei) => (
-              <article key={entry.id} className="py-3 first:pt-0">
+              <article
+                key={`${entry.created_at}-${ei}`}
+                className="py-3 first:pt-0"
+              >
                 <div className="mb-2 text-xs text-muted-foreground">
                   {formatDateBR(entry.created_at)}
                 </div>

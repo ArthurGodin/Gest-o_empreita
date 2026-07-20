@@ -1,8 +1,10 @@
 # Backup e restauracao do Prumo
 
-Este runbook cobre banco, Auth e arquivos do Supabase Storage. Ele nao executa
-backup automaticamente e nunca deve ser usado com o projeto de producao como
-destino de um teste de restauracao.
+Este runbook cobre as tabelas do produto e os arquivos do Supabase Storage. O
+`supabase db dump` exclui schemas gerenciados, incluindo `auth` e `storage`.
+Contas e credenciais de Auth dependem do backup gerenciado do Supabase ou do
+fluxo oficial de migracao da plataforma; o pacote logico nao deve prometer essa
+cobertura. O runbook nunca usa producao como destino de teste.
 
 ## Objetivos iniciais
 
@@ -48,12 +50,17 @@ $env:PRUMO_BACKUP_AGE_RECIPIENT = "age1..."
 O script:
 
 - recusa destinos dentro do repositorio;
-- exporta roles, schema, dados, Auth e metadados;
+- exporta roles, schema e dados das tabelas do produto;
 - baixa os arquivos dos buckets do Storage;
 - cria um pacote cifrado `.zip.age`;
 - grava um checksum `.sha256`;
 - apaga os arquivos temporarios em texto puro ao terminar;
 - nao aceita senha de banco nem chave privada por argumento.
+
+O pacote registra explicitamente `managed-auth-schema` como excluido. Para uma
+recuperacao do mesmo projeto, confirme tambem o backup gerenciado em
+`Database > Backups`. Para migracao entre projetos, siga o procedimento oficial
+do Supabase para Auth e espere que alguns usuarios precisem redefinir senha.
 
 Agende a execucao diaria em uma maquina controlada e ligada, usando o Agendador
 de Tarefas do Windows. Nao use GitHub Actions para transportar este backup.
@@ -72,6 +79,15 @@ Get-FileHash "E:\PrumoBackups\prumo-supabase-AAAAMMDDTHHMMSSZ.zip.age" -Algorith
    repositorio e confirme que o ZIP abre e contem `roles.sql`, `schema.sql`,
    `data.sql`, `manifest.json` e a pasta `storage`.
 4. Apague a copia descriptografada logo apos a verificacao.
+
+O verificador automatizado confere checksum sem a chave privada. Para tambem
+inspecionar o conteudo, a identidade e informada somente por variavel:
+
+```powershell
+npm --prefix web run backup:verify -- --archive "E:\PrumoBackups\prumo-supabase-AAAAMMDDTHHMMSSZ.zip.age"
+$env:PRUMO_BACKUP_AGE_IDENTITY = "E:\Chaves\prumo-age-key.txt"
+npm --prefix web run backup:verify -- --archive "E:\PrumoBackups\prumo-supabase-AAAAMMDDTHHMMSSZ.zip.age"
+```
 
 ## Ensaio mensal de restauracao
 
@@ -122,6 +138,15 @@ de acesso antes do upload.
    cobrancas, um PDF e uma foto do diario. Confirme que RLS continua ativa.
 6. Registre data, duracao, resultado, falhas e responsavel, sem incluir PII.
 7. Destrua o projeto de ensaio e apague todo material descriptografado.
+
+Para um bundle ja descriptografado, o harness abaixo aceita banco local por
+padrao e recusa producao. Um destino remoto exige confirmacao e o ref de
+producao para comparacao:
+
+```powershell
+$env:PRUMO_RESTORE_DB_URL = "postgresql://postgres:postgres@127.0.0.1:54322/restore"
+.\ops\test-restore-supabase.ps1 -BundleDirectory "E:\PrumoRestore\conteudo"
+```
 
 ## Resposta a incidente
 

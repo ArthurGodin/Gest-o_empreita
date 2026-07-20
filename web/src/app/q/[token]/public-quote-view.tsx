@@ -22,12 +22,10 @@ import { shouldShowPrumoBrand } from "@/lib/plans";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import { ApprovalForm } from "./approval-form";
 
-interface PublicQuoteData {
-  id: string;
+export interface PublicQuoteViewData {
   number: string;
   title: string;
   description: string | null;
-  share_token: string;
   valid_until: string | null;
   approved_at: string | null;
   rejected_at: string | null;
@@ -36,10 +34,10 @@ interface PublicQuoteData {
   company: {
     name: string;
     phone: string | null;
-    email: string | null;
     logo_url: string | null;
     city: string | null;
     state: string | null;
+    pix_instructions: string | null;
     plan: string | null;
   };
   customer: {
@@ -48,7 +46,7 @@ interface PublicQuoteData {
     state: string | null;
   } | null;
   items: Array<{
-    id: string;
+    position: number;
     description: string;
     unit: string;
     quantity: number;
@@ -66,10 +64,12 @@ interface PublicQuoteData {
 export function PublicQuoteView({
   quote,
   status,
+  shareToken,
   nowMs,
 }: {
-  quote: PublicQuoteData;
+  quote: PublicQuoteViewData;
   status: EffectiveQuoteStatus;
+  shareToken: string;
   nowMs: number;
 }) {
   const daysUntilExpiry = quote.valid_until
@@ -217,7 +217,7 @@ export function PublicQuoteView({
           <aside className="space-y-4 lg:sticky lg:top-6 lg:order-2">
             {isDecidable && (
               <ApprovalForm
-                token={quote.share_token}
+                token={shareToken}
                 companyName={quote.company.name}
                 contactUrl={contactUrl}
               />
@@ -241,7 +241,7 @@ export function PublicQuoteView({
                 {status !== "expired" && (
                   <Button asChild variant="outline" className="h-12 w-full rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700 font-bold shadow-sm transition-all">
                     <TrackedAnchor
-                      href={`/q/${quote.share_token}/pdf`}
+                      href={`/q/${shareToken}/pdf`}
                       target="_blank"
                       rel="noopener noreferrer"
                       analyticsEvent="quote_pdf_clicked"
@@ -357,7 +357,7 @@ export function PublicQuoteView({
               <ul className="divide-y divide-slate-100">
                 {quote.items.map((item) => (
                   <li
-                    key={item.id}
+                    key={`${item.position}-${item.description}`}
                     className="flex items-start gap-4 py-4 sm:items-center group"
                   >
                     <div className="min-w-0 flex-1">

@@ -154,7 +154,7 @@ export function PublicBillingView({
         <div className="grid gap-3 md:grid-cols-2">
           {ordered.map((charge) => (
             <PublicChargeCard
-              key={charge.id}
+              key={charge.kind}
               charge={charge}
               deliveryApprovedAt={deliveryApprovedAt}
             />

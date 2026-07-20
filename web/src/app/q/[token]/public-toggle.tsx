@@ -3,15 +3,17 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ClipboardList, FileText, WalletCards } from "lucide-react";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
-import { PublicQuoteView } from "./public-quote-view";
+import {
+  PublicQuoteView,
+  type PublicQuoteViewData,
+} from "./public-quote-view";
 import { AndamentoView, type PublicProjectView } from "./andamento-view";
 import { PublicBillingView } from "./public-billing-view";
 
 type PublicView = "orcamento" | "andamento" | "cobranca";
 
 interface PublicToggleProps {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  quote: any;
+  quote: PublicQuoteViewData;
   status: EffectiveQuoteStatus;
   project: PublicProjectView | null;
   shareToken: string;
@@ -74,7 +76,14 @@ export function PublicToggle({
   }
 
   if (!hasProject) {
-    return <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />;
+    return (
+      <PublicQuoteView
+        quote={quote}
+        status={status}
+        shareToken={shareToken}
+        nowMs={nowMs}
+      />
+    );
   }
 
   return (
@@ -125,7 +134,12 @@ export function PublicToggle({
             paymentInstructions={quote.company?.pix_instructions ?? null}
           />
         ) : (
-          <PublicQuoteView quote={quote} status={status} nowMs={nowMs} />
+          <PublicQuoteView
+            quote={quote}
+            status={status}
+            shareToken={shareToken}
+            nowMs={nowMs}
+          />
         )}
       </div>
     </div>

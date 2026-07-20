@@ -47,6 +47,7 @@ function Invoke-Supabase {
 
 try {
   New-Item -ItemType Directory -Path $storageDirectory -Force | Out-Null
+  New-Item -ItemType File -Path (Join-Path $storageDirectory ".empty") -Force | Out-Null
 
   Invoke-Supabase db dump --linked --role-only --file (Join-Path $bundleDirectory "roles.sql")
   Invoke-Supabase db dump --linked --file (Join-Path $bundleDirectory "schema.sql")
@@ -83,8 +84,9 @@ try {
 
   @{
     created_at_utc = (Get-Date).ToUniversalTime().ToString("o")
-    format = "prumo-supabase-logical-v1"
-    includes = @("roles", "schema", "database-data", "storage-objects")
+    format = "prumo-supabase-logical-v2"
+    includes = @("roles", "schema", "public-database", "storage-objects")
+    excludes = @("managed-auth-schema")
     encrypted_with = "age"
   } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $bundleDirectory "manifest.json") -Encoding utf8
 

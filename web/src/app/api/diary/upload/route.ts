@@ -4,13 +4,25 @@ import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { resizePhoto, sniffImageMime } from "@/lib/photos/resize";
 import { uploadDiaryPhoto } from "@/lib/supabase/storage";
 import { logServerError } from "@/lib/log";
+import {
+  validateDiaryPhotoMetadata,
+  validateDiaryUploadContentLength,
+} from "@/lib/uploads/diary-upload-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_RAW_BYTES = 10 * 1024 * 1024; // 10 MB raw input
-
 export async function POST(request: Request) {
+  const requestViolation = validateDiaryUploadContentLength(
+    request.headers.get("content-length"),
+  );
+  if (requestViolation) {
+    return NextResponse.json(
+      { error: requestViolation.message, code: requestViolation.code },
+      { status: requestViolation.status },
+    );
+  }
+
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Sessão expirada." }, { status: 401 });
@@ -46,16 +58,14 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Arquivo ausente." }, { status: 400 });
   }
-  if (file.size === 0) {
+  const fileViolation = validateDiaryPhotoMetadata({
+    size: file.size,
+    declaredMime: file.type,
+  });
+  if (fileViolation) {
     return NextResponse.json(
-      { error: "Arquivo vazio." },
-      { status: 400 },
-    );
-  }
-  if (file.size > MAX_RAW_BYTES) {
-    return NextResponse.json(
-      { error: "Foto muito grande (máx 10 MB)." },
-      { status: 413 },
+      { error: fileViolation.message, code: fileViolation.code },
+      { status: fileViolation.status },
     );
   }
 
