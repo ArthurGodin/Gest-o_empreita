@@ -47,6 +47,10 @@ export interface PublicProjectView {
   progress_pct: number | null;
   last_diary_at: string | null;
   delivery_approved_at: string | null;
+  delivery_acceptance: {
+    signer_name: string;
+    accepted_at: string;
+  } | null;
   charges: PublicBillingCharge[];
   stages: Array<{
     position: number;

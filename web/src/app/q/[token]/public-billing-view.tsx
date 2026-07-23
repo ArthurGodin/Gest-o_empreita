@@ -17,6 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, formatBRL, formatDateBR } from "@/lib/utils";
+import { trackProductEvent } from "@/lib/product-analytics";
+import {
+  isProfessionalSegment,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 import type { ProjectStatus } from "@/lib/supabase/types";
 import type { PublicBillingCharge } from "./andamento-view";
 import { approveDeliveryAction } from "./actions";
@@ -25,7 +30,13 @@ interface PublicBillingViewProps {
   charges: PublicBillingCharge[];
   projectStatus: ProjectStatus;
   deliveryApprovedAt: string | null;
+  deliveryAcceptance: {
+    signer_name: string;
+    accepted_at: string;
+  } | null;
+  hasPendingDeliverables: boolean;
   shareToken: string;
+  businessSegment: BusinessSegment;
   paymentInstructions?: string | null;
 }
 
@@ -35,9 +46,13 @@ export function PublicBillingView({
   charges,
   projectStatus,
   deliveryApprovedAt,
+  deliveryAcceptance,
+  hasPendingDeliverables,
   shareToken,
+  businessSegment,
   paymentInstructions,
 }: PublicBillingViewProps) {
+  const professional = isProfessionalSegment(businessSegment);
   const ordered = [...charges].sort((a, b) => {
     if (a.kind === b.kind) return 0;
     return a.kind === "entrada" ? -1 : 1;
@@ -46,6 +61,12 @@ export function PublicBillingView({
   const shouldApproveDelivery =
     projectStatus === "completed" &&
     !deliveryApprovedAt &&
+    !hasPendingDeliverables &&
+    saldo?.status === "draft";
+  const waitingForDeliverableReviews =
+    projectStatus === "completed" &&
+    !deliveryApprovedAt &&
+    hasPendingDeliverables &&
     saldo?.status === "draft";
   const totalCents = ordered.reduce(
     (sum, charge) => sum + charge.amount_cents,
@@ -69,6 +90,7 @@ export function PublicBillingView({
     deliveryApprovedAt,
     paidCents,
     pendingCents,
+    professional,
   });
 
   return (
@@ -80,7 +102,7 @@ export function PublicBillingView({
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold tracking-tight">
-              Pagamentos da obra
+              Pagamentos {professional ? "do projeto" : "da obra"}
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               Veja a entrada, o saldo e o próximo passo de pagamento sem
@@ -132,23 +154,67 @@ export function PublicBillingView({
           </div>
         </div>
 
+        {deliveryAcceptance ? (
+          <div className="mt-4 flex items-start gap-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-950">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+            <div>
+              <strong className="block">Aceite final registrado</strong>
+              <p className="mt-0.5 leading-5 text-emerald-900/80">
+                {deliveryAcceptance.signer_name} confirmou em{" "}
+                {formatDateBR(deliveryAcceptance.accepted_at)}.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         {paymentInstructions ? (
           <div className="mt-4 rounded-lg border bg-muted/20 px-4 py-3 text-sm leading-6">
-            <strong className="block text-foreground">
-              Mensagem da empreiteira
+              <strong className="block text-foreground">
+              Mensagem da equipe responsável
             </strong>
             <p className="mt-1 text-muted-foreground">{paymentInstructions}</p>
           </div>
         ) : null}
       </section>
 
+      {waitingForDeliverableReviews ? (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold">
+                Revise as entregas antes do aceite final
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-amber-900/85">
+                Existe uma versão atual que ainda não está
+                aprovada. O saldo continua protegido até todas as entregas
+                publicadas concluírem a revisão.
+              </p>
+              <Button
+                asChild
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-3 h-10 border-amber-300 bg-white/70 hover:bg-white"
+              >
+                <a href="?tab=entregas">Revisar entregas</a>
+              </Button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {shouldApproveDelivery ? (
-        <DeliveryApprovalForm shareToken={shareToken} />
+        <DeliveryApprovalForm
+          shareToken={shareToken}
+          professional={professional}
+        />
       ) : null}
 
       {ordered.length === 0 ? (
         <section className="rounded-lg border border-dashed bg-card p-4 text-sm leading-6 text-muted-foreground">
-          A empreiteira ainda não liberou nenhuma cobrança para esta obra.
+          A equipe ainda não liberou nenhuma cobrança para{" "}
+          {professional ? "este projeto" : "esta obra"}.
         </section>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -157,6 +223,7 @@ export function PublicBillingView({
               key={charge.kind}
               charge={charge}
               deliveryApprovedAt={deliveryApprovedAt}
+              professional={professional}
             />
           ))}
         </div>
@@ -174,7 +241,13 @@ function PublicMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
+function DeliveryApprovalForm({
+  shareToken,
+  professional,
+}: {
+  shareToken: string;
+  professional: boolean;
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -192,6 +265,7 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
         setError(result.error);
         return;
       }
+      trackProductEvent("project_delivery_accepted");
       setDone(true);
       router.refresh();
     });
@@ -203,7 +277,9 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
         <div className="flex-1 space-y-3">
           <div>
-            <h3 className="font-semibold">Confirme a entrega da obra</h3>
+            <h3 className="font-semibold">
+              Confirme a entrega {professional ? "do projeto" : "da obra"}
+            </h3>
             <p className="mt-1 text-sm opacity-90">
               Confirme somente se o combinado foi entregue. Depois disso, o
               saldo poderá ser liberado para pagamento via Pix.
@@ -240,9 +316,11 @@ function DeliveryApprovalForm({ shareToken }: { shareToken: string }) {
 function PublicChargeCard({
   charge,
   deliveryApprovedAt,
+  professional,
 }: {
   charge: PublicBillingCharge;
   deliveryApprovedAt: string | null;
+  professional: boolean;
 }) {
   const paid = PAID.has(charge.status);
   const title = charge.kind === "entrada" ? "Entrada" : "Saldo";
@@ -311,7 +389,7 @@ function PublicChargeCard({
                 Escaneie o QR Code ou copie o código para pagar no app do seu banco.
                 {charge.payment_provider === "asaas"
                   ? " Pagamento processado com segurança via Asaas."
-                  : " Envie o comprovante para a empreiteira registrar o recebimento."}
+                  : " Envie o comprovante para a equipe registrar o recebimento."}
               </p>
             </div>
             <CopyButton
@@ -357,7 +435,8 @@ function PublicChargeCard({
           {charge.payment_provider === "asaas" ? (
             <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-950">
               O pagamento abre em ambiente seguro do Asaas. Quando for
-              confirmado, o Prumo atualiza esta obra automaticamente.
+              confirmado, o Prumo atualiza{" "}
+              {professional ? "este projeto" : "esta obra"} automaticamente.
             </p>
           ) : null}
           <Button asChild className="h-11 w-full">
@@ -378,12 +457,14 @@ function publicNextStep({
   deliveryApprovedAt,
   paidCents,
   pendingCents,
+  professional,
 }: {
   ordered: PublicBillingCharge[];
   shouldApproveDelivery: boolean;
   deliveryApprovedAt: string | null;
   paidCents: number;
   pendingCents: number;
+  professional: boolean;
 }) {
   const overdue = ordered.find((charge) => charge.status === "overdue");
   const pending = ordered.find((charge) => charge.status === "pending");
@@ -394,7 +475,7 @@ function publicNextStep({
       icon: "clock" as const,
       title: "Cobrança ainda não liberada",
       description:
-        "A empreiteira libera a cobrança quando a próxima etapa financeira estiver pronta.",
+        "A equipe libera a cobrança quando a próxima etapa financeira estiver pronta.",
       tone: "border-border bg-muted/20 text-foreground",
     };
   }
@@ -403,8 +484,7 @@ function publicNextStep({
     return {
       icon: "paid" as const,
       title: "Pagamento completo",
-      description:
-        "As parcelas desta obra já aparecem como pagas. Guarde este link para acompanhar o andamento.",
+      description: `As parcelas ${professional ? "deste projeto" : "desta obra"} já aparecem como pagas. Guarde este link para acompanhar o andamento.`,
       tone: "border-green-200 bg-green-50 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100",
     };
   }
@@ -414,7 +494,7 @@ function publicNextStep({
       icon: "warning" as const,
       title: "Existe uma cobrança vencida",
       description:
-        "Regularize esta parcela antes de seguir. Se já pagou, envie o comprovante para a empreiteira.",
+        "Regularize esta parcela antes de seguir. Se já pagou, envie o comprovante para a equipe.",
       tone: "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-100",
     };
   }
@@ -423,8 +503,7 @@ function publicNextStep({
     return {
       icon: "paid" as const,
       title: "Confirme a entrega para liberar o saldo",
-      description:
-        "Se a obra foi entregue conforme combinado, confirme para permitir a emissão do Pix do saldo.",
+      description: `Se ${professional ? "o projeto" : "a obra"} foi entregue conforme combinado, confirme para permitir a emissão do Pix do saldo.`,
       tone: "border-green-200 bg-green-50 text-green-950 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-100",
     };
   }
@@ -435,7 +514,7 @@ function publicNextStep({
       title: `${pending.kind === "entrada" ? "Entrada" : "Saldo"} aguardando pagamento`,
       description:
         pending.payment_provider === "manual_pix"
-          ? "Pague pelo QR Code ou Pix copia-e-cola. Depois envie o comprovante para a empreiteira registrar o recebimento."
+          ? "Pague pelo QR Code ou Pix copia-e-cola. Depois envie o comprovante para a equipe registrar o recebimento."
           : "Use o botão de pagamento ou copie o Pix. A baixa aparece automaticamente quando o pagamento for confirmado.",
       tone: "border-blue-200 bg-emerald-50 text-blue-950 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100",
     };
@@ -446,7 +525,7 @@ function publicNextStep({
       icon: "clock" as const,
       title: "Saldo protegido até a entrega",
       description:
-        "O saldo final aparece para pagamento quando a entrega for confirmada ou liberada pela empreiteira.",
+        "O saldo final aparece para pagamento quando a entrega for confirmada ou liberada pela equipe.",
       tone: "border-border bg-muted/20 text-foreground",
     };
   }
@@ -468,23 +547,23 @@ function publicChargeInstruction(
     return "Pagamento confirmado. Nenhuma ação é necessária nesta parcela.";
   }
   if (charge.status === "overdue") {
-    return "Esta parcela venceu. Regularize pelo Pix disponível ou fale com a empreiteira se já tiver pago.";
+    return "Esta parcela venceu. Regularize pelo Pix disponível ou fale com a equipe se já tiver pago.";
   }
   if (charge.status === "pending") {
     return charge.payment_provider === "manual_pix"
-      ? "Escaneie o QR Code ou copie o Pix para o app do seu banco. Depois envie o comprovante para a empreiteira."
+      ? "Escaneie o QR Code ou copie o Pix para o app do seu banco. Depois envie o comprovante para a equipe."
       : "Pague pelo botão abaixo ou copie o Pix para o aplicativo do seu banco.";
   }
   if (charge.status === "cancelled") {
-    return "Esta cobrança foi cancelada pela empreiteira.";
+    return "Esta cobrança foi cancelada pela equipe.";
   }
   if (charge.kind === "saldo" && !deliveryApprovedAt) {
     return "Saldo final aguardando liberação. Ele aparece para pagamento quando a entrega for confirmada.";
   }
   if (charge.kind === "saldo") {
-    return "Saldo pronto para pagamento assim que o Pix for gerado pela empreiteira.";
+    return "Saldo pronto para pagamento assim que o Pix for gerado pela equipe.";
   }
-  return "Entrada aguardando emissão do Pix pela empreiteira.";
+  return "Entrada aguardando emissão do Pix pela equipe.";
 }
 
 function statusLabel(status: PublicBillingCharge["status"]) {

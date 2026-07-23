@@ -11,6 +11,7 @@ import {
   FileText,
   HardHat,
   LineChart,
+  PackageCheck,
   Palette,
   Ruler,
   ShieldCheck,
@@ -512,10 +513,11 @@ export default function LandingPage() {
             <p className="mt-4 text-base font-medium leading-7 text-slate-500 md:text-lg">O que você já consegue fazer no Prumo hoje.</p>
           </motion.div>
 
-          <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-4">
             {[
               { title: "Proposta rastreável", text: "Crie a proposta, gere o PDF, envie o link e acompanhe visualização, aprovação ou pedido de revisão." },
               { title: "Projeto ligado à venda", text: "Transforme o documento aprovado em projeto ou obra, mantendo cliente e valor vinculados." },
+              { title: "Entregas versionadas", text: "Publique arquivos ou links, receba aprovação ou ajustes e preserve o histórico de cada versão." },
               { title: "Financeiro por projeto", text: "Organize entrada, saldo, custos e margem estimada sem misturar trabalhos diferentes." },
             ].map((item, i) => (
               <motion.div
@@ -527,7 +529,7 @@ export default function LandingPage() {
                 className="rounded-xl border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
-                  {i === 0 ? <FileText className="h-5 w-5" /> : i === 1 ? <HardHat className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
+                  {i === 0 ? <FileText className="h-5 w-5" /> : i === 1 ? <HardHat className="h-5 w-5" /> : i === 2 ? <PackageCheck className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
                 </div>
                 <h3 className="font-bold text-slate-950">{item.title}</h3>
                 <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{item.text}</p>

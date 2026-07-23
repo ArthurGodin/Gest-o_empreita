@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
+import { PROJECT_DELIVERABLES_BUCKET } from "@/lib/deliverables";
 
 /**
  * Helpers para upload/download em Supabase Storage.
@@ -15,6 +16,7 @@ import { env } from "@/lib/env";
 export const BUCKET_COMPANY_LOGOS = "company-logos";
 export const BUCKET_QUOTES_PDF = "quotes-pdf";
 export const BUCKET_DIARY_PHOTOS = "diary-photos";
+export const BUCKET_PROJECT_DELIVERABLES = PROJECT_DELIVERABLES_BUCKET;
 
 // ─── Logos ─────────────────────────────────────────────────────────────────
 
@@ -155,6 +157,100 @@ export async function deleteDiaryPhotos(storagePaths: string[]): Promise<void> {
   await admin.storage.from(BUCKET_DIARY_PHOTOS).remove(storagePaths);
 }
 
+// ─── Entregáveis de projeto (bucket privado) ───────────────────────────────
+
+export async function createDeliverableSignedUpload(
+  storagePath: string,
+): Promise<
+  | { ok: true; path: string; token: string }
+  | { ok: false; error: string }
+> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from(BUCKET_PROJECT_DELIVERABLES)
+    .createSignedUploadUrl(storagePath, { upsert: false });
+
+  if (error || !data?.token) {
+    return {
+      ok: false,
+      error: error?.message ?? "Não foi possível autorizar o upload.",
+    };
+  }
+
+  return { ok: true, path: data.path, token: data.token };
+}
+
+export async function getDeliverableFileInfo(
+  storagePath: string,
+): Promise<
+  | { ok: true; sizeBytes: number; mimeType: string }
+  | { ok: false; error: string }
+> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from(BUCKET_PROJECT_DELIVERABLES)
+    .info(storagePath);
+
+  const mimeType = normalizeStorageMimeType(
+    data?.contentType ??
+      (typeof data?.metadata?.mimetype === "string"
+        ? data.metadata.mimetype
+        : null),
+  );
+
+  if (
+    error ||
+    !data ||
+    typeof data.size !== "number" ||
+    !Number.isSafeInteger(data.size) ||
+    !mimeType
+  ) {
+    return {
+      ok: false,
+      error: error?.message ?? "Arquivo enviado não encontrado.",
+    };
+  }
+
+  return { ok: true, sizeBytes: data.size, mimeType };
+}
+
+export async function createDeliverableSignedDownload(
+  storagePath: string,
+  ttlSeconds = 90,
+  downloadFileName?: string,
+): Promise<
+  | { ok: true; url: string }
+  | { ok: false; error: string }
+> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from(BUCKET_PROJECT_DELIVERABLES)
+    .createSignedUrl(storagePath, ttlSeconds, {
+      download: downloadFileName || false,
+    });
+
+  if (error || !data?.signedUrl) {
+    return {
+      ok: false,
+      error: error?.message ?? "Arquivo não encontrado.",
+    };
+  }
+
+  return { ok: true, url: data.signedUrl };
+}
+
+export async function deleteDeliverableFile(
+  storagePath: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.storage
+    .from(BUCKET_PROJECT_DELIVERABLES)
+    .remove([storagePath]);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function mimeToExt(mime: string): string | null {
@@ -169,4 +265,9 @@ function mimeToExt(mime: string): string | null {
     default:
       return null;
   }
+}
+
+function normalizeStorageMimeType(value: string | null | undefined) {
+  const normalized = value?.split(";", 1)[0]?.trim().toLowerCase();
+  return normalized || null;
 }

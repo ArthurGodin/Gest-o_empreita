@@ -216,6 +216,78 @@ export function buildQuoteViewedEmail(ctx: QuoteViewedContext) {
   return { subject, html, text };
 }
 
+export interface DeliverableReviewEmailContext {
+  customerName: string;
+  signerName: string;
+  deliverableTitle: string;
+  versionNumber: number;
+  action: "approved" | "changes_requested";
+  comment: string | null;
+  detailUrl: string;
+}
+
+export function buildDeliverableReviewEmail(
+  ctx: DeliverableReviewEmailContext,
+) {
+  const approved = ctx.action === "approved";
+  const actionLabel = approved ? "aprovou" : "pediu ajustes em";
+  const subject = safeSubject(
+    `${ctx.customerName} ${actionLabel} ${ctx.deliverableTitle}`,
+  );
+  const comment = ctx.comment?.trim() || null;
+
+  const text = [
+    `${ctx.signerName} ${actionLabel} a vers\u00e3o ${ctx.versionNumber} de "${ctx.deliverableTitle}".`,
+    comment ? `\nComent\u00e1rio: ${comment}` : "",
+    "",
+    approved
+      ? "A decis\u00e3o foi registrada no hist\u00f3rico da entrega."
+      : "Pr\u00f3ximo passo: revise o pedido e publique uma nova vers\u00e3o.",
+    "",
+    ctx.detailUrl,
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+      <div style="background: ${approved ? "#047857" : "#b45309"}; color: white; padding: 20px 24px; border-radius: 8px 8px 0 0;">
+        <h1 style="font-size: 19px; font-weight: 600; margin: 0;">
+          ${approved ? "Entrega aprovada" : "Cliente pediu ajustes"}
+        </h1>
+      </div>
+      <div style="background: white; padding: 24px; border: 1px solid #e5e7eb; border-top: 0; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0 0 16px;">
+          <strong>${escapeHtml(ctx.signerName)}</strong> ${actionLabel} a vers\u00e3o
+          ${ctx.versionNumber} de <strong>${escapeHtml(ctx.deliverableTitle)}</strong>.
+        </p>
+        ${
+          comment
+            ? `<div style="background: #f9fafb; padding: 14px; border-radius: 6px; margin: 16px 0;">
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">Coment\u00e1rio</div>
+                <div>${escapeHtml(comment)}</div>
+              </div>`
+            : ""
+        }
+        <p style="margin: 16px 0;">
+          ${
+            approved
+              ? "A decis\u00e3o j\u00e1 est\u00e1 registrada no hist\u00f3rico."
+              : "Revise o pedido e publique uma nova vers\u00e3o quando o ajuste estiver pronto."
+          }
+        </p>
+        <div style="text-align: center; margin: 22px 0 4px;">
+          <a href="${ctx.detailUrl}" style="display: inline-block; background: #047857; color: white; padding: 11px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+            Abrir entrega
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return { subject, html, text };
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

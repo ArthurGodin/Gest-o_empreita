@@ -93,6 +93,49 @@ describe("operational pendencies", () => {
     ]);
   });
 
+  it("detects deliverable adjustments, stale reviews, and interrupted uploads", () => {
+    const result = buildOperationalPendencies({
+      ...emptyInput(),
+      projects: [project()],
+      deliverables: [
+        deliverable({
+          id: "changes",
+          current_published_at: "2026-07-18T12:00:00Z",
+          current_review_action: "changes_requested",
+          current_reviewed_at: "2026-07-19T12:00:00Z",
+        }),
+        deliverable({
+          id: "review-stale",
+          current_published_at: "2026-07-16T12:00:00Z",
+        }),
+        deliverable({
+          id: "review-fresh",
+          current_published_at: "2026-07-18T12:00:00Z",
+        }),
+        deliverable({
+          id: "upload-stale",
+          pending_upload_created_at: "2026-07-18T12:00:00Z",
+        }),
+        deliverable({
+          id: "upload-fresh",
+          pending_upload_created_at: "2026-07-19T12:00:00Z",
+        }),
+      ],
+    });
+
+    expect(result.map((item) => item.id)).toEqual([
+      "deliverable-changes-changes",
+      "deliverable-review-review-stale",
+      "deliverable-upload-upload-stale",
+    ]);
+    expect(result.map((item) => item.priority)).toEqual([
+      "high",
+      "normal",
+      "low",
+    ]);
+    expect(result[0]?.href).toBe("/app/obras/project-1#entregas");
+  });
+
   it("sorts deterministically and does not mutate the inputs", () => {
     const input: OperationalPendencyInput = {
       today: TODAY,
@@ -102,6 +145,7 @@ describe("operational pendencies", () => {
       ],
       projects: [project({ id: "project", ends_on: "2026-07-15" })],
       charges: [charge({ id: "charge", status: "overdue", due_date: "2026-07-19" })],
+      deliverables: [],
     };
     const snapshot = structuredClone(input);
 
@@ -123,7 +167,13 @@ describe("operational pendencies", () => {
 });
 
 function emptyInput(): OperationalPendencyInput {
-  return { today: TODAY, quotes: [], projects: [], charges: [] };
+  return {
+    today: TODAY,
+    quotes: [],
+    projects: [],
+    charges: [],
+    deliverables: [],
+  };
 }
 
 function quote(
@@ -169,6 +219,21 @@ function charge(
     due_date: null,
     amount_cents: 150_000,
     updated_at: "2026-07-15T12:00:00Z",
+    ...overrides,
+  };
+}
+
+function deliverable(
+  overrides: Partial<OperationalPendencyInput["deliverables"][number]> = {},
+): OperationalPendencyInput["deliverables"][number] {
+  return {
+    id: "deliverable-1",
+    project_id: "project-1",
+    title: "Planta baixa",
+    current_published_at: null,
+    current_review_action: null,
+    current_reviewed_at: null,
+    pending_upload_created_at: null,
     ...overrides,
   };
 }

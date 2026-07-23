@@ -241,7 +241,12 @@ async function expectSecurityDefinerRpcsBlocked(
 }
 
 async function expectPrivateStorageHidden(client: SupabaseClient<Database>) {
-  for (const bucket of ["company-logos", "quotes-pdf", "diary-photos"]) {
+  for (const bucket of [
+    "company-logos",
+    "quotes-pdf",
+    "diary-photos",
+    "project-deliverables",
+  ]) {
     const { data } = await client.storage.from(bucket).list("", { limit: 100 });
     expect(data ?? []).toEqual([]);
   }

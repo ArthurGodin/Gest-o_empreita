@@ -6,6 +6,11 @@ import { buildQuoteViewedEmail } from "@/lib/email/templates";
 import { env } from "@/lib/env";
 import { PublicToggle } from "./public-toggle";
 import type { PublicProjectView } from "./andamento-view";
+import type {
+  PublicDeliverableReview,
+  PublicDeliverableVersion,
+  PublicDeliverableView,
+} from "./public-deliverables-view";
 import type { PublicQuoteViewData } from "./public-quote-view";
 import type { ProjectStatus, QuoteStatus, StageStatus } from "@/lib/supabase/types";
 import {
@@ -105,7 +110,14 @@ async function loadPublicProjectView(
 ): Promise<PublicProjectView | null> {
   const admin = createAdminClient();
 
-  const [projectRes, stagesRes, diaryRes, diaryCountRes, chargesRes] =
+  const [
+    projectRes,
+    stagesRes,
+    diaryRes,
+    diaryCountRes,
+    chargesRes,
+    acceptanceRes,
+  ] =
     await Promise.all([
     admin
       .from("projects")
@@ -136,6 +148,11 @@ async function loadPublicProjectView(
       )
       .eq("project_id", projectId)
       .order("kind", { ascending: true }),
+    admin
+      .from("project_delivery_acceptances")
+      .select("signer_name, accepted_at")
+      .eq("project_id", projectId)
+      .maybeSingle(),
   ]);
 
   if (!projectRes.data) return null;
@@ -159,6 +176,12 @@ async function loadPublicProjectView(
     progress_pct: p.progress_pct,
     last_diary_at: p.last_diary_at,
     delivery_approved_at: p.delivery_approved_at,
+    delivery_acceptance: acceptanceRes.data
+      ? {
+          signer_name: acceptanceRes.data.signer_name,
+          accepted_at: acceptanceRes.data.accepted_at,
+        }
+      : null,
     charges: (chargesRes.data ?? []).map((charge) => ({
       kind: charge.kind,
       status: charge.status,
@@ -189,6 +212,99 @@ async function loadPublicProjectView(
     })),
     diary_total: diaryCountRes.count ?? 0,
   };
+}
+
+async function loadPublicDeliverables(
+  projectId: string,
+): Promise<PublicDeliverableView[]> {
+  const admin = createAdminClient();
+  const [deliverablesRes, versionsRes] = await Promise.all([
+    admin
+      .from("project_deliverables")
+      .select(
+        "id, title, description, position, stage:project_stages(name)",
+      )
+      .eq("project_id", projectId)
+      .is("archived_at", null)
+      .order("position", { ascending: true }),
+    admin
+      .from("project_deliverable_versions")
+      .select(
+        `
+        id, deliverable_id, version_number, source_kind, external_url,
+        file_name, mime_type, size_bytes, change_note, published_at,
+        review:project_deliverable_reviews(
+          action, signer_name, comment, created_at
+        )
+      `,
+      )
+      .eq("project_id", projectId)
+      .not("published_at", "is", null)
+      .order("version_number", { ascending: true }),
+  ]);
+
+  if (deliverablesRes.error || versionsRes.error) return [];
+
+  type RawDeliverable = {
+    id: string;
+    title: string;
+    description: string | null;
+    position: number;
+    stage: { name: string } | Array<{ name: string }> | null;
+  };
+  type RawVersion = Omit<
+    PublicDeliverableVersion,
+    "published_at" | "review"
+  > & {
+    deliverable_id: string;
+    published_at: string | null;
+    review:
+      | PublicDeliverableReview
+      | PublicDeliverableReview[]
+      | null;
+  };
+
+  const versionsByDeliverable = new Map<string, PublicDeliverableVersion[]>();
+  for (const raw of (versionsRes.data ?? []) as unknown as RawVersion[]) {
+    if (!raw.published_at) continue;
+    const normalized: PublicDeliverableVersion = {
+      id: raw.id,
+      version_number: raw.version_number,
+      source_kind: raw.source_kind,
+      external_url: raw.external_url,
+      file_name: raw.file_name,
+      mime_type: raw.mime_type,
+      size_bytes: raw.size_bytes,
+      change_note: raw.change_note,
+      published_at: raw.published_at,
+      review: firstRelation(raw.review),
+    };
+    const versions = versionsByDeliverable.get(raw.deliverable_id) ?? [];
+    versions.push(normalized);
+    versionsByDeliverable.set(raw.deliverable_id, versions);
+  }
+
+  return ((deliverablesRes.data ?? []) as unknown as RawDeliverable[])
+    .map((deliverable): PublicDeliverableView | null => {
+      const versions = (
+        versionsByDeliverable.get(deliverable.id) ?? []
+      ).sort((a, b) => a.version_number - b.version_number);
+      const currentVersion = versions.at(-1);
+      if (!currentVersion) return null;
+
+      return {
+        id: deliverable.id,
+        title: deliverable.title,
+        description: deliverable.description,
+        stage_name: firstRelation(deliverable.stage)?.name ?? null,
+        current_version: currentVersion,
+        previous_versions: versions.slice(0, -1),
+      };
+    })
+    .filter(
+      (deliverable): deliverable is PublicDeliverableView =>
+        deliverable !== null,
+    );
 }
 
 /**
@@ -267,19 +383,30 @@ export default async function PublicQuotePage({
     valid_until: quote.valid_until,
   });
 
-  const project = quote.project_id
-    ? await loadPublicProjectView(quote.project_id)
-    : null;
+  const [project, deliverables] = quote.project_id
+    ? await Promise.all([
+        loadPublicProjectView(quote.project_id),
+        quote.status === "approved"
+          ? loadPublicDeliverables(quote.project_id)
+          : Promise.resolve([]),
+      ])
+    : [null, []];
 
   return (
     <PublicToggle
       quote={toPublicQuoteViewData(quote)}
       status={status}
       project={project}
+      deliverables={deliverables}
       shareToken={quote.share_token}
       nowMs={new Date().getTime()}
     />
   );
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
 }
 
 function toPublicQuoteViewData(quote: PublicQuoteData): PublicQuoteViewData {

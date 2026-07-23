@@ -5,6 +5,9 @@ import {
   CircleDollarSign,
   FileCheck2,
   FileClock,
+  MessageSquareWarning,
+  PackageOpen,
+  UploadCloud,
   type LucideIcon,
 } from "lucide-react";
 import { PendencyLink } from "@/components/pendencies/pendency-tracking";
@@ -21,6 +24,9 @@ const TYPE_ICON: Record<OperationalPendencyType, LucideIcon> = {
   project_balance_missing: BadgeDollarSign,
   quote_approved_without_project: FileCheck2,
   quote_expired: FileClock,
+  deliverable_changes_requested: MessageSquareWarning,
+  deliverable_review_stale: PackageOpen,
+  deliverable_upload_stale: UploadCloud,
 };
 
 const PRIORITY_COPY: Record<
@@ -41,6 +47,11 @@ const PRIORITY_COPY: Record<
     label: "Pendente",
     badge: "border-slate-200 bg-slate-50 text-slate-700",
     icon: "bg-primary/10 text-primary",
+  },
+  low: {
+    label: "Quando puder",
+    badge: "border-slate-200 bg-white text-slate-600",
+    icon: "bg-slate-100 text-slate-600",
   },
 };
 
@@ -124,6 +135,12 @@ function dateCopy(pendency: OperationalPendency) {
       return `Entrega aprovada em ${date}`;
     case "quote_approved_without_project":
       return `Aprovado em ${date}`;
+    case "deliverable_changes_requested":
+      return `Pedido em ${date}`;
+    case "deliverable_review_stale":
+      return `Publicada em ${date}`;
+    case "deliverable_upload_stale":
+      return `Interrompido em ${date}`;
     case "quote_expired":
       return `Validade até ${date}`;
   }

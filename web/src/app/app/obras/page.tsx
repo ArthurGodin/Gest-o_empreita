@@ -28,7 +28,7 @@ export default async function ProjectsPage() {
     <PageContainer>
       <PageHeader
         title={vocabulary.projectPlural}
-        description={`Acompanhe etapas, prazo, custos e cobranças dos seus ${vocabulary.projectPluralLower}.`}
+        description={`Acompanhe etapas, prazo, custos e cobranças em ${vocabulary.projectPluralLower}.`}
       />
 
       {projects.length === 0 ? (

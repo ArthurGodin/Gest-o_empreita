@@ -28,7 +28,7 @@ test("operational lists remain usable with real data at reference viewports", as
       });
       await expect(
         page.getByText(
-          "Acompanhe execu\u00e7\u00e3o, prazo, custos e cobran\u00e7as em um s\u00f3 lugar.",
+          "Acompanhe etapas, prazo, custos e cobran\u00e7as em obras.",
         ),
       ).toBeVisible();
 

@@ -30,6 +30,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "PDF e link com marca Prumo",
       "Etapas, registros, custos e visão financeira",
       "Cobrança de entrada e saldo por Pix",
+      "Até 3 entregas ativas por projeto e 25 MB",
     ],
     checkoutHighlights: [],
   },
@@ -48,11 +49,13 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "PDF e link público sem marca Prumo",
       "Cobranças Pix e financeiro sem limite de projetos",
       "Diário com fotos sem limite de projetos",
+      "Até 200 entregas ativas por projeto e 1 GB",
     ],
     checkoutHighlights: [
       "Propostas, orçamentos, projetos e obras ilimitados",
       "PDF e link público sem marca Prumo",
       "Cobrança Pix e controle financeiro por projeto",
+      "Entregas versionadas: até 200 por projeto e 1 GB",
     ],
   },
   ultimate: {
@@ -71,6 +74,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "Até 500 itens por importação",
       "Exportação CSV de receitas recebidas e custos",
       "Catálogo manual e importado no mesmo fluxo",
+      "Até 500 entregas ativas por projeto e 5 GB",
     ],
     checkoutHighlights: [
       "Tudo do Pro incluído",
@@ -78,6 +82,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "Importação de catálogo por CSV",
       "Até 500 itens por arquivo",
       "Exportação CSV de receitas e custos",
+      "Entregas versionadas: até 500 por projeto e 5 GB",
     ],
   },
 };

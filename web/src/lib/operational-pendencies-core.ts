@@ -2,6 +2,7 @@ import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import type {
   ChargeKind,
   ChargeStatus,
+  ProjectDeliverableReviewAction,
   ProjectStatus,
 } from "@/lib/supabase/types";
 
@@ -9,13 +10,20 @@ export const PENDENCY_CATEGORIES = ["quotes", "projects", "billing"] as const;
 
 export type OperationalPendencyCategory =
   (typeof PENDENCY_CATEGORIES)[number];
-export type OperationalPendencyPriority = "critical" | "high" | "normal";
+export type OperationalPendencyPriority =
+  | "critical"
+  | "high"
+  | "normal"
+  | "low";
 export type OperationalPendencyType =
   | "billing_overdue"
   | "project_overdue"
   | "project_balance_missing"
   | "quote_approved_without_project"
-  | "quote_expired";
+  | "quote_expired"
+  | "deliverable_changes_requested"
+  | "deliverable_review_stale"
+  | "deliverable_upload_stale";
 
 interface PendencyQuoteInput {
   id: string;
@@ -49,11 +57,22 @@ interface PendencyChargeInput {
   updated_at: string;
 }
 
+export interface DeliverablePendencyInput {
+  id: string;
+  project_id: string;
+  title: string;
+  current_published_at: string | null;
+  current_review_action: ProjectDeliverableReviewAction | null;
+  current_reviewed_at: string | null;
+  pending_upload_created_at: string | null;
+}
+
 export interface OperationalPendencyInput {
   today: string;
   quotes: readonly PendencyQuoteInput[];
   projects: readonly PendencyProjectInput[];
   charges: readonly PendencyChargeInput[];
+  deliverables: readonly DeliverablePendencyInput[];
 }
 
 export interface OperationalPendency {
@@ -81,6 +100,7 @@ const PRIORITY_ORDER: Record<OperationalPendencyPriority, number> = {
   critical: 0,
   high: 1,
   normal: 2,
+  low: 3,
 };
 
 export function buildOperationalPendencies(
@@ -212,6 +232,85 @@ export function buildOperationalPendencies(
     }
   }
 
+  const staleReviewThreshold = daysBefore(input.today, 3);
+  const staleUploadThreshold = daysBefore(input.today, 1);
+
+  for (const deliverable of input.deliverables) {
+    const project = projectById.get(deliverable.project_id);
+    const entityName = project?.name ?? "Projeto ou obra";
+    const customerName = project?.customer?.name ?? null;
+
+    if (deliverable.current_review_action === "changes_requested") {
+      const reviewedOn =
+        dateOnly(deliverable.current_reviewed_at) ??
+        dateOnly(deliverable.current_published_at) ??
+        input.today;
+      pendencies.push({
+        id: `deliverable-changes-${deliverable.id}`,
+        type: "deliverable_changes_requested",
+        category: "projects",
+        priority: "high",
+        title: "Ajustes solicitados",
+        detail: `${deliverable.title} \u00b7 ${entityName}`,
+        href: `/app/obras/${deliverable.project_id}#entregas`,
+        referenceDate: reviewedOn,
+        entityName,
+        customerName,
+        displayDate: reviewedOn,
+        amountCents: null,
+        chargeKind: null,
+      });
+    } else if (
+      deliverable.current_published_at &&
+      !deliverable.current_review_action &&
+      isDateBefore(deliverable.current_published_at, staleReviewThreshold)
+    ) {
+      const publishedOn =
+        dateOnly(deliverable.current_published_at) ?? input.today;
+      pendencies.push({
+        id: `deliverable-review-${deliverable.id}`,
+        type: "deliverable_review_stale",
+        category: "projects",
+        priority: "normal",
+        title: "Cliente ainda n\u00e3o revisou",
+        detail: `${deliverable.title} \u00b7 ${entityName}`,
+        href: `/app/obras/${deliverable.project_id}#entregas`,
+        referenceDate: publishedOn,
+        entityName,
+        customerName,
+        displayDate: publishedOn,
+        amountCents: null,
+        chargeKind: null,
+      });
+    }
+
+    if (
+      deliverable.pending_upload_created_at &&
+      isDateBefore(
+        deliverable.pending_upload_created_at,
+        staleUploadThreshold,
+      )
+    ) {
+      const createdOn =
+        dateOnly(deliverable.pending_upload_created_at) ?? input.today;
+      pendencies.push({
+        id: `deliverable-upload-${deliverable.id}`,
+        type: "deliverable_upload_stale",
+        category: "projects",
+        priority: "low",
+        title: "Upload de entrega interrompido",
+        detail: `${deliverable.title} \u00b7 ${entityName}`,
+        href: `/app/obras/${deliverable.project_id}#entregas`,
+        referenceDate: createdOn,
+        entityName,
+        customerName,
+        displayDate: createdOn,
+        amountCents: null,
+        chargeKind: null,
+      });
+    }
+  }
+
   return pendencies.sort(comparePendencies);
 }
 
@@ -241,4 +340,11 @@ function dateOnly(value: string | null) {
   if (!value) return null;
   const parsed = value.slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(parsed) ? parsed : null;
+}
+
+function daysBefore(today: string, days: number) {
+  const date = new Date(`${today}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return today;
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
 }

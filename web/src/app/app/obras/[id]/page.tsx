@@ -12,6 +12,12 @@ import { PublicLinkCallout } from "./public-link-callout";
 import { BillingSection } from "./billing-section";
 import { ProjectSectionNav } from "./project-section-nav";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
+import {
+  getDeliverableStorageUsage,
+  getProjectDeliverables,
+  getProjectDeliveryAcceptance,
+} from "@/lib/queries/deliverables";
+import { DeliverablesSection } from "./deliverables-section";
 
 const sectionAnchorClass =
   "min-w-0 scroll-mt-[calc(7.75rem+env(safe-area-inset-top))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:scroll-mt-24";
@@ -38,13 +44,20 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const query = searchParams ? await searchParams : {};
   const conversionBillingAttention = query.cobranca === "atencao";
-  const [project, templates, company] = await Promise.all([
+  const [project, templates, company, deliverables, deliveryAcceptance] =
+    await Promise.all([
     getProjectWithRelations(id),
     listTemplates(),
     getActiveCompanyFull(),
+    getProjectDeliverables(id),
+    getProjectDeliveryAcceptance(id),
   ]);
 
   if (!project) notFound();
+
+  const deliverableStorageUsage = company
+    ? await getDeliverableStorageUsage(company.id)
+    : { usedBytes: 0, pendingBytes: 0, readyBytes: 0 };
 
   return (
     <PageContainer spacing="compact">
@@ -67,6 +80,23 @@ export default async function ProjectDetailPage({
           templates={templates}
         />
       </div>
+
+      <DeliverablesSection
+        projectId={project.id}
+        shareToken={project.share_token}
+        plan={company?.plan ?? "free"}
+        projectLocked={
+          project.status === "cancelled" ||
+          Boolean(project.delivery_approved_at)
+        }
+        stages={project.stages.map((stage) => ({
+          id: stage.id,
+          name: stage.name,
+        }))}
+        deliverables={deliverables}
+        storageUsage={deliverableStorageUsage}
+        acceptance={deliveryAcceptance}
+      />
 
       <BillingSection
         charges={project.charges}

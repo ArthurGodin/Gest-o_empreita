@@ -6,6 +6,7 @@ import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 const PROJECT_SECTIONS = [
   { id: "etapas", label: "Etapas" },
+  { id: "entregas", label: "Entregas" },
   { id: "cobranca", label: "Cobran\u00e7a" },
   { id: "diario", label: "Di\u00e1rio" },
   { id: "custos", label: "Custos" },

@@ -28,6 +28,7 @@ import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
 import { getQuotes } from "@/lib/queries/quotes";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
+import { getDeliverablePendencyInputs } from "@/lib/queries/deliverable-pendencies";
 import { buildActivationProgress } from "@/lib/activation/activation-core";
 import { todayBR } from "@/lib/dates";
 import { buildOperationalPendencies } from "@/lib/operational-pendencies-core";
@@ -53,12 +54,14 @@ const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 };
 
 export default async function DashboardPage() {
-  const [quotes, projects, customers, charges, company] = await Promise.all([
+  const [quotes, projects, customers, charges, company, deliverables] =
+    await Promise.all([
     getQuotes({ limit: 300 }),
     getProjects({ limit: 200 }),
     getCustomers(),
     getBillingCharges(),
     getActiveCompanyFull(),
+    getDeliverablePendencyInputs(),
   ]);
   const vocabulary = getBusinessVocabulary(company?.business_segment);
   const isProfessional = isProfessionalSegment(company?.business_segment);
@@ -101,6 +104,7 @@ export default async function DashboardPage() {
     quotes,
     projects,
     charges,
+    deliverables,
   });
   const activation = buildActivationProgress({
     company,

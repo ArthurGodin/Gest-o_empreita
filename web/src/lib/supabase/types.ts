@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -743,6 +743,262 @@ export type Database = {
           },
         ]
       }
+      project_deliverable_reviews: {
+        Row: {
+          action: Database["public"]["Enums"]["project_deliverable_review_action"]
+          comment: string | null
+          company_id: string
+          created_at: string
+          deliverable_id: string
+          id: string
+          project_id: string
+          signer_name: string
+          version_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["project_deliverable_review_action"]
+          comment?: string | null
+          company_id: string
+          created_at?: string
+          deliverable_id: string
+          id?: string
+          project_id: string
+          signer_name: string
+          version_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["project_deliverable_review_action"]
+          comment?: string | null
+          company_id?: string
+          created_at?: string
+          deliverable_id?: string
+          id?: string
+          project_id?: string
+          signer_name?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_deliverable_reviews_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverable_reviews_deliverable_id_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "project_deliverables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverable_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverable_reviews_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: true
+            referencedRelation: "project_deliverable_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_deliverable_versions: {
+        Row: {
+          change_note: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          deliverable_id: string
+          expected_size_bytes: number | null
+          external_url: string | null
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          project_id: string
+          published_at: string | null
+          size_bytes: number | null
+          source_kind: Database["public"]["Enums"]["project_deliverable_source_kind"]
+          storage_path: string | null
+          updated_at: string
+          upload_state: Database["public"]["Enums"]["project_deliverable_upload_state"]
+          version_number: number
+        }
+        Insert: {
+          change_note?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          deliverable_id: string
+          expected_size_bytes?: number | null
+          external_url?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          project_id: string
+          published_at?: string | null
+          size_bytes?: number | null
+          source_kind: Database["public"]["Enums"]["project_deliverable_source_kind"]
+          storage_path?: string | null
+          updated_at?: string
+          upload_state?: Database["public"]["Enums"]["project_deliverable_upload_state"]
+          version_number: number
+        }
+        Update: {
+          change_note?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          deliverable_id?: string
+          expected_size_bytes?: number | null
+          external_url?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          project_id?: string
+          published_at?: string | null
+          size_bytes?: number | null
+          source_kind?: Database["public"]["Enums"]["project_deliverable_source_kind"]
+          storage_path?: string | null
+          updated_at?: string
+          upload_state?: Database["public"]["Enums"]["project_deliverable_upload_state"]
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_deliverable_versions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverable_versions_deliverable_id_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "project_deliverables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverable_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_deliverables: {
+        Row: {
+          archived_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          position: number
+          project_id: string
+          stage_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          position?: number
+          project_id: string
+          stage_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          position?: number
+          project_id?: string
+          stage_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_deliverables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverables_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deliverables_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_delivery_acceptances: {
+        Row: {
+          accepted_at: string
+          company_id: string
+          id: string
+          project_id: string
+          share_token_fingerprint: string
+          signer_name: string
+        }
+        Insert: {
+          accepted_at?: string
+          company_id: string
+          id?: string
+          project_id: string
+          share_token_fingerprint: string
+          signer_name: string
+        }
+        Update: {
+          accepted_at?: string
+          company_id?: string
+          id?: string
+          project_id?: string
+          share_token_fingerprint?: string
+          signer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_delivery_acceptances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_delivery_acceptances_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_stages: {
         Row: {
           company_id: string
@@ -1456,6 +1712,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_project_deliverable: {
+        Args: {
+          p_change_note: string | null
+          p_description: string | null
+          p_expected_size_bytes: number | null
+          p_external_url: string | null
+          p_file_name: string | null
+          p_mime_type: string | null
+          p_project_id: string
+          p_source_kind: Database["public"]["Enums"]["project_deliverable_source_kind"]
+          p_stage_id: string | null
+          p_title: string
+        }
+        Returns: {
+          deliverable_id: string
+          storage_path: string | null
+          version_id: string
+          version_number: number
+        }[]
+      }
+      create_project_deliverable_version: {
+        Args: {
+          p_change_note: string | null
+          p_deliverable_id: string
+          p_expected_size_bytes: number | null
+          p_external_url: string | null
+          p_file_name: string | null
+          p_mime_type: string | null
+          p_source_kind: Database["public"]["Enums"]["project_deliverable_source_kind"]
+        }
+        Returns: {
+          deliverable_id: string
+          storage_path: string | null
+          version_id: string
+          version_number: number
+        }[]
+      }
+      delete_project_deliverable_draft: {
+        Args: { p_deliverable_id: string; p_version_id: string }
+        Returns: {
+          deliverable_deleted: boolean
+          project_id: string
+        }[]
+      }
+      finalize_project_deliverable_upload: {
+        Args: {
+          p_mime_type: string
+          p_size_bytes: number
+          p_version_id: string
+        }
+        Returns: boolean
+      }
       insert_diary_entry: {
         Args: {
           p_body: string
@@ -1492,9 +1800,31 @@ export type Database = {
         Args: { p_value: string }
         Returns: string
       }
+      project_deliverable_count_limit: {
+        Args: { p_plan: string }
+        Returns: number
+      }
+      project_deliverable_storage_limit: {
+        Args: { p_plan: string }
+        Returns: number
+      }
+      publish_project_deliverable_version: {
+        Args: { p_deliverable_id: string; p_version_id: string }
+        Returns: string
+      }
       publish_sinapi_release: {
         Args: { p_expected_sha256: string; p_release_id: string }
         Returns: string
+      }
+      record_project_delivery_acceptance: {
+        Args: { p_share_token: string; p_signer_name: string }
+        Returns: {
+          acceptance_id: string
+          accepted_at: string
+          company_id: string
+          created: boolean
+          project_id: string
+        }[]
       }
       reject_sinapi_release: {
         Args: { p_reason: string; p_release_id: string }
@@ -1512,6 +1842,23 @@ export type Database = {
           p_valid_until: string | null
         }
         Returns: undefined
+      }
+      review_project_deliverable_version: {
+        Args: {
+          p_action: Database["public"]["Enums"]["project_deliverable_review_action"]
+          p_comment: string | null
+          p_share_token: string
+          p_signer_name: string
+          p_version_id: string
+        }
+        Returns: {
+          created: boolean
+          review_action: Database["public"]["Enums"]["project_deliverable_review_action"]
+          review_comment: string | null
+          review_id: string
+          reviewed_at: string
+          signer_name: string
+        }[]
       }
       search_sinapi: {
         Args: {
@@ -1539,6 +1886,19 @@ export type Database = {
           unit: string
         }[]
       }
+      set_project_deliverable_archived: {
+        Args: { p_archived: boolean; p_deliverable_id: string }
+        Returns: string
+      }
+      update_project_deliverable: {
+        Args: {
+          p_deliverable_id: string
+          p_description: string | null
+          p_stage_id: string | null
+          p_title: string
+        }
+        Returns: string
+      }
       user_company_ids: { Args: never; Returns: string[] }
       user_role_in: {
         Args: { p_company_id: string }
@@ -1556,6 +1916,9 @@ export type Database = {
         | "cancelled"
       company_role: "owner" | "manager" | "foreman" | "worker"
       cost_category: "material" | "labor" | "freight" | "other"
+      project_deliverable_review_action: "approved" | "changes_requested"
+      project_deliverable_source_kind: "file" | "external_link"
+      project_deliverable_upload_state: "pending" | "ready"
       project_status:
         | "planning"
         | "in_progress"
@@ -2263,6 +2626,9 @@ export const Constants = {
       ],
       company_role: ["owner", "manager", "foreman", "worker"],
       cost_category: ["material", "labor", "freight", "other"],
+      project_deliverable_review_action: ["approved", "changes_requested"],
+      project_deliverable_source_kind: ["file", "external_link"],
+      project_deliverable_upload_state: ["pending", "ready"],
       project_status: [
         "planning",
         "in_progress",
@@ -2309,3 +2675,9 @@ export type PixKeyType = "cpf" | "cnpj" | "phone" | "email" | "random"
 export type SinapiReferenceKind = Enums<"sinapi_reference_kind">
 export type SinapiRegime = Enums<"sinapi_regime">
 export type SinapiReleaseStatus = Enums<"sinapi_release_status">
+export type ProjectDeliverableSourceKind =
+  Enums<"project_deliverable_source_kind">
+export type ProjectDeliverableUploadState =
+  Enums<"project_deliverable_upload_state">
+export type ProjectDeliverableReviewAction =
+  Enums<"project_deliverable_review_action">

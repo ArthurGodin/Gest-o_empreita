@@ -9,6 +9,7 @@ import { tokensMatch } from "@/lib/quote-token";
 import { effectiveStatus } from "@/lib/quote-status";
 import { notifyCompanyOwner } from "@/lib/email/send";
 import {
+  buildDeliverableReviewEmail,
   buildQuoteApprovedEmail,
   buildQuoteRejectedEmail,
 } from "@/lib/email/templates";
@@ -43,12 +44,47 @@ const deliverySchema = z.object({
   signer_name: z.string().trim().min(2, "Digite seu nome (mínimo 2 letras)"),
 });
 
+const deliverableReviewSchema = z
+  .object({
+    token: tokenSchema,
+    version_id: z.string().uuid("Vers\u00e3o inv\u00e1lida."),
+    action: z.enum(["approved", "changes_requested"]),
+    signer_name: z
+      .string()
+      .trim()
+      .min(2, "Digite seu nome.")
+      .max(120, "Nome muito longo."),
+    comment: z.string().trim().max(2000, "Coment\u00e1rio muito longo."),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.action === "changes_requested" &&
+      value.comment.length < 10
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["comment"],
+        message: "Explique o ajuste em pelo menos 10 caracteres.",
+      });
+    }
+  });
+
 export type PublicActionResult =
   | { ok: true; redirectTo: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 export type PublicDeliveryActionResult =
   | { ok: true }
+  | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export type PublicDeliverableReviewResult =
+  | {
+      ok: true;
+      action: "approved" | "changes_requested";
+      signerName: string;
+      comment: string | null;
+      reviewedAt: string;
+    }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 // ─── Helpers internos ──────────────────────────────────────────────────────
@@ -358,6 +394,127 @@ export async function rejectQuoteAction(input: {
   return { ok: true, redirectTo: `/q/${parsed.data.token}` };
 }
 
+// --- Deliverable review ----------------------------------------------------
+
+export async function reviewDeliverableAction(input: {
+  token: string;
+  version_id: string;
+  action: "approved" | "changes_requested";
+  signer_name: string;
+  comment: string;
+}): Promise<PublicDeliverableReviewResult> {
+  const parsed = deliverableReviewSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Revise os campos para continuar.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const quote = await loadQuoteByToken(parsed.data.token);
+  if (
+    !quote?.project_id ||
+    quote.status !== "approved" ||
+    !tokensMatch(quote.share_token, parsed.data.token)
+  ) {
+    return { ok: false, error: "Link ou entrega indispon\u00edvel." };
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc(
+    "review_project_deliverable_version",
+    {
+      p_share_token: parsed.data.token,
+      p_version_id: parsed.data.version_id,
+      p_action: parsed.data.action,
+      p_signer_name: parsed.data.signer_name,
+      p_comment:
+        parsed.data.action === "changes_requested"
+          ? parsed.data.comment
+          : null,
+    },
+  );
+  const review = data?.[0];
+
+  if (error || !review) {
+    const message = (error?.message ?? "").toLowerCase();
+    if (message.includes("project_delivery_already_accepted")) {
+      return {
+        ok: false,
+        error: "O aceite final deste projeto j\u00e1 foi registrado.",
+      };
+    }
+    if (
+      message.includes("deliverable_version_superseded") ||
+      message.includes("deliverable_version_not_found")
+    ) {
+      return {
+        ok: false,
+        error:
+          "Uma vers\u00e3o mais recente est\u00e1 dispon\u00edvel. Atualize a p\u00e1gina para revisar.",
+      };
+    }
+    logServerError("public.deliverable.review", error, {
+      quote_id: quote.id,
+      project_id: quote.project_id,
+      version_id: parsed.data.version_id,
+    });
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  if (review.created) {
+    const { data: version } = await admin
+      .from("project_deliverable_versions")
+      .select(
+        "version_number, deliverable:project_deliverables(title)",
+      )
+      .eq("id", parsed.data.version_id)
+      .eq("project_id", quote.project_id)
+      .maybeSingle();
+    const relation = firstRelation(version?.deliverable);
+
+    if (version && relation) {
+      await notifyCompanyOwner(
+        quote.company_id,
+        buildDeliverableReviewEmail({
+          customerName: quote.customer?.name ?? "Cliente",
+          signerName: review.signer_name,
+          deliverableTitle: relation.title,
+          versionNumber: version.version_number,
+          action: review.review_action,
+          comment: review.review_comment,
+          detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/obras/${quote.project_id}#entregas`,
+        }),
+      );
+    }
+  }
+
+  revalidatePath(`/q/${parsed.data.token}`);
+  revalidatePath(`/app/obras/${quote.project_id}`);
+  revalidatePath("/app");
+  logServerEvent(
+    review.review_action === "approved"
+      ? "public.deliverable.approved"
+      : "public.deliverable.changes_requested",
+    {
+      company_id: quote.company_id,
+      quote_id: quote.id,
+      project_id: quote.project_id,
+      version_id: parsed.data.version_id,
+      created: review.created,
+    },
+  );
+
+  return {
+    ok: true,
+    action: review.review_action,
+    signerName: review.signer_name,
+    comment: review.review_comment,
+    reviewedAt: review.reviewed_at,
+  };
+}
+
 // --- Delivery approval ------------------------------------------------------
 
 export async function approveDeliveryAction(input: {
@@ -404,23 +561,35 @@ export async function approveDeliveryAction(input: {
     };
   }
 
-  const approvedAt = project.delivery_approved_at ?? new Date().toISOString();
-  if (!project.delivery_approved_at) {
-    const { error: approveError } = await admin
-      .from("projects")
-      .update({
-        delivery_approved_at: approvedAt,
-        delivery_approved_token: parsed.data.token,
-      })
-      .eq("id", quote.project_id)
-      .eq("company_id", quote.company_id)
-      .is("delivery_approved_at", null);
+  const { data: acceptanceRows, error: acceptanceError } = await admin.rpc(
+    "record_project_delivery_acceptance",
+    {
+      p_share_token: parsed.data.token,
+      p_signer_name: parsed.data.signer_name,
+    },
+  );
+  const acceptance = acceptanceRows?.[0];
 
-    if (approveError) {
-      logServerError("public.delivery.approve", approveError);
-      return { ok: false, error: clientErrorFor(approveError) };
+  if (acceptanceError || !acceptance) {
+    const message = (acceptanceError?.message ?? "").toLowerCase();
+    if (message.includes("project_deliverables_pending")) {
+      return {
+        ok: false,
+        error:
+          "Revise e aprove todas as entregas publicadas antes do aceite final.",
+      };
     }
+    if (message.includes("project_not_completed")) {
+      return {
+        ok: false,
+        error:
+          "O aceite final fica dispon\u00edvel quando o projeto estiver conclu\u00eddo.",
+      };
+    }
+    logServerError("public.delivery.acceptance", acceptanceError);
+    return { ok: false, error: clientErrorFor(acceptanceError) };
   }
+  const approvedAt = acceptance.accepted_at;
 
   const { data: saldoCharge, error: chargeError } = await admin
     .from("billing_charges")
@@ -478,6 +647,11 @@ export async function approveDeliveryAction(input: {
     generated_saldo_pix: saldoCharge.status === "draft",
   });
   return { ok: true };
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
 }
 
 function revalidateDeliveryPaths(token: string, projectId: string) {
