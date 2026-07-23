@@ -42,7 +42,7 @@ export function DemoKitButton() {
       toast({
         title: result.reused ? "Demo atualizada" : "Demo criada",
         description:
-          "Cliente, orçamento aprovado, obra, custos e cobranças locais estão prontos para apresentar.",
+          "Cliente, proposta/orcamento, projeto/obra, entregas, custos e cobrancas estao prontos para apresentar.",
         variant: "success",
       });
     });
@@ -83,13 +83,13 @@ export function DemoKitButton() {
             <Button asChild variant="outline" size="sm">
               <Link href={demo.quoteUrl}>
                 <Presentation className="h-4 w-4" />
-                Orçamento
+                Proposta
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href={demo.projectUrl}>
                 <CheckCircle2 className="h-4 w-4" />
-                Obra
+                Projeto
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">

@@ -68,6 +68,62 @@ test("architecture profile creates a proposal from a professional model", async 
   }
 });
 
+test("architecture profile prepares contextual demo data", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(120_000);
+
+  const suffix = crypto.randomUUID();
+  const email = `architecture-demo-${testInfo.project.name}-${suffix}@prumo.test`;
+  const password = "Prumo-E2E-Architecture-Demo-2026!";
+
+  try {
+    await page.goto("/signup");
+    await page.getByLabel("Seu nome").fill("Arquiteta Demo QA");
+    await page.getByLabel("E-mail").fill(email);
+    await page.getByLabel("Senha").fill(password);
+    await page.getByRole("button", { name: "Criar minha conta" }).click();
+    await expect(page).toHaveURL(/\/onboarding/);
+
+    await completeCompanyOnboarding(page, "Estudio Arquitetura Demo QA", {
+      profile: "Arquitetura",
+    });
+
+    await page.getByRole("button", { name: "Explorar com exemplo" }).click();
+    await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/);
+    await expect(
+      page.getByRole("heading", {
+        name: "Demo - Projeto arquitetonico residencial",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Cliente Demo - Ana Ribeiro", { exact: true }).first(),
+    ).toBeVisible();
+
+    await page.goto("/app/obras");
+    await expect(page.getByRole("heading", { name: "Projetos" })).toBeVisible();
+    await expect(
+      page.getByRole("link", {
+        name: /Abrir projeto Demo - Projeto residencial Ana Ribeiro/,
+      }),
+    ).toBeVisible();
+
+    await page
+      .getByRole("link", {
+        name: /Abrir projeto Demo - Projeto residencial Ana Ribeiro/,
+      })
+      .click();
+    await expect(
+      page.getByRole("heading", {
+        name: "Demo - Projeto residencial Ana Ribeiro",
+      }),
+    ).toBeVisible();
+    await expect(page.getByText("Estudo preliminar v1")).toBeVisible();
+  } finally {
+    await cleanupAccount(email);
+  }
+});
+
 async function cleanupAccount(email: string) {
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

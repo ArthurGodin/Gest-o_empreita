@@ -326,8 +326,9 @@ export default async function ProductionDiagnosticsPage() {
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
               Prepara dados realistas para apresentar o produto sem improviso:
-              cliente, orçamento aprovado, link público, obra em andamento,
-              etapas, diário, custos e cobranças locais em rascunho.
+              cliente, proposta ou orçamento aprovado, link público,
+              projeto ou obra em andamento, entregas, etapas, diário, custos e
+              cobranças locais em rascunho.
             </p>
 
             <div className="mt-5">
@@ -341,9 +342,9 @@ export default async function ProductionDiagnosticsPage() {
             </h3>
             <ol className="mt-4 space-y-3 text-sm">
               {[
-                "Abra o orçamento e mostre a proposta com itens e PDF.",
+                "Abra a proposta ou orçamento e mostre itens, PDF e link público.",
                 "Abra o link do cliente como se estivesse no WhatsApp.",
-                "Mostre a obra com etapas, diário, custos e cobranças.",
+                "Mostre o projeto ou obra com entregas, etapas, diário, custos e cobranças.",
                 asaasIsSandbox
                   ? "Mostre entrada e saldo no sandbox, sem movimentar dinheiro real."
                   : "Mostre o histórico já validado e não conclua uma cobrança real durante a demo.",
@@ -372,7 +373,7 @@ export default async function ProductionDiagnosticsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/app/orcamentos/novo">Criar orçamento de demo</Link>
+            <Link href="/app/orcamentos/novo">Criar proposta de demo</Link>
           </Button>
         </div>
 

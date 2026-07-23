@@ -33,7 +33,7 @@ export function SampleDataButton() {
       toast({
         title: result.reused ? "Exemplo atualizado" : "Exemplo criado",
         description:
-          "Criamos um cliente, orçamento aprovado, obra, custos e cobranças locais para você explorar.",
+          "Criamos cliente, proposta/orcamento, projeto/obra, entregas, custos e cobrancas para voce explorar.",
         variant: "success",
       });
 

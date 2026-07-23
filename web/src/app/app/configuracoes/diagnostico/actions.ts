@@ -9,6 +9,10 @@ import { addDaysBR, todayBR } from "@/lib/dates";
 import { env } from "@/lib/env";
 import { createLocalCharges } from "@/lib/billing/asaas";
 import { generateShareToken } from "@/lib/quote-token";
+import {
+  normalizeBusinessSegment,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 
 const DEMO_CUSTOMER_NAME = "Cliente Demo - Maria Santos";
 const DEMO_QUOTE_TITLE = "Demo - Cobertura colonial com calhas";
@@ -107,6 +111,412 @@ const projectCosts = [
   },
 ] as const;
 
+interface DemoQuoteItem {
+  position: number;
+  description: string;
+  unit: string;
+  quantity: number;
+  unit_price_cents: number;
+  total_cents: number;
+}
+
+interface DemoProjectStage {
+  position: number;
+  name: string;
+  status: "todo" | "in_progress" | "done";
+  est_days: number;
+  started_on: string | null;
+  completed_on: string | null;
+  notes: string;
+}
+
+interface DemoProjectCost {
+  category: "material" | "labor" | "freight" | "other";
+  description: string;
+  amount_cents: number;
+}
+
+interface DemoDeliverable {
+  title: string;
+  description: string;
+  changeNote: string;
+}
+
+interface DemoScenario {
+  customerName: string;
+  customerEmail: string;
+  customerAddress: string;
+  customerCity: string;
+  customerState: string;
+  quoteTitle: string;
+  quoteDescription: string;
+  projectName: string;
+  projectDescription: string;
+  projectAddress: string;
+  approver: string;
+  totalCents: number;
+  entryPct: number;
+  quoteItems: readonly DemoQuoteItem[];
+  projectCosts: readonly DemoProjectCost[];
+  deliverables: readonly DemoDeliverable[];
+  stages: () => readonly DemoProjectStage[];
+}
+
+const CONSTRUCTION_SCENARIO: DemoScenario = {
+  customerName: DEMO_CUSTOMER_NAME,
+  customerEmail: "cliente.demo@example.com",
+  customerAddress: "Rua das Palmeiras, 120",
+  customerCity: "Timon",
+  customerState: "MA",
+  quoteTitle: DEMO_QUOTE_TITLE,
+  quoteDescription:
+    "Troca de cobertura com telha colonial, calhas novas, retirada de entulho e acompanhamento pelo painel.",
+  projectName: DEMO_PROJECT_NAME,
+  projectDescription:
+    "Obra ficticia para demonstrar etapas, diario, custos e cobrancas.",
+  projectAddress: "Rua das Palmeiras, 120 - Timon, MA",
+  approver: DEMO_APPROVER,
+  totalCents: DEMO_TOTAL_CENTS,
+  entryPct: DEMO_ENTRY_PCT,
+  quoteItems,
+  projectCosts,
+  deliverables: [
+    {
+      title: "Registro da cobertura antes da execucao",
+      description:
+        "Link ficticio para demonstrar uma entrega publicada ao cliente.",
+      changeNote: "Versao inicial do registro da obra.",
+    },
+  ],
+  stages: getProjectStages,
+};
+
+const PROFESSIONAL_SCENARIOS: Record<
+  Exclude<BusinessSegment, "construction">,
+  DemoScenario
+> = {
+  architecture: {
+    customerName: "Cliente Demo - Ana Ribeiro",
+    customerEmail: "ana.demo@example.com",
+    customerAddress: "Rua das Acacias, 42",
+    customerCity: "Sao Paulo",
+    customerState: "SP",
+    quoteTitle: "Demo - Projeto arquitetonico residencial",
+    quoteDescription:
+      "Proposta ficticia para projeto residencial com briefing, estudo preliminar, anteprojeto e projeto executivo.",
+    projectName: "Demo - Projeto residencial Ana Ribeiro",
+    projectDescription:
+      "Projeto ficticio para demonstrar etapas, entregas versionadas, aprovacao do cliente e cobrancas.",
+    projectAddress: "Rua das Acacias, 42 - Sao Paulo, SP",
+    approver: "Ana Ribeiro",
+    totalCents: 850_000,
+    entryPct: 30,
+    quoteItems: [
+      {
+        position: 0,
+        description: "Briefing, levantamento e estudo de viabilidade",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 180_000,
+        total_cents: 180_000,
+      },
+      {
+        position: 1,
+        description: "Estudo preliminar com plantas e volumetria",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 260_000,
+        total_cents: 260_000,
+      },
+      {
+        position: 2,
+        description: "Anteprojeto e revisoes com o cliente",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 210_000,
+        total_cents: 210_000,
+      },
+      {
+        position: 3,
+        description: "Projeto executivo para compatibilizacao",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 200_000,
+        total_cents: 200_000,
+      },
+    ],
+    projectCosts: [
+      {
+        category: "other",
+        description: "Visita tecnica e levantamento - demo",
+        amount_cents: 32_000,
+      },
+      {
+        category: "other",
+        description: "Renderizacao e material de apresentacao - demo",
+        amount_cents: 58_000,
+      },
+    ],
+    deliverables: [
+      {
+        title: "Estudo preliminar v1",
+        description:
+          "Pacote demonstrativo para o cliente aprovar ou pedir alteracoes pelo link.",
+        changeNote: "Primeira versao do estudo preliminar.",
+      },
+      {
+        title: "Memorial descritivo resumido",
+        description:
+          "Entrega demonstrativa para organizar decisoes e escopo aprovado.",
+        changeNote: "Memorial inicial para validacao.",
+      },
+    ],
+    stages: () => [
+      {
+        position: 0,
+        name: "Briefing e levantamento",
+        status: "done",
+        est_days: 3,
+        started_on: addDaysBR(-9),
+        completed_on: addDaysBR(-7),
+        notes: "Necessidades, medidas e referencias iniciais organizadas.",
+      },
+      {
+        position: 1,
+        name: "Estudo preliminar",
+        status: "in_progress",
+        est_days: 6,
+        started_on: addDaysBR(-6),
+        completed_on: null,
+        notes: "Primeira proposta de distribuicao e partido em revisao.",
+      },
+      {
+        position: 2,
+        name: "Anteprojeto",
+        status: "todo",
+        est_days: 7,
+        started_on: null,
+        completed_on: null,
+        notes: "Avancar apos validacao do estudo preliminar.",
+      },
+      {
+        position: 3,
+        name: "Projeto executivo",
+        status: "todo",
+        est_days: 10,
+        started_on: null,
+        completed_on: null,
+        notes: "Detalhamento final para execucao e compatibilizacao.",
+      },
+    ],
+  },
+  interiors: {
+    customerName: "Cliente Demo - Beatriz Lima",
+    customerEmail: "beatriz.demo@example.com",
+    customerAddress: "Av. Beira Mar, 510",
+    customerCity: "Fortaleza",
+    customerState: "CE",
+    quoteTitle: "Demo - Projeto de interiores apartamento",
+    quoteDescription:
+      "Proposta ficticia para interiores com layout, especificacoes, revisoes e entrega final.",
+    projectName: "Demo - Interiores apartamento Beatriz Lima",
+    projectDescription:
+      "Projeto ficticio para demonstrar ambientes, entregas, aprovacoes e cobrancas.",
+    projectAddress: "Av. Beira Mar, 510 - Fortaleza, CE",
+    approver: "Beatriz Lima",
+    totalCents: 620_000,
+    entryPct: 30,
+    quoteItems: [
+      {
+        position: 0,
+        description: "Briefing e conceito dos ambientes",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 120_000,
+        total_cents: 120_000,
+      },
+      {
+        position: 1,
+        description: "Layout, mobiliario e especificacoes",
+        unit: "amb",
+        quantity: 3,
+        unit_price_cents: 110_000,
+        total_cents: 330_000,
+      },
+      {
+        position: 2,
+        description: "Apresentacao final e lista de compras",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 170_000,
+        total_cents: 170_000,
+      },
+    ],
+    projectCosts: [
+      {
+        category: "other",
+        description: "Amostras e materiais de apresentacao - demo",
+        amount_cents: 24_000,
+      },
+      {
+        category: "other",
+        description: "Visita a fornecedores - demo",
+        amount_cents: 36_000,
+      },
+    ],
+    deliverables: [
+      {
+        title: "Layout dos ambientes v1",
+        description:
+          "Entrega demonstrativa para o cliente aprovar a disposicao dos ambientes.",
+        changeNote: "Primeira versao do layout.",
+      },
+      {
+        title: "Lista inicial de especificacoes",
+        description:
+          "Entrega demonstrativa com materiais, mobiliario e pendencias.",
+        changeNote: "Lista inicial para revisao.",
+      },
+    ],
+    stages: () => [
+      {
+        position: 0,
+        name: "Briefing e conceito",
+        status: "done",
+        est_days: 2,
+        started_on: addDaysBR(-7),
+        completed_on: addDaysBR(-6),
+        notes: "Preferencias, medidas e referencias reunidas.",
+      },
+      {
+        position: 1,
+        name: "Layout dos ambientes",
+        status: "in_progress",
+        est_days: 5,
+        started_on: addDaysBR(-5),
+        completed_on: null,
+        notes: "Distribuicao em validacao com a cliente.",
+      },
+      {
+        position: 2,
+        name: "Especificacoes e fornecedores",
+        status: "todo",
+        est_days: 6,
+        started_on: null,
+        completed_on: null,
+        notes: "Separar materiais, mobiliario e acabamentos.",
+      },
+      {
+        position: 3,
+        name: "Entrega final",
+        status: "todo",
+        est_days: 2,
+        started_on: null,
+        completed_on: null,
+        notes: "Enviar pacote final e colher aceite.",
+      },
+    ],
+  },
+  engineering: {
+    customerName: "Cliente Demo - Carlos Menezes",
+    customerEmail: "carlos.demo@example.com",
+    customerAddress: "Rua Projetada, 88",
+    customerCity: "Recife",
+    customerState: "PE",
+    quoteTitle: "Demo - Laudo e acompanhamento tecnico",
+    quoteDescription:
+      "Proposta ficticia para vistoria, laudo tecnico, orientacoes e acompanhamento.",
+    projectName: "Demo - Acompanhamento tecnico Carlos Menezes",
+    projectDescription:
+      "Projeto ficticio para demonstrar etapas tecnicas, registros, entregas e cobrancas.",
+    projectAddress: "Rua Projetada, 88 - Recife, PE",
+    approver: "Carlos Menezes",
+    totalCents: 480_000,
+    entryPct: 40,
+    quoteItems: [
+      {
+        position: 0,
+        description: "Vistoria tecnica e levantamento de informacoes",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 140_000,
+        total_cents: 140_000,
+      },
+      {
+        position: 1,
+        description: "Laudo tecnico com recomendacoes",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 220_000,
+        total_cents: 220_000,
+      },
+      {
+        position: 2,
+        description: "Acompanhamento e revisao final",
+        unit: "un",
+        quantity: 1,
+        unit_price_cents: 120_000,
+        total_cents: 120_000,
+      },
+    ],
+    projectCosts: [
+      {
+        category: "other",
+        description: "Deslocamento para vistoria - demo",
+        amount_cents: 18_000,
+      },
+      {
+        category: "other",
+        description: "Equipamentos de inspecao - demo",
+        amount_cents: 42_000,
+      },
+    ],
+    deliverables: [
+      {
+        title: "Relatorio de vistoria v1",
+        description:
+          "Entrega demonstrativa para registrar achados e pedir validacao.",
+        changeNote: "Primeira versao do relatorio.",
+      },
+    ],
+    stages: () => [
+      {
+        position: 0,
+        name: "Vistoria e levantamento",
+        status: "done",
+        est_days: 2,
+        started_on: addDaysBR(-6),
+        completed_on: addDaysBR(-5),
+        notes: "Registros tecnicos coletados no local.",
+      },
+      {
+        position: 1,
+        name: "Analise e laudo",
+        status: "in_progress",
+        est_days: 5,
+        started_on: addDaysBR(-4),
+        completed_on: null,
+        notes: "Laudo em elaboracao para revisao.",
+      },
+      {
+        position: 2,
+        name: "Entrega e recomendacoes",
+        status: "todo",
+        est_days: 2,
+        started_on: null,
+        completed_on: null,
+        notes: "Enviar documento final e colher aceite.",
+      },
+    ],
+  },
+};
+
+function getDemoScenario(segment: unknown): DemoScenario {
+  const normalized = normalizeBusinessSegment(segment);
+  if (normalized === "construction") return CONSTRUCTION_SCENARIO;
+  return PROFESSIONAL_SCENARIOS[normalized];
+}
+
 export type DemoKitResult =
   | {
       ok: true;
@@ -128,14 +538,21 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
 
   const supabase = createClient();
   const companyId = company.company_id;
+  const scenario = getDemoScenario(company.company.business_segment);
   let reused = false;
 
   try {
-    const customerId = await ensureDemoCustomer(supabase, companyId, user.id);
+    const customerId = await ensureDemoCustomer(
+      supabase,
+      companyId,
+      user.id,
+      scenario,
+    );
     const quote = await ensureDemoQuote(supabase, {
       companyId,
       customerId,
       userId: user.id,
+      scenario,
     });
     reused = quote.reused;
 
@@ -144,14 +561,15 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
       customerId,
       quoteId: quote.id,
       userId: user.id,
+      scenario,
     });
 
     await createLocalCharges(supabase, {
       projectId,
       companyId,
       customerId,
-      totalCents: DEMO_TOTAL_CENTS,
-      entryPct: DEMO_ENTRY_PCT,
+      totalCents: scenario.totalCents,
+      entryPct: scenario.entryPct,
     });
 
     await supabase
@@ -161,6 +579,12 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
       .eq("company_id", companyId);
 
     const baseUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+    await ensureDemoDeliverables(supabase, {
+      companyId,
+      projectId,
+      scenario,
+      publicUrl: `${baseUrl}/q/${quote.shareToken}`,
+    });
 
     revalidatePath("/app");
     revalidatePath("/app/configuracoes/diagnostico");
@@ -189,12 +613,13 @@ async function ensureDemoCustomer(
   supabase: ReturnType<typeof createClient>,
   companyId: string,
   userId: string,
+  scenario: DemoScenario,
 ) {
   const { data: existing, error: existingError } = await supabase
     .from("customers")
     .select("id")
     .eq("company_id", companyId)
-    .eq("name", DEMO_CUSTOMER_NAME)
+    .eq("name", scenario.customerName)
     .limit(1)
     .maybeSingle();
 
@@ -202,7 +627,14 @@ async function ensureDemoCustomer(
   if (existing?.id) {
     const { error: updateError } = await supabase
       .from("customers")
-      .update({ phone: null })
+      .update({
+        phone: null,
+        email: scenario.customerEmail,
+        address: scenario.customerAddress,
+        city: scenario.customerCity,
+        state: scenario.customerState,
+        notes: "Cliente ficticio para demonstracao comercial guiada.",
+      })
       .eq("id", existing.id)
       .eq("company_id", companyId);
     if (updateError) throw updateError;
@@ -213,13 +645,13 @@ async function ensureDemoCustomer(
     .from("customers")
     .insert({
       company_id: companyId,
-      name: DEMO_CUSTOMER_NAME,
-      document: "52998224725",
+      name: scenario.customerName,
+      document: null,
       phone: null,
-      email: "cliente.demo@example.com",
-      address: "Rua das Palmeiras, 120",
-      city: "Timon",
-      state: "MA",
+      email: scenario.customerEmail,
+      address: scenario.customerAddress,
+      city: scenario.customerCity,
+      state: scenario.customerState,
       notes: "Cliente fictício para demonstração comercial guiada.",
       created_by: userId,
     })
@@ -236,13 +668,14 @@ async function ensureDemoQuote(
     companyId: string;
     customerId: string;
     userId: string;
+    scenario: DemoScenario;
   },
 ) {
   const { data: existing, error: existingError } = await supabase
     .from("quotes")
     .select("id, share_token")
     .eq("company_id", input.companyId)
-    .eq("title", DEMO_QUOTE_TITLE)
+    .eq("title", input.scenario.quoteTitle)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -267,13 +700,12 @@ async function ensureDemoQuote(
         company_id: input.companyId,
         customer_id: input.customerId,
         number: numberData as string,
-        title: DEMO_QUOTE_TITLE,
-        description:
-          "Troca de cobertura com telha colonial, calhas novas, retirada de entulho e acompanhamento pelo painel.",
+        title: input.scenario.quoteTitle,
+        description: input.scenario.quoteDescription,
         status: "approved",
-        subtotal_cents: DEMO_TOTAL_CENTS,
+        subtotal_cents: input.scenario.totalCents,
         discount_cents: 0,
-        total_cents: DEMO_TOTAL_CENTS,
+        total_cents: input.scenario.totalCents,
         valid_until: addDaysBR(20),
         share_token: shareToken,
         sent_at: now,
@@ -293,13 +725,12 @@ async function ensureDemoQuote(
       .from("quotes")
       .update({
         customer_id: input.customerId,
-        title: DEMO_QUOTE_TITLE,
-        description:
-          "Troca de cobertura com telha colonial, calhas novas, retirada de entulho e acompanhamento pelo painel.",
+        title: input.scenario.quoteTitle,
+        description: input.scenario.quoteDescription,
         status: "approved",
-        subtotal_cents: DEMO_TOTAL_CENTS,
+        subtotal_cents: input.scenario.totalCents,
         discount_cents: 0,
-        total_cents: DEMO_TOTAL_CENTS,
+        total_cents: input.scenario.totalCents,
         valid_until: addDaysBR(20),
         share_token: shareToken,
         sent_at: now,
@@ -314,8 +745,13 @@ async function ensureDemoQuote(
     if (updateError) throw updateError;
   }
 
-  await replaceDemoQuoteItems(supabase, input.companyId, quoteId);
-  await upsertDemoApproval(input.companyId, quoteId);
+  await replaceDemoQuoteItems(
+    supabase,
+    input.companyId,
+    quoteId,
+    input.scenario,
+  );
+  await upsertDemoApproval(input.companyId, quoteId, input.scenario);
 
   return { id: quoteId, shareToken, reused };
 }
@@ -324,6 +760,7 @@ async function replaceDemoQuoteItems(
   supabase: ReturnType<typeof createClient>,
   companyId: string,
   quoteId: string,
+  scenario: DemoScenario,
 ) {
   const { error: deleteError } = await supabase
     .from("quote_items")
@@ -333,7 +770,7 @@ async function replaceDemoQuoteItems(
   if (deleteError) throw deleteError;
 
   const { error: insertError } = await supabase.from("quote_items").insert(
-    quoteItems.map((item) => ({
+    scenario.quoteItems.map((item) => ({
       quote_id: quoteId,
       company_id: companyId,
       ...item,
@@ -342,14 +779,18 @@ async function replaceDemoQuoteItems(
   if (insertError) throw insertError;
 }
 
-async function upsertDemoApproval(companyId: string, quoteId: string) {
+async function upsertDemoApproval(
+  companyId: string,
+  quoteId: string,
+  scenario: DemoScenario,
+) {
   const admin = createAdminClient();
   const { error } = await admin.from("quote_approvals").upsert(
     {
       quote_id: quoteId,
       company_id: companyId,
       action: "approved",
-      signer_name: DEMO_APPROVER,
+      signer_name: scenario.approver,
       rejection_reason: null,
       user_agent: "Prumo demo kit",
     },
@@ -365,13 +806,14 @@ async function ensureDemoProject(
     customerId: string;
     quoteId: string;
     userId: string;
+    scenario: DemoScenario;
   },
 ) {
   const { data: existing, error: existingError } = await supabase
     .from("projects")
     .select("id")
     .eq("company_id", input.companyId)
-    .eq("name", DEMO_PROJECT_NAME)
+    .eq("name", input.scenario.projectName)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -386,15 +828,15 @@ async function ensureDemoProject(
       .insert({
         company_id: input.companyId,
         customer_id: input.customerId,
-        name: DEMO_PROJECT_NAME,
+        name: input.scenario.projectName,
         description:
           "Obra fictícia para demonstrar etapas, diário, custos e cobranças.",
-        address: "Rua das Palmeiras, 120 - Timon, MA",
+        address: input.scenario.projectAddress,
         status: "in_progress",
         starts_on: addDaysBR(-5),
         ends_on: addDaysBR(8),
-        budget_cents: DEMO_TOTAL_CENTS,
-        entry_pct: DEMO_ENTRY_PCT,
+        budget_cents: input.scenario.totalCents,
+        entry_pct: input.scenario.entryPct,
         created_by: input.userId,
       })
       .select("id")
@@ -407,15 +849,15 @@ async function ensureDemoProject(
       .from("projects")
       .update({
         customer_id: input.customerId,
-        name: DEMO_PROJECT_NAME,
+        name: input.scenario.projectName,
         description:
           "Obra fictícia para demonstrar etapas, diário, custos e cobranças.",
-        address: "Rua das Palmeiras, 120 - Timon, MA",
+        address: input.scenario.projectAddress,
         status: "in_progress",
         starts_on: addDaysBR(-5),
         ends_on: addDaysBR(8),
-        budget_cents: DEMO_TOTAL_CENTS,
-        entry_pct: DEMO_ENTRY_PCT,
+        budget_cents: input.scenario.totalCents,
+        entry_pct: input.scenario.entryPct,
       })
       .eq("id", projectId)
       .eq("company_id", input.companyId);
@@ -423,22 +865,94 @@ async function ensureDemoProject(
     if (error) throw error;
   }
 
-  await replaceDemoProjectStages(supabase, input.companyId, projectId);
+  await replaceDemoProjectStages(
+    supabase,
+    input.companyId,
+    projectId,
+    input.scenario,
+  );
   await replaceDemoProjectCosts(
     supabase,
     input.companyId,
     projectId,
     input.userId,
+    input.scenario,
   );
-  await ensureDemoDiaryEntry(supabase, input.companyId, projectId, input.userId);
+  await ensureDemoDiaryEntry(
+    supabase,
+    input.companyId,
+    projectId,
+    input.userId,
+    input.scenario,
+  );
 
   return projectId;
+}
+
+async function ensureDemoDeliverables(
+  supabase: ReturnType<typeof createClient>,
+  input: {
+    companyId: string;
+    projectId: string;
+    scenario: DemoScenario;
+    publicUrl: string;
+  },
+) {
+  const externalUrl = input.publicUrl.startsWith("https://")
+    ? input.publicUrl
+    : "https://example.com/prumo-demo";
+
+  for (const deliverable of input.scenario.deliverables) {
+    const { data: existing, error: existingError } = await supabase
+      .from("project_deliverables")
+      .select("id")
+      .eq("company_id", input.companyId)
+      .eq("project_id", input.projectId)
+      .eq("title", deliverable.title)
+      .is("archived_at", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) throw existingError;
+    if (existing?.id) continue;
+
+    const { data: created, error: createError } = await supabase.rpc(
+      "create_project_deliverable",
+      {
+        p_project_id: input.projectId,
+        p_stage_id: null,
+        p_title: deliverable.title,
+        p_description: deliverable.description,
+        p_source_kind: "external_link",
+        p_external_url: externalUrl,
+        p_file_name: null,
+        p_mime_type: null,
+        p_expected_size_bytes: null,
+        p_change_note: deliverable.changeNote,
+      },
+    );
+
+    const draft = created?.[0];
+    if (createError || !draft) {
+      throw createError ?? new Error("Entrega demo nao criada.");
+    }
+
+    const { error: publishError } = await supabase.rpc(
+      "publish_project_deliverable_version",
+      {
+        p_deliverable_id: draft.deliverable_id,
+        p_version_id: draft.version_id,
+      },
+    );
+    if (publishError) throw publishError;
+  }
 }
 
 async function replaceDemoProjectStages(
   supabase: ReturnType<typeof createClient>,
   companyId: string,
   projectId: string,
+  scenario: DemoScenario,
 ) {
   const { error: deleteError } = await supabase
     .from("project_stages")
@@ -448,7 +962,7 @@ async function replaceDemoProjectStages(
   if (deleteError) throw deleteError;
 
   const { error: insertError } = await supabase.from("project_stages").insert(
-    getProjectStages().map((stage) => ({
+    scenario.stages().map((stage) => ({
       project_id: projectId,
       company_id: companyId,
       ...stage,
@@ -462,6 +976,7 @@ async function replaceDemoProjectCosts(
   companyId: string,
   projectId: string,
   userId: string,
+  scenario: DemoScenario,
 ) {
   const { error: deleteError } = await supabase
     .from("project_costs")
@@ -470,12 +985,12 @@ async function replaceDemoProjectCosts(
     .eq("company_id", companyId)
     .in(
       "description",
-      projectCosts.map((cost) => cost.description),
+      scenario.projectCosts.map((cost) => cost.description),
     );
   if (deleteError) throw deleteError;
 
   const { error: insertError } = await supabase.from("project_costs").insert(
-    projectCosts.map((cost) => ({
+    scenario.projectCosts.map((cost) => ({
       project_id: projectId,
       company_id: companyId,
       incurred_on: todayBR(),
@@ -491,6 +1006,7 @@ async function ensureDemoDiaryEntry(
   companyId: string,
   projectId: string,
   userId: string,
+  scenario: DemoScenario,
 ) {
   const { data: existing, error: existingError } = await supabase
     .from("diary_entries")
@@ -508,8 +1024,7 @@ async function ensureDemoDiaryEntry(
     project_id: projectId,
     company_id: companyId,
     author_id: userId,
-    body:
-      "Equipe iniciou a frente principal, conferiu alinhamento das telhas e deixou pendente a instalação das calhas. Registro demo.",
+    body: `${scenario.projectDescription} Registro demo.`,
     weather: "Sol",
   });
 
