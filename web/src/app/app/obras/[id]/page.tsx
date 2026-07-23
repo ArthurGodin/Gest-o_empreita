@@ -11,6 +11,7 @@ import { TimeSection } from "./time-section";
 import { PublicLinkCallout } from "./public-link-callout";
 import { BillingSection } from "./billing-section";
 import { ProjectSectionNav } from "./project-section-nav";
+import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 
 const sectionAnchorClass =
   "min-w-0 scroll-mt-[calc(7.75rem+env(safe-area-inset-top))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:scroll-mt-24";
@@ -23,7 +24,7 @@ export async function generateMetadata({
   const { id } = await params;
   const project = await getProjectWithRelations(id);
   return {
-    title: project ? `${project.name} — Obras` : "Obra não encontrada",
+    title: project ? `${project.name} — Projetos` : "Projeto não encontrado",
   };
 }
 
@@ -37,9 +38,10 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const query = searchParams ? await searchParams : {};
   const conversionBillingAttention = query.cobranca === "atencao";
-  const [project, templates] = await Promise.all([
+  const [project, templates, company] = await Promise.all([
     getProjectWithRelations(id),
     listTemplates(),
+    getActiveCompanyFull(),
   ]);
 
   if (!project) notFound();
@@ -68,6 +70,7 @@ export default async function ProjectDetailPage({
 
       <BillingSection
         charges={project.charges}
+        businessSegment={company?.business_segment ?? "construction"}
         projectStatus={project.status}
         budgetCents={project.budget_cents}
         deliveryApprovedAt={project.delivery_approved_at}

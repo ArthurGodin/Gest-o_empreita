@@ -14,11 +14,17 @@ interface ApprovalFormProps {
   token: string;
   companyName: string;
   contactUrl: string | null;
+  isProposal?: boolean;
 }
 
 type Mode = "idle" | "rejecting" | "rejected";
 
-export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormProps) {
+export function ApprovalForm({
+  token,
+  companyName,
+  contactUrl,
+  isProposal = false,
+}: ApprovalFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("idle");
   const [signerName, setSignerName] = useState("");
@@ -149,7 +155,9 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
               className="w-full"
             >
               <CheckCircle2 aria-hidden="true" />
-              {pending ? "Aprovando…" : "Aprovar orçamento agora"}
+              {pending
+                ? "Aprovando…"
+                : `Aprovar ${isProposal ? "proposta" : "orçamento"} agora`}
             </Button>
             <Button
               type="button"
@@ -166,7 +174,7 @@ export function ApprovalForm({ token, companyName, contactUrl }: ApprovalFormPro
               className="w-full"
             >
               <PencilLine aria-hidden="true" />
-              Pedir mudanças no orçamento
+              Pedir mudanças {isProposal ? "na proposta" : "no orçamento"}
             </Button>
             {contactUrl && (
               <Button asChild variant="ghost" className="w-full">

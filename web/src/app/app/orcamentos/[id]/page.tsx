@@ -9,6 +9,7 @@ import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { getQuoteRevisions, getQuoteWithRelations } from "@/lib/queries/quotes";
 import { listTemplates } from "@/lib/queries/stage-templates";
 import { isEditable, STATUS_LABEL } from "@/lib/quote-status";
+import { getBusinessVocabulary } from "@/lib/business-segment";
 import { QuoteEditor } from "./quote-editor";
 import { QuoteView } from "./quote-view";
 import { DeleteQuoteButton } from "./delete-quote-button";
@@ -23,8 +24,8 @@ export async function generateMetadata({
   const quote = await getQuoteWithRelations(id);
   return {
     title: quote
-      ? `${quote.number} ${quote.title} — Orçamentos`
-      : "Orçamento não encontrado",
+      ? `${quote.number} ${quote.title} — Propostas`
+      : "Proposta não encontrada",
   };
 }
 
@@ -59,8 +60,9 @@ export default async function QuoteDetailPage({
     quote.effective_status === "rejected"
       ? getQuoteRevisions(quote.id)
       : Promise.resolve([]),
-    showConvert ? getActiveCompanyFull() : Promise.resolve(null),
+    getActiveCompanyFull(),
   ]);
+  const vocabulary = getBusinessVocabulary(company?.business_segment);
   const validRevisionSource =
     revisionSource?.effective_status === "rejected" &&
     revisionSource.customer_id === quote.customer_id
@@ -76,7 +78,7 @@ export default async function QuoteDetailPage({
           className="-ml-2 inline-flex min-h-11 touch-manipulation items-center gap-1 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
-          Voltar para orçamentos
+          Voltar para {vocabulary.quotePluralLower}
         </Link>
       </div>
 
@@ -86,10 +88,10 @@ export default async function QuoteDetailPage({
           validRevisionSource
             ? `Revisão em edição a partir do pedido de mudanças em ${validRevisionSource.number}. Ajuste, salve e envie novamente.`
             : editable
-            ? "Monte o orçamento, salve, e quando estiver pronto envie pelo WhatsApp."
+            ? `Monte ${vocabulary.quoteSingular === "Proposta" ? "a proposta" : "o orçamento"}, salve e, quando estiver pronto, envie pelo WhatsApp.`
             : quote.effective_status === "rejected"
               ? "O cliente pediu mudanças. Crie uma revisão para ajustar sem perder o histórico da recusa."
-              : `Esse orçamento está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
+              : `${vocabulary.quoteSingular === "Proposta" ? "Essa proposta" : "Esse orçamento"} está como "${STATUS_LABEL[quote.effective_status]}". Para mudar, duplique em um novo rascunho.`
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
@@ -131,6 +133,7 @@ export default async function QuoteDetailPage({
           revisions={revisions}
           templates={templates}
           paymentProvider={company?.payment_provider ?? "asaas"}
+          businessSegment={company?.business_segment ?? "construction"}
         />
       )}
     </PageContainer>

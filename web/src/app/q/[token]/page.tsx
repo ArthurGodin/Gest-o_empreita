@@ -8,6 +8,10 @@ import { PublicToggle } from "./public-toggle";
 import type { PublicProjectView } from "./andamento-view";
 import type { PublicQuoteViewData } from "./public-quote-view";
 import type { ProjectStatus, QuoteStatus, StageStatus } from "@/lib/supabase/types";
+import {
+  getBusinessVocabulary,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -38,6 +42,7 @@ interface PublicQuoteData {
     state: string | null;
     pix_instructions: string | null;
     plan: string | null;
+    business_segment: BusinessSegment;
   };
   customer: {
     name: string;
@@ -72,7 +77,7 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
       id, number, title, description, status, share_token, project_id, company_id,
       valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
-      company:companies(name, phone, email, logo_url, city, state, pix_instructions, plan),
+      company:companies(name, phone, email, logo_url, city, state, pix_instructions, plan, business_segment),
       customer:customers(name, city, state),
       items:quote_items(id, position, description, unit, quantity, unit_price_cents, total_cents),
       approvals:quote_approvals(action, signer_name, rejection_reason, created_at)
@@ -227,18 +232,21 @@ export async function generateMetadata({
 }) {
   const { token } = await params;
   const quote = await loadByToken(token);
+  const vocabulary = getBusinessVocabulary(
+    quote?.company.business_segment,
+  );
   if (!quote) {
     return {
-      title: "Link de orçamento indisponível — Prumo",
+      title: "Link de proposta indisponível — Prumo",
       description:
-        "O orçamento pode ter sido atualizado, expirado ou substituído por um novo link.",
+        "A proposta pode ter sido atualizada, expirada ou substituída por um novo link.",
       robots: { index: false, follow: false },
     };
   }
 
   return {
     title: `${quote.title} — ${quote.company.name}`,
-    description: `Orçamento ${quote.number} de ${quote.company.name}`,
+    description: `${vocabulary.quoteSingular} ${quote.number} de ${quote.company.name}`,
     robots: { index: false, follow: false }, // não indexar
   };
 }
@@ -292,6 +300,7 @@ function toPublicQuoteViewData(quote: PublicQuoteData): PublicQuoteViewData {
       state: quote.company.state,
       pix_instructions: quote.company.pix_instructions,
       plan: quote.company.plan,
+      business_segment: quote.company.business_segment,
     },
     customer: quote.customer
       ? {

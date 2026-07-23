@@ -9,6 +9,10 @@ import {
   suggestNextStatus,
 } from "@/lib/project-status";
 import type { ProjectStatus, StageStatus } from "@/lib/supabase/types";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 import { updateProjectStatusAction } from "./actions";
 
 interface StatusSuggestionProps {
@@ -22,11 +26,20 @@ export function StatusSuggestion({
   current,
   stages,
 }: StatusSuggestionProps) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const suggestion = suggestNextStatus(current, stages);
   if (!suggestion) return null;
+  const suggestionLabel =
+    segment === "construction"
+      ? PROJECT_STATUS_LABEL[suggestion.to]
+      : {
+          in_progress: "Em execução",
+          completed: "Concluído",
+        }[suggestion.to];
 
   function accept() {
     if (!suggestion) return;
@@ -42,7 +55,10 @@ export function StatusSuggestion({
         <Lightbulb className="h-4 w-4 text-primary" />
         <span>
           {suggestion.reason} —{" "}
-          <strong>marcar obra como {PROJECT_STATUS_LABEL[suggestion.to]}?</strong>
+          <strong>
+            marcar {vocabulary.projectSingular.toLowerCase()} como{" "}
+            {suggestionLabel}?
+          </strong>
         </span>
       </div>
       <Button size="sm" onClick={accept} disabled={pending} className="self-end sm:self-auto">

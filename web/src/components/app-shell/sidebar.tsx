@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Building2,
   FileText,
+  FolderKanban,
   HardHat,
   Home,
   LifeBuoy,
@@ -16,19 +17,33 @@ import {
   Crown,
 } from "lucide-react";
 import { signoutAction } from "@/app/(auth)/actions";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/app", label: "Início", icon: Home },
-  { href: "/app/orcamentos", label: "Orçamentos", icon: FileText },
-  { href: "/app/obras", label: "Obras", icon: HardHat },
-  { href: "/app/clientes", label: "Clientes", icon: Users },
-  { href: "/app/catalogo", label: "Catálogo", icon: Package },
-  { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
-] as const;
 
 export function Sidebar({ companyName }: { companyName: string }) {
   const pathname = usePathname();
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
+  const ProjectIcon = segment === "construction" ? HardHat : FolderKanban;
+  const navItems = [
+    { href: "/app", label: "Início", icon: Home },
+    {
+      href: "/app/orcamentos",
+      label: vocabulary.quotePlural,
+      icon: FileText,
+    },
+    {
+      href: "/app/obras",
+      label: vocabulary.projectPlural,
+      icon: ProjectIcon,
+    },
+    { href: "/app/clientes", label: "Clientes", icon: Users },
+    { href: "/app/catalogo", label: "Catálogo", icon: Package },
+    { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
+  ] as const;
 
   return (
     <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-56 lg:shrink-0 lg:flex-col">
@@ -42,7 +57,7 @@ export function Sidebar({ companyName }: { companyName: string }) {
               Prumo
             </span>
             <span className="block text-[11px] leading-4 text-muted-foreground">
-              Gestão de obras
+              {vocabulary.appDescriptor}
             </span>
           </span>
         </Link>
@@ -53,7 +68,7 @@ export function Sidebar({ companyName }: { companyName: string }) {
           <Building2 aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500" />
           <span className="min-w-0">
             <span className="block text-[10px] font-semibold uppercase text-muted-foreground">
-              Empresa
+              {vocabulary.organizationLabel}
             </span>
             <span
               className="block truncate text-xs font-semibold text-slate-800"

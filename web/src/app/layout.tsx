@@ -19,9 +19,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Prumo — Orçamentos e obras sem dor de cabeça",
+  title: "Prumo — Propostas, projetos e financeiro",
   description:
-    "Sistema para empreiteiros e empresas de cobertura: orçamentos profissionais, controle de obras, cobranças e equipe — tudo no celular.",
+    "Propostas, projetos, obras, cobranças e financeiro para arquitetura, interiores, engenharia e execução — no celular ou computador.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     title: "Prumo",
   },
   openGraph: {
-    title: "Prumo — Orçamentos e obras sem dor de cabeça",
+    title: "Prumo — Propostas, projetos e financeiro",
     description:
-      "Crie orçamentos profissionais, controle obras com fotos e etapas, cobre via Pix e veja sua margem em tempo real.",
+      "Apresente seu trabalho, receba a aprovação do cliente e acompanhe projetos, obras, cobranças e custos em um só lugar.",
     type: "website",
     locale: "pt_BR",
     siteName: "Prumo",

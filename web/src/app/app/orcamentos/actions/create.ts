@@ -13,6 +13,14 @@ import {
 import { generateShareToken } from "@/lib/quote-token";
 import { addDaysBR } from "@/lib/dates";
 import {
+  getBusinessVocabulary,
+  normalizeBusinessSegment,
+} from "@/lib/business-segment";
+import {
+  getQuoteTemplate,
+  quoteTemplateItemsPayload,
+} from "@/lib/quote-templates";
+import {
   FREE_MONTHLY_QUOTE_LIMIT,
   getFreeQuoteQuotaMonthStart,
 } from "@/lib/plans";
@@ -30,14 +38,16 @@ const createSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1)
     .max(200, "Título muito longo (máx 200 caracteres)")
-    .default("Novo orçamento"),
+    .optional()
+    .or(z.literal("")),
+  template_id: z.string().trim().max(80).optional().or(z.literal("")),
 });
 
 interface CreateInput {
   customer_id: string;
   title?: string;
+  template_id?: string;
 }
 
 /**
@@ -67,13 +77,62 @@ export async function createQuoteAction(
   const supabase = createClient();
 
   // ─── Paywall (Soft Limit) ──────────────────────────────────────────────────
-  const { data: companyData } = await supabase
+  const { data: companyData, error: companyError } = await supabase
     .from("companies")
-    .select("plan")
+    .select("plan, business_segment")
     .eq("id", company.company_id)
     .single();
 
-  if (companyData?.plan === "free") {
+  if (companyError || !companyData) {
+    logServerError("quotes.create.company-plan", companyError, {
+      company_id: company.company_id,
+    });
+    return {
+      ok: false,
+      error:
+        "Não foi possível confirmar seu plano agora. Tente novamente em instantes.",
+    };
+  }
+
+  const businessSegment = normalizeBusinessSegment(
+    companyData.business_segment ?? company.company.business_segment,
+  );
+  const vocabulary = getBusinessVocabulary(businessSegment);
+  const requestedTemplateId = parsed.data.template_id || "";
+  const template = requestedTemplateId
+    ? getQuoteTemplate(requestedTemplateId, businessSegment)
+    : null;
+
+  if (requestedTemplateId && !template) {
+    return {
+      ok: false,
+      error: "O modelo escolhido não está disponível para este perfil.",
+      fieldErrors: {
+        template_id: ["Escolha um modelo disponível ou comece em branco."],
+      },
+    };
+  }
+
+  const { data: customer, error: customerError } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("id", parsed.data.customer_id)
+    .eq("company_id", company.company_id)
+    .maybeSingle();
+
+  if (customerError) {
+    logServerError("quotes.create.customer", customerError);
+    return { ok: false, error: clientErrorFor(customerError) };
+  }
+  if (!customer) {
+    return {
+      ok: false,
+      error: "Cliente não encontrado nesta empresa.",
+      fieldErrors: { customer_id: ["Escolha um cliente válido."] },
+    };
+  }
+
+  if (companyData.plan === "free") {
     const quotaStart = getFreeQuoteQuotaMonthStart();
     const { count } = await supabase
       .from("quotes")
@@ -90,8 +149,7 @@ export async function createQuoteAction(
       });
       return {
         ok: false,
-        error:
-          "Você chegou ao limite do Plano Grátis: 3 orçamentos neste mês. Assine o Pro para criar orçamentos e obras sem limite.",
+        error: `Você chegou ao limite do Plano Grátis: 3 ${vocabulary.quotePluralLower} neste mês. Assine o Pro para criar ${vocabulary.quotePluralLower} e ${vocabulary.projectPluralLower} sem limite.`,
       };
     }
   }
@@ -108,7 +166,11 @@ export async function createQuoteAction(
     return { ok: false, error: clientErrorFor(numberError) };
   }
 
-  const validUntilStr = addDaysBR(15);
+  const validUntilStr = addDaysBR(template?.validDays ?? 15);
+  const title =
+    parsed.data.title?.trim() ||
+    template?.title ||
+    vocabulary.newQuoteLabel;
 
   const { data, error } = await supabase
     .from("quotes")
@@ -116,7 +178,9 @@ export async function createQuoteAction(
       company_id: company.company_id,
       customer_id: parsed.data.customer_id,
       number: numberData as string,
-      title: parsed.data.title ?? "Novo orçamento",
+      title,
+      description: template?.description ?? null,
+      notes: template?.notes ?? null,
       status: "draft",
       valid_until: validUntilStr,
       share_token: generateShareToken(),
@@ -130,11 +194,46 @@ export async function createQuoteAction(
     return { ok: false, error: clientErrorFor(error) };
   }
 
+  if (template) {
+    const items = quoteTemplateItemsPayload(template).map((item) => ({
+      ...item,
+      quote_id: data.id as string,
+      company_id: company.company_id,
+    }));
+    const { error: itemsError } = await supabase
+      .from("quote_items")
+      .insert(items);
+
+    if (itemsError) {
+      logServerError("quotes.create.template-items", itemsError, {
+        quote_id: data.id as string,
+        template_id: template.id,
+      });
+      const { error: rollbackError } = await supabase
+        .from("quotes")
+        .delete()
+        .eq("id", data.id as string)
+        .eq("company_id", company.company_id);
+      if (rollbackError) {
+        logServerError("quotes.create.template-rollback", rollbackError, {
+          quote_id: data.id as string,
+        });
+      }
+      return {
+        ok: false,
+        error:
+          "Não foi possível aplicar o modelo. Tente novamente ou comece em branco.",
+      };
+    }
+  }
+
   revalidatePath("/app/orcamentos");
   logServerEvent("quotes.created", {
+    business_segment: businessSegment,
     company_id: company.company_id,
     quote_id: data.id as string,
-    plan: companyData?.plan ?? "unknown",
+    quote_template: template?.id ?? "blank",
+    plan: companyData.plan,
   });
   return { ok: true, id: data.id as string };
 }

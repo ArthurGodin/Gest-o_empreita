@@ -28,7 +28,7 @@ export default async function SettingsPage() {
     <PageContainer size="medium" spacing="compact">
       <PageHeader
         title="Configurações"
-        description="Dados da empresa que aparecem nos orçamentos enviados pra clientes."
+        description="Perfil, marca e dados que organizam seu espaço de trabalho e aparecem para clientes."
       />
 
       <SettingsForms company={company} />

@@ -5,10 +5,13 @@ import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getCustomers } from "@/lib/queries/customers";
+import { getActiveCompany } from "@/lib/queries/company";
+import { getBusinessVocabulary } from "@/lib/business-segment";
+import { getQuoteTemplatesForSegment } from "@/lib/quote-templates";
 import { NewQuoteForm } from "./new-quote-form";
 
 export const metadata = {
-  title: "Novo orçamento — Prumo",
+  title: "Nova proposta ou orçamento — Prumo",
 };
 
 export default async function NewQuotePage({
@@ -17,7 +20,13 @@ export default async function NewQuotePage({
   searchParams?: Promise<{ cliente?: string }>;
 }) {
   const query = searchParams ? await searchParams : {};
-  const customers = await getCustomers();
+  const [customers, company] = await Promise.all([
+    getCustomers(),
+    getActiveCompany(),
+  ]);
+  const segment = company?.company.business_segment;
+  const vocabulary = getBusinessVocabulary(segment);
+  const templates = getQuoteTemplatesForSegment(segment);
   const selectedCustomerId = customers.some(
     (customer) => customer.id === query.cliente,
   )
@@ -32,20 +41,20 @@ export default async function NewQuotePage({
           className="-ml-2 inline-flex min-h-11 touch-manipulation items-center gap-1 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
-          Voltar para orçamentos
+          Voltar para {vocabulary.quotePluralLower}
         </Link>
       </div>
 
       <PageHeader
-        title="Novo orçamento"
-        description="Escolha o cliente e dê um título. Você adiciona os itens na tela seguinte."
+        title={vocabulary.newQuoteLabel}
+        description="Escolha um cliente e comece em branco ou com um modelo editável."
       />
 
       {customers.length === 0 ? (
         <EmptyState
           icon={<Plus aria-hidden="true" className="h-6 w-6" />}
           title="Sem clientes cadastrados"
-          description="Pra criar um orçamento, primeiro cadastre o cliente. É rápido."
+          description={`Para criar ${vocabulary.quoteSingular === "Proposta" ? "uma proposta" : "um orçamento"}, primeiro cadastre o cliente.`}
           action={
             <Button asChild>
               <Link href="/app/clientes/novo?after=quote">
@@ -57,6 +66,7 @@ export default async function NewQuotePage({
       ) : (
         <NewQuoteForm
           customers={customers}
+          templates={templates}
           selectedCustomerId={selectedCustomerId}
         />
       )}

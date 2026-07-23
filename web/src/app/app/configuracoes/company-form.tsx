@@ -6,6 +6,7 @@ import { FormSaveBar } from "@/components/forms/form-save-bar";
 import type { FormSaveStatus } from "@/components/forms/form-save-status";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getBusinessVocabulary } from "@/lib/business-segment";
 import { formatSavedTime } from "@/lib/form-draft";
 import type { CompanyFull } from "@/lib/queries/company-settings";
 import { updateCompanyAction } from "./actions";
@@ -24,6 +25,7 @@ interface CompanyFormProps {
 }
 
 export function CompanyForm({ company, onDirtyChange }: CompanyFormProps) {
+  const vocabulary = getBusinessVocabulary(company.business_segment);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [draft, setDraft] = useState<CompanyDraft>(() =>
@@ -138,12 +140,16 @@ export function CompanyForm({ company, onDirtyChange }: CompanyFormProps) {
     >
       <fieldset className="space-y-4 border-b pb-5">
         <legend className="mb-3 text-sm font-semibold text-foreground">
-          Identificação
+          Identificação profissional
         </legend>
 
         <CompanyField
           id="name"
-          label="Nome da empresa"
+          label={`Nome ${
+            vocabulary.organizationLabel === "Escritório"
+              ? "do escritório"
+              : "da empresa"
+          }`}
           required
           error={visibleErrors.name}
         >
@@ -152,7 +158,11 @@ export function CompanyForm({ company, onDirtyChange }: CompanyFormProps) {
             name="name"
             value={draft.name}
             onChange={(event) => updateField("name", event.target.value)}
-            placeholder="Coberturas do Léo"
+            placeholder={
+              company.business_segment === "construction"
+                ? "Construtora Horizonte"
+                : "Estúdio Norte"
+            }
             maxLength={200}
             autoComplete="organization"
             aria-invalid={Boolean(visibleErrors.name) || undefined}
@@ -377,9 +387,9 @@ export function CompanyForm({ company, onDirtyChange }: CompanyFormProps) {
         lastSavedLabel={formatSavedTime(lastSavedAt)}
         onSave={submit}
         saveDisabled={saving || !isDirty}
-        savedLabel="Dados da empresa salvos"
+        savedLabel="Dados profissionais salvos"
         savedHint="Estas informações aparecem nos documentos e telas do cliente."
-        dirtyHint="Salve para atualizar a identificação da empresa."
+        dirtyHint="Salve para atualizar sua identificação profissional."
       />
     </form>
   );

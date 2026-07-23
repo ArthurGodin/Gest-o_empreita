@@ -1,39 +1,51 @@
 import Link from "next/link";
-import { HardHat } from "lucide-react";
+import { FolderKanban, HardHat } from "lucide-react";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Button } from "@/components/ui/button";
 import { getProjects } from "@/lib/queries/projects";
+import { getActiveCompany } from "@/lib/queries/company";
+import { getBusinessVocabulary } from "@/lib/business-segment";
 import { ProjectList } from "./project-list";
 
 export const metadata = {
-  title: "Obras - Prumo",
+  title: "Projetos e obras - Prumo",
 };
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  const [projects, company] = await Promise.all([
+    getProjects(),
+    getActiveCompany(),
+  ]);
+  const vocabulary = getBusinessVocabulary(
+    company?.company.business_segment,
+  );
+  const professional = vocabulary.projectSingular === "Projeto";
+  const ProjectIcon = professional ? FolderKanban : HardHat;
 
   return (
     <PageContainer>
       <PageHeader
-        title="Obras"
-        description={
-          "Acompanhe execu\u00e7\u00e3o, prazo, custos e cobran\u00e7as em um s\u00f3 lugar."
-        }
+        title={vocabulary.projectPlural}
+        description={`Acompanhe etapas, prazo, custos e cobranças dos seus ${vocabulary.projectPluralLower}.`}
       />
 
       {projects.length === 0 ? (
         <EmptyState
-          icon={<HardHat />}
-          title="Nenhuma obra criada"
+          icon={<ProjectIcon />}
+          title={
+            professional ? "Nenhum projeto criado" : "Nenhuma obra criada"
+          }
           description={
-            "Uma obra nasce de um or\u00e7amento aprovado. Abra suas propostas para acompanhar um aceite ou fazer a convers\u00e3o."
+            professional
+              ? "Um projeto nasce de uma proposta aprovada. Acompanhe o aceite e faça a conversão quando ela estiver pronta."
+              : "Uma obra nasce de um orçamento aprovado. Acompanhe o aceite e faça a conversão quando estiver pronto."
           }
           action={
             <Button asChild>
               <Link href="/app/orcamentos">
-                {"Abrir or\u00e7amentos"}
+                {`Abrir ${vocabulary.quotePluralLower}`}
               </Link>
             </Button>
           }

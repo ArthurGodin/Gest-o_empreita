@@ -10,23 +10,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BusinessSegmentPicker } from "@/components/business-segment-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackProductEvent } from "@/lib/product-analytics";
+import type { BusinessSegment } from "@/lib/business-segment";
 import { createCompanyAction, type OnboardingResult } from "./actions";
 
-const FIELD_ORDER = ["name", "phone", "city", "state"];
+const FIELD_ORDER = ["business_segment", "name", "phone", "city", "state"];
 
 export function OnboardingForm() {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<OnboardingResult | null>(null);
+  const [businessSegment, setBusinessSegment] = useState<
+    BusinessSegment | undefined
+  >();
   const router = useRouter();
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   useEffect(() => {
     if (!fieldErrors) return;
     const firstInvalidField = FIELD_ORDER.find((field) => fieldErrors[field]);
+    if (firstInvalidField === "business_segment") {
+      document
+        .querySelector<HTMLInputElement>('input[name="business_segment"]')
+        ?.focus();
+      return;
+    }
     if (firstInvalidField) document.getElementById(firstInvalidField)?.focus();
   }, [fieldErrors]);
 
@@ -40,6 +51,7 @@ export function OnboardingForm() {
       const plan = url.searchParams.get("plan");
       if (plan) formData.append("plan", plan);
       trackProductEvent("onboarding_submitted", {
+        business_segment: businessSegment ?? "not_selected",
         target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
       });
 
@@ -47,6 +59,7 @@ export function OnboardingForm() {
         const nextResult = await createCompanyAction(formData);
         if (!nextResult.ok) {
           trackProductEvent("onboarding_failed", {
+            business_segment: businessSegment ?? "not_selected",
             target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
             has_field_errors: Boolean(nextResult.fieldErrors),
           });
@@ -55,6 +68,7 @@ export function OnboardingForm() {
         }
 
         trackProductEvent("onboarding_completed", {
+          business_segment: businessSegment ?? "construction",
           target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
           redirects_to_checkout: nextResult.redirectTo.includes("/checkout"),
         });
@@ -62,6 +76,7 @@ export function OnboardingForm() {
         router.refresh();
       } catch {
         trackProductEvent("onboarding_failed", {
+          business_segment: businessSegment ?? "not_selected",
           target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
           thrown: true,
         });
@@ -90,30 +105,36 @@ export function OnboardingForm() {
 
         <div className="grid gap-5 pt-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start lg:gap-10 lg:pt-10">
           <section className="lg:pt-3">
-            <p className="text-sm font-semibold text-primary">Sua empresa</p>
+            <p className="text-sm font-semibold text-primary">
+              Seu espaço de trabalho
+            </p>
             <h1 className="mt-2 max-w-md text-balance text-2xl font-bold leading-tight sm:text-3xl">
-              Prepare a identificação das suas propostas
+              Deixe o Prumo com a cara da sua rotina
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-              Comece pelo essencial. Você poderá completar logo, CNPJ e endereço
-              nas configurações depois.
+              Escolha sua área e informe o essencial. O Prumo adapta a linguagem
+              e os modelos sem mudar seus dados ou seu plano.
             </p>
 
             <ol className="mt-6 hidden space-y-4 border-l pl-5 lg:block">
               <li>
-                <p className="text-sm font-semibold">1. Identifique a empresa</p>
+                <p className="text-sm font-semibold">1. Escolha sua área</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Nome e contato aparecem para o cliente.
+                  A navegação e os modelos ficam mais familiares.
                 </p>
               </li>
               <li>
-                <p className="text-sm font-semibold">2. Cadastre um cliente</p>
+                <p className="text-sm font-semibold">
+                  2. Identifique seu negócio
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  O painel indicará essa ação ao entrar.
+                  Nome e contato podem aparecer para o cliente.
                 </p>
               </li>
               <li>
-                <p className="text-sm font-semibold">3. Envie a proposta</p>
+                <p className="text-sm font-semibold">
+                  3. Crie a primeira proposta
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Recebimento será configurado apenas na hora de cobrar.
                 </p>
@@ -123,15 +144,29 @@ export function OnboardingForm() {
 
           <Card>
             <CardHeader className="border-b">
-              <CardTitle className="text-lg">Dados da empresa</CardTitle>
+              <CardTitle className="text-lg">Configuração inicial</CardTitle>
               <CardDescription>
-                Apenas o nome é obrigatório para começar.
+                Leva menos de dois minutos.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
               <form onSubmit={onSubmit} className="space-y-4" noValidate>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome da empresa *</Label>
+                <BusinessSegmentPicker
+                  idPrefix="onboarding-segment"
+                  value={businessSegment}
+                  onValueChange={(value) => {
+                    setBusinessSegment(value);
+                    setResult(null);
+                  }}
+                  description="Isso só adapta textos e sugestões. Você poderá mudar depois."
+                  error={fieldErrors?.business_segment?.[0]}
+                  disabled={pending}
+                />
+
+                <div className="space-y-2 border-t pt-4">
+                  <Label htmlFor="name">
+                    Nome profissional ou da empresa *
+                  </Label>
                   <div className="relative">
                     <Building2
                       aria-hidden="true"
@@ -143,7 +178,7 @@ export function OnboardingForm() {
                       type="text"
                       required
                       autoComplete="organization"
-                      placeholder="Ex.: Construtora Horizonte…"
+                      placeholder="Ex.: Estúdio Norte"
                       aria-invalid={Boolean(fieldErrors?.name)}
                       aria-describedby={
                         fieldErrors?.name ? "onboarding-name-error" : undefined

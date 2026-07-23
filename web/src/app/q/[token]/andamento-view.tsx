@@ -13,6 +13,11 @@ import {
 } from "lucide-react";
 import { formatDateBR } from "@/lib/utils";
 import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
+import {
+  getBusinessVocabulary,
+  isProfessionalSegment,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 import type {
   ChargeKind,
   ChargeStatus,
@@ -62,6 +67,7 @@ export interface PublicProjectView {
 interface AndamentoViewProps {
   view: PublicProjectView;
   shareToken: string;
+  businessSegment: BusinessSegment;
 }
 
 const STATUS_PILL: Record<ProjectStatus, string> = {
@@ -87,7 +93,23 @@ const STAGE_PILL: Record<StageStatus, { label: string; class: string }> = {
   },
 };
 
-export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
+export function AndamentoView({
+  view,
+  shareToken,
+  businessSegment,
+}: AndamentoViewProps) {
+  const vocabulary = getBusinessVocabulary(businessSegment);
+  const isProfessional = isProfessionalSegment(businessSegment);
+  const statusLabel = isProfessional
+    ? {
+        planning: "Planejado",
+        in_progress: "Em execução",
+        paused: "Pausado",
+        completed: "Concluído",
+        cancelled: "Cancelado",
+      }[view.status]
+    : PROJECT_STATUS_LABEL[view.status];
+  const diaryLabel = vocabulary.diaryLabel;
   const stages = [...view.stages].sort((a, b) => a.position - b.position);
   const doneCount = stages.filter((s) => s.status === "done").length;
   const totalCount = stages.length;
@@ -155,12 +177,15 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
               </span>
             )}
             {view.starts_on && (
-              <span>Iniciada {formatDateBR(view.starts_on)}</span>
+              <span>
+                {isProfessional ? "Iniciado" : "Iniciada"}{" "}
+                {formatDateBR(view.starts_on)}
+              </span>
             )}
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_PILL[view.status]}`}
             >
-              {PROJECT_STATUS_LABEL[view.status]}
+              {statusLabel}
             </span>
           </div>
         </div>
@@ -216,7 +241,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {stage.status === "done" && stage.completed_on && (
-                        <>Concluído em {formatDateBR(stage.completed_on)}</>
+                        <>Concluída em {formatDateBR(stage.completed_on)}</>
                       )}
                       {stage.status === "in_progress" && stage.started_on && (
                         <>Em execução desde {formatDateBR(stage.started_on)}</>
@@ -241,7 +266,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
       {view.diary.length > 0 && (
         <section className="rounded-lg border bg-card p-4">
           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-            Diário da obra ({view.diary_total} registro
+            {diaryLabel} ({view.diary_total} registro
             {view.diary_total === 1 ? "" : "s"})
           </h3>
           <div className="divide-y">
@@ -267,14 +292,14 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
                         <button
                           key={photo.id}
                           type="button"
-                          aria-label={`Abrir foto ${pi + 1} do diário da obra`}
+                          aria-label={`Abrir foto ${pi + 1} do ${diaryLabel.toLowerCase()}`}
                           onClick={() => openLightbox(ei, pi)}
                           className="aspect-square overflow-hidden rounded-md bg-muted hover:opacity-90"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={`/q/${shareToken}/photo/${photo.id}`}
-                            alt={`Foto ${pi + 1} do diário da obra`}
+                            alt={`Foto ${pi + 1} do ${diaryLabel.toLowerCase()}`}
                             width={320}
                             height={320}
                             loading="lazy"
@@ -304,13 +329,17 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
       {view.status === "completed" && (
         <div className="flex items-center gap-2 rounded-lg border border-green-300 bg-green-50 p-3 text-sm text-green-900 dark:border-green-900 dark:bg-green-950/40 dark:text-green-100">
           <CheckCircle2 className="h-5 w-5" />
-          <strong>Obra concluída!</strong>
+          <strong>
+            {vocabulary.projectSingular}{" "}
+            {isProfessional ? "concluído" : "concluída"}!
+          </strong>
         </div>
       )}
       {view.status === "paused" && (
         <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
           <Pause className="h-5 w-5" />
-          Obra está pausada no momento.
+          {vocabulary.projectSingular}{" "}
+          {isProfessional ? "está pausado" : "está pausada"} no momento.
         </div>
       )}
 
@@ -318,7 +347,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Foto ampliada do diário da obra"
+          aria-label={`Foto ampliada do ${diaryLabel.toLowerCase()}`}
           className="fixed inset-0 z-50 flex overscroll-contain items-center justify-center bg-black/90 p-4"
         >
           <button
@@ -332,7 +361,7 @@ export function AndamentoView({ view, shareToken }: AndamentoViewProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/q/${shareToken}/photo/${currentPhotoId}`}
-            alt="Foto ampliada do diário da obra"
+            alt={`Foto ampliada do ${diaryLabel.toLowerCase()}`}
             width={1600}
             height={1200}
             className="max-h-full max-w-full object-contain"

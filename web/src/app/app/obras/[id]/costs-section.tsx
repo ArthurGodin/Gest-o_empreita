@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import type { CostCategory } from "@/lib/supabase/types";
 import type {
@@ -36,6 +37,8 @@ export function CostsSection({
   summary,
   stages,
 }: CostsSectionProps) {
+  const vocabulary = useBusinessVocabulary();
+  const professional = vocabulary.projectSingular === "Projeto";
   const [expanded, setExpanded] = useState(false);
 
   const stageById = new Map(stages.map((s) => [s.id, s] as const));
@@ -44,12 +47,12 @@ export function CostsSection({
     <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
         <div className="text-sm font-semibold text-foreground">
-          Custos da obra
+          Custos {professional ? "do projeto" : "da obra"}
         </div>
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Interno</span>
       </div>
 
-      <MarginCard summary={summary} />
+      <MarginCard summary={summary} professional={professional} />
 
       <div className="mt-3 space-y-1">
         {CATEGORY_ORDER.map((cat) => {
@@ -114,12 +117,22 @@ export function CostsSection({
   );
 }
 
-function MarginCard({ summary }: { summary: CostSummary }) {
+function MarginCard({
+  summary,
+  professional,
+}: {
+  summary: CostSummary;
+  professional: boolean;
+}) {
   if (summary.revenue_cents == null) {
     return (
       <div className="rounded-md border border-dashed bg-muted/20 p-3 text-xs text-muted-foreground">
-        Sem orçamento aprovado vinculado — a margem aparece quando a obra
-        vem de um orçamento.
+        Sem{" "}
+        {professional
+          ? "proposta aprovada vinculada"
+          : "orçamento aprovado vinculado"}{" "}
+        — a margem aparece quando {professional ? "o projeto" : "a obra"} vem
+        de {professional ? "uma proposta" : "um orçamento"}.
       </div>
     );
   }

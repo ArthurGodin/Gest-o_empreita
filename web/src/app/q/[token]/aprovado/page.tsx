@@ -15,6 +15,10 @@ import { TrackedAnchor } from "@/components/tracked-anchor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone, whatsappDirectShareLink } from "@/lib/format";
+import {
+  getBusinessVocabulary,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +34,7 @@ interface ApprovedData {
     logo_url: string | null;
     city: string | null;
     state: string | null;
+    business_segment: BusinessSegment;
   };
   customer: {
     name: string;
@@ -53,7 +58,7 @@ export default async function ApprovedPage({
     .select(
       `
       number, title, total_cents, approved_at, share_token,
-      company:companies(name, phone, logo_url, city, state),
+      company:companies(name, phone, logo_url, city, state, business_segment),
       customer:customers(name, city, state),
       approvals:quote_approvals(signer_name, created_at, action)
     `,
@@ -63,6 +68,10 @@ export default async function ApprovedPage({
 
   if (error || !data) notFound();
   const quote = data as unknown as ApprovedData;
+  const vocabulary = getBusinessVocabulary(
+    quote.company.business_segment,
+  );
+  const isProposal = vocabulary.quoteSingular === "Proposta";
 
   const approval = quote.approvals
     .filter((a) => a.action === "approved")
@@ -84,7 +93,9 @@ export default async function ApprovedPage({
     : "";
   const contactUrl = whatsappDirectShareLink({
     phone: quote.company.phone,
-    message: `Olá, ${quote.company.name}. Acabei de aprovar o orçamento ${quote.number} (${quote.title}) e quero combinar os próximos passos.`,
+    message: `Olá, ${quote.company.name}. Acabei de aprovar ${
+      isProposal ? "a proposta" : "o orçamento"
+    } ${quote.number} (${quote.title}) e quero combinar os próximos passos.`,
   });
   const companyPhoneLabel = contactUrl ? formatPhone(quote.company.phone) : null;
 
@@ -124,7 +135,7 @@ export default async function ApprovedPage({
           <Button asChild variant="outline">
             <Link href={`/q/${token}`}>
               <ArrowLeft className="h-4 w-4" />
-              Ver orçamento
+              Ver {vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")}
             </Link>
           </Button>
         </header>
@@ -142,7 +153,9 @@ export default async function ApprovedPage({
                     Aprovação registrada
                   </div>
                   <h1 className="mt-3 break-words text-balance text-2xl font-bold leading-tight">
-                    Orçamento aprovado com sucesso.
+                    {isProposal
+                      ? "Proposta aprovada com sucesso."
+                      : "Orçamento aprovado com sucesso."}
                   </h1>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-green-900/80">
                     {approval ? (
@@ -175,7 +188,8 @@ export default async function ApprovedPage({
                 <div>
                   <h2 className="font-bold">Recibo da aprovação</h2>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Guarde esta página como confirmação. O orçamento completo
+                    Guarde esta página como confirmação.{" "}
+                    {isProposal ? "A proposta completa" : "O orçamento completo"}
                     continua disponível pelo link original.
                   </p>
                 </div>
@@ -183,7 +197,9 @@ export default async function ApprovedPage({
 
               <dl className="mt-5 divide-y">
                 <div className="grid gap-1 py-3 sm:grid-cols-[160px_minmax(0,1fr)]">
-                  <dt className="text-sm text-muted-foreground">Orçamento</dt>
+                  <dt className="text-sm text-muted-foreground">
+                    {vocabulary.quoteSingular}
+                  </dt>
                   <dd className="min-w-0 font-mono text-sm font-semibold">
                     {quote.number}
                   </dd>
@@ -247,9 +263,11 @@ export default async function ApprovedPage({
                     </li>
                     <li>
                       <span className="font-semibold text-foreground">
-                        3. Obra:
+                        3. {vocabulary.projectSingular}:
                       </span>{" "}
-                      o orçamento aprovado pode virar acompanhamento da obra.
+                      {isProposal
+                        ? "a proposta aprovada pode virar acompanhamento do projeto."
+                        : "o orçamento aprovado pode virar acompanhamento da obra."}
                     </li>
                   </ol>
                 </div>
@@ -292,7 +310,9 @@ export default async function ApprovedPage({
                 <Button asChild variant="outline" className="h-12 bg-white">
                   <Link href={`/q/${token}`}>
                     <FileText className="h-4 w-4" />
-                    Abrir orçamento completo
+                    {isProposal
+                      ? "Abrir proposta completa"
+                      : "Abrir orçamento completo"}
                   </Link>
                 </Button>
               </div>

@@ -12,6 +12,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { env } from "@/lib/env";
+import { getBusinessVocabulary } from "@/lib/business-segment";
 import { formatQuantityBR, normalizeQuoteUnit } from "@/lib/format";
 import { shouldShowPrumoBrand } from "@/lib/plans";
 
@@ -63,6 +64,7 @@ interface QuotePdfProps {
     city: string | null;
     state: string | null;
     plan?: string | null;
+    business_segment?: string | null;
   };
   customer: {
     name: string;
@@ -293,12 +295,14 @@ function formatDateBR(iso: string | null): string {
 
 export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
   const showPrumoBrand = shouldShowPrumoBrand(company.plan);
+  const vocabulary = getBusinessVocabulary(company.business_segment);
+  const documentLabel = vocabulary.quoteSingular;
 
   return (
     <Document
       title={`${quote.number} — ${quote.title}`}
       author={company.name}
-      subject={`Orçamento ${quote.number}`}
+      subject={`${documentLabel} ${quote.number}`}
     >
       <Page size="A4" style={styles.page}>
         {/* Header: logo + dados da empresa | número do orçamento */}
@@ -331,7 +335,7 @@ export function QuotePdf({ company, customer, quote, items }: QuotePdfProps) {
           </View>
 
           <View style={styles.numberBlock}>
-            <Text style={styles.numberLabel}>Orçamento</Text>
+            <Text style={styles.numberLabel}>{documentLabel}</Text>
             <Text style={styles.numberValue}>{quote.number}</Text>
             <Text style={styles.dateLine}>
               Emitido em {formatDateBR(quote.created_at)}

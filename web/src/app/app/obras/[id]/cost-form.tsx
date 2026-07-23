@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { ConfirmDiscardDialog } from "@/components/forms/confirm-discard-dialog";
 import { ProtectedFormNavigation } from "@/components/forms/protected-form-navigation";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,6 +41,7 @@ interface CostFormProps {
 }
 
 export function CostForm({ projectId, stages }: CostFormProps) {
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const inProgressStage = stages.find((stage) => stage.status === "in_progress");
   const createInitialDraft = (): CostDraft => ({
@@ -165,7 +167,11 @@ export function CostForm({ projectId, stages }: CostFormProps) {
           <DialogHeader className="pr-6 text-left">
             <DialogTitle className="text-base">Lançar gasto</DialogTitle>
             <DialogDescription>
-              Registre o custo real para acompanhar a margem desta obra.
+              Registre o custo real para acompanhar a margem{" "}
+              {vocabulary.projectSingular === "Projeto"
+                ? "deste projeto"
+                : "desta obra"}
+              .
             </DialogDescription>
           </DialogHeader>
 

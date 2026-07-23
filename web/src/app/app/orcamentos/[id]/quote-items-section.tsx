@@ -3,6 +3,7 @@
 import { Plus, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBRL } from "@/lib/utils";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 import { ItemRow } from "./item-row";
 import type {
   ItemDraft,
@@ -41,6 +42,8 @@ export function QuoteItemsSection({
   onAddItem,
   onUndoRemove,
 }: QuoteItemsSectionProps) {
+  const vocabulary = useBusinessVocabulary();
+
   return (
     <section
       id="quote-items"
@@ -49,7 +52,7 @@ export function QuoteItemsSection({
     >
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
         <h2 className="text-sm font-semibold text-foreground">
-          Itens do orçamento
+          Itens {vocabulary.quoteSingular === "Proposta" ? "da proposta" : "do orçamento"}
         </h2>
         <span className="text-xs text-muted-foreground">
           {filledItemsCount} {filledItemsCount === 1 ? "item" : "itens"}
@@ -124,7 +127,9 @@ export function QuoteItemsSection({
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t px-1 pt-3">
-        <span className="text-sm text-muted-foreground">Total do orçamento</span>
+        <span className="text-sm text-muted-foreground">
+          Total {vocabulary.quoteSingular === "Proposta" ? "da proposta" : "do orçamento"}
+        </span>
         <span className="text-xl font-bold tabular-nums text-primary sm:text-2xl">
           {formatBRL(totalCents / 100)}
         </span>

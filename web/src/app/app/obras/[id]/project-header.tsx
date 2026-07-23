@@ -6,6 +6,19 @@ import { PROJECT_STATUS_LABEL } from "@/lib/project-status";
 import { formatDateBR } from "@/lib/utils";
 import type { ProjectListItem } from "@/lib/queries/projects";
 import { StatusMenu } from "./status-menu";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
+import type { ProjectStatus } from "@/lib/supabase/types";
+
+const PROFESSIONAL_STATUS_LABEL: Record<ProjectStatus, string> = {
+  planning: "Planejado",
+  in_progress: "Em andamento",
+  paused: "Pausado",
+  completed: "Concluído",
+  cancelled: "Cancelado",
+};
 
 const STATUS_PILL: Record<string, string> = {
   planning: "bg-muted text-muted-foreground",
@@ -19,6 +32,8 @@ const STATUS_PILL: Record<string, string> = {
 };
 
 export function ProjectHeader({ project }: { project: ProjectListItem }) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
   const startedFmt = project.starts_on
     ? formatDateBR(project.starts_on)
     : null;
@@ -31,7 +46,7 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
         className="-ml-2 inline-flex min-h-11 touch-manipulation items-center gap-1 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
-        Voltar para obras
+        Voltar para {vocabulary.projectPluralLower}
       </Link>
 
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
@@ -49,11 +64,18 @@ export function ProjectHeader({ project }: { project: ProjectListItem }) {
             {project.customer && (
               <span>Cliente: {project.customer.name}</span>
             )}
-            {startedFmt && <span>Iniciada {startedFmt}</span>}
+            {startedFmt && (
+              <span>
+                {segment === "construction" ? "Iniciada" : "Iniciado"}{" "}
+                {startedFmt}
+              </span>
+            )}
             <span
               className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ${pillClass}`}
             >
-              {PROJECT_STATUS_LABEL[project.status]}
+              {segment === "construction"
+                ? PROJECT_STATUS_LABEL[project.status]
+                : PROFESSIONAL_STATUS_LABEL[project.status]}
             </span>
           </div>
         </div>

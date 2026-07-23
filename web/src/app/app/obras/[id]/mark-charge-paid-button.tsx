@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { formatBRL } from "@/lib/utils";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 import { markChargePaidManuallyAction } from "./actions";
 
 interface MarkChargePaidButtonProps {
@@ -31,6 +32,7 @@ export function MarkChargePaidButton({
   label = "Marcar como recebido",
   className,
 }: MarkChargePaidButtonProps) {
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
@@ -53,7 +55,11 @@ export function MarkChargePaidButton({
 
       toast({
         title: "Recebimento confirmado",
-        description: "A parcela entrou como recebida no financeiro da obra.",
+        description: `A parcela entrou como recebida no financeiro ${
+          vocabulary.projectSingular === "Projeto"
+            ? "do projeto"
+            : "da obra"
+        }.`,
       });
       setOpen(false);
       setNote("");

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { cn } from "@/lib/utils";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 const PROJECT_SECTIONS = [
   { id: "etapas", label: "Etapas" },
@@ -25,6 +26,7 @@ function sectionFromHash(hash: string): ProjectSectionId | null {
 }
 
 export function ProjectSectionNav() {
+  const vocabulary = useBusinessVocabulary();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] =
     useState<ProjectSectionId>("etapas");
@@ -136,7 +138,7 @@ export function ProjectSectionNav() {
     <div ref={sentinelRef} className="relative">
       {floating ? <div aria-hidden="true" className="h-[61px]" /> : null}
       <nav
-        aria-label={"Se\u00e7\u00f5es da obra"}
+        aria-label={`Seções ${vocabulary.projectSingular === "Projeto" ? "do projeto" : "da obra"}`}
         className={cn(
           "z-30 border-y bg-background/95 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur",
           floating
@@ -153,7 +155,7 @@ export function ProjectSectionNav() {
         >
           <label className="block lg:hidden">
             <span className="sr-only">
-              {"Ir para uma se\u00e7\u00e3o da obra"}
+              {`Ir para uma seção ${vocabulary.projectSingular === "Projeto" ? "do projeto" : "da obra"}`}
             </span>
             <select
               name="project-section"

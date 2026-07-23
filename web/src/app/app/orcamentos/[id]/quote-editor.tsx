@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 import { checkSendReadiness } from "@/lib/quote-status";
 import { updateQuoteAction } from "../actions/update";
 import {
@@ -82,6 +83,7 @@ export function QuoteEditor({
   customers,
   revisionSource,
 }: QuoteEditorProps) {
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -191,7 +193,7 @@ export function QuoteEditor({
       {
         label: "Validade definida",
         ok: Boolean(validUntil),
-        help: "A validade evita orçamento antigo sendo aprovado depois.",
+        help: `A validade evita ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} antiga sendo aprovada depois.`,
       },
       {
         label: "Pelo menos 1 item",
@@ -201,10 +203,21 @@ export function QuoteEditor({
       {
         label: "Total maior que zero",
         ok: total > 0,
-        help: "Informe quantidade e preço para gerar uma proposta real.",
+        help: `Informe quantidade e preço para gerar ${
+          vocabulary.quoteSingular === "Proposta"
+            ? "uma proposta real"
+            : "um orçamento real"
+        }.`,
       },
     ],
-    [customerId, filledItems.length, title, total, validUntil],
+    [
+      customerId,
+      filledItems.length,
+      title,
+      total,
+      validUntil,
+      vocabulary.quoteSingular,
+    ],
   );
   const nextBlocker = readiness.blockers[0] ?? null;
   const selectedCustomer =
@@ -330,7 +343,7 @@ export function QuoteEditor({
       toast({
         variant: "success",
         title: "Rascunho salvo",
-        description: "As alterações do orçamento foram gravadas.",
+        description: `As alterações ${vocabulary.quoteSingular === "Proposta" ? "da proposta" : "do orçamento"} foram gravadas.`,
       });
     }
     return true;

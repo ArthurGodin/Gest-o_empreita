@@ -1,9 +1,9 @@
 export const HELP_CATEGORIES = [
   { id: "getting-started", label: "Primeiros passos" },
   { id: "customers", label: "Clientes" },
-  { id: "quotes", label: "Orçamentos" },
+  { id: "quotes", label: "Propostas e orçamentos" },
   { id: "approvals", label: "Aprovação" },
-  { id: "projects", label: "Obras" },
+  { id: "projects", label: "Projetos e obras" },
   { id: "billing", label: "Cobranças" },
   { id: "plans", label: "Planos e conta" },
   { id: "security", label: "Segurança" },
@@ -30,14 +30,31 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     category: "getting-started",
     question: "Por onde começo no Prumo?",
     answer:
-      "Comece cadastrando um cliente e monte o primeiro orçamento. Depois envie o link para aprovação, transforme o aprovado em obra e configure a cobrança.",
+      "Comece escolhendo seu perfil profissional, cadastre um cliente e monte a primeira proposta ou orçamento. Depois envie o link, transforme o aprovado em projeto ou obra e configure a cobrança.",
     steps: [
+      "Confirme seu perfil profissional.",
       "Cadastre o cliente.",
-      "Crie e envie um orçamento com valor.",
-      "Acompanhe a aprovação e transforme a proposta em obra.",
+      "Crie e envie uma proposta ou orçamento com valor.",
+      "Acompanhe a aprovação e transforme o documento em projeto ou obra.",
     ],
     keywords: ["começar", "inicio", "onboarding", "primeira venda"],
     action: { label: "Abrir início", href: "/app" },
+  },
+  {
+    id: "perfil-profissional",
+    category: "getting-started",
+    question: "Para que serve o perfil profissional?",
+    answer:
+      "O perfil adapta nomes, navegação e modelos iniciais para Arquitetura, Design de interiores, Engenharia ou Execução de obras. Ele não muda seus dados, seu plano nem as permissões da conta.",
+    keywords: [
+      "perfil",
+      "arquitetura",
+      "interiores",
+      "engenharia",
+      "execução",
+      "segmento",
+    ],
+    action: { label: "Revisar perfil", href: "/app/configuracoes" },
   },
   {
     id: "dados-da-empresa",
@@ -70,9 +87,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     category: "quotes",
     question: "Como crio um orçamento completo?",
     answer:
-      "Escolha o cliente, dê um título claro e adicione serviços ou materiais com quantidade, unidade e preço. Revise o total, a validade e as observações antes de enviar.",
+      "Escolha o cliente e comece em branco ou por um modelo do seu perfil. Revise título, escopo, itens, quantidade, preço, validade e observações antes de enviar.",
     keywords: ["orçamento", "proposta", "item", "preço", "validade"],
-    action: { label: "Novo orçamento", href: "/app/orcamentos/novo" },
+    action: { label: "Criar proposta ou orçamento", href: "/app/orcamentos/novo" },
   },
   {
     id: "usar-sinapi",
@@ -81,7 +98,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     answer:
       "No Plano Ultimate, pesquise composições e insumos oficiais por UF dentro do editor. Ao adicionar um resultado, o Prumo guarda a referência usada no orçamento; revise quantidade e preço antes de enviar.",
     keywords: ["sinapi", "caixa", "composição", "insumo", "uf", "ultimate"],
-    action: { label: "Abrir orçamentos", href: "/app/orcamentos" },
+    action: { label: "Abrir propostas e orçamentos", href: "/app/orcamentos" },
   },
   {
     id: "salvar-e-enviar-orcamento",
@@ -90,14 +107,14 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     answer:
       "Salve as alterações no editor e use a ação de envio. O Prumo prepara o link público e a mensagem para o WhatsApp. O PDF também fica disponível no orçamento.",
     keywords: ["salvar", "pdf", "whatsapp", "enviar", "link"],
-    action: { label: "Abrir orçamentos", href: "/app/orcamentos" },
+    action: { label: "Abrir propostas e orçamentos", href: "/app/orcamentos" },
   },
   {
     id: "aprovar-orcamento",
     category: "approvals",
     question: "Como o cliente aprova ou recusa a proposta?",
     answer:
-      "O cliente abre o link público sem criar conta, revisa a proposta e registra aprovação ou pedido de revisão. A decisão aparece no orçamento dentro do painel.",
+      "O cliente abre o link público sem criar conta, revisa a proposta ou orçamento e registra aprovação ou pedido de revisão. A decisão aparece no documento dentro do painel.",
     keywords: ["aprovar", "recusar", "revisão", "aceite", "cliente"],
   },
   {
@@ -107,34 +124,34 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     answer:
       "Abra o orçamento no painel e gere ou copie o link mais recente. Links substituídos ou revogados deixam de abrir para proteger a proposta antiga.",
     keywords: ["link", "inválido", "revogar", "token", "reenviar"],
-    action: { label: "Abrir orçamentos", href: "/app/orcamentos" },
+    action: { label: "Abrir propostas e orçamentos", href: "/app/orcamentos" },
   },
   {
     id: "transformar-em-obra",
     category: "projects",
-    question: "Como transformo um orçamento aprovado em obra?",
+    question: "Como transformo uma proposta aprovada em projeto ou obra?",
     answer:
-      "Abra o orçamento aprovado, use Virar obra e confirme a entrada combinada. O Prumo cria a obra com o valor da proposta e prepara entrada e saldo para acompanhamento.",
+      "Abra o documento aprovado e use Criar projeto ou Virar obra, conforme seu perfil. O Prumo mantém cliente e valor vinculados e prepara entrada e saldo para acompanhamento.",
     keywords: ["obra", "converter", "virar obra", "aprovado", "entrada"],
-    action: { label: "Abrir obras", href: "/app/obras" },
+    action: { label: "Abrir projetos e obras", href: "/app/obras" },
   },
   {
     id: "acompanhar-obra",
     category: "projects",
-    question: "O que consigo acompanhar dentro da obra?",
+    question: "O que consigo acompanhar dentro do projeto ou obra?",
     answer:
-      "A obra reúne etapas, diário com fotos, custos, horas da equipe, cobranças e andamento público. Use cada seção para manter execução e margem no mesmo lugar.",
+      "O projeto reúne etapas, diário com fotos, custos, horas da equipe, cobranças e andamento público. Use cada seção para manter execução e margem no mesmo lugar.",
     keywords: ["etapas", "diário", "foto", "custo", "equipe", "margem"],
-    action: { label: "Abrir obras", href: "/app/obras" },
+    action: { label: "Abrir projetos e obras", href: "/app/obras" },
   },
   {
     id: "cobrar-entrada-e-saldo",
     category: "billing",
-    question: "Como cobro entrada e saldo da obra?",
+    question: "Como cobro entrada e saldo do projeto ou obra?",
     answer:
-      "Na seção de cobrança da obra, gere o Pix da entrada e envie ao cliente. O saldo fica disponível conforme o andamento e a confirmação da entrega.",
+      "Na seção de cobrança, gere o Pix da entrada e envie ao cliente. O saldo fica disponível conforme o andamento e a confirmação da entrega.",
     keywords: ["pix", "entrada", "saldo", "cobrança", "receber"],
-    action: { label: "Abrir obras", href: "/app/obras" },
+    action: { label: "Abrir projetos e obras", href: "/app/obras" },
   },
   {
     id: "pix-manual-ou-asaas",
@@ -150,7 +167,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     category: "plans",
     question: "O que muda entre Grátis, Pro e Ultimate?",
     answer:
-      "O Grátis permite até 3 orçamentos por mês e 1 obra simultânea. O Pro remove esses limites e a marca Prumo dos documentos públicos. O Ultimate acrescenta SINAPI, importação CSV de catálogo e exportação CSV financeira.",
+      "O Grátis permite até 3 propostas ou orçamentos por mês e 1 projeto ou obra simultânea. O Pro remove esses limites e a marca Prumo dos documentos públicos. O Ultimate acrescenta SINAPI, importação CSV de catálogo e exportação CSV financeira.",
     keywords: ["grátis", "pro", "ultimate", "limite", "preço", "csv"],
     action: { label: "Comparar planos", href: "/precos" },
   },

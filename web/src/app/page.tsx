@@ -6,10 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   ArrowRight,
+  Building2,
   CheckCircle2,
   FileText,
   HardHat,
   LineChart,
+  Palette,
+  Ruler,
   ShieldCheck,
   Smartphone,
   TrendingUp,
@@ -23,26 +26,49 @@ import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 
 const workflow = [
   {
-    title: "Monte o orçamento",
-    text: "Itens recorrentes, preço, total e PDF profissional sem planilha.",
+    title: "Monte a proposta",
+    text: "Comece em branco ou use um modelo, revise escopo, valor e PDF.",
     icon: FileText,
   },
   {
     title: "Cliente aprova no celular",
-    text: "Você manda o link. O cliente abre, aprova ou rejeita sem login.",
+    text: "Você envia o link. O cliente aprova ou pede revisão sem criar conta.",
     icon: Smartphone,
   },
   {
-    title: "Aprovado vira obra com 1 clique",
-    text: "Você confirma a conversão e segue com etapas, diário, equipe e custos.",
+    title: "Aprovado vira projeto",
+    text: "Converta em projeto ou obra e acompanhe etapas, registros e custos.",
     icon: HardHat,
   },
   {
-    title: "Você cobra e enxerga a margem",
-    text: "QR Code Pix com a chave da empreiteira, pagamento conferido no extrato, gasto lançado e margem estimada.",
+    title: "Você cobra e acompanha a margem",
+    text: "Organize entrada, saldo, recebimentos e custos no mesmo fluxo.",
     icon: LineChart,
   },
 ];
+
+const professionalProfiles = [
+  {
+    title: "Arquitetura",
+    text: "Propostas por escopo e projetos organizados por etapas.",
+    icon: Ruler,
+  },
+  {
+    title: "Design de interiores",
+    text: "Modelos para projetos, consultorias e entregas de ambientes.",
+    icon: Palette,
+  },
+  {
+    title: "Engenharia",
+    text: "Propostas técnicas, laudos e acompanhamentos em um só lugar.",
+    icon: Building2,
+  },
+  {
+    title: "Execução de obras",
+    text: "Orçamentos, etapas, diário, custos e cobranças por obra.",
+    icon: HardHat,
+  },
+] as const;
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -99,31 +125,32 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative z-10 overflow-hidden pb-12 pt-24 sm:pb-16 sm:pt-28">
+      <section className="relative z-10 overflow-hidden pb-8 pt-20 sm:pb-12 sm:pt-24">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
           className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center"
         >
-          <motion.div variants={fadeIn} className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm sm:text-sm">
+          <motion.div variants={fadeIn} className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
-            Orçamentos, obras e cobranças em um só lugar
+            Propostas, projetos e financeiro
           </motion.div>
 
           <motion.h1 variants={fadeIn} className="max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 sm:text-5xl md:text-6xl">
-            Prumo: orçamento aprovado, obra no controle.
+            Prumo: proposta aprovada, projeto no controle.
           </motion.h1>
 
-          <motion.p variants={fadeIn} className="mt-5 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
-            Crie propostas profissionais, receba a decisão do cliente pelo link e acompanhe execução, custos e recebimentos pelo celular ou computador.
+          <motion.p variants={fadeIn} className="mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
+            Para arquitetura, interiores, engenharia e obras: apresente seu
+            trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
           </motion.p>
 
-          <motion.div variants={fadeIn} className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+          <motion.div variants={fadeIn} className="mt-5 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="h-12 w-full max-w-[17rem] rounded-full bg-[#059669] px-7 text-base font-bold shadow-lg shadow-[#059669]/20 transition-colors hover:bg-[#047857] sm:w-auto"
+              className="h-11 w-full max-w-[17rem] rounded-full bg-[#059669] px-7 text-base font-bold shadow-lg shadow-[#059669]/20 transition-colors hover:bg-[#047857] sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/signup"
@@ -138,7 +165,7 @@ export default function LandingPage() {
               asChild
               variant="outline"
               size="lg"
-              className="h-12 w-full max-w-[17rem] rounded-full border-slate-300 bg-white/90 px-6 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#059669]/50 hover:bg-emerald-50 hover:text-[#047857] sm:w-auto"
+              className="h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white/90 px-6 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#059669]/50 hover:bg-emerald-50 hover:text-[#047857] sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/precos"
@@ -150,8 +177,8 @@ export default function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div variants={fadeIn} className="mt-6 flex max-w-3xl flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600">
-            {["Plano grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
+          <motion.div variants={fadeIn} className="mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 sm:gap-x-5 sm:text-sm">
+            {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
               <span key={fact} className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 {fact}
@@ -159,10 +186,10 @@ export default function LandingPage() {
             ))}
           </motion.div>
 
-          <motion.div variants={fadeIn} className="mt-8 w-full max-w-5xl overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/15 sm:p-2">
+          <motion.div variants={fadeIn} className="mt-5 w-full max-w-[15rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/15 sm:max-w-xl sm:p-2">
             <Image
               src="/dashboard-mockup.png"
-              alt="Painel do Prumo com visão financeira e acompanhamento das obras"
+              alt="Painel do Prumo com propostas, projetos e visão financeira"
               width={1024}
               height={561}
               priority
@@ -172,6 +199,46 @@ export default function LandingPage() {
             />
           </motion.div>
         </motion.div>
+      </section>
+
+      <section className="relative z-10 border-y border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.6fr] lg:items-center">
+            <div>
+              <p className="text-sm font-bold text-emerald-700">
+                Feito para o seu jeito de trabalhar
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-slate-950 md:text-4xl">
+                Um fluxo, quatro perfis profissionais.
+              </h2>
+              <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-slate-600 md:text-base">
+                Você escolhe o perfil no cadastro. O Prumo adapta linguagem,
+                modelos iniciais e navegação sem alterar seus dados, permissões
+                ou plano.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {professionalProfiles.map((profile) => (
+                <div
+                  key={profile.title}
+                  className="flex min-h-28 gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-white text-emerald-700">
+                    <profile.icon aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <strong className="block text-sm text-slate-950">
+                      {profile.title}
+                    </strong>
+                    <span className="mt-1 block text-sm leading-5 text-slate-600">
+                      {profile.text}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* SEÇÃO BENTO GRID */}
@@ -184,10 +251,10 @@ export default function LandingPage() {
             className="mb-8 text-center md:mb-12"
           >
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
-              Tudo que a sua empreiteira precisa.
+              Do primeiro contato ao projeto entregue.
             </h2>
             <p className="mt-4 text-base font-medium leading-7 text-slate-500 md:text-lg">
-              Desenhado para ser simples, poderoso e impressionar o cliente final.
+              Um processo profissional para vender, executar e receber com clareza.
             </p>
           </motion.div>
 
@@ -203,9 +270,10 @@ export default function LandingPage() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-[#059669] mb-6 shadow-sm">
                     <FileText className="h-6 w-6" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Orçamentos que vendem.</h3>
+                  <h3 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Propostas que apresentam bem o seu trabalho.</h3>
                   <p className="mt-3 max-w-md text-sm font-medium leading-6 text-slate-600 md:text-base md:leading-relaxed">
-                    Diga adeus às planilhas confusas. Crie orçamentos elegantes em minutos, adicione sua margem invisível e envie o link para aprovação digital.
+                    Organize escopo, itens, valores e observações. Depois envie um
+                    link limpo para o cliente revisar e decidir pelo celular.
                   </p>
                 </div>
                 
@@ -217,7 +285,7 @@ export default function LandingPage() {
                         GE
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-slate-900">Reforma Cozinha</div>
+                        <div className="text-sm font-bold text-slate-900">Projeto de interiores</div>
                         <div className="text-[10px] text-slate-500 font-medium">Para: Maria Santos</div>
                       </div>
                     </div>
@@ -228,11 +296,11 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                      <span className="text-xs text-slate-600 font-medium">Porcelanato e Argamassa</span>
+                      <span className="text-xs text-slate-600 font-medium">Briefing e layout</span>
                       <span className="text-xs font-semibold text-slate-900">R$ 4.200</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                      <span className="text-xs text-slate-600 font-medium">Mão de obra especializada</span>
+                      <span className="text-xs text-slate-600 font-medium">Detalhamento executivo</span>
                       <span className="text-xs font-semibold text-slate-900">R$ 8.000</span>
                     </div>
                   </div>
@@ -256,7 +324,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold tracking-tight">Margem na mão</h3>
                 <p className="mt-1 text-slate-400 text-sm font-medium leading-relaxed">
-                  Saiba exatamente quanto de lucro cada obra está deixando. Controle o previsto vs realizado.
+                  Compare valor contratado, recebimentos e custos de cada projeto ou obra.
                 </p>
               </div>
 
@@ -293,7 +361,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Aprovação mobile</h3>
                 <p className="mt-2 text-slate-500 text-sm font-medium leading-relaxed">
-                  Seu cliente abre o orçamento no celular, assina e aprova sem precisar criar conta.
+                  Seu cliente abre a proposta no celular, revisa e aprova sem precisar criar conta.
                 </p>
               </div>
               
@@ -305,7 +373,7 @@ export default function LandingPage() {
                       <div className="h-2 w-16 bg-slate-200 rounded-full" />
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     </div>
-                    <div className="text-xs font-bold text-slate-900 tracking-tight">Orçamento #042</div>
+                    <div className="text-xs font-bold text-slate-900 tracking-tight">Proposta #042</div>
                     <div className="mt-2 h-6 w-full bg-emerald-500 rounded-lg flex items-center justify-center shadow-md">
                       <span className="text-[9px] font-extrabold text-white uppercase tracking-wider">Aprovar</span>
                     </div>
@@ -325,7 +393,7 @@ export default function LandingPage() {
               <ArrowRight className="h-4 w-4 text-[#059669]" /> 4 passos para receber
             </div>
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
-              Do orçamento ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">Pix na conta.</span>
+              Da proposta ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">projeto e ao recebimento.</span>
             </h2>
           </motion.div>
 
@@ -375,18 +443,18 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div className="space-y-6">
             <Reason
-              title="Menos orçamento perdido no WhatsApp"
-              text="Você para de mandar textos bagunçados. O cliente recebe um link limpo, com PDF e aprovação digital. Parece empresa grande."
+              title="Menos proposta perdida no WhatsApp"
+              text="O cliente recebe um link organizado, com PDF e decisão registrada. Você acompanha o que foi enviado sem depender da conversa."
               icon={<FileText className="h-5 w-5 text-[#059669]" />}
             />
             <Reason
-              title="Menos surpresa no fim da obra"
-              text="Fotos, diário, ponto e gastos ficam presos à obra. O dono consegue cobrar decisões com contexto direto do canteiro."
+              title="Projeto e execução no mesmo contexto"
+              text="Etapas, registros, equipe e custos ficam ligados ao projeto ou à obra, sem misturar informações de clientes diferentes."
               icon={<HardHat className="h-5 w-5 text-[#059669]" />}
             />
             <Reason
-              title="Recebimento com Pix Automático"
-              text="A tela financeira mostra aprovado, pendente, e o gasto. A cobrança via Pix vai direto pra conta e cai no extrato."
+              title="Cobrança e financeiro organizados"
+              text="Use Pix direto com confirmação manual ou Asaas com baixa pelo provedor. Acompanhe entrada, saldo e custos no financeiro."
               icon={<LineChart className="h-5 w-5 text-[#059669]" />}
             />
           </div>
@@ -426,7 +494,7 @@ export default function LandingPage() {
                 <CheckCircle2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Link do Orçamento</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Link da proposta</p>
                 <p className="text-sm font-black text-emerald-400">Aprovado online</p>
               </div>
             </motion.div>
@@ -446,9 +514,9 @@ export default function LandingPage() {
 
           <div className="grid gap-4 md:grid-cols-3 md:gap-5">
             {[
-              { title: "Proposta rastreável", text: "Crie o orçamento, gere PDF, envie o link e acompanhe visualização, aceite ou recusa." },
-              { title: "Obra ligada à venda", text: "Transforme o orçamento aprovado em obra com um clique, mantendo cliente e valor vinculados." },
-              { title: "Dinheiro por obra", text: "Organize entrada, saldo, custos e margem estimada sem misturar os números de projetos diferentes." },
+              { title: "Proposta rastreável", text: "Crie a proposta, gere o PDF, envie o link e acompanhe visualização, aprovação ou pedido de revisão." },
+              { title: "Projeto ligado à venda", text: "Transforme o documento aprovado em projeto ou obra, mantendo cliente e valor vinculados." },
+              { title: "Financeiro por projeto", text: "Organize entrada, saldo, custos e margem estimada sem misturar trabalhos diferentes." },
             ].map((item, i) => (
               <motion.div
                 key={item.title}
@@ -480,11 +548,11 @@ export default function LandingPage() {
           <div className="space-y-3 md:space-y-4">
             {[
               { q: "Preciso instalar alguma coisa?", a: "Não. O Prumo funciona 100% no navegador, no celular ou no computador. Basta criar a conta e começar." },
-              { q: "Meu cliente precisa criar conta para aprovar?", a: "Não. Ele recebe um link único e privado. Abre no celular, vê o orçamento completo e aprova com um clique." },
-              { q: "Como funciona o Pix?", a: "Você escolhe entre Pix direto na sua chave, com confirmação manual pelo extrato, ou Asaas, com cobrança e baixa pelo provedor. O Prumo organiza entrada e saldo por obra." },
+              { q: "Meu cliente precisa criar conta para aprovar?", a: "Não. Ele recebe um link único e privado, abre no celular, revisa a proposta ou orçamento e registra a decisão." },
+              { q: "Como funciona o Pix?", a: "Você escolhe entre Pix direto na sua chave, com confirmação manual pelo extrato, ou Asaas, com cobrança e baixa pelo provedor. O Prumo organiza entrada e saldo por projeto ou obra." },
               { q: "E se eu quiser cancelar?", a: "O proprietário cancela na tela de planos. A recorrência é encerrada e a conta volta ao Grátis imediatamente. O cancelamento comum não gera reembolso automático, sem prejuízo dos direitos previstos em lei." },
-              { q: "Tem período de teste?", a: "Não há teste temporário. Existe um Plano Grátis, sem cartão, com até 3 orçamentos por mês e 1 obra simultânea." },
-              { q: "Para quais serviços o Prumo serve?", a: "O fluxo atende reformas, coberturas, acabamentos, pintura, elétrica e outros serviços de empreitada. Os itens e etapas são personalizáveis." },
+              { q: "Tem período de teste?", a: "Não há teste temporário. Existe um Plano Grátis, sem cartão, com até 3 propostas ou orçamentos por mês e 1 projeto ou obra simultânea." },
+              { q: "Para quais profissionais o Prumo serve?", a: "Arquitetura, design de interiores, engenharia e execução de obras. Cada perfil recebe linguagem e modelos iniciais adequados, com itens e etapas editáveis." },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -542,9 +610,9 @@ export default function LandingPage() {
             Comece pequeno, mas com cara de produto sério.
           </h2>
           <p className="max-w-2xl py-2 text-base font-medium leading-7 text-slate-200 md:py-4 md:text-xl md:leading-relaxed">
-            O primeiro cliente precisa sair com um orçamento aprovado e uma
-            obra controlada. Depois disso, Pix direto, saldo e margem viram
-            o centro do seu dia a dia.
+            Comece com uma proposta clara, receba a decisão do cliente e leve o
+            trabalho para um projeto organizado. Cobranças, custos e margem
+            continuam no mesmo fluxo.
           </p>
           <Button
             asChild

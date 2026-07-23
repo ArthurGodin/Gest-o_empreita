@@ -12,11 +12,16 @@ import { Button } from "@/components/ui/button";
 import { cn, formatBRL, formatDateBR } from "@/lib/utils";
 import type { BillingCharge } from "@/lib/queries/projects";
 import type { ChargeStatus, ProjectStatus } from "@/lib/supabase/types";
+import {
+  normalizeBusinessSegment,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 import { GenerateChargeButton } from "./generate-charge-button";
 import { MarkChargePaidButton } from "./mark-charge-paid-button";
 
 interface BillingSectionProps {
   charges: BillingCharge[];
+  businessSegment: BusinessSegment;
   projectStatus: ProjectStatus;
   budgetCents: number | null;
   deliveryApprovedAt: string | null;
@@ -86,11 +91,14 @@ const NEXT_ACTION_TONE: Record<NextActionTone, string> = {
 
 export function BillingSection({
   charges,
+  businessSegment,
   projectStatus,
   budgetCents,
   deliveryApprovedAt,
   conversionBillingAttention = false,
 }: BillingSectionProps) {
+  const segment = normalizeBusinessSegment(businessSegment);
+  const professional = segment !== "construction";
   const ordered = [...charges].sort((a, b) => {
     if (a.kind === b.kind) return 0;
     return a.kind === "entrada" ? -1 : 1;
@@ -120,6 +128,7 @@ export function BillingSection({
     deliveryApprovedAt,
     receivedCents,
     pendingCents,
+    professional,
   });
   const entryCharge = ordered.find((charge) => charge.kind === "entrada") ?? null;
 
@@ -134,7 +143,9 @@ export function BillingSection({
           <div className="text-sm font-semibold text-foreground">
             Cobrança
           </div>
-          <h2 className="mt-0.5 text-base font-semibold">Entrada e saldo da obra</h2>
+          <h2 className="mt-0.5 text-base font-semibold">
+            Entrada e saldo {professional ? "do projeto" : "da obra"}
+          </h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Gere o Pix, acompanhe o que está pendente e marque como recebido
             somente depois de conferir o pagamento.
@@ -149,7 +160,10 @@ export function BillingSection({
       </div>
 
       {conversionBillingAttention ? (
-        <ConversionBillingNotice entryCharge={entryCharge} />
+        <ConversionBillingNotice
+          entryCharge={entryCharge}
+          professional={professional}
+        />
       ) : null}
 
       <div className="mb-4 grid divide-y rounded-lg border bg-background sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -175,7 +189,9 @@ export function BillingSection({
 
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>Recebimento da obra</span>
+          <span>
+            Recebimento {professional ? "do projeto" : "da obra"}
+          </span>
           <span className="tabular-nums">
             {formatBRL(receivedCents / 100)} / {formatBRL(totalCents / 100)}
           </span>
@@ -192,8 +208,10 @@ export function BillingSection({
 
       {ordered.length === 0 ? (
         <div className="mt-4 rounded-lg border border-dashed bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
-          Esta obra ainda não tem parcelas configuradas. Quando um orçamento
-          aprovado vira obra, entrada e saldo aparecem aqui para cobrança.
+          {professional ? "Este projeto" : "Esta obra"} ainda não tem parcelas
+          configuradas. Quando{" "}
+          {professional ? "uma proposta aprovada vira projeto" : "um orçamento aprovado vira obra"},
+          entrada e saldo aparecem aqui para cobrança.
         </div>
       ) : (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -202,6 +220,7 @@ export function BillingSection({
               key={charge.id}
               charge={charge}
               deliveryApprovedAt={deliveryApprovedAt}
+              professional={professional}
             />
           ))}
         </div>
@@ -241,8 +260,10 @@ function PaymentMetric({
 
 function ConversionBillingNotice({
   entryCharge,
+  professional,
 }: {
   entryCharge: BillingCharge | null;
+  professional: boolean;
 }) {
   const hasGeneratedPix =
     entryCharge?.status === "pending" &&
@@ -255,7 +276,8 @@ function ConversionBillingNotice({
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div>
             <div className="text-sm font-semibold">
-              Obra criada. Resolva a entrada antes de começar.
+              {professional ? "Projeto criado" : "Obra criada"}. Resolva a
+              entrada antes de começar.
             </div>
             <p className="mt-1 text-sm leading-6 text-amber-900/85">
               {hasGeneratedPix
@@ -319,9 +341,11 @@ function NextActionPanel({ action }: { action: BillingNextAction }) {
 function ChargePanel({
   charge,
   deliveryApprovedAt,
+  professional,
 }: {
   charge: BillingCharge;
   deliveryApprovedAt: string | null;
+  professional: boolean;
 }) {
   const copy = STATUS_COPY[charge.status];
   const title = charge.kind === "entrada" ? "Entrada" : "Saldo";
@@ -338,7 +362,11 @@ function ChargePanel({
     !!charge.pix_qr_code;
   const isSaldoBlocked =
     charge.kind === "saldo" && charge.status === "draft" && !deliveryApprovedAt;
-  const actionHint = chargeActionHint(charge, deliveryApprovedAt);
+  const actionHint = chargeActionHint(
+    charge,
+    deliveryApprovedAt,
+    professional,
+  );
 
   return (
     <div className="rounded-lg border bg-background p-4">
@@ -485,12 +513,14 @@ function buildNextAction({
   deliveryApprovedAt,
   receivedCents,
   pendingCents,
+  professional,
 }: {
   ordered: BillingCharge[];
   projectStatus: ProjectStatus;
   deliveryApprovedAt: string | null;
   receivedCents: number;
   pendingCents: number;
+  professional: boolean;
 }): BillingNextAction {
   const entry = ordered.find((charge) => charge.kind === "entrada");
   const saldo = ordered.find((charge) => charge.kind === "saldo");
@@ -504,8 +534,9 @@ function buildNextAction({
       icon: "clock",
       kicker: "Próxima ação",
       title: "Cobranças ainda não configuradas",
-      description:
-        "Quando um orçamento aprovado virar obra, entrada e saldo aparecem aqui para gerar Pix, enviar ao cliente e acompanhar recebimento.",
+      description: professional
+        ? "Quando uma proposta aprovada virar projeto, entrada e saldo aparecem aqui para gerar Pix, enviar ao cliente e acompanhar recebimento."
+        : "Quando um orçamento aprovado virar obra, entrada e saldo aparecem aqui para gerar Pix, enviar ao cliente e acompanhar recebimento.",
     };
   }
 
@@ -514,9 +545,12 @@ function buildNextAction({
       tone: "success",
       icon: "paid",
       kicker: "Financeiro resolvido",
-      title: "Pagamento completo desta obra",
-      description:
-        "Todas as parcelas foram confirmadas. Use a obra para acompanhar execução, custos e margem sem misturar valores pendentes.",
+      title: professional
+        ? "Pagamento completo deste projeto"
+        : "Pagamento completo desta obra",
+      description: professional
+        ? "Todas as parcelas foram confirmadas. Use o projeto para acompanhar entregas, custos e margem sem misturar valores pendentes."
+        : "Todas as parcelas foram confirmadas. Use a obra para acompanhar execução, custos e margem sem misturar valores pendentes.",
     };
   }
 
@@ -540,7 +574,9 @@ function buildNextAction({
       kicker: "Próxima ação",
       title: "Gere o Pix da entrada",
       description: workStarted
-        ? "A obra já pode estar em andamento; gere a entrada e confirme o pagamento antes de comprar material pesado."
+        ? professional
+          ? "O projeto já pode estar em andamento; gere a entrada e confirme o pagamento antes de assumir despesas relevantes."
+          : "A obra já pode estar em andamento; gere a entrada e confirme o pagamento antes de comprar material pesado."
         : "Comece pela entrada para travar compromisso financeiro antes da execução.",
       chargeId: entry.id,
       actionLabel: "Gerar Pix da entrada",
@@ -564,8 +600,9 @@ function buildNextAction({
       icon: "clock",
       kicker: "Próxima ação",
       title: "Entrega aprovada, saldo pronto para cobrar",
-      description:
-        "Gere o Pix do saldo e envie ao cliente para fechar o recebimento da obra.",
+      description: `Gere o Pix do saldo e envie ao cliente para fechar o recebimento ${
+        professional ? "do projeto" : "da obra"
+      }.`,
       chargeId: saldo.id,
       actionLabel: "Gerar Pix do saldo",
     };
@@ -610,9 +647,12 @@ function buildNextAction({
 function chargeActionHint(
   charge: BillingCharge,
   deliveryApprovedAt: string | null,
+  professional: boolean,
 ) {
   if (charge.status === "received" || charge.status === "confirmed") {
-    return "Pagamento confirmado. Esta parcela já entra como recebida na margem da obra.";
+    return `Pagamento confirmado. Esta parcela já entra como recebida na margem ${
+      professional ? "do projeto" : "da obra"
+    }.`;
   }
   if (charge.status === "overdue") {
     return charge.payment_provider === "manual_pix"

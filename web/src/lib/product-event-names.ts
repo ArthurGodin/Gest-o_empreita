@@ -6,6 +6,7 @@ export const PRODUCT_EVENT_NAMES = [
   "onboarding_submitted",
   "onboarding_completed",
   "onboarding_failed",
+  "business_segment_changed",
   "saas_checkout_started",
   "saas_checkout_generated",
   "saas_checkout_failed",

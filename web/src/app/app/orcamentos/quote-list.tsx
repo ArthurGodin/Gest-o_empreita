@@ -22,6 +22,29 @@ import {
   type QuoteListStatusFilter,
 } from "@/lib/quote-list-filter";
 import type { QuoteListItem } from "@/lib/queries/quotes";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
+
+const PROPOSAL_STATUS_LABEL: Record<EffectiveQuoteStatus, string> = {
+  draft: "Rascunho",
+  sent: "Enviada",
+  viewed: "Vista",
+  approved: "Aprovada",
+  rejected: "Recusada",
+  expired: "Expirada",
+};
+
+const PROPOSAL_STATUS_FILTERS: typeof QUOTE_LIST_STATUS_FILTERS = [
+  { value: "all", label: "Todas" },
+  { value: "draft", label: "Rascunhos" },
+  { value: "sent", label: "Enviadas" },
+  { value: "viewed", label: "Vistas" },
+  { value: "approved", label: "Aprovadas" },
+  { value: "rejected", label: "Recusadas" },
+  { value: "expired", label: "Expiradas" },
+];
 
 interface QuoteListProps {
   quotes: QuoteListItem[];
@@ -59,6 +82,12 @@ function colorOf(status: EffectiveQuoteStatus) {
 }
 
 export function QuoteList({ quotes }: QuoteListProps) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
+  const statusFilters =
+    segment === "construction"
+      ? QUOTE_LIST_STATUS_FILTERS
+      : PROPOSAL_STATUS_FILTERS;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -76,17 +105,21 @@ export function QuoteList({ quotes }: QuoteListProps) {
 
   const hasActiveFilters = statusFilter !== "all" || query.trim().length > 0;
   const activeStatusLabel =
-    QUOTE_LIST_STATUS_FILTERS.find((filter) => filter.value === statusFilter)
-      ?.label ?? "Todos";
+    statusFilters.find((filter) => filter.value === statusFilter)
+      ?.label ?? (segment === "construction" ? "Todos" : "Todas");
   const summary = !hasActiveFilters
-    ? `${quotes.length} ${quotes.length === 1 ? "orçamento" : "orçamentos"}`
+    ? `${quotes.length} ${
+        quotes.length === 1
+          ? vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")
+          : vocabulary.quotePluralLower
+      }`
     : statusFilter === "all"
-      ? `${filtered.length} de ${quotes.length} orçamentos`
+      ? `${filtered.length} de ${quotes.length} ${vocabulary.quotePluralLower}`
       : `${filtered.length} de ${quotes.length} em ${activeStatusLabel.toLocaleLowerCase("pt-BR")}`;
   const emptyDescription =
     statusFilter === "all"
-      ? `Não encontramos orçamento para “${query.trim()}”.`
-      : `Não há orçamento em ${activeStatusLabel.toLocaleLowerCase("pt-BR")}${
+      ? `Não encontramos ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} para “${query.trim()}”.`
+      : `Não há ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} em ${activeStatusLabel.toLocaleLowerCase("pt-BR")}${
           query.trim() ? ` com “${query.trim()}”.` : "."
         }`;
 
@@ -126,19 +159,19 @@ export function QuoteList({ quotes }: QuoteListProps) {
   return (
     <div className="space-y-3">
       <ListToolbar
-        ariaLabel="Busca e filtros de orçamentos"
+        ariaLabel={`Busca e filtros de ${vocabulary.quotePluralLower}`}
         search={{
           value: query,
           onValueChange: onQueryChange,
           name: "quote-search",
-          label: "Buscar orçamentos",
-          placeholder: "Buscar por número, título ou cliente…",
+          label: `Buscar ${vocabulary.quotePluralLower}`,
+          placeholder: `Buscar ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} por número, título ou cliente…`,
         }}
         filters={
           <ListStatusFilter
-            label="Filtrar orçamentos por status"
+            label={`Filtrar ${vocabulary.quotePluralLower} por status`}
             value={statusFilter}
-            options={QUOTE_LIST_STATUS_FILTERS}
+            options={statusFilters}
             counts={counts}
             onValueChange={onStatusChange}
           />
@@ -158,15 +191,23 @@ export function QuoteList({ quotes }: QuoteListProps) {
 
       {filtered.length === 0 ? (
         <ListEmptyState
-          title="Nenhum orçamento encontrado"
+          title={`${
+            vocabulary.quoteSingular === "Proposta" ? "Nenhuma" : "Nenhum"
+          } ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} ${
+            vocabulary.quoteSingular === "Proposta"
+              ? "encontrada"
+              : "encontrado"
+          }`}
           description={emptyDescription}
-          actionLabel="Ver todos os orçamentos"
+          actionLabel={`Ver ${
+            vocabulary.quoteSingular === "Proposta" ? "todas" : "todos"
+          } ${vocabulary.quotePluralLower}`}
           onAction={clearFilters}
         />
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
           <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] gap-4 border-b bg-slate-50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
-            <span>Orçamento</span>
+            <span>{vocabulary.quoteSingular}</span>
             <span>Cliente</span>
             <span>Validade</span>
             <span>Status</span>
@@ -184,13 +225,15 @@ export function QuoteList({ quotes }: QuoteListProps) {
 }
 
 function QuoteRow({ quote }: { quote: QuoteListItem }) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
   const colors = COLOR_CLASSES[colorOf(quote.effective_status)];
 
   return (
     <li className="min-w-0">
       <Link
         href={`/app/orcamentos/${quote.id}`}
-        aria-label={`Abrir orçamento ${quote.number}`}
+        aria-label={`Abrir ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} ${quote.number}`}
         className="grid min-h-[92px] min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] md:items-center md:gap-4 md:py-3"
       >
         <span className="col-span-2 min-w-0 md:col-span-1">
@@ -220,7 +263,9 @@ function QuoteRow({ quote }: { quote: QuoteListItem }) {
               colors.text,
             )}
           >
-            {STATUS_LABEL[quote.effective_status]}
+            {segment === "construction"
+              ? STATUS_LABEL[quote.effective_status]
+              : PROPOSAL_STATUS_LABEL[quote.effective_status]}
           </span>
         </span>
 

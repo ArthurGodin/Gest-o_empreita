@@ -43,6 +43,19 @@ describe("quote share message", () => {
     );
   });
 
+  it("uses proposal language for professional segments", () => {
+    const message = buildQuoteWhatsappMessage({
+      quoteTitle: "Projeto residencial",
+      url: "https://app.test/q/proposal",
+      documentKind: "proposal",
+    });
+
+    expect(message).toContain(
+      "Segue a proposta Projeto residencial para sua avaliação.",
+    );
+    expect(message).not.toContain("orçamento");
+  });
+
   it("omits optional parts without leaving broken punctuation", () => {
     expect(
       buildQuoteWhatsappMessage({

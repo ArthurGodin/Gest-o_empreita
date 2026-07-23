@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import { Check, Copy, Eye, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface PublicLinkCalloutProps {
   shareToken: string | null;
@@ -22,6 +23,8 @@ export function PublicLinkCallout({
   shareToken,
   baseUrl,
 }: PublicLinkCalloutProps) {
+  const vocabulary = useBusinessVocabulary();
+  const professional = vocabulary.projectSingular === "Projeto";
   const [copied, setCopied] = useState(false);
   const origin = useSyncExternalStore(
     subscribeOrigin,
@@ -32,8 +35,9 @@ export function PublicLinkCallout({
   if (!shareToken) {
     return (
       <section className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
-        Essa obra não veio de um orçamento aprovado, então não tem link público
-        pra acompanhamento do cliente.
+        {professional ? "Este projeto" : "Esta obra"} não veio de{" "}
+        {professional ? "uma proposta aprovada" : "um orçamento aprovado"},
+        então não tem link público para acompanhamento do cliente.
       </section>
     );
   }
@@ -53,18 +57,25 @@ export function PublicLinkCallout({
     <section className="rounded-lg border bg-card p-4 sm:p-5">
       <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
         <Link2 className="h-3.5 w-3.5" />
-        Link público (mesmo do orçamento)
+        Link público (mesmo {professional ? "da proposta" : "do orçamento"})
       </div>
       <p className="mb-3 text-sm text-muted-foreground">
-        O cliente abre o mesmo link que aprovou o orçamento e agora vê também o{" "}
-        <strong>andamento da obra</strong>: status, etapas e fotos do diário.{" "}
+        O cliente abre o mesmo link que aprovou{" "}
+        {professional ? "a proposta" : "o orçamento"} e agora vê também o{" "}
+        <strong>
+          andamento {professional ? "do projeto" : "da obra"}
+        </strong>
+        : status, etapas e fotos do diário.{" "}
         <strong>Custos e ponto da equipe são internos</strong> — não aparecem
         pro cliente.
       </p>
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-1 min-w-0 items-center rounded-md border bg-muted/30 px-3 py-2 font-mono text-xs">
           <span className="truncate">
-            {url || "Link antigo inválido. Corrija no orçamento original."}
+            {url ||
+              `Link antigo inválido. Corrija ${
+                professional ? "na proposta original" : "no orçamento original"
+              }.`}
           </span>
         </div>
         <Button

@@ -5,26 +5,34 @@ import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { EmptyState } from "@/components/app-shell/empty-state";
 import { getQuotes } from "@/lib/queries/quotes";
+import { getActiveCompany } from "@/lib/queries/company";
+import { getBusinessVocabulary } from "@/lib/business-segment";
 import { QuoteList } from "./quote-list";
 
 export const metadata = {
-  title: "Orçamentos — Prumo",
+  title: "Propostas e orçamentos — Prumo",
 };
 
 export default async function QuotesPage() {
-  const quotes = await getQuotes();
+  const [quotes, company] = await Promise.all([
+    getQuotes(),
+    getActiveCompany(),
+  ]);
+  const vocabulary = getBusinessVocabulary(
+    company?.company.business_segment,
+  );
 
   return (
     <PageContainer>
       <PageHeader
-        title="Orçamentos"
-        description="Crie, envie e acompanhe as propostas da sua empresa."
+        title={vocabulary.quotePlural}
+        description={`Crie, envie e acompanhe ${vocabulary.quotePluralLower} profissionais em um só lugar.`}
         actions={
           quotes.length > 0 ? (
             <Button asChild>
               <Link href="/app/orcamentos/novo">
                 <Plus className="h-4 w-4" />
-                Novo orçamento
+                {vocabulary.newQuoteLabel}
               </Link>
             </Button>
           ) : null
@@ -34,13 +42,17 @@ export default async function QuotesPage() {
       {quotes.length === 0 ? (
         <EmptyState
           icon={<FileText className="h-6 w-6" />}
-          title="Crie sua primeira proposta"
-          description="Adicione os serviços e envie um link para o cliente revisar e aprovar pelo celular."
+          title={`Crie ${
+            vocabulary.quoteSingular === "Proposta"
+              ? "sua primeira proposta"
+              : "seu primeiro orçamento"
+          }`}
+          description="Escolha um modelo ou comece em branco, revise os valores e envie um link para aprovação pelo celular."
           action={
             <Button asChild>
               <Link href="/app/orcamentos/novo">
                 <Plus className="h-4 w-4" />
-                Criar orçamento
+                {vocabulary.createQuoteLabel}
               </Link>
             </Button>
           }

@@ -18,6 +18,10 @@ import {
   canTransitionStatus,
 } from "@/lib/project-status";
 import type { ProjectStatus } from "@/lib/supabase/types";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 import { updateProjectStatusAction } from "./actions";
 
 interface StatusMenuProps {
@@ -33,7 +37,19 @@ const TRANSITIONS_FROM: Record<ProjectStatus, ProjectStatus[]> = {
   cancelled: ["planning"],
 };
 
+const PROFESSIONAL_STATUS_LABEL: Record<ProjectStatus, string> = {
+  planning: "Planejado",
+  in_progress: "Em andamento",
+  paused: "Pausado",
+  completed: "Concluído",
+  cancelled: "Cancelado",
+};
+
 export function StatusMenu({ projectId, current }: StatusMenuProps) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
+  const professional = segment !== "construction";
+  const projectLower = vocabulary.projectSingular.toLocaleLowerCase("pt-BR");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
@@ -90,9 +106,9 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mudar status da obra</DialogTitle>
+            <DialogTitle>Mudar status {professional ? "do projeto" : "da obra"}</DialogTitle>
             <DialogDescription>
-              Escolha o próximo status permitido para esta obra.
+              Escolha o próximo status permitido para {professional ? "este projeto" : "esta obra"}.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
@@ -105,7 +121,9 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
                 onClick={() => go(to)}
                 disabled={pending || !canTransitionStatus(current, to)}
               >
-                {PROJECT_STATUS_LABEL[to]}
+                {professional
+                  ? PROFESSIONAL_STATUS_LABEL[to]
+                  : PROJECT_STATUS_LABEL[to]}
               </Button>
             ))}
           </div>
@@ -129,9 +147,9 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
       <Dialog open={pauseOpen} onOpenChange={setPauseOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Pausar obra</DialogTitle>
+            <DialogTitle>Pausar {projectLower}</DialogTitle>
             <DialogDescription>
-              Informe o motivo da pausa se quiser registrar no diário da obra.
+              Informe o motivo da pausa se quiser registrar no diário {professional ? "do projeto" : "da obra"}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -181,23 +199,26 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
           <DialogHeader>
             <DialogTitle>
               {confirmOpen === "cancelled"
-                ? "Cancelar obra?"
-                : "Marcar obra como concluída?"}
+                ? `Cancelar ${projectLower}?`
+                : `Marcar ${projectLower} como ${
+                    professional ? "concluído" : "concluída"
+                  }?`}
             </DialogTitle>
             <DialogDescription>
-              Confirme a mudança de status antes de atualizar o andamento da obra.
+              Confirme a mudança de status antes de atualizar o andamento {professional ? "do projeto" : "da obra"}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
             {confirmOpen === "cancelled" ? (
               <p>
-                Cancelar obra é raro e pode confundir o cliente que está
-                acompanhando pelo link público. Tem certeza?
+                Cancelar {projectLower} é raro e pode confundir o cliente que
+                está acompanhando pelo link público. Tem certeza?
               </p>
             ) : (
               <p>
-                Marcar como concluída encerra a obra. O cliente vai ver
-                &ldquo;Obra concluída&rdquo; no link público.
+                Marcar como {professional ? "concluído" : "concluída"} encerra{" "}
+                {professional ? "o projeto" : "a obra"}. O cliente verá o novo
+                status no link público.
               </p>
             )}
             {error && (
@@ -222,9 +243,9 @@ export function StatusMenu({ projectId, current }: StatusMenuProps) {
               {pending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : confirmOpen === "cancelled" ? (
-                "Cancelar obra"
+                `Cancelar ${projectLower}`
               ) : (
-                "Marcar concluída"
+                `Marcar ${professional ? "concluído" : "concluída"}`
               )}
             </Button>
           </DialogFooter>

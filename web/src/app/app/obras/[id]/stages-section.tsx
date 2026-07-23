@@ -11,6 +11,7 @@ import { StageRow } from "./stage-row";
 import { AddStageForm } from "./add-stage-form";
 import { ApplyTemplateDialog } from "./apply-template-dialog";
 import { reorderStagesAction } from "./actions";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface StagesSectionProps {
   projectId: string;
@@ -27,6 +28,7 @@ export function StagesSection({
   startsOn,
   templates,
 }: StagesSectionProps) {
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const [movePending, startMove] = useTransition();
   const [moveError, setMoveError] = useState<string | null>(null);
@@ -92,7 +94,10 @@ export function StagesSection({
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <div className="text-sm font-semibold text-foreground">
-            Andamento da obra
+            Andamento{" "}
+            {vocabulary.projectSingular === "Projeto"
+              ? "do projeto"
+              : "da obra"}
           </div>
           {totalCount > 0 ? (
             <div className="mt-1 text-sm">

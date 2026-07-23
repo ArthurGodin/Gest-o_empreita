@@ -56,6 +56,25 @@ describe("buildActivationProgress", () => {
     expect(progress.nextStep?.action).toBe("Continuar orçamento");
   });
 
+  it("adapts activation language for a professional office", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: { ...company, business_segment: "architecture" },
+        customersCount: 1,
+        quotes: [quote()],
+      }),
+    );
+
+    const quoteStep = progress.steps.find((step) => step.id === "quote");
+    const projectStep = progress.steps.find((step) => step.id === "project");
+
+    expect(progress.steps[0]?.title).toBe("Escritório");
+    expect(quoteStep?.title).toBe("Proposta");
+    expect(quoteStep?.action).toBe("Continuar proposta");
+    expect(projectStep?.title).toBe("Projeto");
+    expect(projectStep?.action).toBe("Criar projeto");
+  });
+
   it("moves a ready proposal to review and sending", () => {
     const progress = buildActivationProgress(
       input({

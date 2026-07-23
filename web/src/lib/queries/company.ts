@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { CompanyRole } from "@/lib/supabase/types";
+import type { BusinessSegment } from "@/lib/business-segment";
 
 export interface CompanyMembership {
   company_id: string;
@@ -9,6 +10,7 @@ export interface CompanyMembership {
     id: string;
     name: string;
     logo_url: string | null;
+    business_segment: BusinessSegment;
   };
 }
 
@@ -27,7 +29,8 @@ export const getUserCompanies = cache(async (): Promise<CompanyMembership[]> => 
       company:companies (
         id,
         name,
-        logo_url
+        logo_url,
+        business_segment
       )
     `,
     );

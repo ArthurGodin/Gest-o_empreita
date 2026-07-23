@@ -9,6 +9,10 @@ import {
 } from "./public-quote-view";
 import { AndamentoView, type PublicProjectView } from "./andamento-view";
 import { PublicBillingView } from "./public-billing-view";
+import {
+  getBusinessVocabulary,
+  normalizeBusinessSegment,
+} from "@/lib/business-segment";
 
 type PublicView = "orcamento" | "andamento" | "cobranca";
 
@@ -19,16 +23,6 @@ interface PublicToggleProps {
   shareToken: string;
   nowMs: number;
 }
-
-const tabs: Array<{
-  value: PublicView;
-  label: string;
-  icon: typeof ClipboardList;
-}> = [
-  { value: "andamento", label: "Andamento", icon: ClipboardList },
-  { value: "cobranca", label: "Cobrança", icon: WalletCards },
-  { value: "orcamento", label: "Orçamento", icon: FileText },
-];
 
 function isPublicView(value: string | null): value is PublicView {
   return value === "orcamento" || value === "andamento" || value === "cobranca";
@@ -41,6 +35,21 @@ export function PublicToggle({
   shareToken,
   nowMs,
 }: PublicToggleProps) {
+  const vocabulary = getBusinessVocabulary(
+    quote.company.business_segment,
+  );
+  const businessSegment = normalizeBusinessSegment(
+    quote.company.business_segment,
+  );
+  const tabs: Array<{
+    value: PublicView;
+    label: string;
+    icon: typeof ClipboardList;
+  }> = [
+    { value: "andamento", label: "Andamento", icon: ClipboardList },
+    { value: "cobranca", label: "Cobrança", icon: WalletCards },
+    { value: "orcamento", label: vocabulary.quoteSingular, icon: FileText },
+  ];
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -125,7 +134,11 @@ export function PublicToggle({
         aria-labelledby={`public-tab-${view}`}
       >
         {view === "andamento" ? (
-          <AndamentoView view={project} shareToken={shareToken} />
+          <AndamentoView
+            view={project}
+            shareToken={shareToken}
+            businessSegment={businessSegment}
+          />
         ) : view === "cobranca" ? (
           <PublicBillingView
             charges={project.charges}

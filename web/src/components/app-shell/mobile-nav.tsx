@@ -2,19 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, HardHat, Home, Users, Wallet } from "lucide-react";
+import {
+  FileText,
+  FolderKanban,
+  HardHat,
+  Home,
+  Users,
+  Wallet,
+} from "lucide-react";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/app", label: "Início", icon: Home },
-  { href: "/app/orcamentos", label: "Orçamentos", icon: FileText },
-  { href: "/app/obras", label: "Obras", icon: HardHat },
-  { href: "/app/clientes", label: "Clientes", icon: Users },
-  { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
-] as const;
 
 export function MobileNav() {
   const pathname = usePathname();
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
+  const ProjectIcon = segment === "construction" ? HardHat : FolderKanban;
+  const navItems = [
+    { href: "/app", label: "Início", icon: Home },
+    {
+      href: "/app/orcamentos",
+      label: vocabulary.quotePlural,
+      icon: FileText,
+    },
+    {
+      href: "/app/obras",
+      label: vocabulary.projectPlural,
+      icon: ProjectIcon,
+    },
+    { href: "/app/clientes", label: "Clientes", icon: Users },
+    { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
+  ] as const;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden" aria-label="Navegação principal">

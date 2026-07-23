@@ -1,3 +1,8 @@
+import {
+  getBusinessVocabulary,
+  isProfessionalSegment,
+} from "@/lib/business-segment";
+
 export type ActivationStage =
   | "company"
   | "customer"
@@ -23,6 +28,7 @@ interface ActivationCompany {
   pix_key: string | null;
   pix_receiver_name: string | null;
   pix_receiver_city: string | null;
+  business_segment?: string | null;
 }
 
 interface ActivationQuote {
@@ -70,6 +76,12 @@ export function buildActivationProgress(
   input: ActivationInput,
 ): ActivationProgress {
   const { company, customersCount, quotes, projects, charges } = input;
+  const vocabulary = getBusinessVocabulary(company?.business_segment);
+  const isProfessional = isProfessionalSegment(company?.business_segment);
+  const isOrganizationMasculine =
+    vocabulary.organizationLabel === "Escritório";
+  const quoteLower = vocabulary.quoteSingular.toLowerCase();
+  const projectLower = vocabulary.projectSingular.toLowerCase();
   const firstQuote = quotes[0];
   const readyQuote = quotes.find((quote) => quote.total_cents > 0);
   const sharedQuote = quotes.find(isSharedQuote);
@@ -108,10 +120,14 @@ export function buildActivationProgress(
   const steps: ActivationStep[] = [
     {
       id: "company",
-      title: "Empresa",
-      detail: company ? "Perfil criado." : "Crie o perfil da empresa.",
+      title: vocabulary.organizationLabel,
+      detail: company
+        ? "Perfil criado."
+        : `Crie o perfil ${isOrganizationMasculine ? "do" : "da"} ${vocabulary.organizationLabel.toLowerCase()}.`,
       href: company ? "/app/configuracoes" : "/onboarding",
-      action: company ? "Revisar empresa" : "Criar empresa",
+      action: company
+        ? `Revisar ${vocabulary.organizationLabel.toLowerCase()}`
+        : `Criar ${vocabulary.organizationLabel.toLowerCase()}`,
       done: Boolean(company),
     },
     {
@@ -127,18 +143,18 @@ export function buildActivationProgress(
     },
     {
       id: "quote",
-      title: "Orçamento",
+      title: vocabulary.quoteSingular,
       detail: readyQuote
-        ? "Proposta pronta para revisar e enviar."
+        ? `${vocabulary.quoteSingular} ${isProfessional ? "pronta" : "pronto"} para revisar e enviar.`
         : firstQuote
           ? "Adicione os itens e confira o total."
-          : "Monte a primeira proposta.",
+          : `Monte ${isProfessional ? "a primeira" : "o primeiro"} ${quoteLower}.`,
       href: quoteHref,
       action: readyQuote
-        ? "Revisar orçamento"
+        ? `Revisar ${quoteLower}`
         : firstQuote
-          ? "Continuar orçamento"
-          : "Criar orçamento",
+          ? `Continuar ${quoteLower}`
+          : `Criar ${quoteLower}`,
       done: Boolean(readyQuote),
     },
     {
@@ -146,11 +162,13 @@ export function buildActivationProgress(
       title: "Envio",
       detail: sharedQuote
         ? "Link enviado ou aberto pelo cliente."
-        : "Envie o link da proposta ao cliente.",
+        : `Envie o link ${isProfessional ? "da" : "do"} ${quoteLower} ao cliente.`,
       href: sharedQuote
         ? `/app/orcamentos/${sharedQuote.id}`
         : quoteHref,
-      action: sharedQuote ? "Acompanhar proposta" : "Revisar e enviar",
+      action: sharedQuote
+        ? `Acompanhar ${quoteLower}`
+        : "Revisar e enviar",
       done: Boolean(sharedQuote),
     },
     {
@@ -165,12 +183,16 @@ export function buildActivationProgress(
     },
     {
       id: "project",
-      title: "Obra",
+      title: vocabulary.projectSingular,
       detail: project
-        ? "Orçamento convertido em obra."
-        : "Transforme o aprovado em obra.",
+        ? `${vocabulary.quoteSingular} ${isProfessional ? "convertida" : "convertido"} em ${projectLower}.`
+        : isProfessional
+          ? "Transforme a proposta aprovada em projeto."
+          : "Transforme o aprovado em obra.",
       href: projectHref,
-      action: project ? "Abrir obra" : "Criar obra",
+      action: project
+        ? `Abrir ${projectLower}`
+        : `Criar ${projectLower}`,
       done: Boolean(project),
     },
     {
@@ -183,7 +205,13 @@ export function buildActivationProgress(
       action: paymentReady ? "Revisar recebimento" : "Configurar recebimento",
       done: paymentReady,
     },
-    buildEntryPaymentStep({ project, charge: entryCharge ?? null, projectHref }),
+    buildEntryPaymentStep({
+      project,
+      charge: entryCharge ?? null,
+      projectHref,
+      projectLabel: projectLower,
+      isProfessional,
+    }),
   ];
 
   const doneCount = steps.filter((step) => step.done).length;
@@ -226,18 +254,22 @@ function buildEntryPaymentStep({
   project,
   charge,
   projectHref,
+  projectLabel,
+  isProfessional,
 }: {
   project: ActivationProject | undefined;
   charge: ActivationCharge | null;
   projectHref: string;
+  projectLabel: string;
+  isProfessional: boolean;
 }): ActivationStep {
   if (!project) {
     return {
       id: "entry_payment",
       title: "Entrada",
-      detail: "Crie a obra antes de gerar a entrada.",
+      detail: `Crie ${isProfessional ? "o" : "a"} ${projectLabel} antes de gerar a entrada.`,
       href: projectHref,
-      action: "Criar obra",
+      action: `Criar ${projectLabel}`,
       done: false,
     };
   }

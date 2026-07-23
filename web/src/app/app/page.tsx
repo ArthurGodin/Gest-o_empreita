@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CheckCircle2,
+  FolderKanban,
   HardHat,
   Plus,
   Send,
@@ -32,6 +33,10 @@ import { todayBR } from "@/lib/dates";
 import { buildOperationalPendencies } from "@/lib/operational-pendencies-core";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { STATUS_LABEL } from "@/lib/quote-status";
+import {
+  getBusinessVocabulary,
+  isProfessionalSegment,
+} from "@/lib/business-segment";
 import type { ProjectStatus } from "@/lib/supabase/types";
 
 const OPEN_PROJECT_STATUSES: ProjectStatus[] = [
@@ -55,6 +60,20 @@ export default async function DashboardPage() {
     getBillingCharges(),
     getActiveCompanyFull(),
   ]);
+  const vocabulary = getBusinessVocabulary(company?.business_segment);
+  const isProfessional = isProfessionalSegment(company?.business_segment);
+  const ProjectIcon = isProfessional ? FolderKanban : HardHat;
+  const quoteLower = vocabulary.quoteSingular.toLowerCase();
+  const projectLower = vocabulary.projectSingular.toLowerCase();
+  const projectStatusLabels: Record<ProjectStatus, string> = isProfessional
+    ? {
+        planning: "Planejado",
+        in_progress: "Em execução",
+        paused: "Pausado",
+        completed: "Concluído",
+        cancelled: "Cancelado",
+      }
+    : PROJECT_STATUS_LABEL;
   const today = todayBR();
   const pendingQuotes = quotes.filter(
     (quote) =>
@@ -102,7 +121,7 @@ export default async function DashboardPage() {
           <Button asChild>
             <Link href="/app/orcamentos/novo">
               <Plus aria-hidden="true" className="h-4 w-4" />
-              Novo orçamento
+              {vocabulary.newQuoteLabel}
             </Link>
           </Button>
         }
@@ -118,7 +137,7 @@ export default async function DashboardPage() {
           icon={<Send className="h-4 w-4" />}
           label="Esperando cliente"
           value={pendingQuotes.length.toString()}
-          hint="Orçamentos enviados ou vistos"
+          hint={`${vocabulary.quotePlural} ${isProfessional ? "enviadas" : "enviados"} ou ${isProfessional ? "vistas" : "vistos"}`}
           tone="amber"
         />
         <MetricTile
@@ -126,20 +145,32 @@ export default async function DashboardPage() {
           icon={<CheckCircle2 className="h-4 w-4" />}
           label="Aprovado no mês"
           value={formatBRL(approvedValueThisMonth / 100)}
-          hint={`${approvedThisMonth.length} orçamento${
-            approvedThisMonth.length === 1 ? "" : "s"
-          } aprovado${approvedThisMonth.length === 1 ? "" : "s"}`}
+          hint={`${approvedThisMonth.length} ${
+            approvedThisMonth.length === 1
+              ? quoteLower
+              : vocabulary.quotePluralLower
+          } ${
+            approvedThisMonth.length === 1
+              ? isProfessional
+                ? "aprovada"
+                : "aprovado"
+              : isProfessional
+                ? "aprovadas"
+                : "aprovados"
+          }`}
           tone="green"
         />
         <MetricTile
           className="border-r xl:border-r"
-          icon={<HardHat className="h-4 w-4" />}
-          label="Obras abertas"
+          icon={<ProjectIcon className="h-4 w-4" />}
+          label={`${vocabulary.projectPlural} ${isProfessional ? "abertos" : "abertas"}`}
           value={openProjects.length.toString()}
           hint={
             lateProjects.length > 0
               ? `${lateProjects.length} com prazo estourado`
-              : "Planejadas, em execução ou pausadas"
+              : isProfessional
+                ? "Planejados, em execução ou pausados"
+                : "Planejadas, em execução ou pausadas"
           }
           tone={lateProjects.length > 0 ? "red" : "blue"}
         />
@@ -157,7 +188,9 @@ export default async function DashboardPage() {
 
         <Card className="min-w-0">
           <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
-            <CardTitle className="text-base">Obras abertas</CardTitle>
+            <CardTitle className="text-base">
+              {vocabulary.projectPlural} {isProfessional ? "abertos" : "abertas"}
+            </CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/app/obras">Ver todas</Link>
             </Button>
@@ -165,10 +198,10 @@ export default async function DashboardPage() {
           <CardContent className="p-0">
             {openProjects.length === 0 ? (
               <EmptyLine
-                title="Nenhuma obra aberta"
-                detail="Quando um orçamento for aprovado, transforme em obra para acompanhar prazo, fotos e gastos."
+                title={`Nenhum${isProfessional ? "" : "a"} ${projectLower} ${isProfessional ? "aberto" : "aberta"}`}
+                detail={`Quando ${isProfessional ? "uma" : "um"} ${quoteLower} for ${isProfessional ? "aprovada" : "aprovado"}, transforme em ${projectLower} para acompanhar prazo, registros e custos.`}
                 href="/app/orcamentos"
-                action="Ver orçamentos"
+                action={`Ver ${vocabulary.quotePluralLower}`}
               />
             ) : (
               <div className="divide-y">
@@ -185,7 +218,7 @@ export default async function DashboardPage() {
                       <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         <span>{project.customer?.name ?? "Sem cliente"}</span>
                         <span>•</span>
-                        <span>{PROJECT_STATUS_LABEL[project.status]}</span>
+                        <span>{projectStatusLabels[project.status]}</span>
                         {project.ends_on ? (
                           <>
                             <span>•</span>
@@ -209,7 +242,9 @@ export default async function DashboardPage() {
 
       <Card className="min-w-0">
         <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
-          <CardTitle className="text-base">Orçamentos recentes</CardTitle>
+            <CardTitle className="text-base">
+              {vocabulary.quotePlural} recentes
+            </CardTitle>
           <Button asChild variant="ghost" size="sm">
             <Link href="/app/orcamentos">Ver todos</Link>
           </Button>
@@ -217,10 +252,10 @@ export default async function DashboardPage() {
         <CardContent className="p-0">
           {quotes.length === 0 ? (
             <EmptyLine
-              title="Nenhum orçamento criado"
-              detail="O primeiro orçamento é o caminho mais curto para o cliente sentir profissionalismo."
+              title={`Nenhum${isProfessional ? "a" : ""} ${quoteLower} ${isProfessional ? "criada" : "criado"}`}
+              detail={`${isProfessional ? "A primeira" : "O primeiro"} ${quoteLower} é o caminho mais curto para o cliente perceber profissionalismo.`}
               href="/app/orcamentos/novo"
-              action="Criar orçamento"
+              action={`Criar ${quoteLower}`}
             />
           ) : (
             <div className="divide-y">

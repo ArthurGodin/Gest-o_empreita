@@ -19,6 +19,7 @@ import { trackProductEvent } from "@/lib/product-analytics";
 import { buildQuoteWhatsappMessage } from "@/lib/quote-share-message";
 import { sendQuoteAction } from "../actions/send";
 import { markQuoteWhatsappSentAction } from "../actions/revoke";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface SendQuoteButtonProps {
   quoteId: string;
@@ -56,6 +57,11 @@ export function SendQuoteButton({
   messageMode = "quote",
   className,
 }: SendQuoteButtonProps) {
+  const vocabulary = useBusinessVocabulary();
+  const quoteWithArticle =
+    vocabulary.quoteSingular === "Proposta"
+      ? "A proposta"
+      : "O orçamento";
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
@@ -100,7 +106,9 @@ export function SendQuoteButton({
         title:
           messageMode === "revision"
             ? "Revisão pronta para WhatsApp"
-            : "Orçamento pronto para WhatsApp",
+            : vocabulary.quoteSingular === "Proposta"
+              ? "Proposta pronta para WhatsApp"
+              : "Orçamento pronto para WhatsApp",
         description:
           messageMode === "revision"
             ? "Abra a conversa do cliente com a mensagem revisada pronta."
@@ -198,7 +206,9 @@ export function SendQuoteButton({
       toast({
         variant: "success",
         title: "Envio registrado",
-        description: "O orçamento ficou marcado como enviado pelo WhatsApp.",
+        description: `${quoteWithArticle} ficou marcad${
+          vocabulary.quoteSingular === "Proposta" ? "a" : "o"
+        } como enviad${vocabulary.quoteSingular === "Proposta" ? "a" : "o"} pelo WhatsApp.`,
       });
       router.refresh();
     });
@@ -212,6 +222,8 @@ export function SendQuoteButton({
         totalCents: quoteTotalCents,
         url: shareUrl,
         mode: messageMode,
+        documentKind:
+          vocabulary.quoteSingular === "Proposta" ? "proposal" : "budget",
       })
     : null;
   const waLink = whatsappMessage
@@ -222,10 +234,14 @@ export function SendQuoteButton({
   const dialogTitle =
     messageMode === "revision"
       ? "Enviar revisão pelo WhatsApp"
-      : "Enviar orçamento pelo WhatsApp";
+      : `Enviar ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} pelo WhatsApp`;
   const dialogDescription =
     messageMode === "revision"
-      ? "A mensagem já inclui o novo link da revisão. O orçamento original continua preservado no histórico."
+      ? `A mensagem já inclui o novo link da revisão. ${
+          vocabulary.quoteSingular === "Proposta"
+            ? "A proposta original continua preservada"
+            : "O orçamento original continua preservado"
+        } no histórico.`
       : "A mensagem já inclui o link de aprovação. Quando o cliente aprovar ou pedir ajuste, o status aparece no painel.";
   const lastSentLabel = lastSentAt ? formatDateTimeBR(lastSentAt) : null;
 

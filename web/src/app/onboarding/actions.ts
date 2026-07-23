@@ -7,9 +7,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
 import { isBrazilStateCode } from "@/lib/brazil-states";
+import { BUSINESS_SEGMENTS } from "@/lib/business-segment";
 
 const schema = z.object({
-  name: z.string().trim().min(2, "Informe o nome da empresa"),
+  business_segment: z.enum(BUSINESS_SEGMENTS, {
+    error: "Escolha como você trabalha",
+  }),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Informe seu nome profissional ou da empresa"),
   phone: z.string().trim().optional().or(z.literal("")),
   city: z.string().trim().optional().or(z.literal("")),
   state: z
@@ -41,6 +48,7 @@ export async function createCompanyAction(
 ): Promise<OnboardingResult> {
   const plan = normalizePaidPlan(formData.get("plan")?.toString());
   const parsed = schema.safeParse({
+    business_segment: formData.get("business_segment"),
     name: formData.get("name"),
     phone: formData.get("phone"),
     city: formData.get("city"),
@@ -128,6 +136,7 @@ export async function createCompanyAction(
 
   logServerEvent("onboarding.completed", {
     company_id: companyId,
+    business_segment: parsed.data.business_segment,
     target_plan: plan ?? "free",
     redirects_to_checkout: Boolean(plan),
   });

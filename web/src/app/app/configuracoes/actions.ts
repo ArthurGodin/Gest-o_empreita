@@ -10,6 +10,10 @@ import { clientErrorFor, logServerError } from "@/lib/log";
 import { normalizePixKey } from "@/lib/pix/br-code";
 import { isValidCpfCnpj } from "@/lib/br-documents";
 import { isBrazilStateCode } from "@/lib/brazil-states";
+import {
+  BUSINESS_SEGMENTS,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 
 // ─── Update dados da empresa ────────────────────────────────────────────────
 
@@ -83,6 +87,46 @@ export async function updateCompanyAction(
   return { ok: true };
 }
 
+const businessSegmentSchema = z.object({
+  business_segment: z.enum(BUSINESS_SEGMENTS),
+});
+
+export async function updateBusinessSegmentAction(input: {
+  business_segment: BusinessSegment;
+}): Promise<CompanyActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sessão expirada." };
+
+  const company = await getActiveCompany();
+  if (!company) return { ok: false, error: "Empresa não encontrada." };
+
+  const parsed = businessSegmentSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "Escolha uma área profissional válida.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("companies")
+    .update({ business_segment: parsed.data.business_segment })
+    .eq("id", company.company_id);
+
+  if (error) {
+    logServerError("config.business-segment.update", error);
+    return { ok: false, error: clientErrorFor(error) };
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/app");
+  revalidatePath("/app/orcamentos");
+  revalidatePath("/app/obras");
+  revalidatePath("/app/configuracoes");
+  return { ok: true };
+}
 
 const paymentSchema = z
   .object({

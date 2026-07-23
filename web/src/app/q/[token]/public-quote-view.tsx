@@ -21,6 +21,10 @@ import {
 import { shouldShowPrumoBrand } from "@/lib/plans";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
 import { ApprovalForm } from "./approval-form";
+import {
+  getBusinessVocabulary,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 
 export interface PublicQuoteViewData {
   number: string;
@@ -39,6 +43,7 @@ export interface PublicQuoteViewData {
     state: string | null;
     pix_instructions: string | null;
     plan: string | null;
+    business_segment: BusinessSegment;
   };
   customer: {
     name: string;
@@ -72,6 +77,10 @@ export function PublicQuoteView({
   shareToken: string;
   nowMs: number;
 }) {
+  const vocabulary = getBusinessVocabulary(
+    quote.company.business_segment,
+  );
+  const isProposal = vocabulary.quoteSingular === "Proposta";
   const daysUntilExpiry = quote.valid_until
     ? Math.ceil(
         (new Date(quote.valid_until).getTime() - nowMs) /
@@ -82,7 +91,9 @@ export function PublicQuoteView({
   const isDecidable = status === "sent" || status === "viewed";
   const contactUrl = whatsappDirectShareLink({
     phone: quote.company.phone,
-    message: `Olá, ${quote.company.name}. Estou vendo o orçamento ${quote.number} (${quote.title}) e quero tirar uma dúvida.`,
+    message: `Olá, ${quote.company.name}. Estou vendo ${
+      isProposal ? "a proposta" : "o orçamento"
+    } ${quote.number} (${quote.title}) e quero tirar uma dúvida.`,
   });
   const companyPhoneLabel = contactUrl ? formatPhone(quote.company.phone) : null;
   const showPrumoBrand = shouldShowPrumoBrand(quote.company.plan);
@@ -154,7 +165,7 @@ export function PublicQuoteView({
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-md border bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                 <FileText aria-hidden="true" className="h-3.5 w-3.5" />
-                Orçamento {quote.number}
+                {vocabulary.quoteSingular} {quote.number}
               </div>
               <h1 className="mt-3 break-words text-balance text-2xl font-bold leading-tight sm:text-3xl">
                 {quote.title}
@@ -177,7 +188,7 @@ export function PublicQuoteView({
 
             <div className="border-t pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
               <div className="text-xs font-semibold text-muted-foreground">
-                Total da proposta
+                Total {isProposal ? "da proposta" : "do orçamento"}
               </div>
               <div className="mt-1 text-2xl font-bold tabular-nums text-primary sm:text-3xl">
                 {formatBRL(quote.total_cents / 100)}
@@ -215,6 +226,7 @@ export function PublicQuoteView({
                 token={shareToken}
                 companyName={quote.company.name}
                 contactUrl={contactUrl}
+                isProposal={isProposal}
               />
             )}
 
@@ -227,7 +239,7 @@ export function PublicQuoteView({
                   <div className="text-sm font-semibold">Link único e privado</div>
                   <p className="mt-1 text-sm leading-5 text-muted-foreground">
                     Só quem recebeu este link consegue ver, aprovar ou pedir
-                    ajuste neste orçamento.
+                    ajuste {isProposal ? "nesta proposta" : "neste orçamento"}.
                   </p>
                 </div>
               </div>
@@ -277,7 +289,9 @@ export function PublicQuoteView({
                     <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-emerald-950">Orçamento aprovado</div>
+                    <div className="text-sm font-semibold text-emerald-950">
+                      {isProposal ? "Proposta aprovada" : "Orçamento aprovado"}
+                    </div>
                     <div className="mt-1 text-sm text-emerald-800">
                       {lastApproval?.signer_name && (
                         <>
@@ -334,7 +348,9 @@ export function PublicQuoteView({
                     <Clock aria-hidden="true" className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">Este orçamento expirou</div>
+                    <div className="text-sm font-semibold">
+                      {isProposal ? "Esta proposta expirou" : "Este orçamento expirou"}
+                    </div>
                     <div className="mt-1 text-sm text-muted-foreground">
                       Validade era{" "}
                       {quote.valid_until && formatDateBR(quote.valid_until)}.
@@ -413,7 +429,7 @@ export function PublicQuoteView({
           <div className="mx-auto flex max-w-5xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <div className="truncate text-[11px] font-semibold text-muted-foreground">
-                Total da proposta
+                Total {isProposal ? "da proposta" : "do orçamento"}
               </div>
               <div className="truncate text-lg font-bold tabular-nums text-primary">
                 {formatBRL(quote.total_cents / 100)}

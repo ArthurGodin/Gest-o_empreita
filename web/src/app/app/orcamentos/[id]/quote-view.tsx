@@ -19,6 +19,11 @@ import type {
   QuoteWithRelations,
 } from "@/lib/queries/quotes";
 import type { PaymentProvider } from "@/lib/supabase/types";
+import {
+  getBusinessVocabulary,
+  normalizeBusinessSegment,
+  type BusinessSegment,
+} from "@/lib/business-segment";
 import { ShareLinkCard } from "./share-link-card";
 import { ConvertToProject, type TemplateOption } from "./convert-to-project";
 import { DuplicateButton } from "./duplicate-button";
@@ -33,12 +38,16 @@ export function QuoteView({
   revisions,
   templates,
   paymentProvider,
+  businessSegment,
 }: {
   quote: QuoteWithRelations;
   revisions: QuoteRevisionSummary[];
   templates: TemplateOption[];
   paymentProvider: PaymentProvider;
+  businessSegment: BusinessSegment;
 }) {
+  const segment = normalizeBusinessSegment(businessSegment);
+  const vocabulary = getBusinessVocabulary(segment);
   const total = quote.total_cents;
   const lastApproval = quote.approvals[quote.approvals.length - 1];
   const latestRevision = revisions[0] ?? null;
@@ -58,8 +67,12 @@ export function QuoteView({
                 </div>
                 <div className="text-green-800/80 dark:text-green-200/80">
                   {formatDateBR(lastApproval.created_at)}
-                  {!quote.project_id && " · Próximo passo: clique em \"Virar obra\" pra começar."}
-                  {quote.project_id && " · Obra já criada."}
+                  {!quote.project_id &&
+                    ` · Próximo passo: clique em "${vocabulary.createProjectLabel}" para começar.`}
+                  {quote.project_id &&
+                    (segment === "construction"
+                      ? " · Obra já criada."
+                      : " · Projeto já criado.")}
                 </div>
               </div>
             </div>

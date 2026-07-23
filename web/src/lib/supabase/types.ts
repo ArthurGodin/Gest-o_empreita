@@ -260,6 +260,7 @@ export type Database = {
       companies: {
         Row: {
           address: string | null
+          business_segment: string
           city: string | null
           cnpj: string | null
           created_at: string
@@ -290,6 +291,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_segment?: string
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -320,6 +322,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_segment?: string
           city?: string | null
           cnpj?: string | null
           created_at?: string

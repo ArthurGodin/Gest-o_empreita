@@ -430,7 +430,8 @@ export async function applyTemplateAction(
   if ((existingCount ?? 0) > 0) {
     return {
       ok: false,
-      error: "Essa obra já tem etapas. Apague todas primeiro pra aplicar um template.",
+      error:
+        "Este projeto ou obra já tem etapas. Apague todas antes de aplicar um template.",
     };
   }
 

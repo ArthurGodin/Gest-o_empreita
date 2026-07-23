@@ -15,7 +15,7 @@ const reactModule = Reflect.apply(nodeRequire, undefined, [
   reactPackageName,
 ]) as typeof import("react");
 const { createElement } = reactModule;
-const CURRENT_PDF_CACHE_PREFIX = "v2/";
+const CURRENT_PDF_CACHE_PREFIX = "v3/";
 
 /**
  * Carrega quote completo e gera o PDF. Caching: se quote.pdf_storage_path
@@ -36,7 +36,7 @@ export async function generateQuotePdfBuffer(
       id, number, title, description, valid_until, notes,
       subtotal_cents, discount_cents, total_cents, created_at, updated_at,
       pdf_storage_path, pdf_generated_at,
-      company:companies(name, legal_name, cnpj, phone, email, logo_url, address, city, state, plan),
+      company:companies(name, legal_name, cnpj, phone, email, logo_url, address, city, state, plan, business_segment),
       customer:customers(name, document, phone, email, address, city, state),
       items:quote_items(description, unit, quantity, unit_price_cents, total_cents, position)
     `,

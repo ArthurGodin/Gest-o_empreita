@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { HardHat } from "lucide-react";
+import { FolderKanban, HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,10 @@ import {
 } from "@/lib/billing/entry-percent";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { PaymentProvider } from "@/lib/supabase/types";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 import { convertToProjectAction } from "../actions/convert";
 
 export interface TemplateOption {
@@ -51,6 +55,11 @@ export function ConvertToProject({
   templates,
   paymentProvider,
 }: ConvertToProjectProps) {
+  const segment = useBusinessSegment();
+  const vocabulary = useBusinessVocabulary();
+  const ProjectIcon = segment === "construction" ? HardHat : FolderKanban;
+  const projectCreatedLabel =
+    segment === "construction" ? "Obra criada" : "Projeto criado";
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -90,6 +99,7 @@ export function ConvertToProject({
           return;
         }
         trackProductEvent("project_created_from_quote", {
+          business_segment: segment,
           has_template: Boolean(tpl),
           entry_pct: validEntryPct,
           has_customer_document: Boolean(cpfCnpj.trim()),
@@ -98,14 +108,14 @@ export function ConvertToProject({
         if (result.billing_warning) {
           toast({
             variant: "destructive",
-            title: "Obra criada, cobrança pendente",
+            title: `${projectCreatedLabel}, cobrança pendente`,
             description: result.billing_warning,
           });
           router.push(`/app/obras/${result.project_id}?cobranca=atencao#cobranca`);
         } else {
           toast({
             variant: "success",
-            title: "Obra criada",
+            title: projectCreatedLabel,
             description: "Confira o Pix da entrada na seção de cobrança.",
           });
           router.push(`/app/obras/${result.project_id}#cobranca`);
@@ -121,16 +131,20 @@ export function ConvertToProject({
   return (
     <>
       <Button onClick={() => setOpen(true)} className="w-full sm:w-auto">
-        <HardHat className="h-4 w-4" />
-        Virar obra
+        <ProjectIcon className="h-4 w-4" />
+        {vocabulary.createProjectLabel}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Virar essa obra?</DialogTitle>
+            <DialogTitle>
+              {vocabulary.createProjectLabel}?
+            </DialogTitle>
             <DialogDescription>
-              Vamos criar uma obra a partir do orçamento{" "}
+              Vamos criar{" "}
+              {segment === "construction" ? "uma obra" : "um projeto"} a partir
+              {segment === "construction" ? " do orçamento " : " da proposta "}
               <strong>{quoteTitle}</strong>. Cliente, endereço e valor previsto
               já vêm preenchidos.
             </DialogDescription>
@@ -244,7 +258,9 @@ export function ConvertToProject({
               onClick={onConfirm}
               disabled={pending || Boolean(entryPctError)}
             >
-              {pending ? "Criando obra…" : "Confirmar e criar obra"}
+              {pending
+                ? `Criando ${vocabulary.projectSingular.toLocaleLowerCase("pt-BR")}…`
+                : `Confirmar e criar ${vocabulary.projectSingular.toLocaleLowerCase("pt-BR")}`}
             </Button>
           </DialogFooter>
         </DialogContent>

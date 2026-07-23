@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { applyTemplateAction } from "./actions";
 import type { StageTemplate } from "@/lib/queries/stage-templates";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface ApplyTemplateDialogProps {
   projectId: string;
@@ -27,6 +28,7 @@ export function ApplyTemplateDialog({
   templates,
   trigger,
 }: ApplyTemplateDialogProps) {
+  const vocabulary = useBusinessVocabulary();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [templateId, setTemplateId] = useState(
@@ -66,8 +68,11 @@ export function ApplyTemplateDialog({
         <DialogHeader>
           <DialogTitle>Aplicar template de etapas</DialogTitle>
           <DialogDescription>
-            As etapas do template serão adicionadas à obra na ordem padrão.
-            Você pode editar, reordenar ou apagar depois.
+            As etapas do template serão adicionadas{" "}
+            {vocabulary.projectSingular === "Projeto"
+              ? "ao projeto"
+              : "à obra"}{" "}
+            na ordem padrão. Você pode editar, reordenar ou apagar depois.
           </DialogDescription>
         </DialogHeader>
 

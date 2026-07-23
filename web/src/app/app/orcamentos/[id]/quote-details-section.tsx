@@ -8,6 +8,7 @@ import {
   type QuoteDraftField,
 } from "./quote-draft";
 import type { Customer } from "@/lib/queries/customers";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface QuoteDetailsSectionProps {
   customers: Customer[];
@@ -34,10 +35,12 @@ export function QuoteDetailsSection({
   onCustomerChange,
   onValidUntilChange,
 }: QuoteDetailsSectionProps) {
+  const vocabulary = useBusinessVocabulary();
+
   return (
     <section className="rounded-lg border bg-card p-4 sm:p-5">
       <h2 className="mb-3 text-sm font-semibold text-foreground">
-        Dados do orçamento
+        Dados {vocabulary.quoteSingular === "Proposta" ? "da proposta" : "do orçamento"}
       </h2>
 
       <div className="space-y-4">

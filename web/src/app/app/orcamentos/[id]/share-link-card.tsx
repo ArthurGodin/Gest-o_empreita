@@ -33,6 +33,7 @@ import {
   type QuoteShareMessageMode,
 } from "@/lib/quote-share-message";
 import { isShareTokenUrlSafe } from "@/lib/quote-token-shared";
+import { useBusinessVocabulary } from "@/components/business-segment-context";
 
 interface ShareLinkCardProps {
   quoteId: string;
@@ -69,6 +70,8 @@ export function ShareLinkCard({
   whatsappSentAt,
   messageMode = "quote",
 }: ShareLinkCardProps) {
+  const vocabulary = useBusinessVocabulary();
+  const isProposal = vocabulary.quoteSingular === "Proposta";
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentToken, setCurrentToken] = useState(shareToken);
@@ -91,7 +94,7 @@ export function ShareLinkCard({
   const helperText =
     messageMode === "revision"
       ? "Reenvie a revisão com mensagem pronta. O link antigo pode continuar salvo como histórico, mas este é o link ativo."
-      : "Envie o orçamento pelo WhatsApp com mensagem pronta. O link abaixo fica como fallback para copiar manualmente.";
+      : `Envie ${isProposal ? "a proposta" : "o orçamento"} pelo WhatsApp com mensagem pronta. O link abaixo fica como alternativa para copiar manualmente.`;
   const whatsappMessage = tokenIsSafe
     ? buildQuoteWhatsappMessage({
         customerName,
@@ -100,6 +103,7 @@ export function ShareLinkCard({
         totalCents: quoteTotalCents,
         url,
         mode: messageMode,
+        documentKind: isProposal ? "proposal" : "budget",
       })
     : null;
   const whatsappUrl = whatsappMessage
@@ -132,7 +136,11 @@ export function ShareLinkCard({
       toast({
         variant: "success",
         title: "Envio registrado",
-        description: "O orçamento ficou marcado como enviado pelo WhatsApp.",
+        description: `${
+          isProposal ? "A proposta" : "O orçamento"
+        } ficou marcad${isProposal ? "a" : "o"} como enviad${
+          isProposal ? "a" : "o"
+        } pelo WhatsApp.`,
       });
       router.refresh();
     });
@@ -317,7 +325,8 @@ export function ShareLinkCard({
 
       {!tokenIsSafe && (
         <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-          Este orçamento tem um link antigo que quebra no navegador. Gere um
+          {isProposal ? "Esta proposta" : "Este orçamento"} tem um link antigo
+          que quebra no navegador. Gere um
           link novo antes de mandar para o cliente.
         </div>
       )}
@@ -334,7 +343,10 @@ export function ShareLinkCard({
       <div className="mt-3 flex flex-col gap-3 text-xs sm:flex-row sm:items-center sm:justify-between">
         <span className="flex items-start gap-2 text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span>Esse link é único. Só quem tem o link consegue ver o orçamento.</span>
+          <span>
+            Esse link é único. Só quem tem o link consegue ver{" "}
+            {isProposal ? "a proposta" : "o orçamento"}.
+          </span>
         </span>
         <Button
           type="button"

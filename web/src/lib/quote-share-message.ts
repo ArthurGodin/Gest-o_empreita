@@ -1,6 +1,7 @@
 import { formatBRL } from "./utils";
 
 export type QuoteShareMessageMode = "quote" | "revision";
+export type QuoteShareDocumentKind = "budget" | "proposal";
 
 interface QuoteWhatsappMessageInput {
   customerName?: string | null;
@@ -9,6 +10,7 @@ interface QuoteWhatsappMessageInput {
   totalCents?: number | null;
   url: string;
   mode?: QuoteShareMessageMode;
+  documentKind?: QuoteShareDocumentKind;
 }
 
 export function buildQuoteWhatsappMessage({
@@ -18,6 +20,7 @@ export function buildQuoteWhatsappMessage({
   totalCents,
   url,
   mode = "quote",
+  documentKind = "budget",
 }: QuoteWhatsappMessageInput): string {
   const greeting = customerName?.trim()
     ? `Olá, ${customerName.trim()}!`
@@ -32,8 +35,12 @@ export function buildQuoteWhatsappMessage({
       : null;
   const lead =
     mode === "revision"
-      ? `Segue a versão revisada do orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`
-      : `Segue o orçamento${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`;
+      ? `Segue a versão revisada ${
+          documentKind === "proposal" ? "da proposta" : "do orçamento"
+        }${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`
+      : `Segue ${
+          documentKind === "proposal" ? "a proposta" : "o orçamento"
+        }${quoteLabel ? ` ${quoteLabel}` : ""} para sua avaliação.`;
   const action =
     mode === "revision"
       ? "Acesse o link para revisar, aprovar ou pedir um novo ajuste:"

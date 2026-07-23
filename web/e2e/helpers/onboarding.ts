@@ -3,17 +3,25 @@ import { expect, type Page } from "@playwright/test";
 export async function completeCompanyOnboarding(
   page: Page,
   companyName: string,
+  options: {
+    profile?: "Arquitetura" | "Interiores" | "Engenharia" | "Obras";
+  } = {},
 ) {
-  const companyNameInput = page.getByLabel(/Nome da empresa/);
+  const companyNameInput = page.getByLabel(/Nome profissional ou da empresa/);
   const phoneInput = page.getByLabel("WhatsApp comercial");
   const cityInput = page.getByLabel("Cidade");
   const stateInput = page.getByLabel("UF");
+  const profile = page.getByRole("radio", {
+    name: new RegExp(options.profile ?? "Obras", "i"),
+  });
 
+  await expect(profile).toBeVisible({ timeout: 10_000 });
   await expect(companyNameInput).toBeVisible({ timeout: 10_000 });
   await expect(phoneInput).toBeVisible({ timeout: 10_000 });
   await expect(cityInput).toBeVisible({ timeout: 10_000 });
   await expect(stateInput).toBeVisible({ timeout: 10_000 });
 
+  await profile.check({ force: true });
   await companyNameInput.fill(companyName);
   await phoneInput.fill("11999990000");
   await cityInput.fill("Sao Paulo");
