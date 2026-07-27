@@ -12,6 +12,7 @@ import {
   Circle,
   Copy,
   DoorOpen,
+  LockKeyhole,
   Loader2,
   MoreHorizontal,
   Pencil,
@@ -113,8 +114,10 @@ export function SpacesSection({
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const limit = getArchitecturePlanLimits(plan).activeSpacesPerProject;
+  const canAddSpace = spaces.length < limit;
 
   function startCreate() {
+    if (!canAddSpace || projectLocked) return;
     setEditing(null);
     setError(null);
     setFormOpen(true);
@@ -176,11 +179,15 @@ export function SpacesSection({
         <Button
           type="button"
           onClick={startCreate}
-          disabled={projectLocked}
+          disabled={projectLocked || !canAddSpace}
           className="w-full sm:w-auto"
         >
-          <Plus className="h-4 w-4" />
-          Adicionar ambiente
+          {canAddSpace ? (
+            <Plus className="h-4 w-4" />
+          ) : (
+            <LockKeyhole className="h-4 w-4" />
+          )}
+          {canAddSpace ? "Adicionar ambiente" : "Limite atingido"}
         </Button>
       </div>
 
@@ -231,6 +238,7 @@ export function SpacesSection({
               space={space}
               projectId={projectId}
               projectLocked={projectLocked}
+              canAddSpace={canAddSpace}
               first={index === 0}
               last={index === spaces.length - 1}
               busyAction={busyAction}
@@ -242,9 +250,17 @@ export function SpacesSection({
       )}
 
       {plan === "free" ? (
-        <div className="border-t bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground sm:px-5">
-          O Grátis permite até 3 ambientes. O Pro libera capacidade para o
-          trabalho profissional.
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-muted/20 px-4 py-2.5 text-xs text-muted-foreground sm:px-5">
+          <span>
+            O Grátis permite até 3 ambientes. O Pro libera capacidade para o
+            trabalho profissional.
+          </span>
+          <Link
+            href="/app/configuracoes/plano"
+            className="font-semibold text-emerald-800 underline underline-offset-2"
+          >
+            Comparar planos
+          </Link>
         </div>
       ) : null}
 
@@ -269,6 +285,7 @@ function SpaceRow({
   space,
   projectId,
   projectLocked,
+  canAddSpace,
   first,
   last,
   busyAction,
@@ -278,6 +295,7 @@ function SpaceRow({
   space: ProjectSpace;
   projectId: string;
   projectLocked: boolean;
+  canAddSpace: boolean;
   first: boolean;
   last: boolean;
   busyAction: string | null;
@@ -477,7 +495,12 @@ function SpaceRow({
               type="button"
               size="sm"
               variant="outline"
-              disabled={busyAction !== null}
+              disabled={busyAction !== null || !canAddSpace}
+              title={
+                canAddSpace
+                  ? "Duplicar ambiente"
+                  : "Limite de ambientes atingido"
+              }
               onClick={() =>
                 onRunAction(
                   `duplicate:${space.id}`,
