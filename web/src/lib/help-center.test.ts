@@ -18,6 +18,8 @@ describe("help center domain", () => {
     ["Pix", "cobrar-entrada-e-saldo"],
     ["orcamento", "criar-orcamento"],
     ["SINAPI", "usar-sinapi"],
+    ["briefing arquitetura", "enviar-briefing-arquitetura"],
+    ["ambientes necessidades", "organizar-ambientes-projeto"],
     ["cancelar", "cancelar-assinatura"],
   ])("finds %s by editorial content", (query, expectedTopic) => {
     expect(searchHelpTopics(query).map((topic) => topic.id)).toContain(

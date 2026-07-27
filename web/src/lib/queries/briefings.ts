@@ -136,6 +136,23 @@ export const getPublicProjectBriefingByToken = cache(
 
     if (briefingError || !briefingData?.active_revision_id) return null;
 
+    if (briefingData.status === "shared") {
+      const { data: projectState, error: projectStateError } = await admin
+        .from("projects")
+        .select("status,delivery_approved_at")
+        .eq("id", quoteData.project_id)
+        .maybeSingle();
+      if (
+        projectStateError ||
+        !projectState ||
+        projectState.status === "completed" ||
+        projectState.status === "cancelled" ||
+        projectState.delivery_approved_at
+      ) {
+        return null;
+      }
+    }
+
     const { data: revisionData, error: revisionError } = await admin
       .from("project_briefing_revisions")
       .select("*")

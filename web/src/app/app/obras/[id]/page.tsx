@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { PageContainer } from "@/components/app-shell/page-container";
+import { env } from "@/lib/env";
+import { getProjectBriefing } from "@/lib/queries/briefings";
+import { getProjectSpaces } from "@/lib/queries/project-spaces";
 import { getProjectWithRelations } from "@/lib/queries/projects";
 import { listTemplates } from "@/lib/queries/stage-templates";
+import { ArchitectureProjectOverview } from "./architecture-project-overview";
+import { BriefingSection } from "./briefing-section";
 import { ProjectHeader } from "./project-header";
 import { StatusSuggestion } from "./status-suggestion";
 import { StagesSection } from "./stages-section";
@@ -18,6 +23,7 @@ import {
   getProjectDeliveryAcceptance,
 } from "@/lib/queries/deliverables";
 import { DeliverablesSection } from "./deliverables-section";
+import { SpacesSection } from "./spaces-section";
 
 const sectionAnchorClass =
   "min-w-0 scroll-mt-[calc(7.75rem+env(safe-area-inset-top))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:scroll-mt-24";
@@ -44,60 +50,41 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const query = searchParams ? await searchParams : {};
   const conversionBillingAttention = query.cobranca === "atencao";
-  const [project, templates, company, deliverables, deliveryAcceptance] =
-    await Promise.all([
+  const [
+    project,
+    templates,
+    company,
+    deliverables,
+    deliveryAcceptance,
+    briefing,
+    spaces,
+  ] = await Promise.all([
     getProjectWithRelations(id),
     listTemplates(),
     getActiveCompanyFull(),
     getProjectDeliverables(id),
     getProjectDeliveryAcceptance(id),
+    getProjectBriefing(id),
+    getProjectSpaces(id),
   ]);
 
   if (!project) notFound();
 
+  const architectureWorkspace =
+    company?.business_segment === "architecture" ||
+    company?.business_segment === "interiors";
+  const projectLocked =
+    project.status === "completed" ||
+    project.status === "cancelled" ||
+    Boolean(project.delivery_approved_at);
+  const publicBriefingUrl = project.share_token
+    ? `${env.NEXT_PUBLIC_APP_URL}/q/${project.share_token}?tab=briefing`
+    : null;
   const deliverableStorageUsage = company
     ? await getDeliverableStorageUsage(company.id)
     : { usedBytes: 0, pendingBytes: 0, readyBytes: 0 };
-
-  return (
-    <PageContainer spacing="compact">
-      <ProjectHeader project={project} />
-
-      <StatusSuggestion
-        projectId={project.id}
-        current={project.status}
-        stages={project.stages}
-      />
-
-      <ProjectSectionNav />
-
-      <div id="etapas" tabIndex={-1} className={sectionAnchorClass}>
-        <StagesSection
-          projectId={project.id}
-          stages={project.stages}
-          progressPct={project.progress_pct}
-          startsOn={project.starts_on}
-          templates={templates}
-        />
-      </div>
-
-      <DeliverablesSection
-        projectId={project.id}
-        shareToken={project.share_token}
-        plan={company?.plan ?? "free"}
-        projectLocked={
-          project.status === "cancelled" ||
-          Boolean(project.delivery_approved_at)
-        }
-        stages={project.stages.map((stage) => ({
-          id: stage.id,
-          name: stage.name,
-        }))}
-        deliverables={deliverables}
-        storageUsage={deliverableStorageUsage}
-        acceptance={deliveryAcceptance}
-      />
-
+  const managementSections = (
+    <>
       <BillingSection
         charges={project.charges}
         businessSegment={company?.business_segment ?? "construction"}
@@ -134,6 +121,88 @@ export default async function ProjectDetailPage({
       </div>
 
       <PublicLinkCallout shareToken={project.share_token} />
+    </>
+  );
+
+  return (
+    <PageContainer spacing="compact">
+      <ProjectHeader project={project} />
+
+      <StatusSuggestion
+        projectId={project.id}
+        current={project.status}
+        stages={project.stages}
+      />
+
+      <ProjectSectionNav />
+
+      {architectureWorkspace ? (
+        <>
+          <div id="resumo" tabIndex={-1} className={sectionAnchorClass}>
+            <ArchitectureProjectOverview
+              briefing={briefing}
+              spaces={spaces}
+              deliverables={deliverables}
+            />
+          </div>
+
+          <div id="briefing" tabIndex={-1} className={sectionAnchorClass}>
+            <BriefingSection
+              projectId={project.id}
+              plan={company?.plan ?? "free"}
+              segment={company?.business_segment ?? "architecture"}
+              briefing={briefing}
+              publicUrl={publicBriefingUrl}
+              projectLocked={projectLocked}
+            />
+          </div>
+
+          <div id="ambientes" tabIndex={-1} className={sectionAnchorClass}>
+            <SpacesSection
+              projectId={project.id}
+              plan={company?.plan ?? "free"}
+              spaces={spaces}
+              projectLocked={projectLocked}
+            />
+          </div>
+        </>
+      ) : null}
+
+      <div id="etapas" tabIndex={-1} className={sectionAnchorClass}>
+        <StagesSection
+          projectId={project.id}
+          stages={project.stages}
+          progressPct={project.progress_pct}
+          startsOn={project.starts_on}
+          templates={templates}
+        />
+      </div>
+
+      <DeliverablesSection
+        projectId={project.id}
+        shareToken={project.share_token}
+        plan={company?.plan ?? "free"}
+        projectLocked={projectLocked}
+        stages={project.stages.map((stage) => ({
+          id: stage.id,
+          name: stage.name,
+        }))}
+        deliverables={deliverables}
+        storageUsage={deliverableStorageUsage}
+        acceptance={deliveryAcceptance}
+      />
+
+      {architectureWorkspace ? (
+        <div
+          id="gestao"
+          tabIndex={-1}
+          className={`${sectionAnchorClass} space-y-4`}
+        >
+          {managementSections}
+        </div>
+      ) : (
+        managementSections
+      )}
     </PageContainer>
   );
 }

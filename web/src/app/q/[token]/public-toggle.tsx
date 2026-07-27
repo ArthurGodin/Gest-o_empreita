@@ -3,11 +3,13 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ClipboardList,
+  ClipboardPenLine,
   FileText,
   PackageCheck,
   WalletCards,
 } from "lucide-react";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
+import type { PublicProjectBriefing } from "@/lib/queries/briefings";
 import {
   PublicQuoteView,
   type PublicQuoteViewData,
@@ -22,14 +24,21 @@ import {
   getBusinessVocabulary,
   normalizeBusinessSegment,
 } from "@/lib/business-segment";
+import { PublicBriefingView } from "./public-briefing-view";
 
-type PublicView = "orcamento" | "andamento" | "entregas" | "cobranca";
+type PublicView =
+  | "orcamento"
+  | "andamento"
+  | "briefing"
+  | "entregas"
+  | "cobranca";
 
 interface PublicToggleProps {
   quote: PublicQuoteViewData;
   status: EffectiveQuoteStatus;
   project: PublicProjectView | null;
   deliverables: PublicDeliverableView[];
+  briefing: PublicProjectBriefing | null;
   shareToken: string;
   nowMs: number;
 }
@@ -38,6 +47,7 @@ function isPublicView(value: string | null): value is PublicView {
   return (
     value === "orcamento" ||
     value === "andamento" ||
+    value === "briefing" ||
     value === "entregas" ||
     value === "cobranca"
   );
@@ -48,6 +58,7 @@ export function PublicToggle({
   status,
   project,
   deliverables,
+  briefing,
   shareToken,
   nowMs,
 }: PublicToggleProps) {
@@ -63,6 +74,15 @@ export function PublicToggle({
     icon: typeof ClipboardList;
   }> = [
     { value: "andamento", label: "Andamento", icon: ClipboardList },
+    ...(briefing
+      ? [
+          {
+            value: "briefing" as const,
+            label: "Briefing",
+            icon: ClipboardPenLine,
+          },
+        ]
+      : []),
     ...(deliverables.length > 0
       ? [
           {
@@ -96,12 +116,17 @@ export function PublicToggle({
           charge.status === "draft" &&
           Boolean(deliveryApprovedAt)),
     ) ?? false;
+  const hasPendingBriefing =
+    briefing?.status === "shared" &&
+    briefing.activeRevision.submittedAt === null;
   const defaultView: PublicView = hasProject
-    ? hasActionableCharge
-      ? "cobranca"
-      : hasPendingDeliverable
-        ? "entregas"
-      : "andamento"
+    ? hasPendingBriefing
+      ? "briefing"
+      : hasActionableCharge
+        ? "cobranca"
+        : hasPendingDeliverable
+          ? "entregas"
+          : "andamento"
     : "orcamento";
   const requestedView = searchParams.get("tab");
   const view =
@@ -176,6 +201,11 @@ export function PublicToggle({
             view={project}
             shareToken={shareToken}
             businessSegment={businessSegment}
+          />
+        ) : view === "briefing" && briefing ? (
+          <PublicBriefingView
+            briefing={briefing}
+            shareToken={shareToken}
           />
         ) : view === "entregas" ? (
           <PublicDeliverablesView

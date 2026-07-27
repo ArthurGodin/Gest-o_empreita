@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { cn } from "@/lib/utils";
-import { useBusinessVocabulary } from "@/components/business-segment-context";
+import {
+  useBusinessSegment,
+  useBusinessVocabulary,
+} from "@/components/business-segment-context";
 
-const PROJECT_SECTIONS = [
+const CONSTRUCTION_SECTIONS = [
   { id: "etapas", label: "Etapas" },
   { id: "entregas", label: "Entregas" },
   { id: "cobranca", label: "Cobran\u00e7a" },
@@ -13,29 +16,58 @@ const PROJECT_SECTIONS = [
   { id: "equipe", label: "Equipe" },
 ] as const;
 
-type ProjectSectionId = (typeof PROJECT_SECTIONS)[number]["id"];
+const ARCHITECTURE_SECTIONS = [
+  { id: "resumo", label: "Resumo" },
+  { id: "briefing", label: "Briefing" },
+  { id: "ambientes", label: "Ambientes" },
+  { id: "etapas", label: "Etapas" },
+  { id: "entregas", label: "Entregas" },
+  { id: "gestao", label: "Gest\u00e3o" },
+] as const;
 
-const SECTION_IDS = new Set<ProjectSectionId>(
-  PROJECT_SECTIONS.map((section) => section.id),
+type ProjectSectionId =
+  | (typeof CONSTRUCTION_SECTIONS)[number]["id"]
+  | (typeof ARCHITECTURE_SECTIONS)[number]["id"];
+
+const CONSTRUCTION_SECTION_IDS = new Set<ProjectSectionId>(
+  CONSTRUCTION_SECTIONS.map((section) => section.id),
+);
+const ARCHITECTURE_SECTION_IDS = new Set<ProjectSectionId>(
+  ARCHITECTURE_SECTIONS.map((section) => section.id),
 );
 
-function sectionFromHash(hash: string): ProjectSectionId | null {
+function sectionFromHash(
+  hash: string,
+  validIds: ReadonlySet<ProjectSectionId>,
+): ProjectSectionId | null {
   const value = decodeURIComponent(hash.replace(/^#/, ""));
-  return SECTION_IDS.has(value as ProjectSectionId)
+  return validIds.has(value as ProjectSectionId)
     ? (value as ProjectSectionId)
     : null;
 }
 
 export function ProjectSectionNav() {
+  const segment = useBusinessSegment();
   const vocabulary = useBusinessVocabulary();
+  const architectureWorkspace =
+    segment === "architecture" || segment === "interiors";
+  const sections = architectureWorkspace
+    ? ARCHITECTURE_SECTIONS
+    : CONSTRUCTION_SECTIONS;
+  const sectionIds = architectureWorkspace
+    ? ARCHITECTURE_SECTION_IDS
+    : CONSTRUCTION_SECTION_IDS;
+  const initialSection: ProjectSectionId = architectureWorkspace
+    ? "resumo"
+    : "etapas";
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] =
-    useState<ProjectSectionId>("etapas");
+    useState<ProjectSectionId>(initialSection);
   const [floating, setFloating] = useState(false);
 
   useEffect(() => {
     function syncFromLocation(scroll: boolean) {
-      const section = sectionFromHash(window.location.hash);
+      const section = sectionFromHash(window.location.hash, sectionIds);
       if (!section) return;
 
       setActiveSection(section);
@@ -60,7 +92,7 @@ export function ProjectSectionNav() {
       window.removeEventListener("hashchange", onHistoryChange);
       window.removeEventListener("popstate", onHistoryChange);
     };
-  }, []);
+  }, [sectionIds]);
 
   useEffect(() => {
     let frame = 0;
@@ -104,7 +136,7 @@ export function ProjectSectionNav() {
     if (!target) return;
 
     setActiveSection(section);
-    if (sectionFromHash(window.location.hash) !== section) {
+    if (sectionFromHash(window.location.hash, sectionIds) !== section) {
       window.history.pushState(null, "", `#${section}`);
     }
     target.scrollIntoView({
@@ -166,7 +198,7 @@ export function ProjectSectionNav() {
               }
               className="h-11 w-full touch-manipulation rounded-md border border-input bg-card px-3 text-base text-slate-800 outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
             >
-              {PROJECT_SECTIONS.map((section) => (
+              {sections.map((section) => (
                 <option key={section.id} value={section.id}>
                   Ir para: {section.label}
                 </option>
@@ -175,7 +207,7 @@ export function ProjectSectionNav() {
           </label>
 
           <div className="hidden items-center gap-1 lg:flex">
-            {PROJECT_SECTIONS.map((section) => {
+            {sections.map((section) => {
               const active = activeSection === section.id;
               return (
                 <a

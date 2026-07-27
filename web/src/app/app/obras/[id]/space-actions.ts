@@ -682,6 +682,13 @@ function spaceActionError(error: unknown): {
         "O Grátis permite até 3 ambientes. Seus dados continuam disponíveis; assine o Pro para adicionar mais.",
     };
   }
+  if (message.includes("project_workspace_locked")) {
+    return {
+      ok: false,
+      code: "project_locked",
+      error: "Este projeto foi encerrado e os ambientes estão protegidos.",
+    };
+  }
   if (
     message.includes("scope_mismatch") ||
     message.includes("row-level security")

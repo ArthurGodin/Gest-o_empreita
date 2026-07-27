@@ -356,6 +356,13 @@ function briefingActionError(error: unknown): {
       error: "Briefings estão disponíveis para Arquitetura e Interiores.",
     };
   }
+  if (message.includes("project_briefing_locked")) {
+    return {
+      ok: false,
+      code: "project_locked",
+      error: "Este projeto foi encerrado e o briefing está protegido.",
+    };
+  }
   if (
     message.includes("briefing_not_found") ||
     message.includes("project_not_found")

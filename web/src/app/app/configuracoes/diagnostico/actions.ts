@@ -13,6 +13,18 @@ import {
   normalizeBusinessSegment,
   type BusinessSegment,
 } from "@/lib/business-segment";
+import {
+  getBriefingTemplate,
+  getSuggestedProjectSpaces,
+  validateBriefingAnswers,
+  type BriefingAnswer,
+  type BriefingAnswers,
+  type BriefingQuestion,
+  type BriefingTemplateSnapshot,
+} from "@/lib/briefings";
+import { getArchitecturePlanLimits } from "@/lib/architecture-plan-limits";
+import { normalizeAppPlan } from "@/lib/plans";
+import type { Json } from "@/lib/supabase/types";
 
 const DEMO_CUSTOMER_NAME = "Cliente Demo - Maria Santos";
 const DEMO_QUOTE_TITLE = "Demo - Cobertura colonial com calhas";
@@ -538,10 +550,18 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
 
   const supabase = createClient();
   const companyId = company.company_id;
-  const scenario = getDemoScenario(company.company.business_segment);
+  const segment = normalizeBusinessSegment(company.company.business_segment);
+  const scenario = getDemoScenario(segment);
   let reused = false;
 
   try {
+    const { data: companyPlan, error: companyPlanError } = await supabase
+      .from("companies")
+      .select("plan")
+      .eq("id", companyId)
+      .single();
+    if (companyPlanError) throw companyPlanError;
+
     const customerId = await ensureDemoCustomer(
       supabase,
       companyId,
@@ -578,6 +598,16 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
       .eq("id", quote.id)
       .eq("company_id", companyId);
 
+    await ensureDemoArchitectureWorkspace(supabase, {
+      companyId,
+      projectId,
+      userId: user.id,
+      shareToken: quote.shareToken,
+      segment,
+      plan: normalizeAppPlan(companyPlan.plan),
+      scenario,
+    });
+
     const baseUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
     await ensureDemoDeliverables(supabase, {
       companyId,
@@ -607,6 +637,338 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
     logServerError("diagnostics.demo-kit", error);
     return { ok: false, error: clientErrorFor(error) };
   }
+}
+
+async function ensureDemoArchitectureWorkspace(
+  supabase: ReturnType<typeof createClient>,
+  input: {
+    companyId: string;
+    projectId: string;
+    userId: string;
+    shareToken: string;
+    segment: BusinessSegment;
+    plan: ReturnType<typeof normalizeAppPlan>;
+    scenario: DemoScenario;
+  },
+) {
+  if (input.segment !== "architecture" && input.segment !== "interiors") {
+    return;
+  }
+
+  const templateKey =
+    input.segment === "architecture"
+      ? "architecture-residential-v1"
+      : "interiors-residential-v1";
+  const template = getBriefingTemplate(templateKey, input.segment);
+  if (!template) throw new Error("Modelo de briefing demo não encontrado.");
+
+  const answers = buildDemoBriefingAnswers(
+    template,
+    input.segment,
+    input.scenario,
+  );
+  const { data: existing, error: existingError } = await supabase
+    .from("project_briefings")
+    .select("id,status,active_revision_id")
+    .eq("project_id", input.projectId)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (existingError) throw existingError;
+
+  let briefingId = existing?.id ?? null;
+  let revisionId = existing?.active_revision_id ?? null;
+  let briefingStatus = existing?.status ?? null;
+
+  if (!briefingId) {
+    const { data: created, error: createError } = await supabase.rpc(
+      "create_project_briefing",
+      {
+        p_project_id: input.projectId,
+        p_template_key: template.key,
+        p_schema_version: template.version,
+        p_schema_snapshot: template as unknown as Json,
+      },
+    );
+    const createdBriefing = created?.[0];
+    if (createError || !createdBriefing) {
+      if (!isBriefingPlanLimitError(createError)) {
+        throw createError ?? new Error("Briefing demo não criado.");
+      }
+    } else {
+      briefingId = createdBriefing.briefing_id;
+      revisionId = createdBriefing.revision_id;
+      briefingStatus = "draft";
+    }
+  }
+
+  if (briefingId && revisionId && briefingStatus !== "reviewed") {
+    if (briefingStatus === "draft") {
+      const { error: shareError } = await supabase.rpc(
+        "share_project_briefing",
+        { p_briefing_id: briefingId },
+      );
+      if (shareError) throw shareError;
+    }
+
+    const { data: revision, error: revisionError } = await supabase
+      .from("project_briefing_revisions")
+      .select("edit_version,submitted_at")
+      .eq("id", revisionId)
+      .eq("briefing_id", briefingId)
+      .single();
+    if (revisionError) throw revisionError;
+
+    if (!revision.submitted_at) {
+      const admin = createAdminClient();
+      const { error: submitError } = await admin.rpc(
+        "submit_public_project_briefing",
+        {
+          p_share_token: input.shareToken,
+          p_revision_id: revisionId,
+          p_answers: answers as unknown as Json,
+          p_expected_edit_version: revision.edit_version,
+          p_respondent_name: input.scenario.approver,
+        },
+      );
+      if (submitError) throw submitError;
+    }
+
+    const { error: reviewError } = await supabase.rpc(
+      "review_project_briefing",
+      {
+        p_briefing_id: briefingId,
+        p_internal_notes:
+          "Briefing fictício revisado para demonstração comercial.",
+      },
+    );
+    if (reviewError) throw reviewError;
+  }
+
+  await ensureDemoProjectSpaces(supabase, {
+    companyId: input.companyId,
+    projectId: input.projectId,
+    userId: input.userId,
+    sourceRevisionId: revisionId,
+    plan: input.plan,
+    template,
+    answers,
+  });
+}
+
+function buildDemoBriefingAnswers(
+  template: BriefingTemplateSnapshot,
+  segment: "architecture" | "interiors",
+  scenario: DemoScenario,
+): BriefingAnswers {
+  const demoValues: Record<string, BriefingAnswer> = {
+    project_goal:
+      segment === "architecture"
+        ? "Criar uma residência funcional, bem iluminada e preparada para receber a família nos fins de semana."
+        : "Integrar sala e cozinha, melhorar o armazenamento e deixar os ambientes mais acolhedores para a rotina da família.",
+    project_scope: "new",
+    property_stage: "occupied",
+    property_location: scenario.projectAddress,
+    target_area: 145,
+    resident_count: 3,
+    household_profile:
+      "Casal com uma filha. Trabalham durante a semana, recebem familiares e valorizam áreas integradas sem perder privacidade.",
+    daily_routine:
+      "A casa é usada principalmente à noite e nos fins de semana. Uma pessoa trabalha em casa três dias por semana.",
+    accessibility: false,
+    work_from_home: true,
+    pets: "Um cachorro de porte médio.",
+    residential_spaces: [
+      "sala_estar",
+      "cozinha",
+      "suite",
+      "escritorio",
+    ],
+    interiors_spaces: [
+      "sala_estar",
+      "cozinha",
+      "suite",
+      "escritorio",
+    ],
+    other_spaces: "Pequeno apoio para guardar bicicletas e itens de limpeza.",
+    project_priorities: ["natural_light", "integration", "storage"],
+    must_have:
+      "Boa iluminação natural, cozinha conectada à sala e um escritório silencioso.",
+    existing_furniture:
+      "Mesa de jantar em madeira, sofá de três lugares e uma poltrona afetiva.",
+    storage_needs:
+      "Mais espaço para louças, roupa de cama, materiais de trabalho e objetos de uso diário.",
+    environment_priorities:
+      "Sala e cozinha são prioridade porque concentram a rotina e recebem visitas.",
+    preferred_style: "contemporaneo",
+    color_preferences:
+      "Tons claros, madeira natural e pontos de verde. Evitar superfícies muito brilhantes.",
+    liked_references:
+      "Ambientes brasileiros contemporâneos, com luz natural, madeira e soluções simples de manter.",
+    avoid:
+      "Corredores escuros, excesso de revestimentos e soluções difíceis de limpar.",
+    investment_range: "100_250",
+    target_date: addDaysBR(90),
+    priority_balance: 4,
+    purchase_flexibility: 4,
+    known_constraints:
+      "Condomínio permite intervenções em horário comercial e exige proteção das áreas comuns.",
+    decision_makers: `${scenario.approver} e acompanhante`,
+    additional_notes:
+      "Os dados são fictícios e foram preparados para demonstrar o fluxo completo do Prumo.",
+  };
+
+  const rawAnswers: BriefingAnswers = {};
+  for (const section of template.sections) {
+    for (const question of section.questions) {
+      rawAnswers[question.id] = Object.prototype.hasOwnProperty.call(
+        demoValues,
+        question.id,
+      )
+        ? (demoValues[question.id] as BriefingAnswer)
+        : demoFallbackAnswer(question);
+    }
+  }
+
+  const validation = validateBriefingAnswers(template, rawAnswers, {
+    requireComplete: true,
+  });
+  if (!validation.ok) {
+    throw new Error("Respostas do briefing demo são inválidas.");
+  }
+  return validation.answers;
+}
+
+function demoFallbackAnswer(question: BriefingQuestion): BriefingAnswer {
+  if (!question.required) return null;
+  if (
+    question.kind === "short_text" ||
+    question.kind === "long_text"
+  ) {
+    return "Informação fictícia preparada para a demonstração do projeto.";
+  }
+  if (question.kind === "single_choice") {
+    return question.options?.[0]?.value ?? null;
+  }
+  if (question.kind === "multi_choice") {
+    return question.options?.slice(0, 2).map((option) => option.value) ?? [];
+  }
+  if (question.kind === "boolean") return false;
+  if (question.kind === "date") return addDaysBR(60);
+  if (question.kind === "priority") {
+    return Math.min(question.max ?? 5, Math.max(question.min ?? 1, 3));
+  }
+  return Math.max(question.min ?? 1, 1);
+}
+
+async function ensureDemoProjectSpaces(
+  supabase: ReturnType<typeof createClient>,
+  input: {
+    companyId: string;
+    projectId: string;
+    userId: string;
+    sourceRevisionId: string | null;
+    plan: ReturnType<typeof normalizeAppPlan>;
+    template: BriefingTemplateSnapshot;
+    answers: BriefingAnswers;
+  },
+) {
+  const { data: existing, error: existingError } = await supabase
+    .from("project_spaces")
+    .select("id,name,space_type")
+    .eq("project_id", input.projectId)
+    .is("archived_at", null);
+  if (existingError) throw existingError;
+
+  const limits = getArchitecturePlanLimits(input.plan);
+  const available = Math.max(
+    0,
+    limits.activeSpacesPerProject - (existing?.length ?? 0),
+  );
+  if (available === 0) return;
+
+  const existingKeys = new Set(
+    (existing ?? []).map(
+      (space) => `${space.space_type}:${space.name.trim().toLowerCase()}`,
+    ),
+  );
+  const suggestions = getSuggestedProjectSpaces(
+    input.template,
+    input.answers,
+  )
+    .filter(
+      (space) =>
+        !existingKeys.has(
+          `${space.spaceType}:${space.name.trim().toLowerCase()}`,
+        ),
+    )
+    .slice(0, Math.min(4, available));
+  if (suggestions.length === 0) return;
+
+  const firstPosition = existing?.length ?? 0;
+  const { data: created, error: createError } = await supabase
+    .from("project_spaces")
+    .insert(
+      suggestions.map((space, index) => ({
+        company_id: input.companyId,
+        project_id: input.projectId,
+        name: space.name,
+        space_type: space.spaceType,
+        area_m2: 12 + index * 4,
+        priority: index === 0 ? ("essential" as const) : ("high" as const),
+        status: index === 0 ? ("defined" as const) : ("incomplete" as const),
+        notes: "Ambiente fictício para demonstração do programa de necessidades.",
+        position: firstPosition + index,
+        created_by: input.userId,
+      })),
+    )
+    .select("id,name,status");
+  if (createError) throw createError;
+  if (!created?.length) return;
+
+  const { error: requirementError } = await supabase
+    .from("project_space_requirements")
+    .insert(
+      created.flatMap((space, index) => [
+        {
+          company_id: input.companyId,
+          project_id: input.projectId,
+          space_id: space.id,
+          kind: "need" as const,
+          description:
+            index === 0
+              ? "Garantir circulação confortável e integração com a rotina da família."
+              : "Definir layout, medidas principais e pontos de uso.",
+          priority: index === 0 ? ("essential" as const) : ("high" as const),
+          status:
+            space.status === "defined"
+              ? ("defined" as const)
+              : ("pending" as const),
+          source_revision_id: input.sourceRevisionId,
+          position: 0,
+          created_by: input.userId,
+        },
+        {
+          company_id: input.companyId,
+          project_id: input.projectId,
+          space_id: space.id,
+          kind: "preference" as const,
+          description:
+            "Priorizar luz natural, materiais fáceis de manter e armazenamento discreto.",
+          priority: "normal" as const,
+          status: "pending" as const,
+          source_revision_id: input.sourceRevisionId,
+          position: 1,
+          created_by: input.userId,
+        },
+      ]),
+    );
+  if (requirementError) throw requirementError;
+}
+
+function isBriefingPlanLimitError(error: unknown) {
+  const message =
+    (error as { message?: string } | null)?.message?.toLowerCase() ?? "";
+  return message.includes("project_briefing_limit_reached");
 }
 
 async function ensureDemoCustomer(
@@ -829,8 +1191,7 @@ async function ensureDemoProject(
         company_id: input.companyId,
         customer_id: input.customerId,
         name: input.scenario.projectName,
-        description:
-          "Obra fictícia para demonstrar etapas, diário, custos e cobranças.",
+        description: input.scenario.projectDescription,
         address: input.scenario.projectAddress,
         status: "in_progress",
         starts_on: addDaysBR(-5),
@@ -850,8 +1211,7 @@ async function ensureDemoProject(
       .update({
         customer_id: input.customerId,
         name: input.scenario.projectName,
-        description:
-          "Obra fictícia para demonstrar etapas, diário, custos e cobranças.",
+        description: input.scenario.projectDescription,
         address: input.scenario.projectAddress,
         status: "in_progress",
         starts_on: addDaysBR(-5),

@@ -178,6 +178,44 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     action: { label: "Abrir projetos e obras", href: "/app/obras" },
   },
   {
+    id: "enviar-briefing-arquitetura",
+    category: "projects",
+    question: "Como envio um briefing de Arquitetura ou Interiores?",
+    answer:
+      "Abra um projeto e entre em Briefing. Escolha o modelo, confira as perguntas e compartilhe o portal com o cliente. Ele responde pelo celular sem criar conta; depois do envio, você revisa as respostas e pode reabrir uma nova revisão quando necessário.",
+    steps: [
+      "Abra um projeto de Arquitetura ou Interiores.",
+      "Crie o briefing adequado ao escopo.",
+      "Compartilhe o portal com o cliente.",
+      "Revise as respostas recebidas antes de avançar o projeto.",
+    ],
+    keywords: [
+      "briefing",
+      "arquitetura",
+      "interiores",
+      "cliente",
+      "respostas",
+      "revisão",
+    ],
+    action: { label: "Abrir projetos", href: "/app/obras" },
+  },
+  {
+    id: "organizar-ambientes-projeto",
+    category: "projects",
+    question: "Como organizo os ambientes e as necessidades do cliente?",
+    answer:
+      "Na seção Ambientes, registre cada espaço com área, prioridade e situação. Dentro de cada ambiente, transforme necessidades, preferências e restrições em itens acompanháveis. Quando o briefing tiver ambientes selecionados, o Prumo pode sugerir a lista inicial para sua confirmação.",
+    keywords: [
+      "ambientes",
+      "cômodos",
+      "necessidades",
+      "preferências",
+      "restrições",
+      "briefing",
+    ],
+    action: { label: "Abrir projetos", href: "/app/obras" },
+  },
+  {
     id: "nova-versao-entrega",
     category: "approvals",
     question: "O cliente pediu ajustes em uma entrega. O que faço?",
@@ -216,7 +254,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     category: "plans",
     question: "O que muda entre Grátis, Pro e Ultimate?",
     answer:
-      "O Grátis permite até 3 propostas ou orçamentos por mês, 1 projeto ou obra simultânea, 3 entregas ativas por projeto e 25 MB. O Pro remove os limites de propostas e projetos, tira a marca Prumo e oferece até 200 entregas por projeto e 1 GB. O Ultimate acrescenta SINAPI, CSV e amplia entregas para 500 por projeto e 5 GB.",
+      "O Grátis permite até 3 propostas ou orçamentos por mês, 1 projeto ou obra simultânea e 3 entregas. O Pro remove os limites de propostas e projetos, tira a marca Prumo e amplia as entregas. O Ultimate acrescenta SINAPI, importação e exportação CSV. Nos perfis de Arquitetura e Interiores, cada plano também possui limites próprios de briefings, revisões e ambientes.",
     keywords: ["grátis", "pro", "ultimate", "limite", "preço", "csv"],
     action: { label: "Comparar planos", href: "/precos" },
   },

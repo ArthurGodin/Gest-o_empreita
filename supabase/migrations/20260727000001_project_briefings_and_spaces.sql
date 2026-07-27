@@ -280,15 +280,38 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_project_status public.project_status;
+  v_delivery_approved_at timestamptz;
+  v_business_segment text;
 begin
-  if not exists (
-    select 1
-    from public.projects project_row
-    where project_row.id = new.project_id
-      and project_row.company_id = new.company_id
-  ) then
+  select
+    project_row.status,
+    project_row.delivery_approved_at,
+    company_row.business_segment
+  into
+    v_project_status,
+    v_delivery_approved_at,
+    v_business_segment
+  from public.projects project_row
+  join public.companies company_row on company_row.id = project_row.company_id
+  where project_row.id = new.project_id
+    and project_row.company_id = new.company_id;
+
+  if not found then
     raise exception 'project_space_scope_mismatch'
       using errcode = '23514';
+  end if;
+
+  if v_business_segment not in ('architecture', 'interiors') then
+    raise exception 'project_space_segment_not_enabled'
+      using errcode = '55000';
+  end if;
+
+  if v_project_status in ('completed', 'cancelled')
+    or v_delivery_approved_at is not null then
+    raise exception 'project_workspace_locked'
+      using errcode = '55000';
   end if;
 
   return new;
@@ -301,6 +324,9 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_project_status public.project_status;
+  v_delivery_approved_at timestamptz;
 begin
   if not exists (
     select 1
@@ -322,6 +348,19 @@ begin
   ) then
     raise exception 'project_space_requirement_revision_scope_mismatch'
       using errcode = '23514';
+  end if;
+
+  select project_row.status, project_row.delivery_approved_at
+  into v_project_status, v_delivery_approved_at
+  from public.projects project_row
+  where project_row.id = new.project_id
+    and project_row.company_id = new.company_id;
+
+  if not found
+    or v_project_status in ('completed', 'cancelled')
+    or v_delivery_approved_at is not null then
+    raise exception 'project_workspace_locked'
+      using errcode = '55000';
   end if;
 
   return new;
@@ -573,6 +612,7 @@ declare
   v_plan text;
   v_segment text;
   v_project_status public.project_status;
+  v_delivery_approved_at timestamptz;
   v_active_count integer;
   v_briefing_id uuid := gen_random_uuid();
   v_revision_id uuid := gen_random_uuid();
@@ -581,12 +621,14 @@ begin
     project_row.company_id,
     company_row.plan,
     company_row.business_segment,
-    project_row.status
+    project_row.status,
+    project_row.delivery_approved_at
   into
     v_company_id,
     v_plan,
     v_segment,
-    v_project_status
+    v_project_status,
+    v_delivery_approved_at
   from public.projects project_row
   join public.companies company_row on company_row.id = project_row.company_id
   where project_row.id = p_project_id
@@ -606,7 +648,8 @@ begin
     raise exception 'briefing_segment_not_enabled' using errcode = '55000';
   end if;
 
-  if v_project_status in ('completed', 'cancelled') then
+  if v_project_status in ('completed', 'cancelled')
+    or v_delivery_approved_at is not null then
     raise exception 'project_briefing_locked' using errcode = '55000';
   end if;
 
@@ -702,8 +745,11 @@ begin
   select briefing.project_id, briefing.status
   into v_project_id, v_status
   from public.project_briefings briefing
+  join public.projects project_row on project_row.id = briefing.project_id
   where briefing.id = p_briefing_id
     and briefing.archived_at is null
+    and project_row.status not in ('completed', 'cancelled')
+    and project_row.delivery_approved_at is null
     and exists (
       select 1
       from public.company_members membership
@@ -817,9 +863,12 @@ begin
     v_plan
   from public.project_briefings briefing
   join public.companies company_row on company_row.id = briefing.company_id
+  join public.projects project_row on project_row.id = briefing.project_id
   where briefing.id = p_briefing_id
     and briefing.status in ('submitted', 'reviewed')
     and briefing.archived_at is null
+    and project_row.status not in ('completed', 'cancelled')
+    and project_row.delivery_approved_at is null
     and exists (
       select 1
       from public.company_members membership
@@ -968,6 +1017,8 @@ begin
   from public.project_briefing_revisions revision_row
   join public.project_briefings briefing
     on briefing.id = revision_row.briefing_id
+  join public.projects project_row
+    on project_row.id = briefing.project_id
   join public.quotes quote_row
     on quote_row.project_id = briefing.project_id
   where revision_row.id = p_revision_id
@@ -975,6 +1026,8 @@ begin
     and briefing.status = 'shared'
     and briefing.archived_at is null
     and revision_row.submitted_at is null
+    and project_row.status not in ('completed', 'cancelled')
+    and project_row.delivery_approved_at is null
     and quote_row.share_token = p_share_token
     and quote_row.status = 'approved'
   for update of revision_row;
@@ -1048,11 +1101,25 @@ begin
   from public.project_briefing_revisions revision_row
   join public.project_briefings briefing
     on briefing.id = revision_row.briefing_id
+  join public.projects project_row
+    on project_row.id = briefing.project_id
   join public.quotes quote_row
     on quote_row.project_id = briefing.project_id
   where revision_row.id = p_revision_id
     and briefing.active_revision_id = revision_row.id
     and briefing.archived_at is null
+    and (
+      (
+        briefing.status = 'shared'
+        and revision_row.submitted_at is null
+        and project_row.status not in ('completed', 'cancelled')
+        and project_row.delivery_approved_at is null
+      )
+      or (
+        briefing.status in ('submitted', 'reviewed')
+        and revision_row.submitted_at is not null
+      )
+    )
     and quote_row.share_token = p_share_token
     and quote_row.status = 'approved'
   for update of briefing, revision_row;

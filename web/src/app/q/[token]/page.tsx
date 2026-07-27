@@ -5,6 +5,7 @@ import { notifyCompanyOwner } from "@/lib/email/send";
 import { buildQuoteViewedEmail } from "@/lib/email/templates";
 import { env } from "@/lib/env";
 import { PublicToggle } from "./public-toggle";
+import { getPublicProjectBriefingByToken } from "@/lib/queries/briefings";
 import type { PublicProjectView } from "./andamento-view";
 import type {
   PublicDeliverableReview,
@@ -383,14 +384,15 @@ export default async function PublicQuotePage({
     valid_until: quote.valid_until,
   });
 
-  const [project, deliverables] = quote.project_id
+  const [project, deliverables, briefing] = quote.project_id
     ? await Promise.all([
         loadPublicProjectView(quote.project_id),
         quote.status === "approved"
           ? loadPublicDeliverables(quote.project_id)
           : Promise.resolve([]),
+        getPublicProjectBriefingByToken(token),
       ])
-    : [null, []];
+    : [null, [], null];
 
   return (
     <PublicToggle
@@ -398,6 +400,7 @@ export default async function PublicQuotePage({
       status={status}
       project={project}
       deliverables={deliverables}
+      briefing={briefing}
       shareToken={quote.share_token}
       nowMs={new Date().getTime()}
     />
