@@ -13,6 +13,7 @@ import {
   ExternalLink,
   History,
   Loader2,
+  LockKeyhole,
   MessageCircle,
   RefreshCcw,
   Send,
@@ -112,6 +113,10 @@ export function BriefingSection({
   const [selectedTemplate, setSelectedTemplate] = useState(
     templates[0]?.key ?? "",
   );
+  const planLimits = getArchitecturePlanLimits(plan);
+  const canReopenBriefing = briefing
+    ? briefing.revisionHistory.length < planLimits.revisionsPerBriefing
+    : false;
   const suggestions = useMemo(() => {
     if (!briefing) return [];
 
@@ -119,9 +124,9 @@ export function BriefingSection({
       briefing.activeRevision.snapshot,
       briefing.activeRevision.answers,
       spaces,
-      getArchitecturePlanLimits(plan).activeSpacesPerProject,
+      planLimits.activeSpacesPerProject,
     );
-  }, [briefing, plan, spaces]);
+  }, [briefing, planLimits.activeSpacesPerProject, spaces]);
   const [selectedSpaces, setSelectedSpaces] = useState<string[]>(
     suggestions.map((space) => suggestionKey(space)),
   );
@@ -214,7 +219,7 @@ export function BriefingSection({
   }
 
   async function reopenBriefing() {
-    if (!briefing) return;
+    if (!briefing || !canReopenBriefing) return;
     setPending(true);
     setError(null);
     try {
@@ -577,15 +582,37 @@ export function BriefingSection({
               {!projectLocked ? (
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {submitted ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openDialog("reopen")}
-                    >
-                      <RefreshCcw className="h-4 w-4" />
-                      Abrir nova revisão
-                    </Button>
+                    canReopenBriefing ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDialog("reopen")}
+                      >
+                        <RefreshCcw className="h-4 w-4" />
+                        Abrir nova revisão
+                      </Button>
+                    ) : (
+                      <div className="flex flex-col items-start gap-1.5">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled
+                        >
+                          <LockKeyhole className="h-4 w-4" />
+                          Limite de revisões
+                        </Button>
+                        {plan === "free" ? (
+                          <Link
+                            href="/app/configuracoes/plano"
+                            className="text-xs font-semibold text-emerald-800 underline underline-offset-2"
+                          >
+                            Comparar planos
+                          </Link>
+                        ) : null}
+                      </div>
+                    )
                   ) : null}
                   {canUsePublicLink ? (
                     <Button asChild size="sm" variant="outline">
