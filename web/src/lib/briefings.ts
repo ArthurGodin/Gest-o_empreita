@@ -86,6 +86,11 @@ export interface SuggestedProjectSpace {
   sourceQuestionId: string;
 }
 
+export interface ExistingProjectSpaceSummary {
+  name: string;
+  spaceType: string;
+}
+
 const SPACE_OPTIONS_RESIDENTIAL: readonly BriefingQuestionOption[] = [
   { value: "entrada", label: "Hall ou entrada", spaceType: "entrance" },
   { value: "sala_estar", label: "Sala de estar", spaceType: "living" },
@@ -951,6 +956,26 @@ export function getSuggestedProjectSpaces(
   return suggestions;
 }
 
+export function getAvailableSuggestedProjectSpaces(
+  snapshot: BriefingTemplateSnapshot,
+  answers: BriefingAnswers,
+  existingSpaces: readonly ExistingProjectSpaceSummary[],
+  activeSpaceLimit: number,
+): SuggestedProjectSpace[] {
+  const availableSlots = Math.max(
+    0,
+    Math.floor(activeSpaceLimit) - existingSpaces.length,
+  );
+  if (availableSlots === 0) return [];
+
+  const existingKeys = new Set(
+    existingSpaces.map((space) => suggestedSpaceKey(space)),
+  );
+  return getSuggestedProjectSpaces(snapshot, answers)
+    .filter((space) => !existingKeys.has(suggestedSpaceKey(space)))
+    .slice(0, availableSlots);
+}
+
 export function formatBriefingAnswer(
   question: BriefingQuestion,
   answer: BriefingAnswer | undefined,
@@ -1013,6 +1038,13 @@ function toTemplateSummary(
     sectionCount: template.sections.length,
     questionCount: allQuestions(template).length,
   };
+}
+
+function suggestedSpaceKey(space: ExistingProjectSpaceSummary) {
+  return `${space.spaceType}:${space.name
+    .trim()
+    .normalize("NFKC")
+    .toLocaleLowerCase("pt-BR")}`;
 }
 
 function cloneSnapshot(

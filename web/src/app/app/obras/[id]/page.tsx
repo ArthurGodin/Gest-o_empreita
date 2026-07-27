@@ -148,10 +148,14 @@ export default async function ProjectDetailPage({
 
           <div id="briefing" tabIndex={-1} className={sectionAnchorClass}>
             <BriefingSection
+              key={`${briefing?.activeRevision.id ?? "none"}:${spaces
+                .map((space) => space.id)
+                .join(",")}`}
               projectId={project.id}
               plan={company?.plan ?? "free"}
               segment={company?.business_segment ?? "architecture"}
               briefing={briefing}
+              spaces={spaces}
               publicUrl={publicBriefingUrl}
               projectLocked={projectLocked}
             />

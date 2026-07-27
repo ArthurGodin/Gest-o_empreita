@@ -5,6 +5,7 @@ import {
   calculateBriefingSectionProgress,
   getBriefingTemplate,
   getBriefingTemplatesForSegment,
+  getAvailableSuggestedProjectSpaces,
   getSuggestedProjectSpaces,
   parseBriefingTemplateSnapshot,
   validateBriefingAnswers,
@@ -164,6 +165,43 @@ describe("briefings domain", () => {
         sourceQuestionId: "interiors_spaces",
       },
     ]);
+  });
+
+  it("removes existing spaces and respects the remaining plan capacity", () => {
+    const template = getBriefingTemplate(
+      "interiors-residential-v1",
+      "interiors",
+    )!;
+    const answers = {
+      interiors_spaces: [
+        "sala_estar",
+        "cozinha",
+        "banheiro",
+        "escritorio",
+      ],
+    };
+
+    expect(
+      getAvailableSuggestedProjectSpaces(
+        template,
+        answers,
+        [{ name: "  SALA DE ESTAR ", spaceType: "living" }],
+        3,
+      ).map((space) => space.name),
+    ).toEqual(["Cozinha", "Banheiro"]);
+
+    expect(
+      getAvailableSuggestedProjectSpaces(
+        template,
+        answers,
+        [
+          { name: "Sala de estar", spaceType: "living" },
+          { name: "Cozinha", spaceType: "kitchen" },
+          { name: "Banheiro", spaceType: "bathroom" },
+        ],
+        3,
+      ),
+    ).toEqual([]);
   });
 
   it("rejects malformed snapshots and duplicate question ids", () => {

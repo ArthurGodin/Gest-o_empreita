@@ -31,10 +31,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
+import { getArchitecturePlanLimits } from "@/lib/architecture-plan-limits";
 import {
   formatBriefingAnswer,
+  getAvailableSuggestedProjectSpaces,
   getBriefingTemplatesForSegment,
-  getSuggestedProjectSpaces,
   type BriefingTemplateSummary,
   type SuggestedProjectSpace,
 } from "@/lib/briefings";
@@ -42,6 +43,7 @@ import type { BusinessSegment } from "@/lib/business-segment";
 import type { AppPlan } from "@/lib/plans";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { ProjectBriefing } from "@/lib/queries/briefings";
+import type { ProjectSpace } from "@/lib/queries/project-spaces";
 import {
   archiveProjectBriefingAction,
   createProjectBriefingAction,
@@ -79,6 +81,7 @@ interface BriefingSectionProps {
   plan: AppPlan;
   segment: BusinessSegment;
   briefing: ProjectBriefing | null;
+  spaces: ProjectSpace[];
   publicUrl: string | null;
   projectLocked: boolean;
 }
@@ -95,6 +98,7 @@ export function BriefingSection({
   plan,
   segment,
   briefing,
+  spaces,
   publicUrl,
   projectLocked,
 }: BriefingSectionProps) {
@@ -108,16 +112,16 @@ export function BriefingSection({
   const [selectedTemplate, setSelectedTemplate] = useState(
     templates[0]?.key ?? "",
   );
-  const suggestions = useMemo(
-    () =>
-      briefing
-        ? getSuggestedProjectSpaces(
-            briefing.activeRevision.snapshot,
-            briefing.activeRevision.answers,
-          )
-        : [],
-    [briefing],
-  );
+  const suggestions = useMemo(() => {
+    if (!briefing) return [];
+
+    return getAvailableSuggestedProjectSpaces(
+      briefing.activeRevision.snapshot,
+      briefing.activeRevision.answers,
+      spaces,
+      getArchitecturePlanLimits(plan).activeSpacesPerProject,
+    );
+  }, [briefing, plan, spaces]);
   const [selectedSpaces, setSelectedSpaces] = useState<string[]>(
     suggestions.map((space) => suggestionKey(space)),
   );
