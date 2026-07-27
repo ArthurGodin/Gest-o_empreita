@@ -42,7 +42,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     priceCents: 9700,
     priceLabel: "R$ 97",
     description:
-      "Para operar sem limites e apresentar sua própria marca ao cliente.",
+      "Para operar em escala e apresentar sua própria marca ao cliente.",
     cta: "Assinar Pro",
     features: [
       "Tudo do Grátis",
@@ -51,7 +51,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "Cobranças Pix e financeiro sem limite de projetos",
       "Diário com fotos sem limite de projetos",
       "Até 200 entregas ativas por projeto e 1 GB",
-      "Briefings + 100 ambientes/projeto (Arquitetura e Interiores)",
+      "Até 200 briefings ativos + 100 ambientes/projeto (Arquitetura e Interiores)",
     ],
     checkoutHighlights: [
       "Propostas, orçamentos, projetos e obras ilimitados",
@@ -78,7 +78,7 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
       "Exportação CSV de receitas recebidas e custos",
       "Catálogo manual e importado no mesmo fluxo",
       "Até 500 entregas ativas por projeto e 5 GB",
-      "Briefings + 250 ambientes/projeto (Arquitetura e Interiores)",
+      "Até 500 briefings ativos + 250 ambientes/projeto (Arquitetura e Interiores)",
     ],
     checkoutHighlights: [
       "Tudo do Pro incluído",

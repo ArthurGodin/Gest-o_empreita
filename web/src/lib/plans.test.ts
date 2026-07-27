@@ -7,8 +7,10 @@ import {
   normalizeAppPlan,
   normalizePaidPlan,
   paidPlanFromSaasSubscriptionReference,
+  PLAN_DEFINITIONS,
   shouldShowPrumoBrand,
 } from "@/lib/plans";
+import { getArchitecturePlanLimits } from "@/lib/architecture-plan-limits";
 
 describe("plan helpers", () => {
   it("normalizes unknown plans defensively", () => {
@@ -29,6 +31,24 @@ describe("plan helpers", () => {
     expect(shouldShowPrumoBrand(null)).toBe(true);
     expect(shouldShowPrumoBrand("pro")).toBe(false);
     expect(shouldShowPrumoBrand("ultimate")).toBe(false);
+  });
+
+  it("keeps architecture promises aligned with enforced plan limits", () => {
+    for (const plan of ["free", "pro", "ultimate"] as const) {
+      const limits = getArchitecturePlanLimits(plan);
+      const architectureFeature = PLAN_DEFINITIONS[plan].features.find(
+        (feature) => feature.includes("ambiente"),
+      );
+
+      expect(architectureFeature).toContain(
+        String(limits.activeBriefingsPerCompany),
+      );
+      expect(architectureFeature).toContain(
+        String(limits.activeSpacesPerProject),
+      );
+    }
+
+    expect(PLAN_DEFINITIONS.pro.description).not.toContain("sem limites");
   });
 
   it("calculates the free quote monthly quota from Sao Paulo time", () => {
