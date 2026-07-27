@@ -682,6 +682,149 @@ export type Database = {
         }
         Relationships: []
       }
+      project_briefing_revisions: {
+        Row: {
+          answers: Json
+          briefing_id: string
+          company_id: string
+          created_at: string
+          edit_version: number
+          id: string
+          project_id: string
+          reopen_note: string | null
+          respondent_name: string | null
+          revision_number: number
+          schema_snapshot: Json
+          schema_version: number
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          briefing_id: string
+          company_id: string
+          created_at?: string
+          edit_version?: number
+          id?: string
+          project_id: string
+          reopen_note?: string | null
+          respondent_name?: string | null
+          revision_number: number
+          schema_snapshot: Json
+          schema_version: number
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          briefing_id?: string
+          company_id?: string
+          created_at?: string
+          edit_version?: number
+          id?: string
+          project_id?: string
+          reopen_note?: string | null
+          respondent_name?: string | null
+          revision_number?: number
+          schema_snapshot?: Json
+          schema_version?: number
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_briefing_revisions_briefing_id_fkey"
+            columns: ["briefing_id"]
+            isOneToOne: false
+            referencedRelation: "project_briefings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_briefing_revisions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_briefing_revisions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_briefings: {
+        Row: {
+          active_revision_id: string | null
+          archived_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          internal_notes: string | null
+          project_id: string
+          reviewed_at: string | null
+          shared_at: string | null
+          status: Database["public"]["Enums"]["project_briefing_status"]
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          active_revision_id?: string | null
+          archived_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_notes?: string | null
+          project_id: string
+          reviewed_at?: string | null
+          shared_at?: string | null
+          status?: Database["public"]["Enums"]["project_briefing_status"]
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          active_revision_id?: string | null
+          archived_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_notes?: string | null
+          project_id?: string
+          reviewed_at?: string | null
+          shared_at?: string | null
+          status?: Database["public"]["Enums"]["project_briefing_status"]
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_briefings_active_revision_fkey"
+            columns: ["active_revision_id"]
+            isOneToOne: false
+            referencedRelation: "project_briefing_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_briefings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_briefings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_costs: {
         Row: {
           amount_cents: number
@@ -994,6 +1137,149 @@ export type Database = {
             foreignKeyName: "project_delivery_acceptances_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_space_requirements: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          kind: Database["public"]["Enums"]["project_space_requirement_kind"]
+          position: number
+          priority: Database["public"]["Enums"]["project_space_priority"]
+          project_id: string
+          source_revision_id: string | null
+          space_id: string
+          status: Database["public"]["Enums"]["project_space_requirement_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          kind?: Database["public"]["Enums"]["project_space_requirement_kind"]
+          position?: number
+          priority?: Database["public"]["Enums"]["project_space_priority"]
+          project_id: string
+          source_revision_id?: string | null
+          space_id: string
+          status?: Database["public"]["Enums"]["project_space_requirement_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["project_space_requirement_kind"]
+          position?: number
+          priority?: Database["public"]["Enums"]["project_space_priority"]
+          project_id?: string
+          source_revision_id?: string | null
+          space_id?: string
+          status?: Database["public"]["Enums"]["project_space_requirement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_space_requirements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_space_requirements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_space_requirements_source_revision_id_fkey"
+            columns: ["source_revision_id"]
+            isOneToOne: false
+            referencedRelation: "project_briefing_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_space_requirements_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "project_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_spaces: {
+        Row: {
+          area_m2: number | null
+          archived_at: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          position: number
+          priority: Database["public"]["Enums"]["project_space_priority"]
+          project_id: string
+          space_type: string
+          status: Database["public"]["Enums"]["project_space_status"]
+          updated_at: string
+        }
+        Insert: {
+          area_m2?: number | null
+          archived_at?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          position?: number
+          priority?: Database["public"]["Enums"]["project_space_priority"]
+          project_id: string
+          space_type?: string
+          status?: Database["public"]["Enums"]["project_space_status"]
+          updated_at?: string
+        }
+        Update: {
+          area_m2?: number | null
+          archived_at?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          position?: number
+          priority?: Database["public"]["Enums"]["project_space_priority"]
+          project_id?: string
+          space_type?: string
+          status?: Database["public"]["Enums"]["project_space_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_spaces_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_spaces_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -1712,6 +1998,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_project_briefing: {
+        Args: { p_briefing_id: string }
+        Returns: string
+      }
+      create_project_briefing: {
+        Args: {
+          p_project_id: string
+          p_schema_snapshot: Json
+          p_schema_version: number
+          p_template_key: string
+        }
+        Returns: {
+          briefing_id: string
+          revision_id: string
+        }[]
+      }
       create_project_deliverable: {
         Args: {
           p_change_note: string | null
@@ -1808,6 +2110,18 @@ export type Database = {
         Args: { p_plan: string }
         Returns: number
       }
+      project_briefing_active_limit: {
+        Args: { p_plan: string }
+        Returns: number
+      }
+      project_briefing_revision_limit: {
+        Args: { p_plan: string }
+        Returns: number
+      }
+      project_space_active_limit: {
+        Args: { p_plan: string }
+        Returns: number
+      }
       publish_project_deliverable_version: {
         Args: { p_deliverable_id: string; p_version_id: string }
         Returns: string
@@ -1842,6 +2156,18 @@ export type Database = {
           p_valid_until: string | null
         }
         Returns: undefined
+      }
+      reopen_project_briefing: {
+        Args: { p_briefing_id: string; p_reopen_note: string | null }
+        Returns: {
+          project_id: string
+          revision_id: string
+          revision_number: number
+        }[]
+      }
+      review_project_briefing: {
+        Args: { p_briefing_id: string; p_internal_notes: string | null }
+        Returns: string
       }
       review_project_deliverable_version: {
         Args: {
@@ -1886,6 +2212,36 @@ export type Database = {
           unit: string
         }[]
       }
+      save_public_project_briefing: {
+        Args: {
+          p_answers: Json
+          p_expected_edit_version: number
+          p_revision_id: string
+          p_share_token: string
+        }
+        Returns: {
+          edit_version: number
+          updated_at: string
+        }[]
+      }
+      share_project_briefing: {
+        Args: { p_briefing_id: string }
+        Returns: string
+      }
+      submit_public_project_briefing: {
+        Args: {
+          p_answers: Json
+          p_expected_edit_version: number
+          p_respondent_name: string
+          p_revision_id: string
+          p_share_token: string
+        }
+        Returns: {
+          created: boolean
+          edit_version: number
+          submitted_at: string
+        }[]
+      }
       set_project_deliverable_archived: {
         Args: { p_archived: boolean; p_deliverable_id: string }
         Returns: string
@@ -1919,6 +2275,16 @@ export type Database = {
       project_deliverable_review_action: "approved" | "changes_requested"
       project_deliverable_source_kind: "file" | "external_link"
       project_deliverable_upload_state: "pending" | "ready"
+      project_briefing_status:
+        | "draft"
+        | "shared"
+        | "submitted"
+        | "reviewed"
+        | "archived"
+      project_space_priority: "low" | "normal" | "high" | "essential"
+      project_space_requirement_kind: "need" | "constraint" | "preference"
+      project_space_requirement_status: "pending" | "defined"
+      project_space_status: "incomplete" | "defined"
       project_status:
         | "planning"
         | "in_progress"
@@ -2629,6 +2995,17 @@ export const Constants = {
       project_deliverable_review_action: ["approved", "changes_requested"],
       project_deliverable_source_kind: ["file", "external_link"],
       project_deliverable_upload_state: ["pending", "ready"],
+      project_briefing_status: [
+        "draft",
+        "shared",
+        "submitted",
+        "reviewed",
+        "archived",
+      ],
+      project_space_priority: ["low", "normal", "high", "essential"],
+      project_space_requirement_kind: ["need", "constraint", "preference"],
+      project_space_requirement_status: ["pending", "defined"],
+      project_space_status: ["incomplete", "defined"],
       project_status: [
         "planning",
         "in_progress",
@@ -2681,3 +3058,10 @@ export type ProjectDeliverableUploadState =
   Enums<"project_deliverable_upload_state">
 export type ProjectDeliverableReviewAction =
   Enums<"project_deliverable_review_action">
+export type ProjectBriefingStatus = Enums<"project_briefing_status">
+export type ProjectSpacePriority = Enums<"project_space_priority">
+export type ProjectSpaceStatus = Enums<"project_space_status">
+export type ProjectSpaceRequirementKind =
+  Enums<"project_space_requirement_kind">
+export type ProjectSpaceRequirementStatus =
+  Enums<"project_space_requirement_status">
