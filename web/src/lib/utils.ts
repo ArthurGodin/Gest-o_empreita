@@ -13,30 +13,34 @@ export function formatBRL(value: number): string {
 }
 
 export function formatDateBR(date: Date | string): string {
-  let d: Date;
   if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    // Date-only ISO: parse como local midnight pra evitar UTC drift
-    // que mostra dia anterior em servidores não-UTC.
-    const [y, m, day] = date.split("-").map(Number) as [number, number, number];
-    d = new Date(y, m - 1, day);
-  } else {
-    d = typeof date === "string" ? new Date(date) : date;
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
   }
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(d);
-}
 
-export function formatDateTimeBR(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: "America/Sao_Paulo",
+  }).format(d);
+}
+
+export function formatDateTimeBR(
+  date: Date | string,
+  options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  },
+): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("pt-BR", {
+    ...options,
+    timeZone: "America/Sao_Paulo",
   }).format(d);
 }
 
@@ -67,4 +71,3 @@ export function isMissingColumn(error: unknown, columnName: string): boolean {
     text.includes(columnName)
   );
 }
-

@@ -35,7 +35,7 @@ import {
 } from "@/lib/briefings";
 import type { PublicProjectBriefing } from "@/lib/queries/briefings";
 import { trackProductEvent } from "@/lib/product-analytics";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTimeBR } from "@/lib/utils";
 import {
   savePublicBriefingAnswersAction,
   submitPublicBriefingAction,
@@ -968,10 +968,10 @@ function ReadOnlyBriefing({
             {submittedAt ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 Recebido em{" "}
-                {new Intl.DateTimeFormat("pt-BR", {
+                {formatDateTimeBR(submittedAt, {
                   dateStyle: "long",
                   timeStyle: "short",
-                }).format(new Date(submittedAt))}
+                })}
               </p>
             ) : null}
           </div>

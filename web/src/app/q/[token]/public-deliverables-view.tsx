@@ -28,7 +28,7 @@ import type {
   ProjectDeliverableSourceKind,
 } from "@/lib/supabase/types";
 import { trackProductEvent } from "@/lib/product-analytics";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTimeBR } from "@/lib/utils";
 import { reviewDeliverableAction } from "./actions";
 
 export interface PublicDeliverableReview {
@@ -499,8 +499,8 @@ function publicVersionUrl(
 }
 
 function formatPublicDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return formatDateTimeBR(value, {
     dateStyle: "short",
     timeStyle: "short",
-  }).format(new Date(value));
+  });
 }

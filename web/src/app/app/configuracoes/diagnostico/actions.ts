@@ -33,6 +33,9 @@ const DEMO_PROJECT_NAME = "Demo - Execução cobertura Maria Santos";
 const DEMO_APPROVER = "Maria Santos";
 const DEMO_TOTAL_CENTS = 1_078_000;
 const DEMO_ENTRY_PCT = 30;
+const DEMO_CUSTOMER_NOTE =
+  "Cliente fictício para demonstração comercial guiada.";
+const DEMO_QUOTE_NOTE = "Orçamento fictício para demo comercial.";
 
 const quoteItems = [
   {
@@ -186,7 +189,7 @@ const CONSTRUCTION_SCENARIO: DemoScenario = {
     "Troca de cobertura com telha colonial, calhas novas, retirada de entulho e acompanhamento pelo painel.",
   projectName: DEMO_PROJECT_NAME,
   projectDescription:
-    "Obra ficticia para demonstrar etapas, diario, custos e cobrancas.",
+    "Obra fictícia para demonstrar etapas, diário, custos e cobranças.",
   projectAddress: "Rua das Palmeiras, 120 - Timon, MA",
   approver: DEMO_APPROVER,
   totalCents: DEMO_TOTAL_CENTS,
@@ -195,10 +198,10 @@ const CONSTRUCTION_SCENARIO: DemoScenario = {
   projectCosts,
   deliverables: [
     {
-      title: "Registro da cobertura antes da execucao",
+      title: "Registro da cobertura antes da execução",
       description:
-        "Link ficticio para demonstrar uma entrega publicada ao cliente.",
-      changeNote: "Versao inicial do registro da obra.",
+        "Link fictício para demonstrar uma entrega publicada ao cliente.",
+      changeNote: "Versão inicial do registro da obra.",
     },
   ],
   stages: getProjectStages,
@@ -211,16 +214,16 @@ const PROFESSIONAL_SCENARIOS: Record<
   architecture: {
     customerName: "Cliente Demo - Ana Ribeiro",
     customerEmail: "ana.demo@example.com",
-    customerAddress: "Rua das Acacias, 42",
-    customerCity: "Sao Paulo",
+    customerAddress: "Rua das Acácias, 42",
+    customerCity: "São Paulo",
     customerState: "SP",
-    quoteTitle: "Demo - Projeto arquitetonico residencial",
+    quoteTitle: "Demo - Projeto arquitetônico residencial",
     quoteDescription:
-      "Proposta ficticia para projeto residencial com briefing, estudo preliminar, anteprojeto e projeto executivo.",
+      "Proposta fictícia para projeto residencial com briefing, estudo preliminar, anteprojeto e projeto executivo.",
     projectName: "Demo - Projeto residencial Ana Ribeiro",
     projectDescription:
-      "Projeto ficticio para demonstrar etapas, entregas versionadas, aprovacao do cliente e cobrancas.",
-    projectAddress: "Rua das Acacias, 42 - Sao Paulo, SP",
+      "Projeto fictício para demonstrar etapas, entregas versionadas, aprovação do cliente e cobranças.",
+    projectAddress: "Rua das Acácias, 42 - São Paulo, SP",
     approver: "Ana Ribeiro",
     totalCents: 850_000,
     entryPct: 30,
@@ -243,7 +246,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 2,
-        description: "Anteprojeto e revisoes com o cliente",
+        description: "Anteprojeto e revisões com o cliente",
         unit: "un",
         quantity: 1,
         unit_price_cents: 210_000,
@@ -251,7 +254,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 3,
-        description: "Projeto executivo para compatibilizacao",
+        description: "Projeto executivo para compatibilização",
         unit: "un",
         quantity: 1,
         unit_price_cents: 200_000,
@@ -261,12 +264,12 @@ const PROFESSIONAL_SCENARIOS: Record<
     projectCosts: [
       {
         category: "other",
-        description: "Visita tecnica e levantamento - demo",
+        description: "Visita técnica e levantamento - demo",
         amount_cents: 32_000,
       },
       {
         category: "other",
-        description: "Renderizacao e material de apresentacao - demo",
+        description: "Renderização e material de apresentação - demo",
         amount_cents: 58_000,
       },
     ],
@@ -274,14 +277,14 @@ const PROFESSIONAL_SCENARIOS: Record<
       {
         title: "Estudo preliminar v1",
         description:
-          "Pacote demonstrativo para o cliente aprovar ou pedir alteracoes pelo link.",
-        changeNote: "Primeira versao do estudo preliminar.",
+          "Pacote demonstrativo para o cliente aprovar ou pedir alterações pelo link.",
+        changeNote: "Primeira versão do estudo preliminar.",
       },
       {
         title: "Memorial descritivo resumido",
         description:
-          "Entrega demonstrativa para organizar decisoes e escopo aprovado.",
-        changeNote: "Memorial inicial para validacao.",
+          "Entrega demonstrativa para organizar decisões e escopo aprovado.",
+        changeNote: "Memorial inicial para validação.",
       },
     ],
     stages: () => [
@@ -292,7 +295,7 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 3,
         started_on: addDaysBR(-9),
         completed_on: addDaysBR(-7),
-        notes: "Necessidades, medidas e referencias iniciais organizadas.",
+        notes: "Necessidades, medidas e referências iniciais organizadas.",
       },
       {
         position: 1,
@@ -301,7 +304,7 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 6,
         started_on: addDaysBR(-6),
         completed_on: null,
-        notes: "Primeira proposta de distribuicao e partido em revisao.",
+        notes: "Primeira proposta de distribuição e partido em revisão.",
       },
       {
         position: 2,
@@ -310,7 +313,7 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 7,
         started_on: null,
         completed_on: null,
-        notes: "Avancar apos validacao do estudo preliminar.",
+        notes: "Avançar após validação do estudo preliminar.",
       },
       {
         position: 3,
@@ -319,7 +322,7 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 10,
         started_on: null,
         completed_on: null,
-        notes: "Detalhamento final para execucao e compatibilizacao.",
+        notes: "Detalhamento final para execução e compatibilização.",
       },
     ],
   },
@@ -331,10 +334,10 @@ const PROFESSIONAL_SCENARIOS: Record<
     customerState: "CE",
     quoteTitle: "Demo - Projeto de interiores apartamento",
     quoteDescription:
-      "Proposta ficticia para interiores com layout, especificacoes, revisoes e entrega final.",
+      "Proposta fictícia para interiores com layout, especificações, revisões e entrega final.",
     projectName: "Demo - Interiores apartamento Beatriz Lima",
     projectDescription:
-      "Projeto ficticio para demonstrar ambientes, entregas, aprovacoes e cobrancas.",
+      "Projeto fictício para demonstrar ambientes, entregas, aprovações e cobranças.",
     projectAddress: "Av. Beira Mar, 510 - Fortaleza, CE",
     approver: "Beatriz Lima",
     totalCents: 620_000,
@@ -350,7 +353,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 1,
-        description: "Layout, mobiliario e especificacoes",
+        description: "Layout, mobiliário e especificações",
         unit: "amb",
         quantity: 3,
         unit_price_cents: 110_000,
@@ -358,7 +361,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 2,
-        description: "Apresentacao final e lista de compras",
+        description: "Apresentação final e lista de compras",
         unit: "un",
         quantity: 1,
         unit_price_cents: 170_000,
@@ -368,7 +371,7 @@ const PROFESSIONAL_SCENARIOS: Record<
     projectCosts: [
       {
         category: "other",
-        description: "Amostras e materiais de apresentacao - demo",
+        description: "Amostras e materiais de apresentação - demo",
         amount_cents: 24_000,
       },
       {
@@ -381,14 +384,14 @@ const PROFESSIONAL_SCENARIOS: Record<
       {
         title: "Layout dos ambientes v1",
         description:
-          "Entrega demonstrativa para o cliente aprovar a disposicao dos ambientes.",
-        changeNote: "Primeira versao do layout.",
+          "Entrega demonstrativa para o cliente aprovar a disposição dos ambientes.",
+        changeNote: "Primeira versão do layout.",
       },
       {
-        title: "Lista inicial de especificacoes",
+        title: "Lista inicial de especificações",
         description:
-          "Entrega demonstrativa com materiais, mobiliario e pendencias.",
-        changeNote: "Lista inicial para revisao.",
+          "Entrega demonstrativa com materiais, mobiliário e pendências.",
+        changeNote: "Lista inicial para revisão.",
       },
     ],
     stages: () => [
@@ -399,7 +402,7 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 2,
         started_on: addDaysBR(-7),
         completed_on: addDaysBR(-6),
-        notes: "Preferencias, medidas e referencias reunidas.",
+        notes: "Preferências, medidas e referências reunidas.",
       },
       {
         position: 1,
@@ -408,16 +411,16 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 5,
         started_on: addDaysBR(-5),
         completed_on: null,
-        notes: "Distribuicao em validacao com a cliente.",
+        notes: "Distribuição em validação com a cliente.",
       },
       {
         position: 2,
-        name: "Especificacoes e fornecedores",
+        name: "Especificações e fornecedores",
         status: "todo",
         est_days: 6,
         started_on: null,
         completed_on: null,
-        notes: "Separar materiais, mobiliario e acabamentos.",
+        notes: "Separar materiais, mobiliário e acabamentos.",
       },
       {
         position: 3,
@@ -436,12 +439,12 @@ const PROFESSIONAL_SCENARIOS: Record<
     customerAddress: "Rua Projetada, 88",
     customerCity: "Recife",
     customerState: "PE",
-    quoteTitle: "Demo - Laudo e acompanhamento tecnico",
+    quoteTitle: "Demo - Laudo e acompanhamento técnico",
     quoteDescription:
-      "Proposta ficticia para vistoria, laudo tecnico, orientacoes e acompanhamento.",
-    projectName: "Demo - Acompanhamento tecnico Carlos Menezes",
+      "Proposta fictícia para vistoria, laudo técnico, orientações e acompanhamento.",
+    projectName: "Demo - Acompanhamento técnico Carlos Menezes",
     projectDescription:
-      "Projeto ficticio para demonstrar etapas tecnicas, registros, entregas e cobrancas.",
+      "Projeto fictício para demonstrar etapas técnicas, registros, entregas e cobranças.",
     projectAddress: "Rua Projetada, 88 - Recife, PE",
     approver: "Carlos Menezes",
     totalCents: 480_000,
@@ -449,7 +452,7 @@ const PROFESSIONAL_SCENARIOS: Record<
     quoteItems: [
       {
         position: 0,
-        description: "Vistoria tecnica e levantamento de informacoes",
+        description: "Vistoria técnica e levantamento de informações",
         unit: "un",
         quantity: 1,
         unit_price_cents: 140_000,
@@ -457,7 +460,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 1,
-        description: "Laudo tecnico com recomendacoes",
+        description: "Laudo técnico com recomendações",
         unit: "un",
         quantity: 1,
         unit_price_cents: 220_000,
@@ -465,7 +468,7 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         position: 2,
-        description: "Acompanhamento e revisao final",
+        description: "Acompanhamento e revisão final",
         unit: "un",
         quantity: 1,
         unit_price_cents: 120_000,
@@ -480,16 +483,16 @@ const PROFESSIONAL_SCENARIOS: Record<
       },
       {
         category: "other",
-        description: "Equipamentos de inspecao - demo",
+        description: "Equipamentos de inspeção - demo",
         amount_cents: 42_000,
       },
     ],
     deliverables: [
       {
-        title: "Relatorio de vistoria v1",
+        title: "Relatório de vistoria v1",
         description:
-          "Entrega demonstrativa para registrar achados e pedir validacao.",
-        changeNote: "Primeira versao do relatorio.",
+          "Entrega demonstrativa para registrar achados e pedir validação.",
+        changeNote: "Primeira versão do relatório.",
       },
     ],
     stages: () => [
@@ -500,20 +503,20 @@ const PROFESSIONAL_SCENARIOS: Record<
         est_days: 2,
         started_on: addDaysBR(-6),
         completed_on: addDaysBR(-5),
-        notes: "Registros tecnicos coletados no local.",
+        notes: "Registros técnicos coletados no local.",
       },
       {
         position: 1,
-        name: "Analise e laudo",
+        name: "Análise e laudo",
         status: "in_progress",
         est_days: 5,
         started_on: addDaysBR(-4),
         completed_on: null,
-        notes: "Laudo em elaboracao para revisao.",
+        notes: "Laudo em elaboração para revisão.",
       },
       {
         position: 2,
-        name: "Entrega e recomendacoes",
+        name: "Entrega e recomendações",
         status: "todo",
         est_days: 2,
         started_on: null,
@@ -1003,7 +1006,7 @@ async function ensureDemoCustomer(
         address: scenario.customerAddress,
         city: scenario.customerCity,
         state: scenario.customerState,
-        notes: "Cliente ficticio para demonstracao comercial guiada.",
+        notes: DEMO_CUSTOMER_NOTE,
       })
       .eq("id", existing.id)
       .eq("company_id", companyId);
@@ -1022,7 +1025,7 @@ async function ensureDemoCustomer(
       address: scenario.customerAddress,
       city: scenario.customerCity,
       state: scenario.customerState,
-      notes: "Cliente fictício para demonstração comercial guiada.",
+      notes: DEMO_CUSTOMER_NOTE,
       created_by: userId,
     })
     .select("id")
@@ -1045,7 +1048,7 @@ async function ensureDemoQuote(
     .from("quotes")
     .select("id, share_token")
     .eq("company_id", input.companyId)
-    .eq("title", input.scenario.quoteTitle)
+    .eq("notes", DEMO_QUOTE_NOTE)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -1081,7 +1084,7 @@ async function ensureDemoQuote(
         sent_at: now,
         viewed_at: now,
         approved_at: now,
-        notes: "Orçamento fictício para demo comercial.",
+        notes: DEMO_QUOTE_NOTE,
         created_by: input.userId,
       })
       .select("id")
@@ -1107,7 +1110,7 @@ async function ensureDemoQuote(
         viewed_at: now,
         approved_at: now,
         rejected_at: null,
-        notes: "Orçamento fictício para demo comercial.",
+        notes: DEMO_QUOTE_NOTE,
       })
       .eq("id", quoteId)
       .eq("company_id", input.companyId);
@@ -1179,18 +1182,42 @@ async function ensureDemoProject(
     scenario: DemoScenario;
   },
 ) {
-  const { data: existing, error: existingError } = await supabase
-    .from("projects")
-    .select("id")
+  const { data: linkedQuote, error: linkedQuoteError } = await supabase
+    .from("quotes")
+    .select("project_id")
+    .eq("id", input.quoteId)
     .eq("company_id", input.companyId)
-    .eq("name", input.scenario.projectName)
-    .order("created_at", { ascending: false })
-    .limit(1)
     .maybeSingle();
 
-  if (existingError) throw existingError;
+  if (linkedQuoteError) throw linkedQuoteError;
 
-  let projectId = existing?.id ?? null;
+  let projectId = linkedQuote?.project_id ?? null;
+
+  if (projectId) {
+    const { data: linkedProject, error: linkedProjectError } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("id", projectId)
+      .eq("company_id", input.companyId)
+      .maybeSingle();
+
+    if (linkedProjectError) throw linkedProjectError;
+    projectId = linkedProject?.id ?? null;
+  }
+
+  if (!projectId) {
+    const { data: existing, error: existingError } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("company_id", input.companyId)
+      .eq("name", input.scenario.projectName)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) throw existingError;
+    projectId = existing?.id ?? null;
+  }
 
   if (!projectId) {
     const { data, error } = await supabase
@@ -1269,20 +1296,36 @@ async function ensureDemoDeliverables(
   const externalUrl = input.publicUrl.startsWith("https://")
     ? input.publicUrl
     : "https://example.com/prumo-demo";
-
-  for (const deliverable of input.scenario.deliverables) {
-    const { data: existing, error: existingError } = await supabase
+  const { data: existingDeliverables, error: existingDeliverablesError } =
+    await supabase
       .from("project_deliverables")
-      .select("id")
+      .select("id,title")
       .eq("company_id", input.companyId)
       .eq("project_id", input.projectId)
-      .eq("title", deliverable.title)
-      .is("archived_at", null)
-      .limit(1)
-      .maybeSingle();
+      .is("archived_at", null);
 
-    if (existingError) throw existingError;
-    if (existing?.id) continue;
+  if (existingDeliverablesError) throw existingDeliverablesError;
+
+  for (const deliverable of input.scenario.deliverables) {
+    const existing = existingDeliverables?.find(
+      (item) =>
+        normalizeDemoLabel(item.title) === normalizeDemoLabel(deliverable.title),
+    );
+
+    if (existing?.id) {
+      const { error: updateError } = await supabase
+        .from("project_deliverables")
+        .update({
+          title: deliverable.title,
+          description: deliverable.description,
+        })
+        .eq("id", existing.id)
+        .eq("company_id", input.companyId)
+        .eq("project_id", input.projectId);
+
+      if (updateError) throw updateError;
+      continue;
+    }
 
     const { data: created, error: createError } = await supabase.rpc(
       "create_project_deliverable",
@@ -1302,7 +1345,7 @@ async function ensureDemoDeliverables(
 
     const draft = created?.[0];
     if (createError || !draft) {
-      throw createError ?? new Error("Entrega demo nao criada.");
+      throw createError ?? new Error("Entrega demo não criada.");
     }
 
     const { error: publishError } = await supabase.rpc(
@@ -1314,6 +1357,14 @@ async function ensureDemoDeliverables(
     );
     if (publishError) throw publishError;
   }
+}
+
+function normalizeDemoLabel(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleLowerCase("pt-BR");
 }
 
 async function replaceDemoProjectStages(
