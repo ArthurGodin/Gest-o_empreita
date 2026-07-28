@@ -12,6 +12,7 @@ import { logServerError, logServerEvent, logServerWarning } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdminClient } from "@/lib/supabase/admin";
 import type { ChargeStatus, Json } from "@/lib/supabase/types";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 
 export const runtime = "nodejs";
 
@@ -230,6 +231,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, unknown_payment: true });
   }
 
+  const { data: chargeCompany, error: chargeCompanyError } = await admin
+    .from("companies")
+    .select("workspace_mode")
+    .eq("id", charge.company_id)
+    .maybeSingle();
+
+  if (chargeCompanyError || !chargeCompany) {
+    const message =
+      chargeCompanyError?.message ?? "charge_company_not_found";
+    await markWebhookEventFailed(admin, eventRow.id, message);
+    logServerError("asaas.webhook.charge_workspace_lookup_failed", chargeCompanyError, {
+      request_id: requestId,
+      event_type: eventType,
+      charge_id: charge.id,
+      company_id: charge.company_id,
+      ms: Date.now() - start,
+    });
+    return NextResponse.json(
+      { ok: false, error: "charge_workspace_lookup_failed" },
+      { status: 500 },
+    );
+  }
+
+  if (isDemoWorkspace(chargeCompany.workspace_mode)) {
+    await markWebhookEventProcessed(admin, eventRow.id);
+    logServerEvent("asaas.webhook.demo_charge_ignored", {
+      request_id: requestId,
+      event_type: eventType,
+      charge_id: charge.id,
+      company_id: charge.company_id,
+      ms: Date.now() - start,
+    });
+    return NextResponse.json({ ok: true, demo_workspace: true });
+  }
+
   const statusPatch = buildBillingChargeWebhookPatch({
     eventType,
     payload,
@@ -310,6 +346,7 @@ export async function POST(request: Request) {
 
 interface WebhookCharge {
   id: string;
+  company_id: string;
   project_id: string;
   status: ChargeStatus;
   paid_at: string | null;
@@ -324,7 +361,8 @@ async function findChargeForWebhook(
   | { ok: true; charge: WebhookCharge | null }
   | { ok: false; error: string }
 > {
-  const select = "id, project_id, status, paid_at, asaas_payment_id";
+  const select =
+    "id, company_id, project_id, status, paid_at, asaas_payment_id";
   const { data: byPaymentId, error: paymentError } = await admin
     .from("billing_charges")
     .select(select)

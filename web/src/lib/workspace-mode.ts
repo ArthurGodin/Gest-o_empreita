@@ -3,7 +3,7 @@ export const WORKSPACE_MODES = ["live", "demo"] as const;
 export type WorkspaceMode = (typeof WORKSPACE_MODES)[number];
 
 export const DEMO_WORKSPACE_BILLING_MESSAGE =
-  "Pagamentos reais ficam bloqueados no ambiente de demonstracao.";
+  "Pagamentos reais ficam bloqueados no ambiente de demonstração.";
 
 export class DemoWorkspaceExternalOperationError extends Error {
   readonly code = "demo_workspace_external_operation_blocked";

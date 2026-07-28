@@ -21,6 +21,11 @@ import {
   type SaasPaymentSummary,
   type SaasSubscriptionSummary,
 } from "./saas-billing-core";
+import {
+  DEMO_WORKSPACE_BILLING_MESSAGE,
+  isDemoWorkspace,
+  requireLiveWorkspace,
+} from "@/lib/workspace-mode";
 
 const PAYMENT_LINK_STORAGE_PREFIX = "PAYMENT_LINK:";
 const CHECKOUT_LOCK_TTL_MS = 2 * 60 * 1000;
@@ -63,6 +68,7 @@ interface AsaasMutationResponse {
 interface CompanySaasBillingRecord {
   id: string;
   plan: string | null;
+  workspace_mode: string | null;
   saas_asaas_customer_id: string | null;
   saas_asaas_subscription_id: string | null;
   saas_asaas_subscription_plan: string | null;
@@ -101,6 +107,7 @@ export interface SaasSubscriptionStatus {
 export class SaasCheckoutBlockedError extends Error {
   code:
     | "already_active"
+    | "demo_workspace"
     | "pending_other_plan"
     | "pending_without_checkout"
     | "paid_waiting_webhook"
@@ -139,6 +146,12 @@ export async function createSaasSubscriptionCheckout({
   const company = await getCompanySaasBillingRecord(companyId);
   if (!company) {
     throw new Error("Empresa nao encontrada para gerar checkout SaaS.");
+  }
+  if (isDemoWorkspace(company.workspace_mode)) {
+    throw new SaasCheckoutBlockedError(
+      "demo_workspace",
+      DEMO_WORKSPACE_BILLING_MESSAGE,
+    );
   }
   const currentPlan = normalizeAppPlan(company?.plan);
 
@@ -321,6 +334,22 @@ export async function getCompanySaasSubscriptionStatus(
       paymentStatus: null,
       checkoutUrl: null,
       message: "Empresa nao encontrada.",
+    };
+  }
+
+  if (isDemoWorkspace(company.workspace_mode)) {
+    return {
+      state: "active_without_subscription",
+      currentPlan: "ultimate",
+      targetPlan: null,
+      subscriptionId: null,
+      paymentLinkId: null,
+      checkoutKind: null,
+      subscriptionStatus: null,
+      paymentId: null,
+      paymentStatus: null,
+      checkoutUrl: null,
+      message: "Ultimate liberado apenas para demonstracao.",
     };
   }
 
@@ -550,6 +579,7 @@ export async function cancelCompanySaasPlan(companyId: string) {
   const admin = createAdminClient();
   const company = await getCompanySaasBillingRecord(companyId);
   if (!company) throw new Error("Empresa nao encontrada para cancelar o plano.");
+  requireLiveWorkspace(company.workspace_mode, "saas_plan_cancellation");
 
   const activeSubscriptionId = parseSaasPaymentLinkStorageId(
     company.saas_asaas_subscription_id,
@@ -612,7 +642,7 @@ async function getCompanySaasBillingRecord(
   const { data, error } = await admin
     .from("companies")
     .select(
-      "id, plan, saas_asaas_customer_id, saas_asaas_subscription_id, saas_asaas_subscription_plan, saas_pending_payment_link_id, saas_pending_payment_link_url, saas_pending_plan, saas_pending_checkout_token, saas_pending_checkout_started_at",
+      "id, plan, workspace_mode, saas_asaas_customer_id, saas_asaas_subscription_id, saas_asaas_subscription_plan, saas_pending_payment_link_id, saas_pending_payment_link_url, saas_pending_plan, saas_pending_checkout_token, saas_pending_checkout_started_at",
     )
     .eq("id", companyId)
     .maybeSingle();

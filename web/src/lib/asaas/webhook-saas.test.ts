@@ -26,6 +26,7 @@ vi.mock("@/lib/asaas/saas-billing", () => ({
 type FakeCompany = {
   id: string;
   plan: string | null;
+  workspace_mode: string | null;
   saas_asaas_customer_id: string | null;
   saas_asaas_subscription_id: string | null;
   saas_asaas_subscription_plan: string | null;
@@ -40,6 +41,7 @@ function company(
   input: Pick<FakeCompany, "id" | "plan"> & Partial<FakeCompany>,
 ): FakeCompany {
   return {
+    workspace_mode: "live",
     saas_asaas_customer_id: null,
     saas_asaas_subscription_id: null,
     saas_asaas_subscription_plan: null,
@@ -133,6 +135,29 @@ describe("SaaS subscription webhook", () => {
         ...PENDING_CLEAR,
       },
     ]);
+  });
+
+  it("ignores subscription events that point to a demo workspace", async () => {
+    const { admin, updates } = fakeAdmin(
+      company({
+        id: "company-id",
+        plan: "ultimate",
+        workspace_mode: "demo",
+      }),
+    );
+
+    const processed = await processSaasSubscriptionWebhook(
+      admin,
+      paymentWebhook("PAYMENT_CONFIRMED", {
+        subscription: "sub_demo",
+        externalReference: "SUB_ULTIMATE_company-id",
+      }),
+    );
+
+    expect(processed).toBe(true);
+    expect(updates).toEqual([]);
+    expect(billingMocks.cancelSupersededSaasSubscriptions).not.toHaveBeenCalled();
+    expect(billingMocks.deactivateSaasPaymentLink).not.toHaveBeenCalled();
   });
 
   it("falls back to the stored target plan when the payment reference is absent", async () => {

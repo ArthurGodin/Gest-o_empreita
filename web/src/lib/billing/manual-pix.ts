@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDaysBR } from "@/lib/dates";
 import { createPixBrCode, type PixKeyType } from "@/lib/pix/br-code";
 import type { Database, PaymentProvider } from "@/lib/supabase/types";
+import { requireLiveCompanyWorkspace } from "@/lib/workspace-mode-server";
 import type { CreateChargeResult } from "./asaas";
 
 type SupabaseServer = SupabaseClient<Database>;
@@ -54,6 +55,11 @@ export async function generateManualPixForCharge(
     description: string;
   },
 ): Promise<CreateChargeResult> {
+  await requireLiveCompanyWorkspace(
+    supabase,
+    params.companyId,
+    "generate_manual_pix",
+  );
   const [settings, chargeRes] = await Promise.all([
     getCompanyPaymentSettings(supabase, params.companyId),
     supabase

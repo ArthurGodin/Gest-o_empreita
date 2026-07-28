@@ -14,6 +14,10 @@ import {
   BUSINESS_SEGMENTS,
   type BusinessSegment,
 } from "@/lib/business-segment";
+import {
+  DEMO_WORKSPACE_BILLING_MESSAGE,
+  isDemoWorkspace,
+} from "@/lib/workspace-mode";
 
 // ─── Update dados da empresa ────────────────────────────────────────────────
 
@@ -226,6 +230,9 @@ export async function updatePaymentSettingsAction(
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa não encontrada." };
+  if (isDemoWorkspace(company.company.workspace_mode)) {
+    return { ok: false, error: DEMO_WORKSPACE_BILLING_MESSAGE };
+  }
 
   const parsed = paymentSchema.safeParse(input);
   if (!parsed.success) {

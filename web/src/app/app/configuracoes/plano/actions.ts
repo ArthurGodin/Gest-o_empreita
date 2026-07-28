@@ -13,6 +13,10 @@ import { logServerError, logServerEvent, logServerWarning } from "@/lib/log";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { normalizePaidPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  DEMO_WORKSPACE_BILLING_MESSAGE,
+  isDemoWorkspace,
+} from "@/lib/workspace-mode";
 
 export type CheckoutPlanActionResult =
   | { ok: true; checkoutUrl: string; simulated: boolean; reused?: boolean }
@@ -32,6 +36,9 @@ export async function cancelCurrentPlanAction(): Promise<{
       ok: false,
       error: "Somente o proprietario da empresa pode cancelar a assinatura.",
     };
+  }
+  if (isDemoWorkspace(company.company.workspace_mode)) {
+    return { ok: false, error: DEMO_WORKSPACE_BILLING_MESSAGE };
   }
 
   try {
@@ -86,6 +93,9 @@ export async function checkoutPlanAction(
       ok: false,
       error: "Somente o proprietario da empresa pode contratar um plano.",
     };
+  }
+  if (isDemoWorkspace(company.company.workspace_mode)) {
+    return { ok: false, error: DEMO_WORKSPACE_BILLING_MESSAGE };
   }
 
   try {
@@ -226,6 +236,9 @@ export async function confirmPlanUpgradeAction(
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa nÃ£o encontrada." };
+  if (isDemoWorkspace(company.company.workspace_mode)) {
+    return { ok: false, error: DEMO_WORKSPACE_BILLING_MESSAGE };
+  }
 
   const admin = createAdminClient();
   const { error } = await admin

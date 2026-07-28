@@ -7,6 +7,7 @@ import { createAsaasCustomer } from "@/lib/asaas/customers";
 import { AsaasConfigError } from "@/lib/asaas/client";
 import { createPixPayment, getPixQrCode } from "@/lib/asaas/payments";
 import type { ChargeKind, Database } from "@/lib/supabase/types";
+import { requireLiveCompanyWorkspace } from "@/lib/workspace-mode-server";
 import {
   asaasChargeAmountValidationMessage,
   calculateEntrySplit,
@@ -44,6 +45,11 @@ export async function ensureBillingProfile(
   customer: BillingCustomer,
   cpfCnpjOverride?: string | null,
 ): Promise<string> {
+  await requireLiveCompanyWorkspace(
+    supabase,
+    companyId,
+    "create_asaas_customer",
+  );
   const { data: existing, error: existingError } = await supabase
     .from("customer_billing_profiles")
     .select("asaas_customer_id")
@@ -150,6 +156,11 @@ export async function generatePixForCharge(
     description: string;
   },
 ): Promise<CreateChargeResult> {
+  await requireLiveCompanyWorkspace(
+    supabase,
+    params.companyId,
+    "generate_asaas_pix",
+  );
   const { data: charge, error: chargeError } = await supabase
     .from("billing_charges")
     .select("id, amount_cents, due_date, asaas_payment_id, status")

@@ -15,6 +15,10 @@ import { canTransitionStatus } from "@/lib/project-status";
 import { todayBR } from "@/lib/dates";
 import { markManualPixChargePaid } from "@/lib/billing/manual-pix";
 import { generatePreferredPixForCharge } from "@/lib/billing/provider";
+import {
+  DEMO_WORKSPACE_BILLING_MESSAGE,
+  DemoWorkspaceExternalOperationError,
+} from "@/lib/workspace-mode";
 import type {
   CostCategory,
   Database,
@@ -1157,6 +1161,9 @@ export async function generateChargePixAction(
       ]);
     }
   } catch (billingError) {
+    if (billingError instanceof DemoWorkspaceExternalOperationError) {
+      return { ok: false, error: DEMO_WORKSPACE_BILLING_MESSAGE };
+    }
     logServerError("obras.billing.generate-pix", billingError);
     return { ok: false, error: clientErrorFor(billingError) };
   }

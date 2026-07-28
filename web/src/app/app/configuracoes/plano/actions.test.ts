@@ -38,7 +38,10 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: vi.fn(),
 }));
 
-function activeCompany(role: "owner" | "admin" | "worker") {
+function activeCompany(
+  role: "owner" | "admin" | "worker",
+  workspaceMode: "live" | "demo" = "live",
+) {
   return {
     company_id: "company-id",
     role,
@@ -46,6 +49,7 @@ function activeCompany(role: "owner" | "admin" | "worker") {
       id: "company-id",
       name: "Empresa QA",
       logo_url: null,
+      workspace_mode: workspaceMode,
     },
   };
 }
@@ -86,12 +90,32 @@ describe("SaaS plan actions", () => {
     });
   });
 
+  it("blocks checkout creation in demo workspaces", async () => {
+    mocks.getActiveCompany.mockResolvedValue(activeCompany("owner", "demo"));
+
+    await expect(checkoutPlanAction("ultimate")).resolves.toEqual({
+      ok: false,
+      error: "Pagamentos reais ficam bloqueados no ambiente de demonstração.",
+    });
+    expect(mocks.createSaasSubscriptionCheckout).not.toHaveBeenCalled();
+  });
+
   it("blocks cancellation for members who are not owners", async () => {
     mocks.getActiveCompany.mockResolvedValue(activeCompany("worker"));
 
     await expect(cancelCurrentPlanAction()).resolves.toEqual({
       ok: false,
       error: "Somente o proprietario da empresa pode cancelar a assinatura.",
+    });
+    expect(mocks.cancelCompanySaasPlan).not.toHaveBeenCalled();
+  });
+
+  it("blocks plan cancellation in demo workspaces", async () => {
+    mocks.getActiveCompany.mockResolvedValue(activeCompany("owner", "demo"));
+
+    await expect(cancelCurrentPlanAction()).resolves.toEqual({
+      ok: false,
+      error: "Pagamentos reais ficam bloqueados no ambiente de demonstração.",
     });
     expect(mocks.cancelCompanySaasPlan).not.toHaveBeenCalled();
   });

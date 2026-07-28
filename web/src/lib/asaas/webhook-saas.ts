@@ -19,6 +19,7 @@ import {
   type PaidPlan,
 } from "@/lib/plans";
 import { logServerError, logServerEvent } from "@/lib/log";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 
 const PAID_EVENTS = new Set(["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"]);
 const DOWNGRADE_EVENTS = new Set([
@@ -29,11 +30,12 @@ const DOWNGRADE_EVENTS = new Set([
 ]);
 
 const COMPANY_SELECT =
-  "id, plan, saas_asaas_customer_id, saas_asaas_subscription_id, saas_asaas_subscription_plan, saas_pending_payment_link_id, saas_pending_payment_link_url, saas_pending_plan, saas_pending_checkout_token, saas_pending_checkout_started_at";
+  "id, plan, workspace_mode, saas_asaas_customer_id, saas_asaas_subscription_id, saas_asaas_subscription_plan, saas_pending_payment_link_id, saas_pending_payment_link_url, saas_pending_plan, saas_pending_checkout_token, saas_pending_checkout_started_at";
 
 interface SaasCompanySubscription {
   id: string;
   plan: string | null;
+  workspace_mode: string | null;
   saas_asaas_customer_id: string | null;
   saas_asaas_subscription_id: string | null;
   saas_asaas_subscription_plan: string | null;
@@ -61,6 +63,13 @@ export async function processSaasSubscriptionWebhook(
     externalReference,
   });
   if (!company) return false;
+  if (isDemoWorkspace(company.workspace_mode)) {
+    logServerEvent("saas.webhook.demo_workspace_ignored", {
+      company_id: company.id,
+      event_type: eventType,
+    });
+    return true;
+  }
 
   if (PAID_EVENTS.has(eventType)) {
     return activatePaidSaasSubscription(admin, company, payload, {

@@ -12,6 +12,7 @@ import {
   type BillingCustomer,
   type CreateChargeResult,
 } from "./asaas";
+import { requireLiveCompanyWorkspace } from "@/lib/workspace-mode-server";
 
 type SupabaseServer = SupabaseClient<Database>;
 
@@ -41,6 +42,11 @@ export async function generatePreferredPixForCharge(
     description: string;
   },
 ): Promise<CreateChargeResult> {
+  await requireLiveCompanyWorkspace(
+    supabase,
+    params.companyId,
+    "generate_customer_pix",
+  );
   const settings = await getCompanyPaymentSettings(supabase, params.companyId);
 
   if (settings.payment_provider === "manual_pix") {

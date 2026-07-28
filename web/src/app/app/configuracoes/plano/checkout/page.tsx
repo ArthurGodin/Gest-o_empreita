@@ -26,6 +26,7 @@ import {
   type PaidPlan,
 } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 import { PaymentForm } from "./payment-form";
 
 interface CheckoutPageProps {
@@ -43,6 +44,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const active = await getActiveCompany();
   if (!active) redirect("/app");
   if (active.role !== "owner") redirect("/app/configuracoes/plano");
+  if (isDemoWorkspace(active.company.workspace_mode)) {
+    redirect("/app/configuracoes/plano");
+  }
 
   const supabase = createClient();
   const [{ data: companyRecord }, subscriptionStatus] = await Promise.all([
