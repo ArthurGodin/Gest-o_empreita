@@ -1325,20 +1325,6 @@ async function ensureDemoDeliverables(
         .eq("project_id", input.projectId);
 
       if (updateError) throw updateError;
-
-      const { error: versionUpdateError } = await admin
-        .from("project_deliverable_versions")
-        .update({
-          change_note: deliverable.changeNote,
-          external_url: externalUrl,
-        })
-        .eq("company_id", input.companyId)
-        .eq("project_id", input.projectId)
-        .eq("deliverable_id", existing.id)
-        .eq("version_number", 1)
-        .eq("source_kind", "external_link");
-
-      if (versionUpdateError) throw versionUpdateError;
       continue;
     }
 
