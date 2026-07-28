@@ -1,6 +1,7 @@
 export type AppPlan = "free" | "pro" | "ultimate";
 export type PaidPlan = Exclude<AppPlan, "free">;
 export const FREE_MONTHLY_QUOTE_LIMIT = 3;
+export const FREE_ACTIVE_PROJECT_LIMIT = 1;
 
 export interface PlanDefinition {
   key: AppPlan;
@@ -24,8 +25,8 @@ export const PLAN_DEFINITIONS: Record<AppPlan, PlanDefinition> = {
     description: "Para conhecer o Prumo e enviar as primeiras propostas.",
     cta: "Plano em uso",
     features: [
-      "Até 3 propostas ou orçamentos por mês",
-      "1 projeto ou obra simultânea",
+      `Até ${FREE_MONTHLY_QUOTE_LIMIT} propostas ou orçamentos por mês`,
+      `${FREE_ACTIVE_PROJECT_LIMIT} projeto ou obra simultânea`,
       "Link público com aceite digital",
       "PDF e link com marca Prumo",
       "Etapas, registros, custos e visão financeira",

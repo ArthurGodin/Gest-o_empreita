@@ -44,7 +44,7 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Security audit
+      - name: Production dependency audit
         run: npm run audit:ci
 
       - name: Build

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACTIVE_PROJECT_LIMIT,
+  FREE_MONTHLY_QUOTE_LIMIT,
   companyIdFromSaasSubscriptionReference,
   getFreeQuoteQuotaMonthStart,
   isPlanAtLeast,
@@ -11,6 +13,11 @@ import {
   shouldShowPrumoBrand,
 } from "@/lib/plans";
 import { getArchitecturePlanLimits } from "@/lib/architecture-plan-limits";
+import {
+  formatStorageBytes,
+  getDeliverablePlanLimits,
+} from "@/lib/deliverables";
+import { CATALOG_IMPORT_MAX_ROWS } from "@/lib/catalog-import";
 
 describe("plan helpers", () => {
   it("normalizes unknown plans defensively", () => {
@@ -49,6 +56,44 @@ describe("plan helpers", () => {
     }
 
     expect(PLAN_DEFINITIONS.pro.description).not.toContain("sem limites");
+  });
+
+  it("keeps free commercial limits aligned with enforcement constants", () => {
+    expect(PLAN_DEFINITIONS.free.features).toContain(
+      `Até ${FREE_MONTHLY_QUOTE_LIMIT} propostas ou orçamentos por mês`,
+    );
+    expect(PLAN_DEFINITIONS.free.features).toContain(
+      `${FREE_ACTIVE_PROJECT_LIMIT} projeto ou obra simultânea`,
+    );
+  });
+
+  it("keeps deliverable promises aligned with enforced plan limits", () => {
+    for (const plan of ["free", "pro", "ultimate"] as const) {
+      const limits = getDeliverablePlanLimits(plan);
+      const deliverableFeature = PLAN_DEFINITIONS[plan].features.find(
+        (feature) => feature.includes("entregas ativas"),
+      );
+
+      expect(deliverableFeature).toContain(String(limits.activePerProject));
+      expect(deliverableFeature).toContain(
+        formatStorageBytes(limits.storageBytes),
+      );
+    }
+  });
+
+  it("keeps Ultimate import and data promises explicit", () => {
+    const ultimateFeatures = PLAN_DEFINITIONS.ultimate.features;
+
+    expect(ultimateFeatures).toContain(
+      `Até ${CATALOG_IMPORT_MAX_ROWS} itens por importação`,
+    );
+    expect(ultimateFeatures).toContain(
+      "Consulta SINAPI oficial por UF para orçamentos de execução",
+    );
+    expect(ultimateFeatures).toContain(
+      "Exportação CSV de receitas recebidas e custos",
+    );
+    expect(ultimateFeatures.join(" ")).not.toMatch(/em breve/i);
   });
 
   it("calculates the free quote monthly quota from Sao Paulo time", () => {

@@ -15,7 +15,8 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:ui": "node scripts/run-e2e.mjs --ui",
     "test:e2e:install": "playwright install chromium",
-    "audit:ci": "npm audit --audit-level=moderate"
+    "audit:ci": "npm audit --omit=dev --audit-level=moderate",
+    "audit:all": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -33,7 +34,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
-    "next": "^16.2.10",
+    "next": "^16.2.12",
     "next-themes": "^0.4.6",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",
@@ -41,7 +42,7 @@
     "react-hook-form": "^7.76.0",
     "resend": "^6.12.3",
     "server-only": "^0.0.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.4.3"
@@ -52,10 +53,10 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.10",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.12",
     "fflate": "^0.8.3",
-    "postcss": "^8",
+    "postcss": "^8.5.24",
     "read-excel-file": "^9.3.2",
     "supabase": "^2.109.1",
     "tailwindcss": "^3.4.1",
@@ -64,6 +65,7 @@
     "vitest": "^4.1.7"
   },
   "overrides": {
-    "postcss": "$postcss"
+    "postcss": "$postcss",
+    "sharp": "$sharp"
   }
 }

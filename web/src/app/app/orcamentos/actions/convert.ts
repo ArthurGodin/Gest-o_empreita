@@ -13,6 +13,7 @@ import {
   generatePreferredPixForCharge,
 } from "@/lib/billing/provider";
 import { entryChargeValidationMessage } from "@/lib/billing/entry-percent";
+import { FREE_ACTIVE_PROJECT_LIMIT } from "@/lib/plans";
 
 // ─── Schemas ───────────────────────────────────────────────────────────────
 
@@ -119,11 +120,10 @@ export async function convertToProjectAction(
       .eq("company_id", company.company_id)
       .in("status", ["planning", "in_progress", "paused"]);
 
-    if (count != null && count >= 1) {
+    if (count != null && count >= FREE_ACTIVE_PROJECT_LIMIT) {
       return {
         ok: false,
-        error:
-          "O Plano Grátis permite 1 obra simultânea. Conclua a obra atual ou assine o Pro para controlar obras sem limite.",
+        error: `O Plano Grátis permite ${FREE_ACTIVE_PROJECT_LIMIT} obra simultânea. Conclua a obra atual ou assine o Pro para controlar obras sem limite.`,
       };
     }
   }
