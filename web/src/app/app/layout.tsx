@@ -24,6 +24,7 @@ export default async function AppLayout({
   const businessSegment = normalizeBusinessSegment(
     first.company.business_segment,
   );
+  const workspaceMode = first.company.workspace_mode;
 
   return (
     <BusinessSegmentProvider segment={businessSegment}>
@@ -34,8 +35,11 @@ export default async function AppLayout({
         >
           Pular para o conteúdo
         </a>
-        <Sidebar companyName={companyName} />
-        <MobileTopbar companyName={companyName} />
+        <Sidebar companyName={companyName} workspaceMode={workspaceMode} />
+        <MobileTopbar
+          companyName={companyName}
+          workspaceMode={workspaceMode}
+        />
         <div className="flex min-w-0 max-w-full flex-1 flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pb-0 lg:pt-0">
           <main
             id="app-content"

@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu as MenuIcon,
   Package,
+  Presentation,
   Settings,
 } from "lucide-react";
 import { signoutAction } from "@/app/(auth)/actions";
@@ -18,15 +19,23 @@ import {
   useBusinessSegment,
   useBusinessVocabulary,
 } from "@/components/business-segment-context";
+import type { WorkspaceMode } from "@/lib/workspace-mode";
 
 const itemClassName =
   "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-950 focus:bg-slate-100 focus:text-slate-950";
 
-export function MobileTopbar({ companyName }: { companyName: string }) {
+export function MobileTopbar({
+  companyName,
+  workspaceMode,
+}: {
+  companyName: string;
+  workspaceMode: WorkspaceMode;
+}) {
   const [signingOut, startSignout] = useTransition();
   const segment = useBusinessSegment();
   const vocabulary = useBusinessVocabulary();
   const BrandIcon = segment === "construction" ? HardHat : Building2;
+  const isDemo = workspaceMode === "demo";
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b bg-white/95 pt-[env(safe-area-inset-top)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur lg:hidden">
@@ -39,11 +48,18 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
             <span className="block text-sm font-bold leading-4 text-slate-950">
               Prumo
             </span>
-            <span
-              className="block max-w-[13rem] truncate text-[11px] leading-4 text-muted-foreground"
-              title={companyName}
-            >
-              {companyName}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="block max-w-[10rem] truncate text-[11px] leading-4 text-muted-foreground"
+                title={companyName}
+              >
+                {companyName}
+              </span>
+              {isDemo ? (
+                <span className="shrink-0 rounded-sm border border-amber-200 bg-amber-50 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-amber-800">
+                  Demo
+                </span>
+              ) : null}
             </span>
           </span>
         </Link>
@@ -81,6 +97,14 @@ export function MobileTopbar({ companyName }: { companyName: string }) {
                 </span>
               </DropdownMenu.Label>
               <DropdownMenu.Separator className="my-1 h-px bg-slate-200" />
+              {isDemo ? (
+                <DropdownMenu.Item asChild>
+                  <Link href="/app/demonstracao" className={itemClassName}>
+                    <Presentation aria-hidden="true" className="h-4 w-4" />
+                    Demonstração
+                  </Link>
+                </DropdownMenu.Item>
+              ) : null}
               <DropdownMenu.Item asChild>
                 <Link href="/app/catalogo" className={itemClassName}>
                   <Package aria-hidden="true" className="h-4 w-4" />

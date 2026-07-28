@@ -21,6 +21,7 @@ import { env } from "@/lib/env";
 import { serverEnv } from "@/lib/env-server";
 import { whatsappLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 import { DemoKitButton } from "./demo-kit-button";
 
 export const metadata = {
@@ -314,6 +315,8 @@ export default async function ProductionDiagnosticsPage() {
         ))}
       </section>
 
+      {isDemoWorkspace(company.workspace_mode) ? (
+        <>
       <section className="overflow-hidden rounded-lg border bg-card">
         <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="p-4 sm:p-5">
@@ -405,6 +408,8 @@ export default async function ProductionDiagnosticsPage() {
           ))}
         </ol>
       </section>
+        </>
+      ) : null}
     </PageContainer>
   );
 }

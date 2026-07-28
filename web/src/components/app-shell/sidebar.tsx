@@ -11,6 +11,7 @@ import {
   LifeBuoy,
   LogOut,
   Package,
+  Presentation,
   Settings,
   Users,
   Wallet,
@@ -22,14 +23,31 @@ import {
   useBusinessVocabulary,
 } from "@/components/business-segment-context";
 import { cn } from "@/lib/utils";
+import type { WorkspaceMode } from "@/lib/workspace-mode";
 
-export function Sidebar({ companyName }: { companyName: string }) {
+export function Sidebar({
+  companyName,
+  workspaceMode,
+}: {
+  companyName: string;
+  workspaceMode: WorkspaceMode;
+}) {
   const pathname = usePathname();
   const segment = useBusinessSegment();
   const vocabulary = useBusinessVocabulary();
   const ProjectIcon = segment === "construction" ? HardHat : FolderKanban;
+  const isDemo = workspaceMode === "demo";
   const navItems = [
     { href: "/app", label: "Início", icon: Home },
+    ...(isDemo
+      ? [
+          {
+            href: "/app/demonstracao",
+            label: "Demonstração",
+            icon: Presentation,
+          },
+        ]
+      : []),
     {
       href: "/app/orcamentos",
       label: vocabulary.quotePlural,
@@ -43,7 +61,7 @@ export function Sidebar({ companyName }: { companyName: string }) {
     { href: "/app/clientes", label: "Clientes", icon: Users },
     { href: "/app/catalogo", label: "Catálogo", icon: Package },
     { href: "/app/financeiro", label: "Financeiro", icon: Wallet },
-  ] as const;
+  ];
 
   return (
     <aside className="hidden border-r bg-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-56 lg:shrink-0 lg:flex-col">
@@ -70,11 +88,18 @@ export function Sidebar({ companyName }: { companyName: string }) {
             <span className="block text-[10px] font-semibold uppercase text-muted-foreground">
               {vocabulary.organizationLabel}
             </span>
-            <span
-              className="block truncate text-xs font-semibold text-slate-800"
-              title={companyName}
-            >
-              {companyName}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="block min-w-0 truncate text-xs font-semibold text-slate-800"
+                title={companyName}
+              >
+                {companyName}
+              </span>
+              {isDemo ? (
+                <span className="shrink-0 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-800">
+                  Demo
+                </span>
+              ) : null}
             </span>
           </span>
         </div>

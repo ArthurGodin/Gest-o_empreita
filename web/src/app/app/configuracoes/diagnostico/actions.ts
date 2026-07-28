@@ -24,6 +24,7 @@ import {
 } from "@/lib/briefings";
 import { getArchitecturePlanLimits } from "@/lib/architecture-plan-limits";
 import { normalizeAppPlan } from "@/lib/plans";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 import type { Json } from "@/lib/supabase/types";
 
 const DEMO_CUSTOMER_NAME = "Cliente Demo - Maria Santos";
@@ -547,6 +548,12 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa não encontrada." };
+  if (!isDemoWorkspace(company.company.workspace_mode)) {
+    return {
+      ok: false,
+      error: "Dados fictícios só podem ser preparados em uma conta demo.",
+    };
+  }
 
   const supabase = createClient();
   const companyId = company.company_id;
@@ -618,6 +625,7 @@ export async function prepareDemoKitAction(): Promise<DemoKitResult> {
 
     revalidatePath("/app");
     revalidatePath("/app/configuracoes/diagnostico");
+    revalidatePath("/app/demonstracao");
     revalidatePath("/app/orcamentos");
     revalidatePath(`/app/orcamentos/${quote.id}`);
     revalidatePath("/app/obras");
