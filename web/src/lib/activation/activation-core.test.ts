@@ -45,6 +45,7 @@ describe("buildActivationProgress", () => {
     expect(progress.nextStep?.id).toBe("customer");
     expect(progress.nextStep?.href).toBe("/app/clientes/novo");
     expect(progress.doneCount).toBe(1);
+    expect(progress.guideTitle).toBe("Caminho até a primeira venda");
   });
 
   it("keeps an empty draft on the quote step until it has a value", () => {
@@ -69,6 +70,7 @@ describe("buildActivationProgress", () => {
     const projectStep = progress.steps.find((step) => step.id === "project");
 
     expect(progress.steps[0]?.title).toBe("Escritório");
+    expect(progress.guideTitle).toBe("Caminho até o primeiro contrato");
     expect(quoteStep?.title).toBe("Proposta");
     expect(quoteStep?.action).toBe("Continuar proposta");
     expect(projectStep?.title).toBe("Projeto");

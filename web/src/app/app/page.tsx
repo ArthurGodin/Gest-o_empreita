@@ -22,7 +22,6 @@ import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { PendencySummary } from "@/components/pendencies/pendency-summary";
 import { FirstMoneyGuide } from "./first-money-guide";
-import { SampleDataButton } from "./sample-data-button";
 import { getBillingCharges } from "@/lib/queries/billing-charges";
 import { getCustomers } from "@/lib/queries/customers";
 import { getProjects } from "@/lib/queries/projects";
@@ -39,6 +38,7 @@ import {
   isProfessionalSegment,
 } from "@/lib/business-segment";
 import type { ProjectStatus } from "@/lib/supabase/types";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 
 const OPEN_PROJECT_STATUSES: ProjectStatus[] = [
   "planning",
@@ -56,13 +56,13 @@ const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
 export default async function DashboardPage() {
   const [quotes, projects, customers, charges, company, deliverables] =
     await Promise.all([
-    getQuotes({ limit: 300 }),
-    getProjects({ limit: 200 }),
-    getCustomers(),
-    getBillingCharges(),
-    getActiveCompanyFull(),
-    getDeliverablePendencyInputs(),
-  ]);
+      getQuotes({ limit: 300 }),
+      getProjects({ limit: 200 }),
+      getCustomers(),
+      getBillingCharges(),
+      getActiveCompanyFull(),
+      getDeliverablePendencyInputs(),
+    ]);
   const vocabulary = getBusinessVocabulary(company?.business_segment);
   const isProfessional = isProfessionalSegment(company?.business_segment);
   const ProjectIcon = isProfessional ? FolderKanban : HardHat;
@@ -115,6 +115,7 @@ export default async function DashboardPage() {
   });
   const isEmptyWorkspace =
     customers.length === 0 && quotes.length === 0 && projects.length === 0;
+  const isDemo = isDemoWorkspace(company?.workspace_mode);
 
   return (
     <PageContainer>
@@ -131,9 +132,11 @@ export default async function DashboardPage() {
         }
       />
 
-      {isEmptyWorkspace ? <EmptyWorkspaceCard /> : null}
+      {isEmptyWorkspace ? (
+        <EmptyWorkspaceCard isDemo={isDemo} />
+      ) : null}
 
-      <FirstMoneyGuide progress={activation} />
+      {!isDemo ? <FirstMoneyGuide progress={activation} /> : null}
 
       <MetricStrip ariaLabel="Resumo da operação">
         <MetricTile
@@ -210,10 +213,10 @@ export default async function DashboardPage() {
             ) : (
               <div className="divide-y">
                 {openProjects.slice(0, 5).map((project) => (
-                <Link
-                  key={project.id}
-                  href={`/app/obras/${project.id}`}
-                  className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  <Link
+                    key={project.id}
+                    href={`/app/obras/${project.id}`}
+                    className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">
@@ -246,9 +249,9 @@ export default async function DashboardPage() {
 
       <Card className="min-w-0">
         <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
-            <CardTitle className="text-base">
-              {vocabulary.quotePlural} recentes
-            </CardTitle>
+          <CardTitle className="text-base">
+            {vocabulary.quotePlural} recentes
+          </CardTitle>
           <Button asChild variant="ghost" size="sm">
             <Link href="/app/orcamentos">Ver todos</Link>
           </Button>
@@ -291,33 +294,34 @@ export default async function DashboardPage() {
   );
 }
 
-function EmptyWorkspaceCard() {
+function EmptyWorkspaceCard({ isDemo }: { isDemo: boolean }) {
   return (
     <section className="rounded-lg border bg-card px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           <h2 className="text-sm font-semibold text-foreground">
-            Comece com um cliente real
+            {isDemo
+              ? "Prepare o cenário de demonstração"
+              : "Comece com um cliente real"}
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">
-            Cadastre quem receberá sua primeira proposta. O exemplo é opcional e
-            fica separado dos seus dados reais.
+            {isDemo
+              ? "Crie os dados fictícios oficiais antes de apresentar o produto."
+              : "Cadastre quem receberá sua primeira proposta ou orçamento."}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
           <Button asChild>
-            <Link href="/app/clientes/novo">
+            <Link href={isDemo ? "/app/demonstracao" : "/app/clientes/novo"}>
               <Plus aria-hidden="true" className="h-4 w-4" />
-              Cadastrar cliente
+              {isDemo ? "Abrir demonstração" : "Cadastrar cliente"}
             </Link>
           </Button>
-          <SampleDataButton />
         </div>
       </div>
     </section>
   );
 }
-
 
 function EmptyLine({
   title,
@@ -333,7 +337,9 @@ function EmptyLine({
   return (
     <div className="px-4 py-6 text-center">
       <p className="text-sm font-semibold">{title}</p>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground leading-relaxed">{detail}</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+        {detail}
+      </p>
       <Button asChild variant="outline" size="sm" className="mt-4">
         <Link href={href}>{action}</Link>
       </Button>

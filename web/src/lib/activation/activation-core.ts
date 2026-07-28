@@ -62,6 +62,7 @@ export interface ActivationInput {
 }
 
 export interface ActivationProgress {
+  guideTitle: string;
   steps: ActivationStep[];
   nextStep: ActivationStep | null;
   doneCount: number;
@@ -218,6 +219,9 @@ export function buildActivationProgress(
   const nextStep = steps.find((step) => !step.done) ?? null;
 
   return {
+    guideTitle: isProfessional
+      ? "Caminho até o primeiro contrato"
+      : "Caminho até a primeira venda",
     steps,
     nextStep,
     doneCount,

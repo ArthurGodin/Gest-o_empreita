@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import {
@@ -28,6 +29,7 @@ import {
   type PaidPlan,
 } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 import { UpgradeButton } from "./upgrade-button";
 import { CancelPlanButton } from "./cancel-plan-button";
 
@@ -40,9 +42,13 @@ export default async function PlanPage() {
   const supabase = createClient();
   const { data: companyData } = await supabase
     .from("companies")
-    .select("plan")
+    .select("plan, workspace_mode")
     .eq("id", company.company_id)
     .single();
+
+  if (isDemoWorkspace(companyData?.workspace_mode)) {
+    return <DemoWorkspacePlanPage />;
+  }
 
   const currentPlan = normalizeAppPlan(companyData?.plan);
   const currentDefinition = PLAN_DEFINITIONS[currentPlan];
@@ -93,6 +99,72 @@ export default async function PlanPage() {
         ))}
       </section>
 
+    </PageContainer>
+  );
+}
+
+function DemoWorkspacePlanPage() {
+  const definition = PLAN_DEFINITIONS.ultimate;
+
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Plano de demonstração"
+        description="Explore os recursos do Ultimate com cobranças reais permanentemente bloqueadas."
+        actions={
+          <div className="inline-flex h-10 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-800">
+            <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+            Ambiente demo
+          </div>
+        }
+      />
+
+      <section className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
+        <div className="grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="border-b p-4 sm:p-5 lg:border-b-0 lg:border-r">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-50 text-emerald-700">
+              <Crown aria-hidden="true" className="h-5 w-5" />
+            </span>
+            <h2 className="mt-4 text-xl font-bold">
+              Ultimate liberado para avaliação
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+              Esta conta não possui assinatura, renovação ou cobrança. Ela
+              recebe os recursos do Ultimate somente para apresentar e testar
+              o produto com segurança.
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Button asChild>
+                <Link href="/app/demonstracao">
+                  Abrir demonstração
+                  <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/precos">Ver planos comerciais</Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-5">
+            <h2 className="text-sm font-semibold">Recursos disponíveis</h2>
+            <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {definition.features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-start gap-2 text-sm leading-6"
+                >
+                  <Check
+                    aria-hidden="true"
+                    className="mt-1 h-4 w-4 shrink-0 text-emerald-600"
+                  />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
     </PageContainer>
   );
 }

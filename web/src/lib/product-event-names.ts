@@ -51,6 +51,8 @@ export const PRODUCT_EVENT_NAMES = [
   "demo_kit_restored",
   "demo_center_opened",
   "demo_step_opened",
+  "activation_guide_expanded",
+  "activation_next_step_opened",
   "help_center_opened",
   "help_topic_opened",
   "help_search_used",
