@@ -712,6 +712,34 @@ async function ensureDemoArchitectureWorkspace(
     }
   }
 
+  if (briefingId && revisionId && briefingStatus === "reviewed") {
+    const { data: activeRevision, error: activeRevisionError } = await supabase
+      .from("project_briefing_revisions")
+      .select("answers")
+      .eq("id", revisionId)
+      .eq("briefing_id", briefingId)
+      .single();
+    if (activeRevisionError) throw activeRevisionError;
+
+    if (!demoJsonEquals(activeRevision.answers, answers)) {
+      const { data: reopened, error: reopenError } = await supabase.rpc(
+        "reopen_project_briefing",
+        {
+          p_briefing_id: briefingId,
+          p_reopen_note:
+            "Cenário oficial atualizado para demonstração comercial.",
+        },
+      );
+      const reopenedRevision = reopened?.[0];
+      if (reopenError || !reopenedRevision) {
+        throw reopenError ?? new Error("Revisão demo não reaberta.");
+      }
+
+      revisionId = reopenedRevision.revision_id;
+      briefingStatus = "shared";
+    }
+  }
+
   if (briefingId && revisionId && briefingStatus !== "reviewed") {
     if (briefingStatus === "draft") {
       const { error: shareError } = await supabase.rpc(
@@ -764,6 +792,30 @@ async function ensureDemoArchitectureWorkspace(
     template,
     answers,
   });
+}
+
+function demoJsonEquals(left: unknown, right: unknown) {
+  return (
+    JSON.stringify(canonicalizeDemoJson(left)) ===
+    JSON.stringify(canonicalizeDemoJson(right))
+  );
+}
+
+function canonicalizeDemoJson(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalizeDemoJson);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nestedValue]) => [
+          key,
+          canonicalizeDemoJson(nestedValue),
+        ]),
+    );
+  }
+  return value;
 }
 
 function buildDemoBriefingAnswers(
