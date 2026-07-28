@@ -3,12 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import type { PaymentProvider, PixKeyType } from "@/lib/supabase/types";
 import type { BusinessSegment } from "@/lib/business-segment";
 import type { AppPlan } from "@/lib/plans";
+import type { WorkspaceMode } from "@/lib/workspace-mode";
 
 export interface CompanyFull {
   id: string;
   name: string;
   plan: AppPlan;
   business_segment: BusinessSegment;
+  workspace_mode: WorkspaceMode;
   legal_name: string | null;
   cnpj: string | null;
   phone: string | null;
@@ -32,7 +34,7 @@ export const getActiveCompanyFull = cache(
     const { data, error } = await supabase
       .from("companies")
       .select(
-        "id, name, plan, business_segment, legal_name, cnpj, phone, email, logo_url, address, city, state, zip_code, payment_provider, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
+        "id, name, plan, business_segment, workspace_mode, legal_name, cnpj, phone, email, logo_url, address, city, state, zip_code, payment_provider, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
       )
       .limit(1)
       .maybeSingle();

@@ -287,6 +287,7 @@ export type Database = {
           saas_pending_plan: string | null
           state: string | null
           updated_at: string
+          workspace_mode: string
           zip_code: string | null
         }
         Insert: {
@@ -318,6 +319,7 @@ export type Database = {
           saas_pending_plan?: string | null
           state?: string | null
           updated_at?: string
+          workspace_mode?: string
           zip_code?: string | null
         }
         Update: {
@@ -349,6 +351,7 @@ export type Database = {
           saas_pending_plan?: string | null
           state?: string | null
           updated_at?: string
+          workspace_mode?: string
           zip_code?: string | null
         }
         Relationships: []
