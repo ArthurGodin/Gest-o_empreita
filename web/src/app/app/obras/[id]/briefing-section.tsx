@@ -43,6 +43,7 @@ import {
 import type { BusinessSegment } from "@/lib/business-segment";
 import type { AppPlan } from "@/lib/plans";
 import { trackProductEvent } from "@/lib/product-analytics";
+import { formatDateTimeBR } from "@/lib/utils";
 import type { ProjectBriefing } from "@/lib/queries/briefings";
 import type { ProjectSpace } from "@/lib/queries/project-spaces";
 import {
@@ -1062,8 +1063,8 @@ function suggestionKey(space: SuggestedProjectSpace) {
 }
 
 function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return formatDateTimeBR(value, {
     dateStyle: "short",
     timeStyle: "short",
-  }).format(new Date(value));
+  });
 }

@@ -22,6 +22,7 @@ import { MarkChargePaidButton } from "./mark-charge-paid-button";
 interface BillingSectionProps {
   charges: BillingCharge[];
   businessSegment: BusinessSegment;
+  isDemoWorkspace: boolean;
   projectStatus: ProjectStatus;
   budgetCents: number | null;
   deliveryApprovedAt: string | null;
@@ -70,7 +71,7 @@ type NextActionTone = "success" | "warning" | "danger" | "info" | "neutral";
 
 interface BillingNextAction {
   tone: NextActionTone;
-  icon: "paid" | "warning" | "clock";
+  icon: "paid" | "warning" | "clock" | "protected";
   kicker: string;
   title: string;
   description: string;
@@ -92,6 +93,7 @@ const NEXT_ACTION_TONE: Record<NextActionTone, string> = {
 export function BillingSection({
   charges,
   businessSegment,
+  isDemoWorkspace,
   projectStatus,
   budgetCents,
   deliveryApprovedAt,
@@ -122,14 +124,16 @@ export function BillingSection({
     totalCents > 0
       ? Math.min(100, Math.round((receivedCents / totalCents) * 100))
       : 0;
-  const nextAction = buildNextAction({
-    ordered,
-    projectStatus,
-    deliveryApprovedAt,
-    receivedCents,
-    pendingCents,
-    professional,
-  });
+  const nextAction = isDemoWorkspace
+    ? buildDemoNextAction(professional)
+    : buildNextAction({
+        ordered,
+        projectStatus,
+        deliveryApprovedAt,
+        receivedCents,
+        pendingCents,
+        professional,
+      });
   const entryCharge = ordered.find((charge) => charge.kind === "entrada") ?? null;
 
   return (
@@ -147,19 +151,20 @@ export function BillingSection({
             Entrada e saldo {professional ? "do projeto" : "da obra"}
           </h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Gere o Pix, acompanhe o que está pendente e marque como recebido
-            somente depois de conferir o pagamento.
+            {isDemoWorkspace
+              ? "Explore o fluxo financeiro com valores fictícios. Nenhuma cobrança real pode ser criada neste ambiente."
+              : "Gere o Pix, acompanhe o que está pendente e marque como recebido somente depois de conferir o pagamento."}
           </p>
         </div>
         <div className="rounded-md border bg-muted/20 px-3 py-2 text-left text-sm sm:text-right">
           <div className="text-xs text-muted-foreground">
-            Total contratado
+            {isDemoWorkspace ? "Total simulado" : "Total contratado"}
           </div>
           <strong className="tabular-nums">{formatBRL(totalCents / 100)}</strong>
         </div>
       </div>
 
-      {conversionBillingAttention ? (
+      {conversionBillingAttention && !isDemoWorkspace ? (
         <ConversionBillingNotice
           entryCharge={entryCharge}
           professional={professional}
@@ -220,6 +225,7 @@ export function BillingSection({
               key={charge.id}
               charge={charge}
               deliveryApprovedAt={deliveryApprovedAt}
+              isDemoWorkspace={isDemoWorkspace}
               professional={professional}
             />
           ))}
@@ -341,13 +347,22 @@ function NextActionPanel({ action }: { action: BillingNextAction }) {
 function ChargePanel({
   charge,
   deliveryApprovedAt,
+  isDemoWorkspace,
   professional,
 }: {
   charge: BillingCharge;
   deliveryApprovedAt: string | null;
+  isDemoWorkspace: boolean;
   professional: boolean;
 }) {
-  const copy = STATUS_COPY[charge.status];
+  const copy = isDemoWorkspace
+    ? {
+        label: "Simulação",
+        tone:
+          "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100",
+        icon: "protected" as const,
+      }
+    : STATUS_COPY[charge.status];
   const title = charge.kind === "entrada" ? "Entrada" : "Saldo";
   const canGenerate =
     charge.status === "draft" ||
@@ -362,11 +377,9 @@ function ChargePanel({
     !!charge.pix_qr_code;
   const isSaldoBlocked =
     charge.kind === "saldo" && charge.status === "draft" && !deliveryApprovedAt;
-  const actionHint = chargeActionHint(
-    charge,
-    deliveryApprovedAt,
-    professional,
-  );
+  const actionHint = isDemoWorkspace
+    ? "Parcela fictícia para demonstrar o acompanhamento financeiro. Nenhum Pix, boleto ou link de pagamento será gerado."
+    : chargeActionHint(charge, deliveryApprovedAt, professional);
 
   return (
     <div className="rounded-lg border bg-background p-4">
@@ -416,7 +429,7 @@ function ChargePanel({
         ) : null}
       </dl>
 
-      {charge.pix_qr_code ? (
+      {!isDemoWorkspace && charge.pix_qr_code ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -468,43 +481,57 @@ function ChargePanel({
         </div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {canGenerate ? (
-          <GenerateChargeButton
-            chargeId={charge.id}
-            label={
-              charge.kind === "saldo" ? "Gerar Pix do saldo" : "Gerar Pix da entrada"
-            }
-            className="h-11 w-full sm:h-9 sm:w-auto"
-          />
-        ) : null}
-        {charge.invoice_url ? (
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="h-11 w-full sm:h-9 sm:w-auto"
-          >
-            <a
-              href={charge.invoice_url}
-              target="_blank"
-              rel="noopener noreferrer"
+      {!isDemoWorkspace ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {canGenerate ? (
+            <GenerateChargeButton
+              chargeId={charge.id}
+              label={
+                charge.kind === "saldo" ? "Gerar Pix do saldo" : "Gerar Pix da entrada"
+              }
+              className="h-11 w-full sm:h-9 sm:w-auto"
+            />
+          ) : null}
+          {charge.invoice_url ? (
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-11 w-full sm:h-9 sm:w-auto"
             >
-              Abrir link de cobrança
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </Button>
-        ) : null}
-        {canMarkManualPaid ? (
-          <MarkChargePaidButton
-            chargeId={charge.id}
-            amountCents={charge.amount_cents}
-            className="h-11 w-full sm:h-9 sm:w-auto"
-          />
-        ) : null}
-      </div>
+              <a
+                href={charge.invoice_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir link de cobrança
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          ) : null}
+          {canMarkManualPaid ? (
+            <MarkChargePaidButton
+              chargeId={charge.id}
+              amountCents={charge.amount_cents}
+              className="h-11 w-full sm:h-9 sm:w-auto"
+            />
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function buildDemoNextAction(professional: boolean): BillingNextAction {
+  return {
+    tone: "success",
+    icon: "protected",
+    kicker: "Demonstração protegida",
+    title: "Financeiro disponível para avaliação",
+    description: `Os valores deste ${
+      professional ? "projeto" : "obra"
+    } são fictícios. Você pode conhecer o fluxo sem gerar Pix, boleto ou cobrança real.`,
+  };
 }
 
 function buildNextAction({
@@ -680,7 +707,7 @@ function StatusIcon({
   icon,
   className,
 }: {
-  icon: "paid" | "warning" | "clock";
+  icon: "paid" | "warning" | "clock" | "protected";
   className?: string;
 }) {
   if (icon === "paid") {
@@ -688,6 +715,9 @@ function StatusIcon({
   }
   if (icon === "clock") {
     return <Clock3 className={cn("h-3.5 w-3.5", className)} />;
+  }
+  if (icon === "protected") {
+    return <ShieldCheck className={cn("h-3.5 w-3.5", className)} />;
   }
   return <AlertTriangle className={cn("h-3.5 w-3.5", className)} />;
 }

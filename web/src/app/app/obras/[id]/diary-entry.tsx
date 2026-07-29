@@ -4,13 +4,12 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, MoreVertical, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDateBR } from "@/lib/utils";
+import { formatDateBR, formatDateTimeBR } from "@/lib/utils";
 import type { DiaryEntry } from "@/lib/queries/projects";
 import { deleteDiaryEntryAction } from "./actions";
 
 function formatTimeBR(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return formatDateTimeBR(iso, { hour: "2-digit", minute: "2-digit" });
 }
 
 export function DiaryEntryView({ entry }: { entry: DiaryEntry }) {

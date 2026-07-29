@@ -47,6 +47,7 @@ import {
 } from "@/lib/deliverables";
 import type { AppPlan } from "@/lib/plans";
 import { trackProductEvent } from "@/lib/product-analytics";
+import { formatDateTimeBR } from "@/lib/utils";
 import type {
   DeliverableStorageUsage,
   ProjectDeliverable,
@@ -1148,8 +1149,8 @@ function versionOpenUrl(version: ProjectDeliverableVersion) {
 }
 
 function formatActivityDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return formatDateTimeBR(value, {
     dateStyle: "short",
     timeStyle: "short",
-  }).format(new Date(value));
+  });
 }

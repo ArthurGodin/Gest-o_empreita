@@ -88,6 +88,7 @@ export default async function ProjectDetailPage({
       <BillingSection
         charges={project.charges}
         businessSegment={company?.business_segment ?? "construction"}
+        isDemoWorkspace={company?.workspace_mode === "demo"}
         projectStatus={project.status}
         budgetCents={project.budget_cents}
         deliveryApprovedAt={project.delivery_approved_at}
