@@ -26,6 +26,7 @@ export const PRODUCT_EVENT_NAMES = [
   "quote_revision_started",
   "quote_revision_requested",
   "project_created_from_quote",
+  "project_workspace_view_changed",
   "briefing_created",
   "briefing_shared",
   "briefing_public_opened",
