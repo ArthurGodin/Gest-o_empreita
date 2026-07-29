@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { todayBR } from "@/lib/dates";
+import {
+  summarizeProjectCosts,
+  type CostSummary,
+} from "@/lib/project-cost-summary";
 import type {
   ChargeKind,
   ChargeStatus,
@@ -81,13 +85,7 @@ export interface ProjectCost {
   created_at: string;
 }
 
-export interface CostSummary {
-  by_category: Record<CostCategory, number>;
-  total_cents: number;
-  revenue_cents: number | null;
-  margin_cents: number | null;
-  margin_pct: number | null;
-}
+export type { CostSummary } from "@/lib/project-cost-summary";
 
 export interface TimeEntry {
   id: string;
@@ -126,7 +124,7 @@ export interface BillingCharge {
   updated_at: string;
 }
 
-export interface ProjectWithRelations extends ProjectListItem {
+export interface ProjectManagementData {
   stages: ProjectStage[];
   diary: DiaryEntry[];
   diary_total: number;
@@ -137,6 +135,25 @@ export interface ProjectWithRelations extends ProjectListItem {
   charges: BillingCharge[];
   share_token: string | null;
 }
+
+export interface ProjectOverviewCharge {
+  kind: ChargeKind;
+  status: ChargeStatus;
+  amount_cents: number;
+  due_date: string | null;
+}
+
+export interface ProjectOverviewData {
+  stages: ProjectStage[];
+  charges: ProjectOverviewCharge[];
+  cost_summary: CostSummary;
+  diary_total: number;
+  share_token: string | null;
+}
+
+export interface ProjectWithRelations
+  extends ProjectListItem,
+    ProjectManagementData {}
 
 export const getProjects = cache(
   async (options?: { limit?: number }): Promise<ProjectListItem[]> => {
@@ -174,6 +191,166 @@ export const getProject = cache(
 const DIARY_PREVIEW_LIMIT = 5;
 const COST_LIST_LIMIT = 200;
 
+interface ProjectRevenueReference {
+  revenueCents: number | null;
+  shareToken: string | null;
+}
+
+export const getProjectStages = cache(
+  async (projectId: string): Promise<ProjectStage[]> => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("project_stages")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("position", { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as ProjectStage[];
+  },
+);
+
+const getProjectRevenueReference = cache(
+  async (projectId: string): Promise<ProjectRevenueReference> => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("quotes")
+      .select("total_cents,status,share_token,approved_at")
+      .eq("project_id", projectId)
+      .order("approved_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    return {
+      revenueCents:
+        data?.status === "approved" ? data.total_cents ?? null : null,
+      shareToken: data?.share_token ?? null,
+    };
+  },
+);
+
+export const getProjectOverviewData = cache(
+  async (projectId: string): Promise<ProjectOverviewData> => {
+    const supabase = createClient();
+    const [stages, costsResult, chargesResult, diaryCountResult, revenue] =
+      await Promise.all([
+        getProjectStages(projectId),
+        supabase
+          .from("project_costs")
+          .select("category,amount_cents")
+          .eq("project_id", projectId),
+        supabase
+          .from("billing_charges")
+          .select("kind,status,amount_cents,due_date")
+          .eq("project_id", projectId)
+          .order("kind", { ascending: true }),
+        supabase
+          .from("diary_entries")
+          .select("id", { count: "exact", head: true })
+          .eq("project_id", projectId),
+        getProjectRevenueReference(projectId),
+      ]);
+
+    if (costsResult.error) throw costsResult.error;
+    if (chargesResult.error) throw chargesResult.error;
+    if (diaryCountResult.error) throw diaryCountResult.error;
+
+    return {
+      stages,
+      charges: (chargesResult.data ?? []) as ProjectOverviewCharge[],
+      cost_summary: summarizeProjectCosts(
+        costsResult.data ?? [],
+        revenue.revenueCents,
+      ),
+      diary_total: diaryCountResult.count ?? 0,
+      share_token: revenue.shareToken,
+    };
+  },
+);
+
+export const getProjectManagementData = cache(
+  async (projectId: string): Promise<ProjectManagementData> => {
+    const supabase = createClient();
+    const today = todayBR();
+    const [
+      stages,
+      diaryResult,
+      diaryCountResult,
+      costsResult,
+      costSummaryResult,
+      chargesResult,
+      revenue,
+      timeTodayResult,
+      timeHistoryResult,
+    ] = await Promise.all([
+      getProjectStages(projectId),
+      supabase
+        .from("diary_entries")
+        .select("*, photos:diary_photos(*)")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false })
+        .limit(DIARY_PREVIEW_LIMIT),
+      supabase
+        .from("diary_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("project_id", projectId),
+      supabase
+        .from("project_costs")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("incurred_on", { ascending: false })
+        .limit(COST_LIST_LIMIT),
+      supabase
+        .from("project_costs")
+        .select("category,amount_cents")
+        .eq("project_id", projectId),
+      supabase
+        .from("billing_charges")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("kind", { ascending: true }),
+      getProjectRevenueReference(projectId),
+      supabase
+        .from("time_entries")
+        .select("*")
+        .eq("project_id", projectId)
+        .eq("worked_on", today)
+        .order("started_at", { ascending: true }),
+      supabase
+        .from("time_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("project_id", projectId),
+    ]);
+
+    if (diaryResult.error) throw diaryResult.error;
+    if (diaryCountResult.error) throw diaryCountResult.error;
+    if (costsResult.error) throw costsResult.error;
+    if (costSummaryResult.error) throw costSummaryResult.error;
+    if (chargesResult.error) throw chargesResult.error;
+    if (timeTodayResult.error) throw timeTodayResult.error;
+    if (timeHistoryResult.error) throw timeHistoryResult.error;
+
+    const costs = (costsResult.data ?? []) as ProjectCost[];
+
+    return {
+      stages,
+      diary: (diaryResult.data ?? []) as unknown as DiaryEntry[],
+      diary_total: diaryCountResult.count ?? 0,
+      costs,
+      cost_summary: summarizeProjectCosts(
+        costSummaryResult.data ?? [],
+        revenue.revenueCents,
+      ),
+      time_today: (timeTodayResult.data ?? []) as TimeEntry[],
+      time_history_count: timeHistoryResult.count ?? 0,
+      charges: (chargesResult.data ?? []) as BillingCharge[],
+      share_token: revenue.shareToken,
+    };
+  },
+);
+
 /**
  * Busca o projeto + 6 relações em paralelo. Retorna null se o projeto
  * não pertencer ao tenant ou não existir.
@@ -183,142 +360,13 @@ const COST_LIST_LIMIT = 200;
  */
 export const getProjectWithRelations = cache(
   async (id: string): Promise<ProjectWithRelations | null> => {
-    const supabase = createClient();
-
-    const projectRes = await supabase
-      .from("projects")
-      .select("*, customer:customers(id, name)")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (projectRes.error) throw projectRes.error;
-    if (!projectRes.data) return null;
-
-    const project = projectRes.data as unknown as ProjectListItem;
-    const today = todayBR();
-
-    const [
-      stagesRes,
-      diaryRes,
-      diaryCountRes,
-      costsRes,
-      chargesRes,
-      revenueRes,
-      timeTodayRes,
-      timeHistoryRes,
-    ] = await Promise.all([
-      supabase
-        .from("project_stages")
-        .select("*")
-        .eq("project_id", id)
-        .order("position", { ascending: true }),
-      supabase
-        .from("diary_entries")
-        .select("*, photos:diary_photos(*)")
-        .eq("project_id", id)
-        .order("created_at", { ascending: false })
-        .limit(DIARY_PREVIEW_LIMIT),
-      supabase
-        .from("diary_entries")
-        .select("id", { count: "exact", head: true })
-        .eq("project_id", id),
-      supabase
-        .from("project_costs")
-        .select("*")
-        .eq("project_id", id)
-        .order("incurred_on", { ascending: false })
-        .limit(COST_LIST_LIMIT),
-      supabase
-        .from("billing_charges")
-        .select("*")
-        .eq("project_id", id)
-        .order("kind", { ascending: true }),
-      supabase
-        .from("quotes")
-        .select("total_cents,status,share_token,approved_at")
-        .eq("project_id", id)
-        .order("approved_at", { ascending: false, nullsFirst: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("time_entries")
-        .select("*")
-        .eq("project_id", id)
-        .eq("worked_on", today)
-        .order("started_at", { ascending: true }),
-      supabase
-        .from("time_entries")
-        .select("id", { count: "exact", head: true })
-        .eq("project_id", id),
-    ]);
-
-    if (stagesRes.error) throw stagesRes.error;
-    if (diaryRes.error) throw diaryRes.error;
-    if (diaryCountRes.error) throw diaryCountRes.error;
-    if (costsRes.error) throw costsRes.error;
-    if (chargesRes.error) throw chargesRes.error;
-    if (revenueRes.error) throw revenueRes.error;
-    if (timeTodayRes.error) throw timeTodayRes.error;
-    if (timeHistoryRes.error) throw timeHistoryRes.error;
-
-    const stages = (stagesRes.data ?? []) as ProjectStage[];
-    const diary = (diaryRes.data ?? []) as unknown as DiaryEntry[];
-    const costs = (costsRes.data ?? []) as ProjectCost[];
-    const quoteRow = revenueRes.data as
-      | {
-          total_cents: number | null;
-          status: string | null;
-          share_token: string | null;
-        }
-      | null;
-    // Revenue só conta se quote estiver aprovado (não cancela margem em draft)
-    const revenueCents =
-      quoteRow?.status === "approved" ? quoteRow?.total_cents ?? null : null;
-
-    const costSummary = summarizeCosts(costs, revenueCents);
+    const project = await getProject(id);
+    if (!project) return null;
+    const management = await getProjectManagementData(id);
 
     return {
       ...project,
-      stages,
-      diary,
-      diary_total: diaryCountRes.count ?? 0,
-      costs,
-      cost_summary: costSummary,
-      time_today: (timeTodayRes.data ?? []) as TimeEntry[],
-      time_history_count: timeHistoryRes.count ?? 0,
-      charges: (chargesRes.data ?? []) as BillingCharge[],
-      share_token: quoteRow?.share_token ?? null,
+      ...management,
     };
   },
 );
-
-function summarizeCosts(
-  costs: ProjectCost[],
-  revenueCents: number | null,
-): CostSummary {
-  const byCategory: Record<CostCategory, number> = {
-    material: 0,
-    labor: 0,
-    freight: 0,
-    other: 0,
-  };
-  let total = 0;
-  for (const c of costs) {
-    byCategory[c.category] += c.amount_cents;
-    total += c.amount_cents;
-  }
-
-  const margin = revenueCents == null ? null : revenueCents - total;
-  const marginPct =
-    revenueCents == null || revenueCents === 0
-      ? null
-      : Math.round(((revenueCents - total) / revenueCents) * 10000) / 100;
-
-  return {
-    by_category: byCategory,
-    total_cents: total,
-    revenue_cents: revenueCents,
-    margin_cents: margin,
-    margin_pct: marginPct,
-  };
-}
