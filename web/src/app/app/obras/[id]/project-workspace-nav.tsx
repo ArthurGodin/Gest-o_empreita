@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { requestProtectedFormNavigation } from "@/components/forms/protected-form-navigation";
 import { cn } from "@/lib/utils";
 import type { BusinessSegment } from "@/lib/business-segment";
 import { trackProductEvent } from "@/lib/product-analytics";
@@ -28,6 +29,7 @@ export function ProjectWorkspaceNav({
   const router = useRouter();
   const searchParams = useSearchParams();
   const previousViewRef = useRef(activeView);
+  const focusAfterNavigationRef = useRef(false);
   const currentSearch = searchParams.toString();
 
   const hrefFor = useCallback(
@@ -80,6 +82,8 @@ export function ProjectWorkspaceNav({
   useEffect(() => {
     if (previousViewRef.current === activeView) return;
     previousViewRef.current = activeView;
+    if (!focusAfterNavigationRef.current) return;
+    focusAfterNavigationRef.current = false;
 
     window.requestAnimationFrame(() => {
       document.getElementById("project-workspace-view")?.focus({
@@ -101,8 +105,14 @@ export function ProjectWorkspaceNav({
             value={activeView}
             onChange={(event) => {
               const view = event.target.value as ProjectWorkspaceView;
+              const href = hrefFor(view);
+              if (!requestProtectedFormNavigation(href)) {
+                event.currentTarget.value = activeView;
+                return;
+              }
+              focusAfterNavigationRef.current = true;
               trackViewChange(view, "mobile_select");
-              router.push(hrefFor(view), { scroll: false });
+              router.push(href, { scroll: false });
             }}
             className="h-11 w-full touch-manipulation rounded-md border border-input bg-card px-3 text-base font-medium text-slate-800 outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
           >

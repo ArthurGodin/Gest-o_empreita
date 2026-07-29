@@ -19,6 +19,17 @@ interface ProtectedFormNavigationProps {
   confirmMessage?: string;
 }
 
+const PROTECTED_NAVIGATION_EVENT = "prumo:protected-navigation";
+
+export function requestProtectedFormNavigation(href: string) {
+  return document.dispatchEvent(
+    new CustomEvent(PROTECTED_NAVIGATION_EVENT, {
+      cancelable: true,
+      detail: { href },
+    }),
+  );
+}
+
 export function ProtectedFormNavigation({
   dirty,
   contentLabel = "neste formulário",
@@ -95,14 +106,31 @@ export function ProtectedFormNavigation({
       window.history.forward();
     }
 
+    function onRequestedNavigation(event: Event) {
+      if (bypassRef.current) return;
+      const navigationEvent = event as CustomEvent<{ href?: string }>;
+      if (!navigationEvent.detail?.href) return;
+
+      event.preventDefault();
+      setPendingHref(navigationEvent.detail.href);
+    }
+
     window.addEventListener("beforeunload", onBeforeUnload);
     window.addEventListener("popstate", onPopState);
     document.addEventListener("click", onDocumentClick, true);
+    document.addEventListener(
+      PROTECTED_NAVIGATION_EVENT,
+      onRequestedNavigation,
+    );
 
     return () => {
       window.removeEventListener("beforeunload", onBeforeUnload);
       window.removeEventListener("popstate", onPopState);
       document.removeEventListener("click", onDocumentClick, true);
+      document.removeEventListener(
+        PROTECTED_NAVIGATION_EVENT,
+        onRequestedNavigation,
+      );
     };
   }, [dirty, nativeConfirmMessage]);
 

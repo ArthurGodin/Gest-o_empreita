@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Loader2, X } from "lucide-react";
+import { ProtectedFormNavigation } from "@/components/forms/protected-form-navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createDiaryEntryAction } from "./actions";
@@ -29,28 +30,44 @@ const STORAGE_KEY = (id: string) => `diary-draft-${id}`;
 
 export function DiaryComposer({ projectId }: DiaryComposerProps) {
   const router = useRouter();
-  const [body, setBody] = useState(() => {
-    try {
-      return sessionStorage.getItem(STORAGE_KEY(projectId)) ?? "";
-    } catch {
-      return "";
-    }
-  });
+  const [body, setBody] = useState("");
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [posting, startPost] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photosRef = useRef<PendingPhoto[]>([]);
 
+  useEffect(() => {
+    const restoreTimer = window.setTimeout(() => {
+      try {
+        const storedDraft =
+          sessionStorage.getItem(STORAGE_KEY(projectId)) ?? "";
+        if (storedDraft) {
+          setBody(storedDraft);
+          setDraftRestored(true);
+        }
+      } catch {
+        // sessionStorage may be unavailable in restricted browsers.
+      } finally {
+        setDraftReady(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(restoreTimer);
+  }, [projectId]);
+
   // Persiste rascunho do body
   useEffect(() => {
+    if (!draftReady) return;
     try {
       if (body) sessionStorage.setItem(STORAGE_KEY(projectId), body);
       else sessionStorage.removeItem(STORAGE_KEY(projectId));
     } catch {
       // ignore
     }
-  }, [body, projectId]);
+  }, [body, draftReady, projectId]);
 
   useEffect(() => {
     photosRef.current = photos;
@@ -231,14 +248,27 @@ export function DiaryComposer({ projectId }: DiaryComposerProps) {
 
   return (
     <div className="space-y-3 rounded-lg border bg-muted/10 p-3">
+      <ProtectedFormNavigation
+        dirty={photos.length > 0}
+        contentLabel="nas fotos deste registro"
+        confirmMessage="As fotos deste registro ainda não foram publicadas. Deseja sair e descartá-las?"
+      />
       <Textarea
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => {
+          setBody(e.target.value);
+          setDraftRestored(false);
+        }}
         placeholder="O que rolou hoje? (opcional)"
         rows={2}
         maxLength={2000}
         disabled={posting}
       />
+      {draftRestored && body ? (
+        <p role="status" className="text-xs text-muted-foreground">
+          Rascunho de texto restaurado neste aparelho.
+        </p>
+      ) : null}
 
       {photos.length > 0 && (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
