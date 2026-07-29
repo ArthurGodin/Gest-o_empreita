@@ -108,6 +108,7 @@ async function loadQuoteByToken(token: string) {
       id, company_id, project_id, customer_id, status, share_token, valid_until, sent_at,
       title, total_cents, notification_sent_at,
       number,
+      company:companies(workspace_mode),
       customer:customers(id, name, document, phone, email)
       `,
     )
@@ -128,6 +129,9 @@ async function loadQuoteByToken(token: string) {
     number: string;
     total_cents: number;
     notification_sent_at: string | null;
+    company: {
+      workspace_mode: string | null;
+    } | null;
     customer: {
       id: string;
       name: string;
@@ -539,6 +543,13 @@ export async function approveDeliveryAction(input: {
   }
   if (!quote.customer) {
     return { ok: false, error: "Cliente não encontrado." };
+  }
+  if (quote.company?.workspace_mode === "demo") {
+    return {
+      ok: false,
+      error:
+        "Este é um ambiente de demonstração protegido. Nenhuma cobrança real será liberada.",
+    };
   }
 
   const admin = createAdminClient();

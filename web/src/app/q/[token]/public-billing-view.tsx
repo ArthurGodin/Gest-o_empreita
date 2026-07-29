@@ -38,6 +38,7 @@ interface PublicBillingViewProps {
   shareToken: string;
   businessSegment: BusinessSegment;
   paymentInstructions?: string | null;
+  isDemoWorkspace: boolean;
 }
 
 const PAID = new Set(["received", "confirmed"]);
@@ -51,6 +52,7 @@ export function PublicBillingView({
   shareToken,
   businessSegment,
   paymentInstructions,
+  isDemoWorkspace,
 }: PublicBillingViewProps) {
   const professional = isProfessionalSegment(businessSegment);
   const ordered = [...charges].sort((a, b) => {
@@ -59,6 +61,7 @@ export function PublicBillingView({
   });
   const saldo = ordered.find((charge) => charge.kind === "saldo") ?? null;
   const shouldApproveDelivery =
+    !isDemoWorkspace &&
     projectStatus === "completed" &&
     !deliveryApprovedAt &&
     !hasPendingDeliverables &&
@@ -84,14 +87,23 @@ export function PublicBillingView({
     totalCents > 0
       ? Math.min(100, Math.round((paidCents / totalCents) * 100))
       : 0;
-  const nextStep = publicNextStep({
-    ordered,
-    shouldApproveDelivery,
-    deliveryApprovedAt,
-    paidCents,
-    pendingCents,
-    professional,
-  });
+  const nextStep = isDemoWorkspace
+    ? {
+        icon: "protected" as const,
+        title: "Demonstração protegida",
+        description:
+          "Estes valores são fictícios. Nenhum Pix, boleto ou cobrança real será gerado neste ambiente.",
+        tone:
+          "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-100",
+      }
+    : publicNextStep({
+        ordered,
+        shouldApproveDelivery,
+        deliveryApprovedAt,
+        paidCents,
+        pendingCents,
+        professional,
+      });
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -105,9 +117,9 @@ export function PublicBillingView({
               Pagamentos {professional ? "do projeto" : "da obra"}
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Veja a entrada, o saldo e o próximo passo de pagamento sem
-              precisar fazer login. Depois do pagamento, esta tela mostra o
-              status atualizado assim que a confirmação chega ao sistema.
+              {isDemoWorkspace
+                ? "Veja como entrada, saldo e confirmação funcionam usando somente dados de demonstração."
+                : "Veja a entrada, o saldo e o próximo passo de pagamento sem precisar fazer login. Depois do pagamento, esta tela mostra o status atualizado assim que a confirmação chega ao sistema."}
             </p>
           </div>
         </div>
@@ -138,7 +150,9 @@ export function PublicBillingView({
 
         <div className={cn("mt-4 rounded-lg border px-4 py-3", nextStep.tone)}>
           <div className="flex items-start gap-3">
-            {nextStep.icon === "paid" ? (
+            {nextStep.icon === "protected" ? (
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+            ) : nextStep.icon === "paid" ? (
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
             ) : nextStep.icon === "warning" ? (
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -167,7 +181,7 @@ export function PublicBillingView({
           </div>
         ) : null}
 
-        {paymentInstructions ? (
+        {paymentInstructions && !isDemoWorkspace ? (
           <div className="mt-4 rounded-lg border bg-muted/20 px-4 py-3 text-sm leading-6">
               <strong className="block text-foreground">
               Mensagem da equipe responsável
@@ -224,6 +238,7 @@ export function PublicBillingView({
               charge={charge}
               deliveryApprovedAt={deliveryApprovedAt}
               professional={professional}
+              isDemoWorkspace={isDemoWorkspace}
             />
           ))}
         </div>
@@ -317,16 +332,20 @@ function PublicChargeCard({
   charge,
   deliveryApprovedAt,
   professional,
+  isDemoWorkspace,
 }: {
   charge: PublicBillingCharge;
   deliveryApprovedAt: string | null;
   professional: boolean;
+  isDemoWorkspace: boolean;
 }) {
   const paid = PAID.has(charge.status);
   const title = charge.kind === "entrada" ? "Entrada" : "Saldo";
   const waitingDelivery =
     charge.kind === "saldo" && charge.status === "draft" && !deliveryApprovedAt;
-  const instruction = publicChargeInstruction(charge, deliveryApprovedAt);
+  const instruction = isDemoWorkspace
+    ? "Valor fictício para apresentar este fluxo. Nenhuma ação de pagamento é necessária."
+    : publicChargeInstruction(charge, deliveryApprovedAt);
 
   return (
     <section className="rounded-lg border bg-card p-4">
@@ -340,14 +359,16 @@ function PublicChargeCard({
           </div>
         </div>
         <span className={statusClass(charge.status)}>
-          {paid ? (
+          {isDemoWorkspace ? (
+            <ShieldCheck className="h-3.5 w-3.5" />
+          ) : paid ? (
             <CheckCircle2 className="h-3.5 w-3.5" />
           ) : charge.status === "overdue" ? (
             <AlertTriangle className="h-3.5 w-3.5" />
           ) : (
             <Clock3 className="h-3.5 w-3.5" />
           )}
-          {statusLabel(charge.status)}
+          {isDemoWorkspace ? "Simulação" : statusLabel(charge.status)}
         </span>
       </div>
 
@@ -372,12 +393,14 @@ function PublicChargeCard({
         {waitingDelivery ? (
           <p className="flex items-start gap-2 rounded-md border bg-muted/20 p-2 text-xs leading-5 text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            Este saldo será liberado depois da confirmação da entrega.
+            {isDemoWorkspace
+              ? "O saldo permanece fictício e protegido nesta demonstração."
+              : "Este saldo será liberado depois da confirmação da entrega."}
           </p>
         ) : null}
       </div>
 
-      {charge.pix_qr_code && !paid ? (
+      {charge.pix_qr_code && !paid && !isDemoWorkspace ? (
         <div className="mt-4 rounded-md border bg-muted/20 p-3">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -430,7 +453,7 @@ function PublicChargeCard({
         </div>
       ) : null}
 
-      {charge.invoice_url && !paid ? (
+      {charge.invoice_url && !paid && !isDemoWorkspace ? (
         <div className="mt-4 space-y-2">
           {charge.payment_provider === "asaas" ? (
             <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-950">

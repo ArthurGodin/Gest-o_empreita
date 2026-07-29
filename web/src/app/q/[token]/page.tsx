@@ -18,6 +18,7 @@ import {
   getBusinessVocabulary,
   type BusinessSegment,
 } from "@/lib/business-segment";
+import { isDemoWorkspace } from "@/lib/workspace-mode";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -49,6 +50,7 @@ interface PublicQuoteData {
     pix_instructions: string | null;
     plan: string | null;
     business_segment: BusinessSegment;
+    workspace_mode: string | null;
   };
   customer: {
     name: string;
@@ -83,7 +85,7 @@ async function loadByToken(token: string): Promise<PublicQuoteData | null> {
       id, number, title, description, status, share_token, project_id, company_id,
       valid_until, sent_at, viewed_at, approved_at, rejected_at, notes,
       total_cents, subtotal_cents,
-      company:companies(name, phone, email, logo_url, city, state, pix_instructions, plan, business_segment),
+      company:companies(name, phone, email, logo_url, city, state, pix_instructions, plan, business_segment, workspace_mode),
       customer:customers(name, city, state),
       items:quote_items(id, position, description, unit, quantity, unit_price_cents, total_cents),
       approvals:quote_approvals(action, signer_name, rejection_reason, created_at)
@@ -403,6 +405,7 @@ export default async function PublicQuotePage({
       briefing={briefing}
       shareToken={quote.share_token}
       nowMs={new Date().getTime()}
+      isDemoWorkspace={isDemoWorkspace(quote.company.workspace_mode)}
     />
   );
 }

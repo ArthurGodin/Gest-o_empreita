@@ -41,6 +41,7 @@ interface PublicToggleProps {
   briefing: PublicProjectBriefing | null;
   shareToken: string;
   nowMs: number;
+  isDemoWorkspace: boolean;
 }
 
 function isPublicView(value: string | null): value is PublicView {
@@ -61,6 +62,7 @@ export function PublicToggle({
   briefing,
   shareToken,
   nowMs,
+  isDemoWorkspace,
 }: PublicToggleProps) {
   const vocabulary = getBusinessVocabulary(
     quote.company.business_segment,
@@ -223,6 +225,7 @@ export function PublicToggle({
             shareToken={shareToken}
             businessSegment={businessSegment}
             paymentInstructions={quote.company?.pix_instructions ?? null}
+            isDemoWorkspace={isDemoWorkspace}
           />
         ) : (
           <PublicQuoteView
