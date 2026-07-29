@@ -55,28 +55,34 @@ export function ProjectWorkspaceNav({
   );
 
   useEffect(() => {
-    const target = resolveLegacyProjectWorkspaceHash(
-      window.location.hash,
-      segment,
-    );
-    if (!target) return;
+    function migrateLegacyHash() {
+      const target = resolveLegacyProjectWorkspaceHash(
+        window.location.hash,
+        segment,
+      );
+      if (!target) return;
 
-    if (target.view !== activeView) {
-      router.replace(hrefFor(target.view, target.hash), { scroll: false });
-      return;
-    }
+      if (target.view !== activeView) {
+        router.replace(hrefFor(target.view, target.hash), { scroll: false });
+        return;
+      }
 
-    if (target.hash) {
-      window.requestAnimationFrame(() => {
-        document.getElementById(target.hash!)?.scrollIntoView({
-          behavior: "auto",
-          block: "start",
+      if (target.hash) {
+        window.requestAnimationFrame(() => {
+          document.getElementById(target.hash!)?.scrollIntoView({
+            behavior: "auto",
+            block: "start",
+          });
         });
-      });
-      return;
+        return;
+      }
+
+      window.history.replaceState(null, "", hrefFor(target.view));
     }
 
-    window.history.replaceState(null, "", hrefFor(target.view));
+    migrateLegacyHash();
+    window.addEventListener("hashchange", migrateLegacyHash);
+    return () => window.removeEventListener("hashchange", migrateLegacyHash);
   }, [activeView, hrefFor, router, segment]);
 
   useEffect(() => {

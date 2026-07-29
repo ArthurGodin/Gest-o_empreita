@@ -146,9 +146,7 @@ export interface ProjectOverviewCharge {
 export interface ProjectOverviewData {
   stages: ProjectStage[];
   charges: ProjectOverviewCharge[];
-  cost_summary: CostSummary;
   diary_total: number;
-  share_token: string | null;
 }
 
 export const getProjects = cache(
@@ -230,38 +228,26 @@ export const getProjectRevenueReference = cache(
 export const getProjectOverviewData = cache(
   async (projectId: string): Promise<ProjectOverviewData> => {
     const supabase = createClient();
-    const [stages, costsResult, chargesResult, diaryCountResult, revenue] =
-      await Promise.all([
-        getProjectStages(projectId),
-        supabase
-          .from("project_costs")
-          .select("category,amount_cents")
-          .eq("project_id", projectId),
-        supabase
-          .from("billing_charges")
-          .select("kind,status,amount_cents,due_date")
-          .eq("project_id", projectId)
-          .order("kind", { ascending: true }),
-        supabase
-          .from("diary_entries")
-          .select("id", { count: "exact", head: true })
-          .eq("project_id", projectId),
-        getProjectRevenueReference(projectId),
-      ]);
+    const [stages, chargesResult, diaryCountResult] = await Promise.all([
+      getProjectStages(projectId),
+      supabase
+        .from("billing_charges")
+        .select("kind,status,amount_cents,due_date")
+        .eq("project_id", projectId)
+        .order("kind", { ascending: true }),
+      supabase
+        .from("diary_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("project_id", projectId),
+    ]);
 
-    if (costsResult.error) throw costsResult.error;
     if (chargesResult.error) throw chargesResult.error;
     if (diaryCountResult.error) throw diaryCountResult.error;
 
     return {
       stages,
       charges: (chargesResult.data ?? []) as ProjectOverviewCharge[],
-      cost_summary: summarizeProjectCosts(
-        costsResult.data ?? [],
-        revenue.revenueCents,
-      ),
       diary_total: diaryCountResult.count ?? 0,
-      share_token: revenue.shareToken,
     };
   },
 );
