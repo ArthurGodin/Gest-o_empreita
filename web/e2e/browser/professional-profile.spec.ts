@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { completeCompanyOnboarding } from "../helpers/onboarding";
+import { prepareDemoWorkspace } from "../helpers/demo-workspace";
 
 test("architecture profile creates a proposal from a professional model", async ({
   page,
@@ -89,7 +90,8 @@ test("architecture profile prepares contextual demo data", async ({
       profile: "Arquitetura",
     });
 
-    await page.getByRole("button", { name: "Explorar com exemplo" }).click();
+    await prepareDemoWorkspace(page, email);
+    await page.getByRole("link", { name: "Abrir proposta" }).click();
     await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/);
     await expect(
       page.getByRole("heading", {
@@ -118,6 +120,7 @@ test("architecture profile prepares contextual demo data", async ({
         name: "Demo - Projeto residencial Ana Ribeiro",
       }),
     ).toBeVisible();
+    await page.goto(`${new URL(page.url()).pathname}?view=entregas`);
     await expect(page.getByText("Estudo preliminar v1")).toBeVisible();
   } finally {
     await cleanupAccount(email);

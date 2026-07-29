@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { completeCompanyOnboarding } from "../helpers/onboarding";
+import { prepareDemoWorkspace } from "../helpers/demo-workspace";
 
 test("operational lists remain usable with real data at reference viewports", async ({
   page,
@@ -112,8 +113,7 @@ async function createWorkspaceWithDemoData(
 
   await completeCompanyOnboarding(page, "Prumo QA Operacional");
 
-  await page.getByRole("button", { name: "Explorar com exemplo" }).click();
-  await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/);
+  await prepareDemoWorkspace(page, email);
 }
 
 async function openAtViewport(

@@ -22,10 +22,9 @@ test("versioned deliverables protect the client review and final acceptance flow
 
     await test.step("the team creates and publishes version 1 on mobile", async () => {
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto(`/app/obras/${fixture.projectId}#entregas`);
-      await page
-        .getByRole("combobox", { name: /Ir para uma/ })
-        .selectOption("entregas");
+      await page.goto(
+        `/app/obras/${fixture.projectId}?view=entregas`,
+      );
 
       const section = page.locator("#entregas");
       await expect(
@@ -88,7 +87,9 @@ test("versioned deliverables protect the client review and final acceptance flow
     });
 
     await test.step("the team publishes version 2 with the requested change", async () => {
-      await page.goto(`/app/obras/${fixture.projectId}#entregas`);
+      await page.goto(
+        `/app/obras/${fixture.projectId}?view=entregas`,
+      );
       const section = page.locator("#entregas");
 
       await expect(

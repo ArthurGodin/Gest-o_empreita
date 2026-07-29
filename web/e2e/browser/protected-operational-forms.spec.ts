@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { completeCompanyOnboarding } from "../helpers/onboarding";
+import { prepareDemoWorkspace } from "../helpers/demo-workspace";
 
 test("operational forms protect and persist user input", async ({ page }, testInfo) => {
   test.skip(
@@ -56,7 +57,7 @@ test("operational forms protect and persist user input", async ({ page }, testIn
 
     await test.step("protect and create a project stage", async () => {
       await page.setViewportSize({ width: 375, height: 812 });
-      await page.goto(projectUrl);
+      await page.goto(`${projectUrl}?view=etapas`);
       await page.getByRole("button", { name: "Adicionar etapa" }).first().click();
       await page.getByLabel("Nome da etapa").fill(stageName);
       await page.getByLabel(/Dias previstos/).fill("4");
@@ -76,9 +77,8 @@ test("operational forms protect and persist user input", async ({ page }, testIn
     });
 
     await test.step("validate, protect and save a project cost", async () => {
-      await page
-        .getByLabel("Ir para uma seção da obra")
-        .selectOption("custos");
+      await page.getByLabel("Área do projeto").selectOption("gestao");
+      await page.getByRole("link", { name: "Custos", exact: true }).click();
       await page.getByRole("button", { name: "Lançar gasto" }).click();
 
       const costDialog = page.getByRole("dialog", { name: "Lançar gasto" });
@@ -112,9 +112,7 @@ test("operational forms protect and persist user input", async ({ page }, testIn
     });
 
     await test.step("validate, protect and save a time entry", async () => {
-      await page
-        .getByLabel("Ir para uma seção da obra")
-        .selectOption("equipe");
+      await page.getByRole("link", { name: "Equipe", exact: true }).click();
       await page.getByRole("button", { name: "Bater ponto" }).click();
 
       const timeDialog = page.getByRole("dialog", { name: "Registrar ponto" });
@@ -168,10 +166,7 @@ async function createWorkspaceWithDemoProject(
 
   await completeCompanyOnboarding(page, "Prumo QA Formulários Protegidos");
 
-  await page.getByRole("button", { name: "Explorar com exemplo" }).click();
-  await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/, {
-    timeout: 30_000,
-  });
+  await prepareDemoWorkspace(page, email);
 
   await page.goto("/app/obras");
   const projectLink = page.getByRole("link", { name: /Abrir obra Demo/ });
