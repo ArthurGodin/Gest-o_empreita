@@ -151,10 +151,6 @@ export interface ProjectOverviewData {
   share_token: string | null;
 }
 
-export interface ProjectWithRelations
-  extends ProjectListItem,
-    ProjectManagementData {}
-
 export const getProjects = cache(
   async (options?: { limit?: number }): Promise<ProjectListItem[]> => {
     const supabase = createClient();
@@ -191,7 +187,7 @@ export const getProject = cache(
 const DIARY_PREVIEW_LIMIT = 5;
 const COST_LIST_LIMIT = 200;
 
-interface ProjectRevenueReference {
+export interface ProjectRevenueReference {
   revenueCents: number | null;
   shareToken: string | null;
 }
@@ -210,7 +206,7 @@ export const getProjectStages = cache(
   },
 );
 
-const getProjectRevenueReference = cache(
+export const getProjectRevenueReference = cache(
   async (projectId: string): Promise<ProjectRevenueReference> => {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -347,26 +343,6 @@ export const getProjectManagementData = cache(
       time_history_count: timeHistoryResult.count ?? 0,
       charges: (chargesResult.data ?? []) as BillingCharge[],
       share_token: revenue.shareToken,
-    };
-  },
-);
-
-/**
- * Busca o projeto + 6 relações em paralelo. Retorna null se o projeto
- * não pertencer ao tenant ou não existir.
- *
- * Usado pelo painel da obra (RSC) — uma chamada cobre tudo que a tela
- * precisa renderizar de primeira.
- */
-export const getProjectWithRelations = cache(
-  async (id: string): Promise<ProjectWithRelations | null> => {
-    const project = await getProject(id);
-    if (!project) return null;
-    const management = await getProjectManagementData(id);
-
-    return {
-      ...project,
-      ...management,
     };
   },
 );

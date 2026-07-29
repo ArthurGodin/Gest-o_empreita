@@ -133,7 +133,7 @@ describe("operational pendencies", () => {
       "normal",
       "low",
     ]);
-    expect(result[0]?.href).toBe("/app/obras/project-1#entregas");
+    expect(result[0]?.href).toBe("/app/obras/project-1?view=entregas");
   });
 
   it("sorts deterministically and does not mutate the inputs", () => {

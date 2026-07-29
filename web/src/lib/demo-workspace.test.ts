@@ -32,7 +32,7 @@ describe("demo workspace route", () => {
       "finance",
     ]);
     expect(steps.find((step) => step.id === "briefing")?.href).toBe(
-      "/app/obras/project-id#briefing",
+      "/app/obras/project-id?view=briefing",
     );
     expect(steps.find((step) => step.id === "pdf")?.href).toBe(
       "https://prumo.test/q/safe_token/pdf",

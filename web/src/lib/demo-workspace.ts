@@ -81,14 +81,14 @@ export function buildDemoWorkspaceSteps(
         id: "briefing",
         title: "Briefing",
         detail: "Respostas versionadas e revisão com o cliente.",
-        href: projectUrl ? `${projectUrl}#briefing` : null,
+        href: projectUrl ? `${projectUrl}?view=briefing` : null,
         external: false,
       },
       {
         id: "spaces",
         title: "Ambientes",
         detail: "Programa de necessidades, prioridades e pendências.",
-        href: projectUrl ? `${projectUrl}#ambientes` : null,
+        href: projectUrl ? `${projectUrl}?view=ambientes` : null,
         external: false,
       },
     );
@@ -99,7 +99,7 @@ export function buildDemoWorkspaceSteps(
       id: "deliverables",
       title: "Entregas",
       detail: "Versões, publicação e retorno do cliente.",
-      href: projectUrl ? `${projectUrl}#entregas` : null,
+      href: projectUrl ? `${projectUrl}?view=entregas` : null,
       external: false,
     },
     {

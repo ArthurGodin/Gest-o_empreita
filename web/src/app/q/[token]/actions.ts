@@ -488,7 +488,7 @@ export async function reviewDeliverableAction(input: {
           versionNumber: version.version_number,
           action: review.review_action,
           comment: review.review_comment,
-          detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/obras/${quote.project_id}#entregas`,
+          detailUrl: `${env.NEXT_PUBLIC_APP_URL}/app/obras/${quote.project_id}?view=entregas`,
         }),
       );
     }

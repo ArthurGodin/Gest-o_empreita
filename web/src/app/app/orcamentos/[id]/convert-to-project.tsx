@@ -111,14 +111,16 @@ export function ConvertToProject({
             title: `${projectCreatedLabel}, cobrança pendente`,
             description: result.billing_warning,
           });
-          router.push(`/app/obras/${result.project_id}?cobranca=atencao#cobranca`);
+          router.push(
+            `/app/obras/${result.project_id}?cobranca=atencao&view=gestao#cobranca`,
+          );
         } else {
           toast({
             variant: "success",
             title: projectCreatedLabel,
             description: "Confira o Pix da entrada na seção de cobrança.",
           });
-          router.push(`/app/obras/${result.project_id}#cobranca`);
+          router.push(`/app/obras/${result.project_id}?view=gestao#cobranca`);
         }
         router.refresh();
       } catch (e) {
