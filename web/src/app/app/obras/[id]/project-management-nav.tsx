@@ -21,7 +21,7 @@ export function ProjectManagementNav() {
   return (
     <nav
       aria-label="Seções da gestão"
-      className="-mx-1 overflow-x-auto px-1 pb-1"
+      className="-mx-1 touch-pan-x overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex min-w-max gap-2">
         {MANAGEMENT_SECTIONS.map(({ hash, icon: Icon, label }) => (
