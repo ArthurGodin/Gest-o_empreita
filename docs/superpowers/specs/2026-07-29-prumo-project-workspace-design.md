@@ -87,7 +87,8 @@ A navegação:
 
 O componente atual `ProjectSectionNav` será substituído por
 `ProjectWorkspaceNav`. A responsabilidade do novo componente será somente
-resolver navegação, estado visual e proteção contra saída com rascunho.
+resolver navegação, estado visual e compatibilidade de URLs. A proteção contra
+saída reutiliza o mecanismo compartilhado de formulários protegidos.
 
 ### Resumo
 
@@ -212,7 +213,6 @@ Componente cliente responsável por:
 - seletor mobile;
 - estado ativo;
 - compatibilidade de hashes;
-- confirmação de saída quando existe rascunho não persistível;
 - evento analítico de troca de área.
 
 ### `ProjectWorkspaceOverview`
@@ -258,7 +258,9 @@ publicação bem-sucedida.
 
 Arquivos selecionados não podem ser serializados com segurança. Se houver fotos
 selecionadas e o usuário tentar trocar de área, a navegação exibirá uma
-confirmação acessível antes de descartar a seleção.
+confirmação acessível antes de descartar a seleção. Essa confirmação reutiliza
+`ProtectedFormNavigation` dentro de `DiaryComposer`, cobrindo abas, seletor,
+voltar, avançar e fechamento da página sem duplicar regras de navegação.
 
 Dialogs ativos continuam controlando foco e impedindo interação com a navegação
 ao fundo. Nenhuma troca silenciosa pode apagar dados preenchidos.
