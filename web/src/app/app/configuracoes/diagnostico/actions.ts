@@ -1450,16 +1450,33 @@ async function replaceDemoProjectCosts(
   userId: string,
   scenario: DemoScenario,
 ) {
-  const { error: deleteError } = await supabase
+  const { data: existingCosts, error: existingCostsError } = await supabase
     .from("project_costs")
-    .delete()
+    .select("id,description")
     .eq("project_id", projectId)
-    .eq("company_id", companyId)
-    .in(
-      "description",
-      scenario.projectCosts.map((cost) => cost.description),
-    );
-  if (deleteError) throw deleteError;
+    .eq("company_id", companyId);
+  if (existingCostsError) throw existingCostsError;
+
+  const officialDescriptions = new Set(
+    scenario.projectCosts.map((cost) =>
+      normalizeDemoLabel(cost.description),
+    ),
+  );
+  const officialCostIds = (existingCosts ?? [])
+    .filter((cost) =>
+      officialDescriptions.has(normalizeDemoLabel(cost.description)),
+    )
+    .map((cost) => cost.id);
+
+  if (officialCostIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("project_costs")
+      .delete()
+      .eq("project_id", projectId)
+      .eq("company_id", companyId)
+      .in("id", officialCostIds);
+    if (deleteError) throw deleteError;
+  }
 
   const { error: insertError } = await supabase.from("project_costs").insert(
     scenario.projectCosts.map((cost) => ({
@@ -1480,6 +1497,7 @@ async function ensureDemoDiaryEntry(
   userId: string,
   scenario: DemoScenario,
 ) {
+  const body = `${scenario.projectDescription} Registro demo.`;
   const { data: existing, error: existingError } = await supabase
     .from("diary_entries")
     .select("id")
@@ -1490,13 +1508,26 @@ async function ensureDemoDiaryEntry(
     .maybeSingle();
 
   if (existingError) throw existingError;
-  if (existing?.id) return;
+  if (existing?.id) {
+    const { error: updateError } = await supabase
+      .from("diary_entries")
+      .update({
+        author_id: userId,
+        body,
+        weather: "Sol",
+      })
+      .eq("id", existing.id)
+      .eq("project_id", projectId)
+      .eq("company_id", companyId);
+    if (updateError) throw updateError;
+    return;
+  }
 
   const { error } = await supabase.from("diary_entries").insert({
     project_id: projectId,
     company_id: companyId,
     author_id: userId,
-    body: `${scenario.projectDescription} Registro demo.`,
+    body,
     weather: "Sol",
   });
 
