@@ -560,8 +560,10 @@ export function BriefingSection({
                 Histórico e opções
               </span>
               <span className="text-xs font-normal">
-                {briefing.revisionHistory.length} revisão
-                {briefing.revisionHistory.length === 1 ? "" : "ões"}
+                {briefing.revisionHistory.length}{" "}
+                {briefing.revisionHistory.length === 1
+                  ? "revisão"
+                  : "revisões"}
               </span>
             </summary>
             <div className="mt-3 space-y-3">

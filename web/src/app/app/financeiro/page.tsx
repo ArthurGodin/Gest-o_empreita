@@ -5,6 +5,7 @@ import {
   Banknote,
   FileCheck2,
   HardHat,
+  ShieldCheck,
   TrendingUp,
 } from "lucide-react";
 import {
@@ -75,6 +76,7 @@ export default async function FinanceiroPage() {
         .single()
     : { data: null };
   const currentPlan = normalizeAppPlan(companyData?.plan);
+  const isDemoWorkspace = activeCompany?.company.workspace_mode === "demo";
   const marginPct =
     overview.approved_revenue_cents > 0
       ? Math.round(
@@ -86,7 +88,11 @@ export default async function FinanceiroPage() {
     <PageContainer>
       <PageHeader
         title="Financeiro"
-        description="Acompanhe recebimentos, gastos e margem estimada das obras."
+        description={
+          isDemoWorkspace
+            ? "Explore recebimentos, gastos e margem com dados fictícios."
+            : "Acompanhe recebimentos, gastos e margem estimada das obras."
+        }
         actions={
           <div className="flex flex-wrap gap-2">
             <ExportButton currentPlan={currentPlan} />
@@ -100,11 +106,27 @@ export default async function FinanceiroPage() {
         }
       />
 
+      {isDemoWorkspace ? (
+        <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-950">
+          <ShieldCheck
+            aria-hidden="true"
+            className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700"
+          />
+          <div className="space-y-1 text-sm">
+            <p className="font-semibold">Demonstração financeira protegida</p>
+            <p className="leading-6 text-emerald-900/85">
+              Todos os valores são fictícios. Nenhum Pix, boleto ou cobrança
+              real pode ser criado neste ambiente.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <MetricStrip ariaLabel="Resumo financeiro">
         <MetricTile
           className="border-b border-r xl:border-b-0"
           icon={<FileCheck2 className="h-4 w-4" />}
-          label="Recebido Pix"
+          label={isDemoWorkspace ? "Recebido simulado" : "Recebido Pix"}
           value={formatBRL(overview.received_charge_cents / 100)}
           hint="Cobranças recebidas ou confirmadas"
           tone="green"
@@ -112,9 +134,13 @@ export default async function FinanceiroPage() {
         <MetricTile
           className="border-b xl:border-b-0 xl:border-r"
           icon={<Banknote className="h-4 w-4" />}
-          label="A receber"
+          label={isDemoWorkspace ? "Em aberto (simulado)" : "A receber"}
           value={formatBRL(overview.pending_charge_cents / 100)}
-          hint="Pix pendente ou ainda não gerado"
+          hint={
+            isDemoWorkspace
+              ? "Parcelas fictícias em aberto"
+              : "Pix pendente ou ainda não gerado"
+          }
           tone="blue"
         />
         <MetricTile
@@ -133,7 +159,11 @@ export default async function FinanceiroPage() {
           icon={<AlertTriangle className="h-4 w-4" />}
           label="Atrasado"
           value={formatBRL(overview.overdue_charge_cents / 100)}
-          hint="Cobranças vencidas sem baixa"
+          hint={
+            isDemoWorkspace
+              ? "Parcelas fictícias vencidas"
+              : "Cobranças vencidas sem baixa"
+          }
           tone={overview.overdue_charge_cents > 0 ? "red" : "neutral"}
         />
       </MetricStrip>
@@ -156,7 +186,9 @@ export default async function FinanceiroPage() {
 
       <Card className="min-w-0">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-3.5">
-          <CardTitle className="text-base">Cobranças recentes</CardTitle>
+          <CardTitle className="text-base">
+            {isDemoWorkspace ? "Parcelas simuladas" : "Cobranças recentes"}
+          </CardTitle>
           <span className="text-xs text-muted-foreground">
             {overview.charge_rows.length} registro
             {overview.charge_rows.length === 1 ? "" : "s"}
@@ -184,8 +216,16 @@ export default async function FinanceiroPage() {
                       <span className="truncate font-medium">
                         {charge.project_name ?? "Obra sem nome"}
                       </span>
-                      <span className={chargeStatusClass(charge.status)}>
-                        {CHARGE_STATUS_LABEL[charge.status]}
+                      <span
+                        className={
+                          isDemoWorkspace
+                            ? "rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800"
+                            : chargeStatusClass(charge.status)
+                        }
+                      >
+                        {isDemoWorkspace
+                          ? "Simulação"
+                          : CHARGE_STATUS_LABEL[charge.status]}
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
