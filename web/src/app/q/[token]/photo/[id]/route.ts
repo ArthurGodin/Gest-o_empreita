@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { signedDiaryPhotoUrl } from "@/lib/supabase/storage";
-import { tokensMatch } from "@/lib/quote-token";
+import { isShareTokenUrlSafe, tokensMatch } from "@/lib/quote-token";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const NOT_FOUND = () => new NextResponse("not found", { status: 404 });
 
 export async function GET(
   _request: Request,
@@ -12,44 +14,57 @@ export async function GET(
 ) {
   const { token, id } = await params;
   if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
-    return new NextResponse("not found", { status: 404 });
+    return NOT_FOUND();
   }
-  if (!token || token.length < 32) {
-    return new NextResponse("not found", { status: 404 });
-  }
-
-  const admin = createAdminClient();
-
-  const { data: photo } = await admin
-    .from("diary_photos")
-    .select("storage_path, project_id")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (!photo) {
-    return new NextResponse("not found", { status: 404 });
+  if (!isShareTokenUrlSafe(token)) {
+    return NOT_FOUND();
   }
 
-  // Valida que existe quote com esse share_token apontando pro mesmo project
-  const { data: quote } = await admin
-    .from("quotes")
-    .select("share_token")
-    .eq("project_id", photo.project_id)
-    .maybeSingle();
+  try {
+    const admin = createAdminClient();
 
-  if (!quote?.share_token || !tokensMatch(quote.share_token, token)) {
-    return new NextResponse("not found", { status: 404 });
+    const { data: photo, error: photoError } = await admin
+      .from("diary_photos")
+      .select("storage_path, project_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (photoError || !photo?.storage_path || !photo.project_id) {
+      return NOT_FOUND();
+    }
+
+    const { data: quotes, error: quotesError } = await admin
+      .from("quotes")
+      .select("share_token, status")
+      .eq("project_id", photo.project_id)
+      .eq("status", "approved");
+
+    const isAuthorized =
+      !quotesError &&
+      (quotes ?? []).some(
+        (quote) =>
+          quote.status === "approved" &&
+          typeof quote.share_token === "string" &&
+          tokensMatch(quote.share_token, token),
+      );
+    if (!isAuthorized) {
+      return NOT_FOUND();
+    }
+
+    const signed = await signedDiaryPhotoUrl(photo.storage_path, 300);
+    if (!signed.ok) {
+      return NOT_FOUND();
+    }
+
+    return NextResponse.redirect(signed.url, {
+      status: 307,
+      headers: {
+        "Cache-Control": "private, no-store",
+        "Referrer-Policy": "no-referrer",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  } catch {
+    return NOT_FOUND();
   }
-
-  const signed = await signedDiaryPhotoUrl(photo.storage_path, 3600);
-  if (!signed.ok) {
-    return new NextResponse("not found", { status: 404 });
-  }
-
-  return NextResponse.redirect(signed.url, {
-    status: 307,
-    headers: {
-      "Cache-Control": "private, max-age=300",
-    },
-  });
 }
