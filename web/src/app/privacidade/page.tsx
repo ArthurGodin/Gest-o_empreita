@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import {
+  LegalDocumentUpdatedAt,
+  LegalIdentityDisclosure,
+} from "@/components/legal-identity-disclosure";
 import { MarketingConsentSettings } from "@/components/marketing-consent-banner";
 import { SupportContactLink } from "@/components/support-contact-link";
 import { env } from "@/lib/env";
@@ -23,9 +27,7 @@ export default function PrivacyPage() {
         <h1 className="mt-8 text-3xl font-bold tracking-normal">
           Política de Privacidade
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Última atualização: 30/07/2026
-        </p>
+        <LegalDocumentUpdatedAt />
 
         <div className="mt-8 space-y-6 leading-7 text-muted-foreground">
           <section>
@@ -168,6 +170,7 @@ export default function PrivacyPage() {
               da página indica a versão vigente.
             </p>
           </section>
+          <LegalIdentityDisclosure />
         </div>
       </article>
     </main>

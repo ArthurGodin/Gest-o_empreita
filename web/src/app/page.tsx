@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePublicIdentity } from "@/components/public-identity-provider";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
@@ -85,6 +86,7 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
+  const { legalIdentity } = usePublicIdentity();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   return (
     <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#059669]/20 relative">
@@ -634,22 +636,31 @@ export default function LandingPage() {
       </AuroraBackground>
 
       <footer className="border-t border-slate-200 bg-white px-4 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm font-semibold text-slate-400 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
-          <div className="flex gap-6">
-            <Link href="/ajuda" className="transition-colors hover:text-[#059669]">
-              Ajuda
-            </Link>
-            <Link href="/precos" className="transition-colors hover:text-[#059669]">
-              Preços
-            </Link>
-            <Link href="/termos" className="transition-colors hover:text-[#059669]">
-              Termos
-            </Link>
-            <Link href="/privacidade" className="transition-colors hover:text-[#059669]">
-              Privacidade
-            </Link>
+        <div className="mx-auto max-w-6xl text-slate-400">
+          <div className="flex flex-col gap-4 text-sm font-semibold md:flex-row md:items-center md:justify-between">
+            <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link href="/ajuda" className="transition-colors hover:text-[#059669]">
+                Ajuda
+              </Link>
+              <Link href="/precos" className="transition-colors hover:text-[#059669]">
+                Preços
+              </Link>
+              <Link href="/termos" className="transition-colors hover:text-[#059669]">
+                Termos
+              </Link>
+              <Link href="/privacidade" className="transition-colors hover:text-[#059669]">
+                Privacidade
+              </Link>
+            </div>
           </div>
+          {legalIdentity ? (
+            <p className="mt-4 border-t border-slate-100 pt-4 text-xs font-medium leading-5">
+              Operado por {legalIdentity.legalName} ·{" "}
+              {legalIdentity.documentType} {legalIdentity.formattedDocument}
+              <span className="block">{legalIdentity.legalAddress}</span>
+            </p>
+          ) : null}
         </div>
       </footer>
     </main>

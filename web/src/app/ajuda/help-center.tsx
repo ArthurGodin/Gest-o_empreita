@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import { usePublicIdentity } from "@/components/public-identity-provider";
 import { SupportContactLink } from "@/components/support-contact-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,10 +30,10 @@ import {
   type HelpCategoryFilter,
 } from "@/lib/help-center";
 import { trackProductEvent } from "@/lib/product-analytics";
-import { SUPPORT_EMAIL } from "@/lib/support-contact";
 import { cn } from "@/lib/utils";
 
 export function HelpCenter({ initialTopicId }: { initialTopicId: string | null }) {
+  const { supportEmail } = usePublicIdentity();
   const initialTopic = findHelpTopic(initialTopicId);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<HelpCategoryFilter>(
@@ -261,15 +262,22 @@ export function HelpCenter({ initialTopicId }: { initialTopicId: string | null }
           </div>
           <h2 className="mt-3 text-base font-semibold">Ainda precisa de ajuda?</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Escreva o que tentou fazer e o que aconteceu. O canal provisório de
-            suporte é:
+            {supportEmail
+              ? "Escreva o que tentou fazer e o que aconteceu. Nosso canal de suporte é:"
+              : "O canal de suporte por email está em configuração. Enquanto isso, consulte as respostas desta central."}
           </p>
-          <SupportContactLink
-            source="help_center"
-            className="mt-3 block break-all text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {SUPPORT_EMAIL}
-          </SupportContactLink>
+          {supportEmail ? (
+            <SupportContactLink
+              source="help_center"
+              className="mt-3 block break-all text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {supportEmail}
+            </SupportContactLink>
+          ) : (
+            <p className="mt-3 text-sm font-semibold text-muted-foreground">
+              Canal em configuração
+            </p>
+          )}
           <div className="mt-4 flex items-start gap-2 border-t pt-4">
             <ShieldCheck
               aria-hidden="true"

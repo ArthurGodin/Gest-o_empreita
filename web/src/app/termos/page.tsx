@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import {
+  LegalDocumentUpdatedAt,
+  LegalIdentityDisclosure,
+} from "@/components/legal-identity-disclosure";
 import { SupportContactLink } from "@/components/support-contact-link";
 
 export const metadata = {
@@ -21,9 +25,7 @@ export default function TermsPage() {
         <h1 className="mt-8 text-3xl font-bold tracking-normal">
           Termos de Uso
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Última atualização: 13/07/2026
-        </p>
+        <LegalDocumentUpdatedAt />
 
         <div className="mt-8 space-y-6 leading-7 text-muted-foreground">
           <section>
@@ -132,6 +134,7 @@ export default function TermsPage() {
               .
             </p>
           </section>
+          <LegalIdentityDisclosure />
         </div>
       </article>
     </main>

@@ -37,6 +37,26 @@ O CLI solicitará autenticação e, quando necessário, a senha do banco. Não c
 
 - `NEXT_PUBLIC_APP_URL=https://gestao-empreita.vercel.app`
 
+### Identidade jurídica e suporte
+
+- `PRUMO_LEGAL_NAME`
+- `PRUMO_LEGAL_DOCUMENT`
+- `PRUMO_LEGAL_ADDRESS`
+- `SUPPORT_EMAIL`
+- `PRUMO_LEGAL_DOCS_UPDATED_AT` no formato `AAAA-MM-DD`
+
+Esses valores ficam no ambiente server-side e alimentam uma única fonte para
+rodapé, suporte, Termos e Política de Privacidade. O navegador recebe somente a
+identidade que deve ser pública. Se qualquer campo estiver ausente ou inválido,
+o build continua para permitir manutenção, mas o Diagnóstico de produção marca
+o lançamento como bloqueado.
+
+Use dados reais do responsável legal apenas na Vercel e no `.env.local`
+ignorado pelo Git. Não grave CPF, CNPJ, endereço ou email pessoal em código,
+documentação versionada, logs ou testes. Antes de receber clientes pagantes,
+um profissional habilitado deve revisar os Termos e a Política; depois da
+revisão, atualize `PRUMO_LEGAL_DOCS_UPDATED_AT`.
+
 ### Asaas de produção
 
 - `ASAAS_API_KEY`
@@ -99,10 +119,11 @@ O projeto Vercel usa `web` como diretório raiz. Depois da migration e da confer
 
 1. Abrir landing, preços, login, cadastro, termos e privacidade em celular e desktop.
 2. Entrar com uma conta de teste e abrir Início, Orçamentos, Obras, Clientes, Caixa, Configurações e Planos.
-3. Confirmar que a tela de planos mostra o plano atual e que o botão de checkout abre sem erro de banco.
-4. Não concluir uma nova assinatura apenas para testar navegação.
-5. No Asaas, confirmar que webhook e assinatura ativa esperada estão corretos.
-6. Conferir logs da Vercel sem respostas 500 e sem repetição contínua de webhook.
+3. Abrir Configurações > Diagnóstico de produção e confirmar que a identidade jurídica não aparece como bloqueio.
+4. Confirmar que a tela de planos mostra o plano atual e que o botão de checkout abre sem erro de banco.
+5. Não concluir uma nova assinatura apenas para testar navegação.
+6. No Asaas, confirmar que webhook e assinatura ativa esperada estão corretos.
+7. Conferir logs da Vercel sem respostas 500 e sem repetição contínua de webhook.
 
 ## Teste financeiro controlado
 

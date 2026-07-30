@@ -1,7 +1,5 @@
 import { findHelpTopic } from "./help-center";
 
-export const SUPPORT_EMAIL = "arthurgodinho155@gmail.com";
-
 export const SUPPORT_SOURCES = [
   "help_center",
   "help_empty_search",
@@ -28,9 +26,15 @@ export function isSupportSource(value: unknown): value is SupportSource {
   return SUPPORT_SOURCES.includes(value as SupportSource);
 }
 
-export function buildSupportMailto(context: SupportContactContext) {
+export function buildSupportMailto(
+  context: SupportContactContext,
+  supportEmail: string,
+) {
   if (!isSupportSource(context.source)) {
     throw new Error("Unknown support source");
+  }
+  if (!isValidSupportEmail(supportEmail)) {
+    throw new Error("Invalid support email");
   }
 
   const topic = context.topicId ? findHelpTopic(context.topicId) : null;
@@ -55,5 +59,18 @@ export function buildSupportMailto(context: SupportContactContext) {
     .join("\n");
   const params = new URLSearchParams({ subject, body });
 
-  return `mailto:${SUPPORT_EMAIL}?${params.toString()}`;
+  return `mailto:${supportEmail.trim()}?${params.toString()}`;
+}
+
+function isValidSupportEmail(value: string): boolean {
+  const normalized = value.trim();
+  const atIndex = normalized.indexOf("@");
+
+  return (
+    atIndex > 0 &&
+    atIndex === normalized.lastIndexOf("@") &&
+    atIndex < normalized.length - 3 &&
+    normalized.includes(".", atIndex + 2) &&
+    !/\s/.test(normalized)
+  );
 }

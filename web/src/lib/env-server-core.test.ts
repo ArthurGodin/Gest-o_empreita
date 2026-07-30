@@ -59,4 +59,38 @@ describe("parseServerEnv", () => {
     expect(result.fieldErrors).toEqual({});
     expect(result.data.OPERATIONAL_ADMIN_EMAILS).toBe(emails);
   });
+
+  it("valida e normaliza a identidade juridica publica", () => {
+    const result = parseServerEnv({
+      PRUMO_LEGAL_NAME: " Prumo Tecnologia LTDA ",
+      PRUMO_LEGAL_DOCUMENT: "11.222.333/0001-81",
+      PRUMO_LEGAL_ADDRESS: " Rua de Teste, 100, Centro ",
+      SUPPORT_EMAIL: " suporte@example.com ",
+      PRUMO_LEGAL_DOCS_UPDATED_AT: "2026-07-30",
+    });
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.data.PRUMO_LEGAL_NAME).toBe("Prumo Tecnologia LTDA");
+    expect(result.data.PRUMO_LEGAL_ADDRESS).toBe(
+      "Rua de Teste, 100, Centro",
+    );
+    expect(result.data.SUPPORT_EMAIL).toBe("suporte@example.com");
+  });
+
+  it("isola campos juridicos invalidos sem descartar os validos", () => {
+    const result = parseServerEnv({
+      PRUMO_LEGAL_NAME: "Prumo Tecnologia LTDA",
+      PRUMO_LEGAL_DOCUMENT: "documento-invalido",
+      SUPPORT_EMAIL: "email-invalido",
+      PRUMO_LEGAL_DOCS_UPDATED_AT: "2026-02-29",
+    });
+
+    expect(result.data.PRUMO_LEGAL_NAME).toBe("Prumo Tecnologia LTDA");
+    expect(result.data.PRUMO_LEGAL_DOCUMENT).toBeUndefined();
+    expect(result.data.SUPPORT_EMAIL).toBeUndefined();
+    expect(result.data.PRUMO_LEGAL_DOCS_UPDATED_AT).toBeUndefined();
+    expect(result.fieldErrors.PRUMO_LEGAL_DOCUMENT).toBeDefined();
+    expect(result.fieldErrors.SUPPORT_EMAIL).toBeDefined();
+    expect(result.fieldErrors.PRUMO_LEGAL_DOCS_UPDATED_AT).toBeDefined();
+  });
 });

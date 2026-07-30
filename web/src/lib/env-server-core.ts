@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { legalIdentityFieldSchemas } from "./legal-identity";
 
 const emptyStringToUndefined = (value: unknown) =>
   typeof value === "string" && value.trim() === "" ? undefined : value;
@@ -27,6 +28,15 @@ export const serverEnvSchema = z.object({
   META_GRAPH_API_VERSION: stringWithDefault(
     z.string().regex(/^v\d+\.\d+$/),
     "v23.0",
+  ),
+  PRUMO_LEGAL_NAME: optionalString(legalIdentityFieldSchemas.legalName),
+  PRUMO_LEGAL_DOCUMENT: optionalString(
+    legalIdentityFieldSchemas.legalDocument,
+  ),
+  PRUMO_LEGAL_ADDRESS: optionalString(legalIdentityFieldSchemas.legalAddress),
+  SUPPORT_EMAIL: optionalString(legalIdentityFieldSchemas.supportEmail),
+  PRUMO_LEGAL_DOCS_UPDATED_AT: optionalString(
+    legalIdentityFieldSchemas.docsUpdatedAt,
   ),
 });
 
@@ -73,6 +83,13 @@ export function parseServerEnv(input: ServerEnvInput): ServerEnvParseResult {
       ),
       META_TEST_EVENT_CODE: parseField("META_TEST_EVENT_CODE"),
       META_GRAPH_API_VERSION: parseField("META_GRAPH_API_VERSION"),
+      PRUMO_LEGAL_NAME: parseField("PRUMO_LEGAL_NAME"),
+      PRUMO_LEGAL_DOCUMENT: parseField("PRUMO_LEGAL_DOCUMENT"),
+      PRUMO_LEGAL_ADDRESS: parseField("PRUMO_LEGAL_ADDRESS"),
+      SUPPORT_EMAIL: parseField("SUPPORT_EMAIL"),
+      PRUMO_LEGAL_DOCS_UPDATED_AT: parseField(
+        "PRUMO_LEGAL_DOCS_UPDATED_AT",
+      ),
     },
     fieldErrors: parsed.error.flatten().fieldErrors,
   };
