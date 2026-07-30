@@ -24,5 +24,15 @@ describe("clientErrorFor", () => {
       clientErrorFor({ code: "P0001", message: "private database details" }),
     ).toBe("Não foi possível concluir a operação. Tente novamente.");
   });
-});
 
+  it("maps Asaas timeouts to a safe retry message", () => {
+    expect(
+      clientErrorFor({
+        name: "AsaasTimeoutError",
+        message: "private network detail",
+      }),
+    ).toBe(
+      "O Asaas demorou para responder. Aguarde um instante e tente novamente.",
+    );
+  });
+});

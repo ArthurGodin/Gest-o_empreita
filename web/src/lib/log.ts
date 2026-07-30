@@ -90,6 +90,10 @@ export function clientErrorFor(error: LoggableError | unknown): string {
   const e = (error ?? {}) as LoggableError;
   const message = (e.message ?? "").toLowerCase();
 
+  if (e.name === "AsaasTimeoutError") {
+    return "O Asaas demorou para responder. Aguarde um instante e tente novamente.";
+  }
+
   if (e.name === "AsaasConfigError") {
     return "Asaas ainda não está configurado. Preencha a API Key e a URL da API antes de gerar Pix.";
   }
