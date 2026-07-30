@@ -107,7 +107,7 @@ export default async function ProductionDiagnosticsPage() {
         "Pageviews, eventos Vercel e logs estruturados cobrem orçamento, WhatsApp, PDF, aprovação, obra e Pix.",
       status: "ready",
       action:
-        "Depois do deploy, acompanhar pageviews na Vercel e eventos via logs product_event.",
+        "Depois do deploy, acompanhar pageviews e eventos no painel da Vercel.",
       icon: BarChart3,
     },
     {

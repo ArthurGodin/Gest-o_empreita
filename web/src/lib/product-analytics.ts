@@ -37,7 +37,6 @@ export function trackProductEvent(
   }
 
   trackMetaPixelEvent(name, compacted, eventId);
-  sendStructuredEvent(name, compacted, eventId);
 }
 
 function compactProperties(
@@ -50,36 +49,6 @@ function compactProperties(
   }
 
   return compacted;
-}
-
-function sendStructuredEvent(
-  name: ProductEventName,
-  properties: Record<string, string | number | boolean | null>,
-  eventId: string,
-) {
-  const payload = JSON.stringify({
-    name,
-    properties,
-    eventId,
-    path: sanitizePathname(window.location.pathname),
-  });
-
-  if (navigator.sendBeacon) {
-    const sent = navigator.sendBeacon(
-      "/api/product-events",
-      new Blob([payload], { type: "application/json" }),
-    );
-    if (sent) return;
-  }
-
-  void fetch("/api/product-events", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: payload,
-    keepalive: true,
-  }).catch(() => {
-    // Analytics must never interrupt product workflows.
-  });
 }
 
 function trackMetaPixelEvent(
@@ -108,8 +77,4 @@ function makeEventId(name: ProductEventName) {
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   return `${name}-${suffix}`;
-}
-
-function sanitizePathname(pathname: string) {
-  return pathname.replace(/^\/q\/[^/]+/, "/q/[token]");
 }
