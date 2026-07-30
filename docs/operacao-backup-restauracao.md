@@ -51,11 +51,19 @@ O script:
 
 - recusa destinos dentro do repositorio;
 - exporta roles, schema e dados das tabelas do produto;
+- compara os buckets remotos com `ops/storage-buckets.json`;
+- recusa bucket remoto desconhecido ou bucket canonico ausente;
 - baixa os arquivos dos buckets do Storage;
+- inclui a configuracao versionada dos buckets no pacote;
 - cria um pacote cifrado `.zip.age`;
 - grava um checksum `.sha256`;
 - apaga os arquivos temporarios em texto puro ao terminar;
 - nao aceita senha de banco nem chave privada por argumento.
+
+O formato atual e `prumo-supabase-logical-v3`. Ele inclui
+`storage-buckets.json` com visibilidade, limite e MIME types dos buckets.
+Pacotes v2 continuam verificaveis, mas sao identificados como legados porque
+nao preservam essa configuracao.
 
 O pacote registra explicitamente `managed-auth-schema` como excluido. Para uma
 recuperacao do mesmo projeto, confirme tambem o backup gerenciado em
@@ -75,9 +83,8 @@ de Tarefas do Windows. Nao use GitHub Actions para transportar este backup.
 Get-FileHash "E:\PrumoBackups\prumo-supabase-AAAAMMDDTHHMMSSZ.zip.age" -Algorithm SHA256
 ```
 
-3. Uma vez por semana, descriptografe em uma pasta temporaria fora do
-   repositorio e confirme que o ZIP abre e contem `roles.sql`, `schema.sql`,
-   `data.sql`, `manifest.json` e a pasta `storage`.
+3. Uma vez por semana, use a verificacao de conteudo e confirme que o resultado
+   informa `storage_metadata: complete` e a quantidade esperada de buckets.
 4. Apague a copia descriptografada logo apos a verificacao.
 
 O verificador automatizado confere checksum sem a chave privada. Para tambem
@@ -109,30 +116,30 @@ Expand-Archive "E:\PrumoRestore\backup.zip" "E:\PrumoRestore\conteudo"
 $env:PRUMO_RESTORE_DB_URL = "postgresql://..."
 ```
 
-3. Restaure seguindo a ordem oficial:
+3. Vincule o CLI ao projeto descartavel e configure as tres travas. O project
+   ref de restore deve ser diferente do project ref de producao e deve
+   corresponder ao banco informado:
 
 ```powershell
-psql --single-transaction --variable ON_ERROR_STOP=1 `
-  --file "E:\PrumoRestore\conteudo\roles.sql" `
-  --file "E:\PrumoRestore\conteudo\schema.sql" `
-  --command "SET session_replication_role = replica" `
-  --file "E:\PrumoRestore\conteudo\data.sql" `
-  --dbname $env:PRUMO_RESTORE_DB_URL
+supabase link --project-ref "<REF_DESCARTAVEL>"
+$env:PRUMO_RESTORE_CONFIRMATION = "DISPOSABLE_ONLY"
+$env:PRUMO_RESTORE_PROJECT_REF = "<REF_DESCARTAVEL>"
+$env:PRUMO_PRODUCTION_PROJECT_REF = "<REF_PRODUCAO>"
 ```
 
-4. Vincule o CLI ao projeto descartavel e reenvie cada pasta de bucket:
+4. Execute o harness completo. Ele restaura banco, recria/upserta todos os
+   buckets do inventario e envia os objetos encontrados:
 
 ```powershell
-supabase storage cp --linked --experimental --recursive `
-  "E:\PrumoRestore\conteudo\storage\company-logos" ss:///company-logos
-supabase storage cp --linked --experimental --recursive `
-  "E:\PrumoRestore\conteudo\storage\quotes-pdf" ss:///quotes-pdf
-supabase storage cp --linked --experimental --recursive `
-  "E:\PrumoRestore\conteudo\storage\diary-photos" ss:///diary-photos
+.\ops\test-restore-supabase.ps1 `
+  -BundleDirectory "E:\PrumoRestore\conteudo" `
+  -AllowRemoteDisposable `
+  -StorageMode LinkedDisposable
 ```
 
-Pule pastas vazias. Se os buckets nao existirem, crie-os com as mesmas regras
-de acesso antes do upload.
+O harness recusa producao, recusa divergencia entre banco e project ref e
+recusa um CLI vinculado a outro projeto. Para um pacote v2, ele usa o inventario
+canonico atual e registra `legacy_canonical` na evidencia.
 
 5. Valide login de conta ficticia, empresas, clientes, orcamentos, obras,
    cobrancas, um PDF e uma foto do diario. Confirme que RLS continua ativa.
@@ -140,13 +147,15 @@ de acesso antes do upload.
 7. Destrua o projeto de ensaio e apague todo material descriptografado.
 
 Para um bundle ja descriptografado, o harness abaixo aceita banco local por
-padrao e recusa producao. Um destino remoto exige confirmacao e o ref de
-producao para comparacao:
+padrao, restaura o Storage local e recusa producao:
 
 ```powershell
 $env:PRUMO_RESTORE_DB_URL = "postgresql://postgres:postgres@127.0.0.1:54322/restore"
 .\ops\test-restore-supabase.ps1 -BundleDirectory "E:\PrumoRestore\conteudo"
 ```
+
+Use `-StorageMode Skip` apenas para diagnosticar o banco. O resultado sera
+`partial_database_only` e nao conta como ensaio mensal completo.
 
 ## Resposta a incidente
 

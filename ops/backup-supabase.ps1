@@ -32,9 +32,24 @@ $timestamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) "prumo-backup-$timestamp-$([guid]::NewGuid().ToString('N'))"
 $bundleDirectory = Join-Path $temporaryRoot "bundle"
 $storageDirectory = Join-Path $bundleDirectory "storage"
+$bucketInventorySource = Join-Path $repoRoot "ops/storage-buckets.json"
+$bucketInventoryDestination = Join-Path $bundleDirectory "storage-buckets.json"
 $plainArchive = Join-Path $temporaryRoot "prumo-supabase-$timestamp.zip"
 $encryptedArchive = Join-Path $destination "prumo-supabase-$timestamp.zip.age"
 $checksumFile = "$encryptedArchive.sha256"
+
+if (-not (Test-Path -LiteralPath $bucketInventorySource -PathType Leaf)) {
+  throw "Inventario canonico de buckets nao encontrado."
+}
+
+$bucketInventory = Get-Content -Raw -LiteralPath $bucketInventorySource | ConvertFrom-Json
+if ($bucketInventory.version -ne 1 -or @($bucketInventory.buckets).Count -eq 0) {
+  throw "Inventario canonico de buckets invalido."
+}
+$configuredBuckets = @($bucketInventory.buckets | ForEach-Object { [string]$_.id })
+if (@($configuredBuckets | Select-Object -Unique).Count -ne $configuredBuckets.Count) {
+  throw "Inventario canonico contem buckets duplicados."
+}
 
 function Invoke-Supabase {
   param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
@@ -61,10 +76,23 @@ try {
     throw "Nao foi possivel listar os buckets do Supabase Storage."
   }
   $bucketList = $bucketListJson | ConvertFrom-Json
+  $remoteBuckets = @(
+    $bucketList.paths |
+      ForEach-Object { ([string]$_).TrimEnd("/") } |
+      Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+  )
+  $unknownBuckets = @($remoteBuckets | Where-Object { $_ -notin $configuredBuckets })
+  $missingBuckets = @($configuredBuckets | Where-Object { $_ -notin $remoteBuckets })
+  if ($unknownBuckets.Count -gt 0) {
+    throw "Backup recusado: existe bucket remoto sem configuracao no inventario canonico."
+  }
+  if ($missingBuckets.Count -gt 0) {
+    throw "Backup recusado: bucket canonico ausente no projeto remoto."
+  }
 
-  foreach ($bucketPath in $bucketList.paths) {
-    $bucket = $bucketPath.TrimEnd("/")
-    if ([string]::IsNullOrWhiteSpace($bucket)) { continue }
+  Copy-Item -LiteralPath $bucketInventorySource -Destination $bucketInventoryDestination
+
+  foreach ($bucket in $remoteBuckets) {
 
     $objectsJson = & node $supabaseCli storage ls --linked --experimental --recursive "ss:///$bucket" --workdir $repoRoot
     if ($LASTEXITCODE -ne 0) {
@@ -84,7 +112,7 @@ try {
 
   @{
     created_at_utc = (Get-Date).ToUniversalTime().ToString("o")
-    format = "prumo-supabase-logical-v2"
+    format = "prumo-supabase-logical-v3"
     includes = @("roles", "schema", "public-database", "storage-objects")
     excludes = @("managed-auth-schema")
     encrypted_with = "age"

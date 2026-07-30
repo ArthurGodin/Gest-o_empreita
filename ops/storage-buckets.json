@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "buckets": [
+    {
+      "id": "company-logos",
+      "name": "company-logos",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "quotes-pdf",
+      "name": "quotes-pdf",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "diary-photos",
+      "name": "diary-photos",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "sinapi-sources",
+      "name": "sinapi-sources",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "project-deliverables",
+      "name": "project-deliverables",
+      "public": false,
+      "file_size_limit": 15728640,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    }
+  ]
+}
