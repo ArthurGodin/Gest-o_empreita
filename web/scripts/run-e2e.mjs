@@ -223,6 +223,7 @@ try {
     CRON_SECRET: "prumo-e2e-operational-cron-secret-2026-07-17",
     RESEND_API_KEY: "",
     ALERT_EMAIL_TO: "",
+    SUPPORT_EMAIL: "suporte-e2e@prumo.test",
     OPERATIONAL_ADMIN_EMAILS: "health-admin@prumo.test",
     META_CONVERSIONS_ACCESS_TOKEN: "",
   };

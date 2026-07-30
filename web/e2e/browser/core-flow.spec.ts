@@ -152,7 +152,7 @@ test("owner completes the core journey and simulated checkout", async ({
         page.getByRole("heading", { name: /Configura..es/ }),
       ).toBeVisible();
       await testInfo.attach("app-settings", {
-        body: await page.screenshot({ fullPage: true, caret: "initial" }),
+        body: await page.screenshot({ caret: "initial" }),
         contentType: "image/png",
       });
 

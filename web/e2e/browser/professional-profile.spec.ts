@@ -95,7 +95,7 @@ test("architecture profile prepares contextual demo data", async ({
     await expect(page).toHaveURL(/\/app\/orcamentos\/[0-9a-f-]+$/);
     await expect(
       page.getByRole("heading", {
-        name: "Demo - Projeto arquitetonico residencial",
+        name: "Demo - Projeto arquitetônico residencial",
       }),
     ).toBeVisible();
     await expect(

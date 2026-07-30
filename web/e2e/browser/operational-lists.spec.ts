@@ -87,7 +87,9 @@ test("operational lists remain usable with real data at reference viewports", as
         heading: "Financeiro",
       });
 
-      await expect(page.getByText("A receber").first()).toBeVisible();
+      await expect(
+        page.getByText("Em aberto (simulado)").first(),
+      ).toBeVisible();
       await expect(page.locator("aside")).toBeVisible();
       await assertNoHorizontalOverflow(page);
       await attachScreenshot(page, testInfo, "finance-1440x900");
@@ -133,7 +135,7 @@ async function openAtViewport(
   ).toBeVisible();
   await assertNoHorizontalOverflow(page);
   await testInfo.attach(`${options.path}-${options.width}x${options.height}-initial`, {
-    body: await page.screenshot({ fullPage: true, caret: "initial" }),
+    body: await page.screenshot({ caret: "initial" }),
     contentType: "image/png",
   });
 }
@@ -155,7 +157,7 @@ async function attachScreenshot(
   name: string,
 ) {
   await testInfo.attach(name, {
-    body: await page.screenshot({ fullPage: true, caret: "initial" }),
+    body: await page.screenshot({ caret: "initial" }),
     contentType: "image/png",
   });
 }

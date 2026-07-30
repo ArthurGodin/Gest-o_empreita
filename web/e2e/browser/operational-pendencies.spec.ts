@@ -15,23 +15,10 @@ test("objective pendencies stay compact, private and actionable", async ({
   const email = `pendencies-${suffix}@prumo.test`;
   const password = "Prumo-E2E-Pendencies-2026!";
   const browserErrors = collectBrowserErrors(page);
-  const analyticsPayloads: Array<Record<string, unknown>> = [];
+  const outboundRequests: string[] = [];
 
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "sendBeacon", {
-      configurable: true,
-      value: undefined,
-    });
-  });
   page.on("request", (request) => {
-    if (!request.url().includes("/api/product-events")) return;
-    const body = request.postData();
-    if (!body) return;
-    try {
-      analyticsPayloads.push(JSON.parse(body) as Record<string, unknown>);
-    } catch {
-      // The API rejects malformed analytics; this test only inspects valid JSON.
-    }
+    outboundRequests.push(`${request.url()}\n${request.postData() ?? ""}`);
   });
 
   try {
@@ -80,26 +67,21 @@ test("objective pendencies stay compact, private and actionable", async ({
       await assertNoHorizontalOverflow(page);
     });
 
-    await test.step("click analytics contains no operational content", async () => {
+    await test.step("click requests contain no operational content", async () => {
+      outboundRequests.length = 0;
       await page
         .getByTestId("pendency-list")
         .getByRole("link", { name: /Cobrança vencida/ })
         .click();
       await expect(page).toHaveURL(/\/app\/obras\/[0-9a-f-]+/);
 
-      await expect
-        .poll(() =>
-          analyticsPayloads.some((payload) => payload.name === "pendency_clicked"),
-        )
-        .toBe(true);
-      const pendencyEvents = analyticsPayloads.filter((payload) =>
-        String(payload.name).startsWith("pendency_"),
-      );
-      const serialized = JSON.stringify(pendencyEvents);
+      await page.waitForTimeout(250);
+      const serialized = JSON.stringify(outboundRequests);
       expect(serialized).not.toContain("Cliente Pendencias");
       expect(serialized).not.toContain("Obra Pendencias");
       expect(serialized).not.toContain("ORC-PEND");
       expect(serialized).not.toContain("250000");
+      expect(serialized).not.toContain("/api/product-events");
     });
 
     await test.step("desktop center remains dense and readable", async () => {
