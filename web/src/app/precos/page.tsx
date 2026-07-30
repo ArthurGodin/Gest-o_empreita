@@ -30,7 +30,7 @@ export default function PricingPage() {
       <header className="border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
               <HardHat className="h-5 w-5" />
             </span>
             <span className="truncate text-lg">Prumo</span>
@@ -42,7 +42,7 @@ export default function PricingPage() {
                 <span className="hidden min-[360px]:inline">Voltar</span>
               </Link>
             </Button>
-            <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+            <Button asChild size="sm">
               <Link href="/signup">Criar conta</Link>
             </Button>
           </div>

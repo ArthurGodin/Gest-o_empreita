@@ -1,9 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   Building2,
@@ -18,13 +15,10 @@ import {
   Smartphone,
   TrendingUp,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { usePublicIdentity } from "@/components/public-identity-provider";
+import { LandingFaq } from "@/app/landing-faq";
 import { TrackedAnchor } from "@/components/tracked-anchor";
-import { AuroraBackground } from "@/components/ui/aurora-background";
-import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
-
-
+import { Button } from "@/components/ui/button";
+import { legalIdentityState } from "@/lib/env-server";
 
 const workflow = [
   {
@@ -72,37 +66,15 @@ const professionalProfiles = [
   },
 ] as const;
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
-
 export default function LandingPage() {
-  const { legalIdentity } = usePublicIdentity();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  return (
-    <main className="bg-slate-50 text-slate-900 overflow-x-hidden font-sans selection:bg-[#059669]/20 relative">
-      
-      {/* Background Glows e Pattern "SaaS Premium" */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Grid pattern suave */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-60" />
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#059669]/15 blur-[120px]" />
-        <div className="absolute right-0 top-[20%] h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[120px]" />
-      </div>
+  const legalIdentity = legalIdentityState.publicIdentity;
 
+  return (
+    <main className="relative overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-emerald-700/20">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-lg shadow-[#059669]/20">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
               <HardHat className="h-5 w-5" />
             </span>
             <span className="truncate text-lg tracking-tight">Prumo</span>
@@ -114,7 +86,7 @@ export default function LandingPage() {
             <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100 font-medium">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full bg-[#059669] hover:bg-[#047857] shadow-md shadow-[#059669]/20 transition-all hover:shadow-lg hover:shadow-[#059669]/30 font-bold">
+            <Button asChild size="sm" className="rounded-full font-bold shadow-sm hover:bg-emerald-800">
               <TrackedAnchor
                 href="/signup"
                 analyticsEvent="marketing_cta_clicked"
@@ -129,31 +101,26 @@ export default function LandingPage() {
       </header>
 
       <section className="relative z-10 overflow-hidden pb-8 pt-20 sm:pb-12 sm:pt-24">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center"
-        >
-          <motion.div variants={fadeIn} className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm sm:text-sm">
+        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
             Propostas, projetos e financeiro
-          </motion.div>
+          </div>
 
-          <motion.h1 variants={fadeIn} className="max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 sm:text-5xl md:text-6xl">
+          <h1 className="max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 sm:text-5xl md:text-6xl">
             Prumo: proposta aprovada, projeto no controle.
-          </motion.h1>
+          </h1>
 
-          <motion.p variants={fadeIn} className="mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
+          <p className="mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
             Para arquitetura, interiores, engenharia e obras: apresente seu
             trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
-          </motion.p>
+          </p>
 
-          <motion.div variants={fadeIn} className="mt-5 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
+          <div className="mt-5 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="h-11 w-full max-w-[17rem] rounded-full bg-[#059669] px-7 text-base font-bold shadow-lg shadow-[#059669]/20 transition-colors hover:bg-[#047857] sm:h-12 sm:w-auto"
+              className="h-11 w-full max-w-[17rem] rounded-full px-7 text-base font-bold shadow-sm hover:bg-emerald-800 sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/signup"
@@ -168,7 +135,7 @@ export default function LandingPage() {
               asChild
               variant="outline"
               size="lg"
-              className="h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white/90 px-6 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#059669]/50 hover:bg-emerald-50 hover:text-[#047857] sm:h-12 sm:w-auto"
+              className="h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm hover:border-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/precos"
@@ -178,18 +145,18 @@ export default function LandingPage() {
                 Ver planos e preços
               </TrackedAnchor>
             </Button>
-          </motion.div>
+          </div>
 
-          <motion.div variants={fadeIn} className="mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 sm:gap-x-5 sm:text-sm">
+          <div className="mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 sm:gap-x-5 sm:text-sm">
             {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
               <span key={fact} className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-700" />
                 {fact}
               </span>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div variants={fadeIn} className="mt-5 w-full max-w-[15rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/15 sm:max-w-xl sm:p-2">
+          <div className="mt-5 w-full max-w-[22rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 sm:max-w-3xl sm:p-2">
             <Image
               src="/dashboard-mockup.png"
               alt="Painel do Prumo com propostas, projetos e visão financeira"
@@ -200,8 +167,8 @@ export default function LandingPage() {
               className="h-auto w-full rounded-md object-contain"
               draggable={false}
             />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </section>
 
       <section className="relative z-10 border-y border-slate-200 bg-white">
@@ -245,32 +212,23 @@ export default function LandingPage() {
       </section>
 
       {/* SEÇÃO BENTO GRID */}
-      <section className="relative z-10 border-y border-slate-200/50 bg-white backdrop-blur-md shadow-[0_-20px_40px_-20px_rgba(0,0,0,0.05)]">
-        <div className="mx-auto max-w-6xl px-4 py-14 md:py-24">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            viewport={{ once: true }}
-            className="mb-8 text-center md:mb-12"
-          >
+      <section className="relative z-10 border-y border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <div className="mb-8 text-center md:mb-12">
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
               Do primeiro contato ao projeto entregue.
             </h2>
-            <p className="mt-4 text-base font-medium leading-7 text-slate-500 md:text-lg">
+            <p className="mt-4 text-base font-medium leading-7 text-slate-600 md:text-lg">
               Um processo profissional para vender, executar e receber com clareza.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 gap-4 auto-rows-auto md:grid-cols-3 md:gap-5 md:auto-rows-[250px]">
             {/* Bento Item 1 - Grande */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-50 p-4 shadow-sm transition-all duration-300 hover:shadow-xl md:col-span-2 md:row-span-2 md:p-8"
-            >
-              <div className="absolute right-0 top-0 w-64 h-64 bg-[#059669]/10 rounded-full blur-3xl group-hover:bg-[#059669]/20 transition-colors" />
+            <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:row-span-2 md:p-8">
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-[#059669] mb-6 shadow-sm">
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 text-emerald-800">
                     <FileText className="h-6 w-6" />
                   </div>
                   <h3 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Propostas que apresentam bem o seu trabalho.</h3>
@@ -281,11 +239,11 @@ export default function LandingPage() {
                 </div>
                 
                 {/* Mini-UI interativa */}
-                <div className="mt-5 max-w-md rounded-xl border border-slate-200/80 bg-white/90 p-4 shadow-xl backdrop-blur-md transition-transform duration-500 group-hover:-translate-y-0 md:mt-7 md:flex-1 md:translate-y-4">
+                <div className="mt-5 max-w-md rounded-lg border border-slate-200 bg-white p-4 shadow-md md:mt-7 md:flex-1">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gradient-to-br from-[#059669] to-[#10b981] rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md">
-                        GE
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground shadow-sm">
+                        PR
                       </div>
                       <div>
                         <div className="text-sm font-bold text-slate-900">Projeto de interiores</div>
@@ -294,7 +252,7 @@ export default function LandingPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Total</div>
-                      <div className="text-xl font-black text-[#059669]">R$ 14.500</div>
+                      <div className="text-xl font-black text-emerald-800">R$ 14.500</div>
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -307,22 +265,18 @@ export default function LandingPage() {
                       <span className="text-xs font-semibold text-slate-900">R$ 8.000</span>
                     </div>
                   </div>
-                  <div className="mt-5 flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100/50 shadow-sm px-4 py-2.5 rounded-xl w-fit transition-transform hover:scale-105">
+                  <div className="mt-5 flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-emerald-800">
                     <CheckCircle2 className="h-4 w-4" />
                     <span className="text-xs font-extrabold uppercase tracking-wide">Aprovado pelo cliente</span>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Bento Item 2 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-4 pb-0 text-white shadow-xl transition-all duration-300 hover:shadow-2xl md:p-6 md:pb-0"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-800 bg-slate-900 p-4 pb-0 text-white shadow-md md:p-6 md:pb-0">
               <div className="relative z-10">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 mb-4">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-emerald-500/30 bg-emerald-500/20 text-emerald-300">
                   <LineChart className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-bold tracking-tight">Margem na mão</h3>
@@ -332,7 +286,7 @@ export default function LandingPage() {
               </div>
 
               {/* Mini-UI Chart */}
-              <div className="relative z-10 mt-auto bg-slate-800/80 backdrop-blur-xl rounded-t-2xl border border-slate-700/50 border-b-0 p-4 pb-2 translate-y-6 group-hover:translate-y-0 transition-transform duration-500 shadow-2xl">
+              <div className="relative z-10 mt-auto translate-y-6 rounded-t-lg border border-b-0 border-slate-700/50 bg-slate-800 p-4 pb-2 shadow-lg transition-transform group-hover:translate-y-0">
                 <div className="flex justify-between items-end mb-2">
                   <div>
                     <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Lucro Estimado</div>
@@ -351,15 +305,12 @@ export default function LandingPage() {
                   <div className="w-1/6 bg-emerald-400 h-[100%] rounded-t-sm shadow-[0_0_15px_rgba(52,211,153,0.6)]" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Bento Item 3 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-4 pb-0 shadow-sm transition-all duration-300 hover:shadow-xl md:p-6 md:pb-0"
-            >
+            <div className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-200 bg-white p-4 pb-0 shadow-sm transition-shadow hover:shadow-md md:p-6 md:pb-0">
               <div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800">
                   <Smartphone className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Aprovação mobile</h3>
@@ -377,70 +328,61 @@ export default function LandingPage() {
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div className="text-xs font-bold text-slate-900 tracking-tight">Proposta #042</div>
-                    <div className="mt-2 h-6 w-full bg-emerald-500 rounded-lg flex items-center justify-center shadow-md">
+                    <div className="mt-2 flex h-6 w-full items-center justify-center rounded-md bg-emerald-700 shadow-sm">
                       <span className="text-[9px] font-extrabold text-white uppercase tracking-wider">Aprovar</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* SEÇÃO: COMO FUNCIONA (4 passos) */}
-      <section className="relative z-10 bg-slate-50 py-14 md:py-24">
+      <section className="relative z-10 bg-slate-50 py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8 text-center md:mb-14">
+          <div className="mb-8 text-center md:mb-14">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 shadow-sm mb-6">
-              <ArrowRight className="h-4 w-4 text-[#059669]" /> 4 passos para receber
+              <ArrowRight className="h-4 w-4 text-emerald-800" /> 4 passos para receber
             </div>
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
-              Da proposta ao <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">projeto e ao recebimento.</span>
+              Da proposta ao{" "}
+              <span className="text-emerald-800">projeto e ao recebimento.</span>
             </h2>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
             {workflow.map((step, i) => (
-              <motion.div
+              <div
                 key={step.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="group relative rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm md:border-0 md:bg-transparent md:p-0 md:text-center md:shadow-none"
+                className="group relative rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm md:border-0 md:bg-transparent md:p-0 md:text-center md:shadow-none"
               >
                 {/* Connector line */}
                 {i < workflow.length - 1 && (
                   <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-slate-200 to-slate-100" />
                 )}
-                <div className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-slate-100 bg-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:border-[#059669]/30 group-hover:shadow-xl md:mx-auto md:mb-6 md:h-20 md:w-20 md:rounded-3xl">
-                  <span className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-[#059669] text-white text-xs font-black flex items-center justify-center shadow-md">{i + 1}</span>
-                  <step.icon className="h-6 w-6 text-slate-600 transition-colors group-hover:text-[#059669] md:h-8 md:w-8" />
+                <div className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-lg border-2 border-slate-100 bg-white shadow-sm md:mx-auto md:mb-6 md:h-20 md:w-20">
+                  <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-black text-primary-foreground shadow-sm">{i + 1}</span>
+                  <step.icon className="h-6 w-6 text-slate-600 md:h-8 md:w-8" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight">{step.title}</h3>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500 md:mx-auto md:max-w-[220px]">{step.text}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* SEÇÃO: O PRODUTO COMEÇA ONDE DÓI */}
-      <section className="mx-auto max-w-6xl px-4 py-14 md:py-24">
+      <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div className="mb-8 text-center md:mb-14">
-          <HeroHighlight>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: [20, -5, 0] }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
-              className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl md:leading-snug"
-            >
-              O produto começa onde dói: <br />
-              <Highlight className="text-white">venda, execução e dinheiro.</Highlight>
-            </motion.h2>
-          </HeroHighlight>
+          <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl md:leading-snug">
+            O produto começa onde dói:
+            <span className="block text-emerald-800">
+              venda, execução e dinheiro.
+            </span>
+          </h2>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -448,72 +390,57 @@ export default function LandingPage() {
             <Reason
               title="Menos proposta perdida no WhatsApp"
               text="O cliente recebe um link organizado, com PDF e decisão registrada. Você acompanha o que foi enviado sem depender da conversa."
-              icon={<FileText className="h-5 w-5 text-[#059669]" />}
+              icon={<FileText className="h-5 w-5 text-emerald-800" />}
             />
             <Reason
               title="Projeto e execução no mesmo contexto"
               text="Etapas, registros, equipe e custos ficam ligados ao projeto ou à obra, sem misturar informações de clientes diferentes."
-              icon={<HardHat className="h-5 w-5 text-[#059669]" />}
+              icon={<HardHat className="h-5 w-5 text-emerald-800" />}
             />
             <Reason
               title="Cobrança e financeiro organizados"
               text="Use Pix direto com confirmação manual ou Asaas com baixa pelo provedor. Acompanhe entrada, saldo e custos no financeiro."
-              icon={<LineChart className="h-5 w-5 text-[#059669]" />}
+              icon={<LineChart className="h-5 w-5 text-emerald-800" />}
             />
           </div>
 
-          {/* Showcase Flutuante Impactante */}
           <div className="relative h-[300px] w-full perspective-1000 md:h-[500px]">
-            {/* Elemento de fundo: Dashboard */}
-            <motion.div
-              animate={{ y: [-12, 12, -12], rotateX: [2, -2, 2], rotateY: [-2, 2, -2] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-0 right-0 w-[90%] h-[75%] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/80 bg-white"
-            >
+            <div className="absolute right-0 top-0 h-[75%] w-[90%] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
               <div className="h-8 bg-slate-100/80 backdrop-blur-sm border-b border-slate-200 flex items-center px-4 gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                 <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                 <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
               </div>
               <Image src="/dashboard-mockup.png" alt="Painel financeiro do Prumo" width={1024} height={561} sizes="(max-width: 768px) 90vw, 540px" className="w-full h-full object-cover object-left-top select-none pointer-events-none opacity-95" draggable={false} />
-            </motion.div>
+            </div>
 
-            {/* Elemento frontal flutuante: Orçamento */}
-            <motion.div
-              animate={{ y: [15, -15, 15], rotateZ: [-2, 1, -2] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute bottom-4 left-0 w-[65%] h-[80%] rounded-2xl overflow-hidden shadow-[0_30px_80px_-15px_rgba(0,0,0,0.4)] border-2 border-white bg-white"
-            >
+            <div className="absolute bottom-4 left-0 h-[80%] w-[65%] overflow-hidden rounded-lg border-2 border-white bg-white shadow-xl">
                <Image src="/quote-mockup.png" alt="Orçamento público do Prumo" width={923} height={717} sizes="(max-width: 768px) 65vw, 390px" className="w-full h-full object-cover object-top select-none pointer-events-none" draggable={false} />
-            </motion.div>
+            </div>
 
-            {/* Selo de Destaque Flutuante */}
-            <motion.div
-              animate={{ y: [-5, 5, -5], scale: [1, 1.05, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute right-1 top-[58%] flex items-center gap-3 rounded-2xl border border-slate-700/80 bg-slate-900 p-3 text-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] backdrop-blur-xl md:-right-8 md:top-[55%] md:p-4"
-            >
-              <div className="h-10 w-10 bg-emerald-500 rounded-full flex items-center justify-center shadow-inner">
+            <div className="absolute right-1 top-[58%] flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900 p-3 text-white shadow-lg md:-right-8 md:top-[55%] md:p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-700">
                 <CheckCircle2 className="h-5 w-5 text-white" />
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-0.5">Link da proposta</p>
                 <p className="text-sm font-black text-emerald-400">Aprovado online</p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* SEÇÃO: PROVA DO PRODUTO */}
-      <section className="relative z-10 border-y border-slate-200/50 bg-white py-14 md:py-24">
+      <section className="relative z-10 border-y border-slate-200 bg-white py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8 text-center md:mb-12">
+          <div className="mb-8 text-center md:mb-12">
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
-              Um fluxo completo, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#059669] to-[#f47721]">sem promessas vazias.</span>
+              Um fluxo completo,{" "}
+              <span className="text-emerald-800">sem promessas vazias.</span>
             </h2>
-            <p className="mt-4 text-base font-medium leading-7 text-slate-500 md:text-lg">O que você já consegue fazer no Prumo hoje.</p>
-          </motion.div>
+            <p className="mt-4 text-base font-medium leading-7 text-slate-600 md:text-lg">O que você já consegue fazer no Prumo hoje.</p>
+          </div>
 
           <div className="grid gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-4">
             {[
@@ -522,98 +449,29 @@ export default function LandingPage() {
               { title: "Entregas versionadas", text: "Publique arquivos ou links, receba aprovação ou ajustes e preserve o histórico de cada versão." },
               { title: "Financeiro por projeto", text: "Organize entrada, saldo, custos e margem estimada sem misturar trabalhos diferentes." },
             ].map((item, i) => (
-              <motion.div
+              <div
                 key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6"
+                className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
                   {i === 0 ? <FileText className="h-5 w-5" /> : i === 1 ? <HardHat className="h-5 w-5" /> : i === 2 ? <PackageCheck className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
                 </div>
                 <h3 className="font-bold text-slate-950">{item.title}</h3>
                 <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{item.text}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SEÇÃO: FAQ */}
-      <section className="bg-slate-50 py-14 md:py-24">
-        <div className="mx-auto max-w-3xl px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8 text-center md:mb-12">
-            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">Dúvidas frequentes</h2>
-            <p className="mt-4 text-base font-medium leading-7 text-slate-500 md:text-lg">Tudo que você precisa saber antes de começar.</p>
-          </motion.div>
+      <LandingFaq />
 
-          <div className="space-y-3 md:space-y-4">
-            {[
-              { q: "Preciso instalar alguma coisa?", a: "Não. O Prumo funciona 100% no navegador, no celular ou no computador. Basta criar a conta e começar." },
-              { q: "Meu cliente precisa criar conta para aprovar?", a: "Não. Ele recebe um link único e privado, abre no celular, revisa a proposta ou orçamento e registra a decisão." },
-              { q: "Como funciona o Pix?", a: "Você escolhe entre Pix direto na sua chave, com confirmação manual pelo extrato, ou Asaas, com cobrança e baixa pelo provedor. O Prumo organiza entrada e saldo por projeto ou obra." },
-              { q: "E se eu quiser cancelar?", a: "O proprietário cancela na tela de planos. A recorrência é encerrada e a conta volta ao Grátis imediatamente. O cancelamento comum não gera reembolso automático, sem prejuízo dos direitos previstos em lei." },
-              { q: "Tem período de teste?", a: "Não há teste temporário. Existe um Plano Grátis, sem cartão, com até 3 propostas ou orçamentos por mês e 1 projeto ou obra simultânea." },
-              { q: "Para quais profissionais o Prumo serve?", a: "Arquitetura, design de interiores, engenharia e execução de obras. Cada perfil recebe linguagem e modelos iniciais adequados, com itens e etapas editáveis." },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="rounded-2xl border border-slate-200/60 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="flex w-full cursor-pointer select-none items-center justify-between px-4 py-3.5 text-left text-base font-bold text-slate-900 md:px-5 md:py-4"
-                >
-                  {item.q}
-                  <motion.span
-                    animate={{ rotate: openFaq === i ? 45 : 0 }}
-                    className="ml-4 text-slate-400 text-xl font-light shrink-0 origin-center flex items-center justify-center"
-                  >
-                    +
-                  </motion.span>
-                </button>
-                <AnimatePresence initial={false}>
-                  {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                    >
-                      <div className="px-6 pb-5 text-sm text-slate-600 font-medium leading-relaxed -mt-1">
-                        {item.a}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ACETERNITY AURORA BACKGROUND CTA */}
-      <AuroraBackground>
-        <motion.div
-          initial={{ opacity: 0.0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{
-            delay: 0.3,
-            duration: 0.8,
-            ease: "easeInOut",
-          }}
-          className="relative flex max-w-3xl flex-col items-center justify-center gap-5 px-4 text-center md:gap-6"
-        >
-          <h2 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-xl md:text-6xl">
+      <section className="bg-slate-950 px-4 py-14 text-white md:py-20">
+        <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-5 text-center md:gap-6">
+          <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
             Comece pequeno, mas com cara de produto sério.
           </h2>
-          <p className="max-w-2xl py-2 text-base font-medium leading-7 text-slate-200 md:py-4 md:text-xl md:leading-relaxed">
+          <p className="max-w-2xl text-base font-medium leading-7 text-slate-300 md:text-xl md:leading-relaxed">
             Comece com uma proposta clara, receba a decisão do cliente e leve o
             trabalho para um projeto organizado. Cobranças, custos e margem
             continuam no mesmo fluxo.
@@ -621,7 +479,7 @@ export default function LandingPage() {
           <Button
             asChild
             size="lg"
-            className="mt-2 h-14 w-full max-w-[19rem] rounded-full bg-white px-8 text-base font-black text-[#059669] shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all duration-300 hover:scale-110 hover:bg-slate-50 hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] md:mt-4 md:w-auto md:px-10 md:text-lg"
+            className="mt-2 h-12 w-full max-w-[19rem] rounded-full bg-white px-8 text-base font-black text-emerald-800 shadow-sm hover:bg-slate-100 md:mt-4 md:w-auto md:px-10"
           >
             <TrackedAnchor
               href="/signup"
@@ -632,24 +490,24 @@ export default function LandingPage() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </TrackedAnchor>
           </Button>
-        </motion.div>
-      </AuroraBackground>
+        </div>
+      </section>
 
       <footer className="border-t border-slate-200 bg-white px-4 py-8">
-        <div className="mx-auto max-w-6xl text-slate-400">
+        <div className="mx-auto max-w-6xl text-slate-600">
           <div className="flex flex-col gap-4 text-sm font-semibold md:flex-row md:items-center md:justify-between">
             <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <Link href="/ajuda" className="transition-colors hover:text-[#059669]">
+              <Link href="/ajuda" className="transition-colors hover:text-emerald-800">
                 Ajuda
               </Link>
-              <Link href="/precos" className="transition-colors hover:text-[#059669]">
+              <Link href="/precos" className="transition-colors hover:text-emerald-800">
                 Preços
               </Link>
-              <Link href="/termos" className="transition-colors hover:text-[#059669]">
+              <Link href="/termos" className="transition-colors hover:text-emerald-800">
                 Termos
               </Link>
-              <Link href="/privacidade" className="transition-colors hover:text-[#059669]">
+              <Link href="/privacidade" className="transition-colors hover:text-emerald-800">
                 Privacidade
               </Link>
             </div>
@@ -667,22 +525,27 @@ export default function LandingPage() {
   );
 }
 
-function Reason({ title, text, icon }: { title: string; text: string; icon: React.ReactNode }) {
+function Reason({
+  title,
+  text,
+  icon,
+}: {
+  title: string;
+  text: string;
+  icon: ReactNode;
+}) {
   return (
-    <motion.div 
-      variants={fadeIn} 
-      className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/40 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl sm:p-6"
-    >
-      <div className="absolute w-2 bg-gradient-to-b from-[#059669] to-[#10b981] inset-y-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
+      <div className="absolute inset-y-0 left-0 w-1 bg-emerald-700" />
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center border border-orange-100 group-hover:scale-110 transition-transform duration-300">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50">
           {icon}
         </div>
         <div>
-          <h3 className="text-xl font-bold text-slate-900 group-hover:text-[#059669] transition-colors">{title}</h3>
+          <h3 className="text-xl font-bold text-slate-900">{title}</h3>
           <p className="mt-3 leading-relaxed text-slate-600 font-medium">{text}</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

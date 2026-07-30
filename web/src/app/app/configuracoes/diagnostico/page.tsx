@@ -18,9 +18,8 @@ import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
 import { env } from "@/lib/env";
-import { serverEnv } from "@/lib/env-server";
+import { legalIdentityState, serverEnv } from "@/lib/env-server";
 import { whatsappLink } from "@/lib/format";
-import { buildLegalIdentity } from "@/lib/legal-identity";
 import { cn } from "@/lib/utils";
 import { isDemoWorkspace } from "@/lib/workspace-mode";
 import { DemoKitButton } from "./demo-kit-button";
@@ -76,22 +75,14 @@ export default async function ProductionDiagnosticsPage() {
   const metaAdsReady = Boolean(
     env.NEXT_PUBLIC_META_PIXEL_ID && serverEnv.META_CONVERSIONS_ACCESS_TOKEN,
   );
-  const legalIdentity = buildLegalIdentity({
-    legalName: serverEnv.PRUMO_LEGAL_NAME,
-    legalDocument: serverEnv.PRUMO_LEGAL_DOCUMENT,
-    legalAddress: serverEnv.PRUMO_LEGAL_ADDRESS,
-    supportEmail: serverEnv.SUPPORT_EMAIL,
-    docsUpdatedAt: serverEnv.PRUMO_LEGAL_DOCS_UPDATED_AT,
-  });
-
   const items: ReadinessItem[] = [
     {
       title: "Identidade jurídica e suporte",
-      detail: legalIdentity.complete
+      detail: legalIdentityState.complete
         ? "Responsável legal, documento, endereço, suporte e versão dos documentos estão centralizados e válidos."
         : "A identidade pública está ausente ou inválida. O Prumo não deve receber clientes pagantes sem responsável, contato e documentos identificados.",
-      status: legalIdentity.complete ? "ready" : "blocked",
-      action: legalIdentity.complete
+      status: legalIdentityState.complete ? "ready" : "blocked",
+      action: legalIdentityState.complete
         ? "Solicitar revisão humana dos Termos e da Política de Privacidade antes de escalar as vendas."
         : "Configurar PRUMO_LEGAL_NAME, PRUMO_LEGAL_DOCUMENT, PRUMO_LEGAL_ADDRESS, SUPPORT_EMAIL e PRUMO_LEGAL_DOCS_UPDATED_AT na Vercel.",
       icon: ShieldCheck,

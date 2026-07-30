@@ -3,6 +3,7 @@ import {
   parseServerEnv,
   type ServerEnvInput,
 } from "@/lib/env-server-core";
+import { buildLegalIdentity } from "@/lib/legal-identity";
 
 /**
  * Env exclusivamente server-side. Nunca importe em Client Components.
@@ -38,3 +39,10 @@ if (Object.keys(parsed.fieldErrors).length > 0) {
 }
 
 export const serverEnv = parsed.data;
+export const legalIdentityState = buildLegalIdentity({
+  legalName: serverEnv.PRUMO_LEGAL_NAME,
+  legalDocument: serverEnv.PRUMO_LEGAL_DOCUMENT,
+  legalAddress: serverEnv.PRUMO_LEGAL_ADDRESS,
+  supportEmail: serverEnv.SUPPORT_EMAIL,
+  docsUpdatedAt: serverEnv.PRUMO_LEGAL_DOCS_UPDATED_AT,
+});

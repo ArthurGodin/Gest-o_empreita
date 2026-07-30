@@ -41,7 +41,7 @@ export function MobileTopbar({
     <header className="fixed inset-x-0 top-0 z-40 border-b bg-white/95 pt-[env(safe-area-inset-top)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur lg:hidden">
       <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-3">
         <Link href="/app" className="flex min-h-11 min-w-0 items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-white shadow-[0_1px_2px_rgba(15,23,42,0.14)]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_1px_2px_rgba(15,23,42,0.14)]">
             <BrandIcon aria-hidden="true" className="h-4 w-4" />
           </span>
           <span className="min-w-0">

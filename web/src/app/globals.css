@@ -20,7 +20,7 @@
     --input: 214 24% 84%;
 
     /* Verde Prumo. */
-    --primary: 160 94% 30%;
+    --primary: 161 94% 24%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 24% 96%;
@@ -32,7 +32,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 160 94% 30%;
+    --ring: 161 94% 24%;
 
     --commercial: 25 90% 54%;
     --commercial-foreground: 0 0% 100%;
@@ -56,8 +56,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
 
-    --primary: 160 72% 46%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 213 31% 91%;
@@ -68,7 +68,7 @@
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 160 72% 46%;
+    --ring: 160 84% 39%;
 
     --commercial: 25 90% 58%;
     --commercial-foreground: 222.2 47.4% 11.2%;

@@ -6,21 +6,13 @@ import { MarketingConsentManager } from "@/components/marketing-consent-banner";
 import { PublicIdentityProvider } from "@/components/public-identity-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
-import { serverEnv } from "@/lib/env-server";
-import { buildLegalIdentity } from "@/lib/legal-identity";
+import { legalIdentityState } from "@/lib/env-server";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const speedInsightsEnabled =
   process.env.NEXT_PUBLIC_ENABLE_SPEED_INSIGHTS === "true";
 const metaPixelId = env.NEXT_PUBLIC_META_PIXEL_ID;
-const legalIdentityState = buildLegalIdentity({
-  legalName: serverEnv.PRUMO_LEGAL_NAME,
-  legalDocument: serverEnv.PRUMO_LEGAL_DOCUMENT,
-  legalAddress: serverEnv.PRUMO_LEGAL_ADDRESS,
-  supportEmail: serverEnv.SUPPORT_EMAIL,
-  docsUpdatedAt: serverEnv.PRUMO_LEGAL_DOCS_UPDATED_AT,
-});
 
 export const viewport: Viewport = {
   width: "device-width",
