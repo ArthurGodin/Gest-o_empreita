@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser, getUserCompanies } from "@/lib/queries/company";
 import { Sidebar } from "@/components/app-shell/sidebar";
@@ -5,6 +6,13 @@ import { MobileNav } from "@/components/app-shell/mobile-nav";
 import { MobileTopbar } from "@/components/app-shell/mobile-topbar";
 import { BusinessSegmentProvider } from "@/components/business-segment-context";
 import { normalizeBusinessSegment } from "@/lib/business-segment";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AppLayout({
   children,

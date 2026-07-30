@@ -7,12 +7,19 @@ import { PublicIdentityProvider } from "@/components/public-identity-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
 import { legalIdentityState } from "@/lib/env-server";
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  resolveSiteUrl,
+} from "@/lib/site-metadata";
 import "./globals.css";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const speedInsightsEnabled =
   process.env.NEXT_PUBLIC_ENABLE_SPEED_INSIGHTS === "true";
 const metaPixelId = env.NEXT_PUBLIC_META_PIXEL_ID;
+const metadataBase = resolveSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -21,9 +28,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Prumo — Propostas, projetos e financeiro",
-  description:
-    "Propostas, projetos, obras, cobranças e financeiro para arquitetura, interiores, engenharia e execução — no celular ou computador.",
+  metadataBase,
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -31,12 +38,30 @@ export const metadata: Metadata = {
     title: "Prumo",
   },
   openGraph: {
-    title: "Prumo — Propostas, projetos e financeiro",
-    description:
-      "Apresente seu trabalho, receba a aprovação do cliente e acompanhe projetos, obras, cobranças e custos em um só lugar.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
     type: "website",
     locale: "pt_BR",
-    siteName: "Prumo",
+    siteName: SITE_NAME,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Prumo com uma visão real do painel do produto",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

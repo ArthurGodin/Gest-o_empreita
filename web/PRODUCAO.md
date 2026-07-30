@@ -111,6 +111,17 @@ webhook e nunca grave o valor no repositorio.
 configure somente contas internas que podem visualizar a saude global do
 Prumo; owners de empresas clientes nao devem entrar nessa lista.
 
+### CSP em observação
+
+O header `Content-Security-Policy-Report-Only` registra violações no console do
+navegador, mas não bloqueia scripts, conexões, imagens ou navegação. Durante o
+smoke test, revise os avisos de CSP na landing, autenticação, app, link público,
+PDF e checkout. Classifique qualquer origem ausente antes de alterar a política.
+
+Não troque para `Content-Security-Policy` com bloqueio neste lançamento. A
+promoção exige outro lote, depois de validar Supabase, Vercel Analytics, Speed
+Insights e Meta com consentimento em produção.
+
 ## Publicar na Vercel
 
 O projeto Vercel usa `web` como diretório raiz. Depois da migration e da conferência das variáveis, publique a versão de produção pelo painel ou pela CLI já vinculada ao projeto.
@@ -118,12 +129,13 @@ O projeto Vercel usa `web` como diretório raiz. Depois da migration e da confer
 ## Smoke test sem gerar cobrança indevida
 
 1. Abrir landing, preços, login, cadastro, termos e privacidade em celular e desktop.
-2. Entrar com uma conta de teste e abrir Início, Orçamentos, Obras, Clientes, Caixa, Configurações e Planos.
-3. Abrir Configurações > Diagnóstico de produção e confirmar que a identidade jurídica não aparece como bloqueio.
-4. Confirmar que a tela de planos mostra o plano atual e que o botão de checkout abre sem erro de banco.
-5. Não concluir uma nova assinatura apenas para testar navegação.
-6. No Asaas, confirmar que webhook e assinatura ativa esperada estão corretos.
-7. Conferir logs da Vercel sem respostas 500 e sem repetição contínua de webhook.
+2. Abrir `/robots.txt`, `/sitemap.xml` e `/opengraph-image`; confirmar que não há rotas privadas no sitemap.
+3. Entrar com uma conta de teste e abrir Início, Orçamentos, Obras, Clientes, Caixa, Configurações e Planos.
+4. Abrir Configurações > Diagnóstico de produção e confirmar que a identidade jurídica não aparece como bloqueio.
+5. Confirmar que a tela de planos mostra o plano atual e que o botão de checkout abre sem erro de banco.
+6. Não concluir uma nova assinatura apenas para testar navegação.
+7. No Asaas, confirmar que webhook e assinatura ativa esperada estão corretos.
+8. Conferir logs da Vercel sem respostas 500 e sem repetição contínua de webhook.
 
 ## Teste financeiro controlado
 

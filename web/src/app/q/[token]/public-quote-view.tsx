@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   CalendarDays,
   CheckCircle2,
@@ -407,17 +408,15 @@ export function PublicQuoteView({
 
             {showPrumoBrand ? (
               <footer className="pb-8 pt-4 text-center text-xs text-muted-foreground">
-                <a
-                  href="https://gestaoempreita.com.br"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/"
                   className="inline-flex items-center gap-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span>Tecnologia </span>
                   <span className="font-semibold text-foreground">
                     Prumo
                   </span>
-                </a>
+                </Link>
               </footer>
             ) : null}
           </div>

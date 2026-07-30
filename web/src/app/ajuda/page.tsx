@@ -8,6 +8,9 @@ export const metadata = {
   title: "Central de Ajuda - Prumo",
   description:
     "Respostas sobre clientes, orçamentos, SINAPI, obras, cobranças, planos e segurança no Prumo.",
+  alternates: {
+    canonical: "/ajuda",
+  },
 };
 
 export default async function HelpPage({

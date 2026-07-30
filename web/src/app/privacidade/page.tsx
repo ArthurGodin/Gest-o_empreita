@@ -10,6 +10,9 @@ import { env } from "@/lib/env";
 
 export const metadata = {
   title: "Política de Privacidade - Prumo",
+  alternates: {
+    canonical: "/privacidade",
+  },
 };
 
 export default function PrivacyPage() {

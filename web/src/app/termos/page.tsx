@@ -8,6 +8,9 @@ import { SupportContactLink } from "@/components/support-contact-link";
 
 export const metadata = {
   title: "Termos de Uso - Prumo",
+  alternates: {
+    canonical: "/termos",
+  },
 };
 
 export default function TermsPage() {

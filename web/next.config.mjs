@@ -1,3 +1,9 @@
+import { buildCspReportOnly } from "./src/lib/csp.mjs";
+
+const cspReportOnly = buildCspReportOnly({
+  development: process.env.NODE_ENV !== "production",
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
@@ -13,6 +19,10 @@ const nextConfig = {
         // clickjacking, MIME sniffing e abuso de APIs do navegador.
         source: "/(.*)",
         headers: [
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value: cspReportOnly,
+          },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           {

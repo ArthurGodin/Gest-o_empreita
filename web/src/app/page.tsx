@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import {
   ArrowRight,
@@ -19,6 +20,20 @@ import { LandingFaq } from "@/app/landing-faq";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { Button } from "@/components/ui/button";
 import { legalIdentityState } from "@/lib/env-server";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site-metadata";
+
+export const metadata: Metadata = {
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+  },
+};
 
 const workflow = [
   {
@@ -100,7 +115,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative z-10 overflow-hidden pb-8 pt-20 sm:pb-12 sm:pt-24">
+      <section className="relative z-10 overflow-hidden pb-4 pt-20 sm:pb-6 sm:pt-24">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
@@ -156,7 +171,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-5 w-full max-w-[22rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 sm:max-w-3xl sm:p-2">
+          <div className="mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 sm:max-w-xl sm:p-2">
             <Image
               src="/dashboard-mockup.png"
               alt="Painel do Prumo com propostas, projetos e visão financeira"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,9 +18,19 @@ import {
 } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-export const metadata = {
-  title: "Preços - Prumo",
-  description: "Planos Grátis, Pro e Ultimate do Prumo, com recursos e limites claros.",
+export const metadata: Metadata = {
+  title: "Preços do Prumo | Grátis, Pro e Ultimate",
+  description:
+    "Compare os planos Grátis, Pro e Ultimate do Prumo, com recursos, limites, cobrança mensal e cancelamento explicados com clareza.",
+  alternates: {
+    canonical: "/precos",
+  },
+  openGraph: {
+    title: "Preços do Prumo | Grátis, Pro e Ultimate",
+    description:
+      "Planos honestos para organizar propostas, projetos, obras, cobranças e custos.",
+    url: "/precos",
+  },
 };
 
 const PLAN_SEQUENCE: AppPlan[] = ["free", "pro", "ultimate"];
