@@ -26,7 +26,7 @@ export function metaEventForProductEvent(
     : null;
 
   switch (name) {
-    case "signup_form_submitted":
+    case "signup_completed":
       return {
         eventName: "Lead",
         customData: {
@@ -48,11 +48,32 @@ export function metaEventForProductEvent(
       return paidPlanEvent("InitiateCheckout", plan, "checkout_start");
 
     case "saas_checkout_generated":
+      if (properties.simulated === true || properties.reused === true) {
+        return null;
+      }
       return paidPlanEvent("AddPaymentInfo", plan, "checkout_link_generated");
 
     default:
       return null;
   }
+}
+
+export function createProductEventId(name: ProductEventName) {
+  const suffix =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${name}-${suffix}`;
+}
+
+export function isProductEventId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length >= 16 &&
+    value.length <= 160 &&
+    /^[A-Za-z0-9_-]+$/.test(value)
+  );
 }
 
 function paidPlanEvent(

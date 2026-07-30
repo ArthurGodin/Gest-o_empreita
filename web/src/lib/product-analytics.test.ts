@@ -10,6 +10,9 @@ vi.mock("@vercel/analytics", () => ({
   track: mocks.track,
 }));
 vi.mock("@/lib/meta-events", () => ({
+  createProductEventId: (name: string) => `${name}-generated-event-id`,
+  isProductEventId: (value: unknown) =>
+    typeof value === "string" && value.length >= 16,
   metaEventForProductEvent: mocks.metaEventForProductEvent,
 }));
 
@@ -54,20 +57,45 @@ describe("product analytics", () => {
   it("keeps Pixel delivery as best effort when fbq is available", () => {
     const fbq = vi.fn();
     vi.stubGlobal("window", { fbq });
+    vi.stubGlobal("document", {
+      cookie: "prumo_marketing_consent=v1.granted",
+    });
     mocks.metaEventForProductEvent.mockReturnValue({
       eventName: "Lead",
       customData: { funnel_step: "signup_submit" },
     });
 
-    trackProductEvent("signup_form_submitted");
+    trackProductEvent(
+      "signup_completed",
+      {},
+      { eventId: "signup_completed-server-occurrence-123" },
+    );
 
     expect(fbq).toHaveBeenCalledWith(
       "track",
       "Lead",
       { funnel_step: "signup_submit" },
       {
-        eventID: expect.stringMatching(/^signup_form_submitted-/),
+        eventID: "signup_completed-server-occurrence-123",
       },
     );
   });
+
+  it.each(["", "prumo_marketing_consent=v1.denied"])(
+    "does not call Pixel without granted consent (%s)",
+    (cookie) => {
+      const fbq = vi.fn();
+      vi.stubGlobal("window", { fbq });
+      vi.stubGlobal("document", { cookie });
+      mocks.metaEventForProductEvent.mockReturnValue({
+        eventName: "Lead",
+        customData: {},
+      });
+
+      trackProductEvent("signup_completed");
+
+      expect(mocks.track).toHaveBeenCalledTimes(1);
+      expect(fbq).not.toHaveBeenCalled();
+    },
+  );
 });

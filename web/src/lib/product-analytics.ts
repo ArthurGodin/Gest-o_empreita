@@ -1,7 +1,12 @@
 "use client";
 
 import { track } from "@vercel/analytics";
-import { metaEventForProductEvent } from "@/lib/meta-events";
+import { hasGrantedMarketingConsent } from "@/lib/marketing-consent";
+import {
+  createProductEventId,
+  isProductEventId,
+  metaEventForProductEvent,
+} from "@/lib/meta-events";
 import type { ProductEventName } from "./product-event-names";
 
 type ProductEventProperties = Record<
@@ -15,6 +20,10 @@ type CompactProductEventProperties = Record<
 
 export type { ProductEventName };
 
+interface ProductEventOptions {
+  eventId?: string;
+}
+
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
@@ -24,9 +33,12 @@ declare global {
 export function trackProductEvent(
   name: ProductEventName,
   properties: ProductEventProperties = {},
+  options: ProductEventOptions = {},
 ) {
   const compacted = compactProperties(properties);
-  const eventId = makeEventId(name);
+  const eventId = isProductEventId(options.eventId)
+    ? options.eventId
+    : createProductEventId(name);
 
   try {
     track(name, compacted);
@@ -57,7 +69,14 @@ function trackMetaPixelEvent(
   eventId: string,
 ) {
   const metaEvent = metaEventForProductEvent(name, properties);
-  if (!metaEvent || typeof window.fbq !== "function") return;
+  if (
+    !metaEvent ||
+    typeof document === "undefined" ||
+    !hasGrantedMarketingConsent(document.cookie) ||
+    typeof window.fbq !== "function"
+  ) {
+    return;
+  }
 
   try {
     window.fbq("track", metaEvent.eventName, metaEvent.customData, {
@@ -68,13 +87,4 @@ function trackMetaPixelEvent(
       console.warn("[meta] pixel event dropped", name, error);
     }
   }
-}
-
-function makeEventId(name: ProductEventName) {
-  const suffix =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-  return `${name}-${suffix}`;
 }

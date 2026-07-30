@@ -1,5 +1,6 @@
 export const PRODUCT_EVENT_NAMES = [
   "signup_form_submitted",
+  "signup_completed",
   "signup_failed",
   "marketing_cta_clicked",
   "pricing_plan_clicked",

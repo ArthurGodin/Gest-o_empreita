@@ -16,11 +16,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { BusinessSegment } from "@/lib/business-segment";
+import {
+  MARKETING_CONSENT_CHANGED_EVENT,
+  marketingConsentFromCookieHeader,
+} from "@/lib/marketing-consent";
 import { createCompanyAction, type OnboardingResult } from "./actions";
 
 const FIELD_ORDER = ["business_segment", "name", "phone", "city", "state"];
 
-export function OnboardingForm() {
+export function OnboardingForm({
+  initialSignupEventId,
+  metaConfigured,
+}: {
+  initialSignupEventId?: string;
+  metaConfigured: boolean;
+}) {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<OnboardingResult | null>(null);
   const [businessSegment, setBusinessSegment] = useState<
@@ -40,6 +50,47 @@ export function OnboardingForm() {
     }
     if (firstInvalidField) document.getElementById(firstInvalidField)?.focus();
   }, [fieldErrors]);
+
+  useEffect(() => {
+    if (!initialSignupEventId) return;
+    let completed = false;
+
+    const flushSignupConversion = () => {
+      if (completed) return;
+      const consent = marketingConsentFromCookieHeader(document.cookie);
+      if (metaConfigured && consent === null) return;
+
+      const url = new URL(window.location.href);
+      const plan = url.searchParams.get("plan");
+      trackProductEvent(
+        "signup_completed",
+        {
+          target_plan:
+            plan === "pro" || plan === "ultimate" ? plan : "free",
+        },
+        { eventId: initialSignupEventId },
+      );
+      completed = true;
+      url.searchParams.delete("signup_event_id");
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+    };
+
+    flushSignupConversion();
+    window.addEventListener(
+      MARKETING_CONSENT_CHANGED_EVENT,
+      flushSignupConversion,
+    );
+    return () => {
+      window.removeEventListener(
+        MARKETING_CONSENT_CHANGED_EVENT,
+        flushSignupConversion,
+      );
+    };
+  }, [initialSignupEventId, metaConfigured]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -71,7 +122,7 @@ export function OnboardingForm() {
           business_segment: businessSegment ?? "construction",
           target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
           redirects_to_checkout: nextResult.redirectTo.includes("/checkout"),
-        });
+        }, nextResult.eventId ? { eventId: nextResult.eventId } : undefined);
         router.push(nextResult.redirectTo);
         router.refresh();
       } catch {

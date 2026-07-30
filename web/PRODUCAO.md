@@ -58,7 +58,16 @@ O token configurado no painel Asaas deve ser exatamente o mesmo de `ASAAS_WEBHOO
 - `META_TEST_EVENT_CODE` somente durante a validação
 - `META_GRAPH_API_VERSION` opcional
 
-Não ligar campanhas de conversão antes de testar os eventos no Events Manager e remover `META_TEST_EVENT_CODE` da produção.
+A integração fica desligada quando Pixel ou token não estão configurados. O
+Pixel só carrega depois de `Aceitar medição`; a recusa não bloqueia nenhuma
+função. A CAPI envia apenas cadastro concluído, onboarding concluído e checkout
+real novo, usando o mesmo `eventId` do navegador para deduplicação. Não envia
+email, telefone, CPF/CNPJ nem o evento `Purchase` nesta versão.
+
+Não ligar campanhas de conversão antes de validar aceite, recusa, Pixel e CAPI
+no Events Manager. Confirme que não há request para a Meta antes do aceite, que
+um checkout reaproveitado não gera outra conversão e remova
+`META_TEST_EVENT_CODE` da produção após o teste.
 
 ### Email e alertas
 

@@ -113,11 +113,11 @@ export default async function ProductionDiagnosticsPage() {
     {
       title: "Mensuração do Facebook Ads",
       detail: metaAdsReady
-        ? "Meta Pixel e Conversions API estão configurados para medir o funil com mais confiabilidade."
+        ? "Meta Pixel e Conversions API estão configurados. A medição só ocorre após consentimento explícito."
         : "Meta Pixel e/ou Conversions API não estão configurados. Anúncios podem vender, mas a Meta não terá mensuração suficiente para otimizar a campanha.",
       status: metaAdsReady ? "ready" : "blocked",
       action: metaAdsReady
-        ? "Validar eventos no Gerenciador de Eventos antes de aumentar o orçamento."
+        ? "Validar aceite, recusa e deduplicação no Gerenciador de Eventos antes de aumentar o orçamento."
         : "Configurar NEXT_PUBLIC_META_PIXEL_ID e META_CONVERSIONS_ACCESS_TOKEN na Vercel antes de subir campanha.",
       icon: BarChart3,
     },

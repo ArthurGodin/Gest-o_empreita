@@ -1,32 +1,62 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { env } from "@/lib/env";
 import { serverEnv } from "@/lib/env-server";
 import { logServerWarning } from "@/lib/log";
-import { metaEventForProductEvent } from "@/lib/meta-events";
+import { hasGrantedMarketingConsent } from "@/lib/marketing-consent";
+import {
+  isProductEventId,
+  metaEventForProductEvent,
+} from "@/lib/meta-events";
 import type { ProductEventName } from "@/lib/product-event-names";
 
 type ProductEventProperties = Record<string, string | number | boolean | null>;
+
+type HeaderReader = Pick<Headers, "get">;
 
 interface SendMetaConversionsInput {
   name: ProductEventName;
   properties: ProductEventProperties;
   eventId: string;
   path: string;
-  request: Request;
+  requestHeaders: HeaderReader;
+  externalId?: string | null;
 }
+
+const SERVER_CONVERSION_EVENTS = new Set<ProductEventName>([
+  "signup_completed",
+  "onboarding_completed",
+  "saas_checkout_generated",
+]);
 
 export async function sendMetaConversionsEvent({
   name,
   properties,
   eventId,
   path,
-  request,
+  requestHeaders,
+  externalId,
 }: SendMetaConversionsInput) {
+  if (!SERVER_CONVERSION_EVENTS.has(name) || !isProductEventId(eventId)) {
+    return { sent: false as const, reason: "unsupported_event" as const };
+  }
+
+  const cookieHeader = requestHeaders.get("cookie") ?? "";
+  if (!hasGrantedMarketingConsent(cookieHeader)) {
+    return { sent: false as const, reason: "consent_not_granted" as const };
+  }
+
   const pixelId = env.NEXT_PUBLIC_META_PIXEL_ID;
   const accessToken = serverEnv.META_CONVERSIONS_ACCESS_TOKEN;
   const metaEvent = metaEventForProductEvent(name, properties);
+  if (!pixelId || !accessToken || !metaEvent) {
+    return { sent: false as const, reason: "not_configured" as const };
+  }
 
-  if (!pixelId || !accessToken || !metaEvent) return;
+  const userData = userDataFromRequest(cookieHeader, externalId);
+  if (Object.keys(userData).length === 0) {
+    return { sent: false as const, reason: "matching_data_absent" as const };
+  }
 
   const payload = {
     data: [
@@ -36,7 +66,7 @@ export async function sendMetaConversionsEvent({
         event_id: eventId,
         action_source: "website",
         event_source_url: eventSourceUrl(path),
-        user_data: userDataFromRequest(request),
+        user_data: userData,
         custom_data: metaEvent.customData,
       },
     ],
@@ -55,45 +85,47 @@ export async function sendMetaConversionsEvent({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(3_000),
     });
 
     if (!response.ok) {
-      const body = await response.text();
       logServerWarning("meta.capi.failed", {
         event: name,
         meta_event: metaEvent.eventName,
         status: response.status,
-        response: body.slice(0, 320),
       });
+      return { sent: false as const, reason: "provider_error" as const };
     }
+
+    return { sent: true as const };
   } catch (error) {
     logServerWarning("meta.capi.request_failed", {
       event: name,
       meta_event: metaEvent.eventName,
       reason: error instanceof Error ? error.name : "unknown",
     });
+    return { sent: false as const, reason: "request_failed" as const };
   }
 }
 
-function userDataFromRequest(request: Request) {
-  const cookies = parseCookieHeader(request.headers.get("cookie") ?? "");
-  return compact({
-    client_ip_address: clientIp(request),
-    client_user_agent: request.headers.get("user-agent"),
-    fbp: cookies._fbp,
-    fbc: cookies._fbc,
-  });
+export function hashMetaExternalId(value: string) {
+  return createHash("sha256")
+    .update(value.trim().toLowerCase())
+    .digest("hex");
 }
 
-function clientIp(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() || null;
-
-  return (
-    request.headers.get("x-real-ip") ??
-    request.headers.get("cf-connecting-ip") ??
-    null
-  );
+function userDataFromRequest(
+  cookieHeader: string,
+  externalId: string | null | undefined,
+) {
+  const cookies = parseCookieHeader(cookieHeader);
+  return {
+    ...(cookies._fbp ? { fbp: cookies._fbp } : {}),
+    ...(cookies._fbc ? { fbc: cookies._fbc } : {}),
+    ...(externalId
+      ? { external_id: [hashMetaExternalId(externalId)] }
+      : {}),
+  };
 }
 
 function eventSourceUrl(path: string) {
@@ -108,16 +140,16 @@ function parseCookieHeader(header: string) {
   const cookies: Record<string, string> = {};
 
   for (const part of header.split(";")) {
-    const [rawName, ...rawValue] = part.trim().split("=");
-    if (!rawName || rawValue.length === 0) continue;
-    cookies[rawName] = decodeURIComponent(rawValue.join("="));
+    const separator = part.indexOf("=");
+    if (separator <= 0) continue;
+    const name = part.slice(0, separator).trim();
+    const rawValue = part.slice(separator + 1).trim();
+    try {
+      cookies[name] = decodeURIComponent(rawValue);
+    } catch {
+      continue;
+    }
   }
 
   return cookies;
-}
-
-function compact(input: Record<string, string | null | undefined>) {
-  return Object.fromEntries(
-    Object.entries(input).filter(([, value]) => Boolean(value)),
-  );
 }

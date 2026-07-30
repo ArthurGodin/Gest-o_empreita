@@ -56,7 +56,7 @@ export function PaymentForm({
         plan,
         simulated: result.simulated,
         reused: Boolean(result.reused),
-      });
+      }, result.eventId ? { eventId: result.eventId } : undefined);
 
       if (!result.simulated) {
         window.location.href = result.checkoutUrl;

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -8,6 +9,8 @@ import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
 import { isBrazilStateCode } from "@/lib/brazil-states";
 import { BUSINESS_SEGMENTS } from "@/lib/business-segment";
+import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
+import { createProductEventId } from "@/lib/meta-events";
 
 const schema = z.object({
   business_segment: z.enum(BUSINESS_SEGMENTS, {
@@ -31,7 +34,7 @@ const schema = z.object({
 });
 
 export type OnboardingResult =
-  | { ok: true; redirectTo: string }
+  | { ok: true; redirectTo: string; eventId?: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 /** Converte string vazia em null para colunas opcionais. */
@@ -141,12 +144,27 @@ export async function createCompanyAction(
     redirects_to_checkout: Boolean(plan),
   });
 
+  const eventId = createProductEventId("onboarding_completed");
+  await sendMetaConversionsEvent({
+    name: "onboarding_completed",
+    properties: {
+      business_segment: parsed.data.business_segment,
+      target_plan: plan ?? "free",
+      redirects_to_checkout: Boolean(plan),
+    },
+    eventId,
+    path: "/onboarding",
+    requestHeaders: await headers(),
+    externalId: user.id,
+  });
+
   revalidatePath("/", "layout");
   if (plan) {
     return {
       ok: true,
       redirectTo: `/app/configuracoes/plano/checkout?plan=${plan}`,
+      eventId,
     };
   }
-  return { ok: true, redirectTo: "/app" };
+  return { ok: true, redirectTo: "/app", eventId };
 }

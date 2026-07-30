@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { MarketingConsentSettings } from "@/components/marketing-consent-banner";
 import { SupportContactLink } from "@/components/support-contact-link";
+import { env } from "@/lib/env";
 
 export const metadata = {
   title: "Política de Privacidade - Prumo",
@@ -22,7 +24,7 @@ export default function PrivacyPage() {
           Política de Privacidade
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Última atualização: 13/07/2026
+          Última atualização: 30/07/2026
         </p>
 
         <div className="mt-8 space-y-6 leading-7 text-muted-foreground">
@@ -143,7 +145,22 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">
-              9. Atualizações
+              9. Cookies e medição opcional
+            </h2>
+            <p className="mt-2">
+              Cookies necessários mantêm autenticação, segurança e preferências
+              essenciais. Quando a medição da Meta estiver configurada, ela só é
+              carregada após aceite explícito. A recusa não bloqueia nenhuma
+              função. Conversões de compra não são enviadas à Meta nesta versão.
+            </p>
+            <MarketingConsentSettings
+              pixelId={env.NEXT_PUBLIC_META_PIXEL_ID}
+            />
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">
+              10. Atualizações
             </h2>
             <p className="mt-2">
               Esta política pode ser atualizada para refletir mudanças no

@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { sendOperationalAlert } from "@/lib/alerts";
 import { AsaasApiError, AsaasConfigError } from "@/lib/asaas/client";
 import {
@@ -10,6 +11,8 @@ import {
 } from "@/lib/asaas/saas-billing";
 import { isSaasBillingSimulationEnabled } from "@/lib/billing/saas-simulation";
 import { logServerError, logServerEvent, logServerWarning } from "@/lib/log";
+import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
+import { createProductEventId } from "@/lib/meta-events";
 import { getActiveCompany, getCurrentUser } from "@/lib/queries/company";
 import { normalizePaidPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -19,7 +22,13 @@ import {
 } from "@/lib/workspace-mode";
 
 export type CheckoutPlanActionResult =
-  | { ok: true; checkoutUrl: string; simulated: boolean; reused?: boolean }
+  | {
+      ok: true;
+      checkoutUrl: string;
+      simulated: boolean;
+      reused?: boolean;
+      eventId?: string;
+    }
   | { ok: false; error: string };
 
 export async function cancelCurrentPlanAction(): Promise<{
@@ -112,11 +121,30 @@ export async function checkoutPlanAction(
       ms: Date.now() - start,
     });
 
+    const eventId = result.reused
+      ? undefined
+      : createProductEventId("saas_checkout_generated");
+    if (eventId) {
+      await sendMetaConversionsEvent({
+        name: "saas_checkout_generated",
+        properties: {
+          plan: targetPlan,
+          simulated: false,
+          reused: false,
+        },
+        eventId,
+        path: `/app/configuracoes/plano/checkout?plan=${targetPlan}`,
+        requestHeaders: await headers(),
+        externalId: user.id,
+      });
+    }
+
     return {
       ok: true,
       checkoutUrl: result.checkoutUrl,
       simulated: false,
       reused: result.reused,
+      eventId,
     };
   } catch (err) {
     if (err instanceof SaasCheckoutBlockedError) {

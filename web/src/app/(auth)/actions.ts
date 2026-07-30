@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { sendOperationalAlert } from "@/lib/alerts";
 import { env } from "@/lib/env";
 import { logServerError, logServerEvent } from "@/lib/log";
+import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
+import { createProductEventId } from "@/lib/meta-events";
 import { normalizePaidPlan } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 
@@ -119,7 +122,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -155,8 +158,25 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
     target_plan: plan ?? "free",
   });
 
+  const eventId = createProductEventId("signup_completed");
+  await sendMetaConversionsEvent({
+    name: "signup_completed",
+    properties: {
+      target_plan: plan ?? "free",
+    },
+    eventId,
+    path: "/signup",
+    requestHeaders: await headers(),
+    externalId: data.user?.id,
+  });
+
+  const onboardingQuery = new URLSearchParams({
+    signup_event_id: eventId,
+  });
+  if (plan) onboardingQuery.set("plan", plan);
+
   revalidatePath("/", "layout");
-  redirect(plan ? `/onboarding?plan=${plan}` : "/onboarding");
+  redirect(`/onboarding?${onboardingQuery.toString()}`);
 }
 
 export async function requestPasswordResetAction(
