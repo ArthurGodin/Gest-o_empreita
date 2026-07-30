@@ -178,6 +178,7 @@ export default function LandingPage() {
               width={1024}
               height={561}
               priority
+              fetchPriority="high"
               sizes="(max-width: 768px) 100vw, 1024px"
               className="h-auto w-full rounded-md object-contain"
               draggable={false}
