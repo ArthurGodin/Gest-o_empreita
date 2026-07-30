@@ -115,7 +115,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative z-10 overflow-hidden pb-4 pt-20 sm:pb-6 sm:pt-24">
+      <section className="relative z-10 overflow-hidden pb-2 pt-20 sm:pb-6 sm:pt-24">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
@@ -188,7 +188,7 @@ export default function LandingPage() {
       </section>
 
       <section className="relative z-10 border-y border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+        <div className="mx-auto max-w-6xl px-4 py-6 md:py-12">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.6fr] lg:items-center">
             <div>
               <p className="text-sm font-bold text-emerald-700">
