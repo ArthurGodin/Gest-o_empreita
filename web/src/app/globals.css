@@ -74,6 +74,220 @@
     --commercial-foreground: 222.2 47.4% 11.2%;
   }
 }
+
+@layer components {
+  .marketing-button {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .landing-header-enter,
+  .landing-hero-enter,
+  .landing-product-enter,
+  .pricing-heading-enter,
+  .pricing-card-enter {
+    animation-duration: 400ms;
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .landing-header-enter {
+    animation-name: prumo-enter-down;
+  }
+
+  .landing-hero-enter,
+  .pricing-heading-enter {
+    animation-delay: var(--motion-delay, 0ms);
+    animation-name: prumo-enter-up;
+  }
+
+  .landing-product-enter {
+    animation-delay: var(--motion-delay, 0ms);
+    animation-name: prumo-product-enter;
+  }
+
+  .landing-dashboard-frame {
+    isolation: isolate;
+  }
+
+  .landing-dashboard-frame::before {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(16 185 129 / 0.42),
+      transparent
+    );
+    content: "";
+    height: 1px;
+    left: 14%;
+    position: absolute;
+    right: 14%;
+    top: -1px;
+    z-index: 2;
+  }
+
+  .landing-status-pulse {
+    position: relative;
+  }
+
+  .landing-status-pulse::after {
+    animation: prumo-status-pulse 3.2s ease-out infinite;
+    border: 1px solid rgb(16 185 129 / 0.45);
+    border-radius: inherit;
+    content: "";
+    inset: -3px;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  [data-motion-ready="true"] [data-reveal]:not([data-revealed="true"]) {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+
+  [data-motion-ready="true"]
+    [data-reveal="scale"]:not([data-revealed="true"]) {
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+
+  [data-motion-ready="true"] [data-reveal] {
+    transition:
+      opacity 380ms cubic-bezier(0.22, 1, 0.36, 1)
+        var(--reveal-delay, 0ms),
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1)
+        var(--reveal-delay, 0ms);
+  }
+
+  [data-motion-ready="true"] [data-reveal][data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .pricing-page-surface {
+    background-color: rgb(248 250 252);
+    background-image:
+      linear-gradient(rgb(15 23 42 / 0.032) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(15 23 42 / 0.032) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .pricing-card-enter {
+    animation-delay: var(--pricing-delay, 0ms);
+    animation-name: prumo-pricing-enter;
+    isolation: isolate;
+  }
+
+  .pricing-card-spotlight {
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transition: opacity 240ms ease;
+    z-index: 0;
+  }
+
+  .pricing-card-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .pricing-featured-edge {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(110 231 183 / 0.75),
+      transparent
+    );
+    height: 1px;
+    left: 14%;
+    position: absolute;
+    right: 14%;
+    top: 0;
+    z-index: 2;
+  }
+
+  .pricing-price {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .marketing-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .marketing-button:active {
+      transform: translateY(0) scale(0.985);
+    }
+
+    .pricing-card-enter:hover .pricing-card-spotlight {
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes prumo-enter-down {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes prumo-enter-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes prumo-product-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes prumo-pricing-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes prumo-status-pulse {
+  0%,
+  72%,
+  100% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  82% {
+    opacity: 0.65;
+  }
+  94% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+}
 @layer base {
   html,
   body {

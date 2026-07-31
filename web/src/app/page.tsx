@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   ArrowRight,
   Building2,
@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { LandingFaq } from "@/app/landing-faq";
+import { MarketingMotion } from "@/components/marketing-motion";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { Button } from "@/components/ui/button";
 import { legalIdentityState } from "@/lib/env-server";
@@ -86,7 +87,8 @@ export default function LandingPage() {
 
   return (
     <main className="relative overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-emerald-700/20">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
+      <MarketingMotion>
+      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -101,7 +103,7 @@ export default function LandingPage() {
             <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100 font-medium">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button asChild size="sm" className="rounded-full font-bold shadow-sm hover:bg-emerald-800">
+            <Button asChild size="sm" className="marketing-button rounded-full font-bold shadow-sm hover:bg-emerald-800">
               <TrackedAnchor
                 href="/signup"
                 analyticsEvent="marketing_cta_clicked"
@@ -117,25 +119,25 @@ export default function LandingPage() {
 
       <section className="relative z-10 overflow-hidden pb-2 pt-20 sm:pb-6 sm:pt-24">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 sm:text-sm">
+          <div className="landing-hero-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms] sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
             Propostas, projetos e financeiro
           </div>
 
-          <h1 className="max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 sm:text-5xl md:text-6xl">
+          <h1 className="landing-hero-enter max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 [--motion-delay:90ms] sm:text-5xl md:text-6xl">
             Prumo: proposta aprovada, projeto no controle.
           </h1>
 
-          <p className="mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg">
+          <p className="landing-hero-enter mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 [--motion-delay:140ms] sm:text-lg">
             Para arquitetura, interiores, engenharia e obras: apresente seu
             trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
           </p>
 
-          <div className="mt-5 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row">
+          <div className="landing-hero-enter mt-5 flex w-full flex-col items-center justify-center gap-2 [--motion-delay:190ms] sm:w-auto sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="h-11 w-full max-w-[17rem] rounded-full px-7 text-base font-bold shadow-sm hover:bg-emerald-800 sm:h-12 sm:w-auto"
+              className="marketing-button h-11 w-full max-w-[17rem] rounded-full px-7 text-base font-bold shadow-sm hover:bg-emerald-800 sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/signup"
@@ -150,7 +152,7 @@ export default function LandingPage() {
               asChild
               variant="outline"
               size="lg"
-              className="h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm hover:border-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 sm:h-12 sm:w-auto"
+              className="marketing-button h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm hover:border-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/precos"
@@ -162,7 +164,7 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          <div className="mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 sm:gap-x-5 sm:text-sm">
+          <div className="landing-hero-enter mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 [--motion-delay:230ms] sm:gap-x-5 sm:text-sm">
             {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
               <span key={fact} className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-700" />
@@ -171,7 +173,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 sm:max-w-xl sm:p-2">
+          <div className="landing-dashboard-frame landing-product-enter relative mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10 [--motion-delay:280ms] sm:max-w-xl sm:p-2">
             <Image
               src="/dashboard-mockup.png"
               alt="Painel do Prumo com propostas, projetos e visão financeira"
@@ -190,7 +192,7 @@ export default function LandingPage() {
       <section className="relative z-10 border-y border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 md:py-12">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.6fr] lg:items-center">
-            <div>
+            <div data-reveal="up">
               <p className="text-sm font-bold text-emerald-700">
                 Feito para o seu jeito de trabalhar
               </p>
@@ -204,10 +206,12 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {professionalProfiles.map((profile) => (
+              {professionalProfiles.map((profile, index) => (
                 <div
                   key={profile.title}
-                  className="flex min-h-28 gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4"
+                  data-reveal="scale"
+                  style={{ "--reveal-delay": `${index * 55}ms` } as CSSProperties}
+                  className="flex min-h-28 gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 transition-[border-color,box-shadow] duration-200 hover:border-emerald-200 hover:shadow-sm"
                 >
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-white text-emerald-700">
                     <profile.icon aria-hidden="true" className="h-5 w-5" />
@@ -230,7 +234,7 @@ export default function LandingPage() {
       {/* SEÇÃO BENTO GRID */}
       <section className="relative z-10 border-y border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-          <div className="mb-8 text-center md:mb-12">
+          <div data-reveal="up" className="mb-8 text-center md:mb-12">
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
               Do primeiro contato ao projeto entregue.
             </h2>
@@ -241,7 +245,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 gap-4 auto-rows-auto md:grid-cols-3 md:gap-5 md:auto-rows-[250px]">
             {/* Bento Item 1 - Grande */}
-            <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:row-span-2 md:p-8">
+            <div data-reveal="scale" className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:row-span-2 md:p-8">
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 text-emerald-800">
@@ -282,7 +286,9 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="mt-5 flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-emerald-800">
-                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="landing-status-pulse rounded-full">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </span>
                     <span className="text-xs font-extrabold uppercase tracking-wide">Aprovado pelo cliente</span>
                   </div>
                 </div>
@@ -290,7 +296,7 @@ export default function LandingPage() {
             </div>
 
             {/* Bento Item 2 */}
-            <div className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-800 bg-slate-900 p-4 pb-0 text-white shadow-md md:p-6 md:pb-0">
+            <div data-reveal="scale" className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-800 bg-slate-900 p-4 pb-0 text-white shadow-md [--reveal-delay:70ms] md:p-6 md:pb-0">
               <div className="relative z-10">
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-emerald-500/30 bg-emerald-500/20 text-emerald-300">
                   <LineChart className="h-5 w-5" />
@@ -324,7 +330,7 @@ export default function LandingPage() {
             </div>
 
             {/* Bento Item 3 */}
-            <div className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-200 bg-white p-4 pb-0 shadow-sm transition-shadow hover:shadow-md md:p-6 md:pb-0">
+            <div data-reveal="scale" className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-200 bg-white p-4 pb-0 shadow-sm transition-shadow [--reveal-delay:140ms] hover:shadow-md md:p-6 md:pb-0">
               <div>
                 <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800">
                   <Smartphone className="h-6 w-6" />
@@ -358,7 +364,7 @@ export default function LandingPage() {
       {/* SEÇÃO: COMO FUNCIONA (4 passos) */}
       <section className="relative z-10 bg-slate-50 py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-8 text-center md:mb-14">
+          <div data-reveal="up" className="mb-8 text-center md:mb-14">
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 shadow-sm mb-6">
               <ArrowRight className="h-4 w-4 text-emerald-800" /> 4 passos para receber
             </div>
@@ -372,6 +378,8 @@ export default function LandingPage() {
             {workflow.map((step, i) => (
               <div
                 key={step.title}
+                data-reveal="scale"
+                style={{ "--reveal-delay": `${i * 55}ms` } as CSSProperties}
                 className="group relative rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm md:border-0 md:bg-transparent md:p-0 md:text-center md:shadow-none"
               >
                 {/* Connector line */}
@@ -392,7 +400,7 @@ export default function LandingPage() {
 
       {/* SEÇÃO: O PRODUTO COMEÇA ONDE DÓI */}
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
-        <div className="mb-8 text-center md:mb-14">
+        <div data-reveal="up" className="mb-8 text-center md:mb-14">
           <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl md:leading-snug">
             O produto começa onde dói:
             <span className="block text-emerald-800">
@@ -420,7 +428,7 @@ export default function LandingPage() {
             />
           </div>
 
-          <div className="relative h-[300px] w-full perspective-1000 md:h-[500px]">
+          <div data-reveal="scale" className="relative h-[300px] w-full perspective-1000 md:h-[500px]">
             <div className="absolute right-0 top-0 h-[75%] w-[90%] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
               <div className="h-8 bg-slate-100/80 backdrop-blur-sm border-b border-slate-200 flex items-center px-4 gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
@@ -435,7 +443,7 @@ export default function LandingPage() {
             </div>
 
             <div className="absolute right-1 top-[58%] flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-900 p-3 text-white shadow-lg md:-right-8 md:top-[55%] md:p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-700">
+              <div className="landing-status-pulse flex h-10 w-10 items-center justify-center rounded-md bg-emerald-700">
                 <CheckCircle2 className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -450,7 +458,7 @@ export default function LandingPage() {
       {/* SEÇÃO: PROVA DO PRODUTO */}
       <section className="relative z-10 border-y border-slate-200 bg-white py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-8 text-center md:mb-12">
+          <div data-reveal="up" className="mb-8 text-center md:mb-12">
             <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
               Um fluxo completo,{" "}
               <span className="text-emerald-800">sem promessas vazias.</span>
@@ -467,6 +475,8 @@ export default function LandingPage() {
             ].map((item, i) => (
               <div
                 key={item.title}
+                data-reveal="scale"
+                style={{ "--reveal-delay": `${i * 55}ms` } as CSSProperties}
                 className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
@@ -480,10 +490,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <LandingFaq />
+      <div data-reveal="up">
+        <LandingFaq />
+      </div>
 
       <section className="bg-slate-950 px-4 py-14 text-white md:py-20">
-        <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-5 text-center md:gap-6">
+        <div data-reveal="up" className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-5 text-center md:gap-6">
           <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
             Comece pequeno, mas com cara de produto sério.
           </h2>
@@ -495,7 +507,7 @@ export default function LandingPage() {
           <Button
             asChild
             size="lg"
-            className="mt-2 h-12 w-full max-w-[19rem] rounded-full bg-white px-8 text-base font-black text-emerald-800 shadow-sm hover:bg-slate-100 md:mt-4 md:w-auto md:px-10"
+            className="marketing-button mt-2 h-12 w-full max-w-[19rem] rounded-full bg-white px-8 text-base font-black text-emerald-800 shadow-sm hover:bg-slate-100 md:mt-4 md:w-auto md:px-10"
           >
             <TrackedAnchor
               href="/signup"
@@ -537,6 +549,7 @@ export default function LandingPage() {
           ) : null}
         </div>
       </footer>
+      </MarketingMotion>
     </main>
   );
 }
@@ -551,7 +564,7 @@ function Reason({
   icon: ReactNode;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
+    <div data-reveal="up" className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       <div className="absolute inset-y-0 left-0 w-1 bg-emerald-700" />
       <div className="flex items-start gap-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50">

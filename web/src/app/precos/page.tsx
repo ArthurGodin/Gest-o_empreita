@@ -12,6 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import {
+  MarketingMotion,
+  PricingCardFrame,
+} from "@/components/marketing-motion";
+import {
   formatPlanPrice,
   PLAN_DEFINITIONS,
   type AppPlan,
@@ -37,8 +41,9 @@ const PLAN_SEQUENCE: AppPlan[] = ["free", "pro", "ultimate"];
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-slate-50 pb-14 text-slate-900">
-      <header className="border-b border-slate-200 bg-white/95 backdrop-blur">
+    <main className="pricing-page-surface min-h-screen pb-14 text-slate-900">
+      <MarketingMotion>
+        <header className="landing-header-enter border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -58,17 +63,17 @@ export default function PricingPage() {
             </Button>
           </div>
         </div>
-      </header>
+        </header>
 
       <section className="mx-auto max-w-6xl px-4 pb-8 pt-10 text-center md:pb-10 md:pt-14">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
+        <div className="pricing-heading-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms]">
           <ShieldCheck className="h-4 w-4" />
           Plano mensal e cancelamento dentro do app
         </div>
-        <h1 className="text-3xl font-black leading-tight text-slate-950 md:text-5xl">
+        <h1 className="pricing-heading-enter text-3xl font-black leading-tight text-slate-950 [--motion-delay:90ms] md:text-5xl">
           Planos do Prumo
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+        <p className="pricing-heading-enter mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 [--motion-delay:140ms] md:text-lg">
           Comece no Grátis sem cartão. Assine quando precisar remover limites,
           tirar a marca Prumo ou trabalhar com catálogo em lote.
         </p>
@@ -76,8 +81,8 @@ export default function PricingPage() {
 
       <section className="mx-auto max-w-6xl px-4" aria-label="Planos disponíveis">
         <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-          {PLAN_SEQUENCE.map((plan) => (
-            <PricingCard key={plan} plan={plan} />
+          {PLAN_SEQUENCE.map((plan, index) => (
+            <PricingCard key={plan} plan={plan} index={index} />
           ))}
         </div>
       </section>
@@ -100,93 +105,107 @@ export default function PricingPage() {
           </Link>
         </div>
       </section>
+      </MarketingMotion>
     </main>
   );
 }
 
-function PricingCard({ plan }: { plan: AppPlan }) {
+function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
   const definition = PLAN_DEFINITIONS[plan];
   const featured = plan === "pro";
   const Icon = plan === "ultimate" ? Crown : plan === "pro" ? Sparkles : ShieldCheck;
   const href = plan === "free" ? "/signup" : `/signup?plan=${plan}`;
 
   return (
-    <article
+    <PricingCardFrame
+      featured={featured}
+      index={index}
       className={cn(
-        "relative flex min-h-[480px] flex-col rounded-xl border bg-white p-5 shadow-sm md:p-6",
-        featured && "border-slate-900 bg-slate-950 text-white shadow-lg",
+        "relative flex min-h-[480px] flex-col overflow-hidden rounded-xl border p-5 md:p-6",
+        featured
+          ? "border-slate-800 bg-slate-950 text-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.9)]"
+          : "border-white/90 bg-white/[0.85] shadow-[0_18px_45px_-32px_rgba(15,23,42,0.45)] backdrop-blur-xl",
       )}
     >
+      {featured ? <span aria-hidden="true" className="pricing-featured-edge" /> : null}
       {featured ? (
-        <div className="absolute right-5 top-0 -translate-y-1/2 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-emerald-950">
+        <div className="absolute right-4 top-4 z-10 rounded-full border border-emerald-300/30 bg-emerald-400 px-3 py-1 text-xs font-bold text-emerald-950 shadow-sm md:right-5">
           Recomendado
         </div>
       ) : null}
 
-      <div
-        className={cn(
-          "mb-4 flex h-10 w-10 items-center justify-center rounded-lg",
-          featured
-            ? "bg-white/10 text-emerald-300"
-            : "bg-emerald-50 text-emerald-700",
-        )}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-      <h2 className="text-xl font-bold">{definition.name}</h2>
-      <p
-        className={cn(
-          "mt-2 min-h-[72px] text-sm leading-6",
-          featured ? "text-slate-300" : "text-slate-600",
-        )}
-      >
-        {definition.description}
-      </p>
-
-      <div className="my-5 flex items-end gap-1">
-        <span className="text-4xl font-black tracking-tight">
-          {plan === "free" ? "R$ 0" : formatPlanPrice(plan)}
-        </span>
-        {plan !== "free" ? (
-          <span className={cn("mb-1 text-sm", featured ? "text-slate-400" : "text-slate-500")}>
-            /mês
-          </span>
-        ) : null}
-      </div>
-
-      <Button
-        asChild
-        variant={featured ? "default" : "outline"}
-        className={cn(
-          "mb-6 h-11 w-full",
-          featured && "bg-emerald-500 font-bold text-emerald-950 hover:bg-emerald-400",
-        )}
-      >
-        <TrackedAnchor
-          href={href}
-          analyticsEvent="pricing_plan_clicked"
-          analyticsProperties={{ plan, source: "pricing_page" }}
+      <div className="pricing-card-content flex min-h-0 flex-1 flex-col">
+        <div
+          className={cn(
+            "mb-4 flex h-10 w-10 items-center justify-center rounded-lg border",
+            featured
+              ? "border-white/10 bg-white/10 text-emerald-300 shadow-inner"
+              : "border-emerald-100 bg-emerald-50 text-emerald-700",
+          )}
         >
-          {plan === "free" ? "Começar grátis" : definition.cta}
-          <ArrowRight className="h-4 w-4" />
-        </TrackedAnchor>
-      </Button>
+          <Icon aria-hidden="true" className="h-5 w-5" />
+        </div>
+        <h2 className="text-xl font-bold">{definition.name}</h2>
+        <p
+          className={cn(
+            "mt-2 min-h-[72px] text-sm leading-6",
+            featured ? "text-slate-300" : "text-slate-600",
+          )}
+        >
+          {definition.description}
+        </p>
 
-      <ul className="mt-auto space-y-3">
-        {definition.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-3 text-sm leading-6">
-            <CheckCircle2
+        <div className="my-5 flex items-end gap-1 border-y border-current/10 py-5">
+          <span className="pricing-price text-4xl font-black tracking-tight">
+            {plan === "free" ? "R$ 0" : formatPlanPrice(plan)}
+          </span>
+          {plan !== "free" ? (
+            <span
               className={cn(
-                "mt-1 h-4 w-4 shrink-0",
-                featured ? "text-emerald-300" : "text-emerald-600",
+                "mb-1 text-sm",
+                featured ? "text-slate-400" : "text-slate-500",
               )}
-            />
-            <span className={featured ? "text-slate-200" : "text-slate-700"}>
-              {feature}
+            >
+              /mês
             </span>
-          </li>
-        ))}
-      </ul>
-    </article>
+          ) : null}
+        </div>
+
+        <Button
+          asChild
+          variant={featured ? "default" : "outline"}
+          className={cn(
+            "marketing-button mb-6 h-11 w-full rounded-lg",
+            featured &&
+              "bg-emerald-500 font-bold text-emerald-950 hover:bg-emerald-400",
+          )}
+        >
+          <TrackedAnchor
+            href={href}
+            analyticsEvent="pricing_plan_clicked"
+            analyticsProperties={{ plan, source: "pricing_page" }}
+          >
+            {plan === "free" ? "Começar grátis" : definition.cta}
+            <ArrowRight className="h-4 w-4" />
+          </TrackedAnchor>
+        </Button>
+
+        <ul className="mt-auto space-y-3">
+          {definition.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-3 text-sm leading-6">
+              <CheckCircle2
+                className={cn(
+                  "mt-1 h-4 w-4 shrink-0",
+                  featured ? "text-emerald-300" : "text-emerald-600",
+                )}
+              />
+              <span className={featured ? "text-slate-200" : "text-slate-700"}>
+                {feature}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </PricingCardFrame>
   );
 }
