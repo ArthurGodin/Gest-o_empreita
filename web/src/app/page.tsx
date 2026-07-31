@@ -89,7 +89,7 @@ export default function LandingPage() {
   return (
     <main className="relative overflow-x-hidden bg-background font-sans text-foreground selection:bg-emerald-700/20">
       <MarketingMotion>
-      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-card/80 shadow-sm backdrop-blur-md">
+      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-card/95 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
