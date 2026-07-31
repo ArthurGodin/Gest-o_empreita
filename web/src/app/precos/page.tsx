@@ -47,21 +47,24 @@ export default function PricingPage() {
         <header className="landing-header-enter border-b bg-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
               <HardHat className="h-5 w-5" />
             </span>
-            <span className="truncate text-lg">Prumo</span>
+            <span className="truncate text-base min-[340px]:text-lg">Prumo</span>
           </Link>
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <ThemeIconButton className="h-10 w-10" />
             <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
-                <span className="hidden min-[360px]:inline">Voltar</span>
+              <Link href="/" aria-label="Voltar para o início" title="Voltar">
+                <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+                <span className="hidden min-[400px]:inline">Voltar</span>
               </Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signup">Criar conta</Link>
+              <Link href="/signup" aria-label="Criar conta">
+                <span className="hidden min-[340px]:inline">Criar conta</span>
+                <span className="min-[340px]:hidden">Criar</span>
+              </Link>
             </Button>
           </div>
         </div>

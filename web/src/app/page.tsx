@@ -90,12 +90,12 @@ export default function LandingPage() {
     <main className="relative overflow-x-hidden bg-background font-sans text-foreground selection:bg-emerald-700/20">
       <MarketingMotion>
       <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-card/95 shadow-sm backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-1 px-3 sm:gap-2 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
               <HardHat className="h-5 w-5" />
             </span>
-            <span className="truncate text-lg tracking-tight">Prumo</span>
+            <span className="truncate text-base tracking-tight min-[340px]:text-lg">Prumo</span>
           </Link>
           <nav className="flex shrink-0 items-center gap-1.5 sm:gap-3">
             <Button asChild variant="ghost" size="sm" className="hidden rounded-full font-medium hover:bg-accent sm:inline-flex">

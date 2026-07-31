@@ -20,14 +20,16 @@ type ThemeTransitionContextValue = {
   resolvedTheme: "light" | "dark";
   isTransitioning: boolean;
   setPreference: (preference: ThemePreference) => void;
+  toggleTheme: () => void;
 };
 
 const ThemeTransitionContext = createContext<ThemeTransitionContextValue | null>(
   null,
 );
 
-const COVER_DURATION_MS = 180;
-const REVEAL_DURATION_MS = 180;
+const COVER_DURATION_MS = 450;
+const REVEAL_DURATION_MS = 450;
+const THEME_SETTLE_DELAY_MS = 32;
 
 function resolveSystemTheme(): "light" | "dark" {
   if (
@@ -55,6 +57,7 @@ export function ThemeTransitionProvider({
   );
   const busyRef = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const frameRef = useRef<number | null>(null);
 
   const preference = themePreferences.includes(theme as ThemePreference)
     ? (theme as ThemePreference)
@@ -66,6 +69,11 @@ export function ThemeTransitionProvider({
       clearTimeout(timer);
     }
     timersRef.current = [];
+
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
   }, []);
 
   useEffect(() => clearTimers, [clearTimers]);
@@ -92,20 +100,28 @@ export function ThemeTransitionProvider({
       const coverTimer = setTimeout(() => {
         setTheme(nextPreference);
 
-        requestAnimationFrame(() => {
-          setCurtainState("revealing");
-        });
+        const settleTimer = setTimeout(() => {
+          frameRef.current = requestAnimationFrame(() => {
+            frameRef.current = null;
+            setCurtainState("revealing");
 
-        const revealTimer = setTimeout(() => {
-          setCurtainState("idle");
-          busyRef.current = false;
-        }, REVEAL_DURATION_MS);
-        timersRef.current.push(revealTimer);
+            const revealTimer = setTimeout(() => {
+              setCurtainState("idle");
+              busyRef.current = false;
+            }, REVEAL_DURATION_MS);
+            timersRef.current.push(revealTimer);
+          });
+        }, THEME_SETTLE_DELAY_MS);
+        timersRef.current.push(settleTimer);
       }, COVER_DURATION_MS);
 
       timersRef.current.push(coverTimer);
     }, [clearTimers, preference, reduceMotion, setTheme],
   );
+
+  const toggleTheme = useCallback(() => {
+    setPreference(safeResolvedTheme === "dark" ? "light" : "dark");
+  }, [safeResolvedTheme, setPreference]);
 
   const value = useMemo<ThemeTransitionContextValue>(
     () => ({
@@ -113,8 +129,9 @@ export function ThemeTransitionProvider({
       resolvedTheme: safeResolvedTheme,
       isTransitioning: curtainState !== "idle",
       setPreference,
+      toggleTheme,
     }),
-    [curtainState, preference, safeResolvedTheme, setPreference],
+    [curtainState, preference, safeResolvedTheme, setPreference, toggleTheme],
   );
 
   return (

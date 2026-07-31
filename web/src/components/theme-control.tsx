@@ -1,8 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   type ThemePreference,
@@ -46,87 +45,49 @@ function useMounted() {
 
 export function ThemeIconButton({
   className,
-  align = "end",
-  side = "bottom",
 }: {
   className?: string;
-  align?: "start" | "center" | "end";
-  side?: "top" | "bottom";
 }) {
   const mounted = useMounted();
-  const { preference, resolvedTheme, isTransitioning, setPreference } =
-    usePrumoTheme();
-  const ActiveIcon = !mounted
-    ? Monitor
-    : preference === "system"
-      ? Monitor
-      : resolvedTheme === "dark"
-        ? Moon
-        : Sun;
+  const { resolvedTheme, isTransitioning, toggleTheme } = usePrumoTheme();
+  const isDark = mounted && resolvedTheme === "dark";
+  const label = isDark ? "Ativar tema claro" : "Ativar tema escuro";
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label="Alterar aparência"
-          title="Aparência"
-          disabled={isTransitioning}
-          className={cn("shrink-0", className)}
-        >
-          <ActiveIcon aria-hidden="true" />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align={align}
-          side={side}
-          sideOffset={8}
-          collisionPadding={12}
-          className="z-[70] w-56 rounded-lg border bg-popover p-1.5 text-popover-foreground shadow-xl outline-none"
-        >
-          <DropdownMenu.Label className="px-3 py-2 text-xs font-semibold text-muted-foreground">
-            Aparência
-          </DropdownMenu.Label>
-          <DropdownMenu.RadioGroup
-            value={mounted ? preference : "system"}
-            onValueChange={(value) => setPreference(value as ThemePreference)}
-          >
-            {themeOptions.map((option) => {
-              const Icon = option.icon;
-              const selected = mounted && preference === option.value;
-              return (
-                <DropdownMenu.RadioItem
-                  key={option.value}
-                  value={option.value}
-                  disabled={isTransitioning}
-                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-3 py-2 outline-none transition-colors hover:bg-accent focus:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                >
-                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-5">
-                      {option.label}
-                    </span>
-                    <span className="block text-xs leading-4 text-muted-foreground">
-                      {option.description}
-                    </span>
-                  </span>
-                  <Check
-                    aria-hidden="true"
-                    className={cn(
-                      "h-4 w-4 shrink-0 text-primary",
-                      selected ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                </DropdownMenu.RadioItem>
-              );
-            })}
-          </DropdownMenu.RadioGroup>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      aria-label={label}
+      aria-pressed={isDark}
+      aria-busy={isTransitioning}
+      aria-disabled={isTransitioning}
+      title={label}
+      onClick={toggleTheme}
+      className={cn(
+        "group relative shrink-0 touch-manipulation overflow-hidden rounded-full transition-[transform,background-color,border-color,color,box-shadow] duration-150 motion-safe:hover:scale-[1.08] motion-safe:active:scale-[0.94]",
+        className,
+      )}
+    >
+      <span aria-hidden="true" className="relative block h-4 w-4">
+        <Moon
+          className={cn(
+            "absolute inset-0 transition-[opacity,transform] duration-200",
+            isDark
+              ? "scale-0 rotate-90 opacity-0"
+              : "scale-100 rotate-0 opacity-100",
+          )}
+        />
+        <Sun
+          className={cn(
+            "absolute inset-0 transition-[opacity,transform] duration-200",
+            isDark
+              ? "scale-100 rotate-0 opacity-100"
+              : "scale-0 -rotate-90 opacity-0",
+          )}
+        />
+      </span>
+    </Button>
   );
 }
 

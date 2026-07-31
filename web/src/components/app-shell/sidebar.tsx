@@ -134,11 +134,7 @@ export function Sidebar({
       <div className="border-t p-3">
         <div className="mb-1 flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground">
           <span className="min-w-0 flex-1">Aparência</span>
-          <ThemeIconButton
-            align="start"
-            side="top"
-            className="h-9 w-9 border-transparent bg-transparent shadow-none"
-          />
+          <ThemeIconButton className="h-9 w-9" />
         </div>
         <Link
           href="/app/configuracoes/plano"
