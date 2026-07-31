@@ -103,7 +103,7 @@ export function QuoteView({
                   {formatDateBR(lastApproval.created_at)}
                 </div>
                 {lastApproval.rejection_reason && (
-                  <div className="mt-2 rounded-md border border-amber-200 bg-white/75 p-3">
+                  <div className="mt-2 rounded-md border border-amber-200 bg-white/75 p-3 dark:border-amber-900 dark:bg-amber-950/25">
                     <div className="text-xs font-medium text-amber-900/70">
                       Motivo
                     </div>
@@ -124,7 +124,7 @@ export function QuoteView({
               </div>
             </div>
             {latestRevision ? (
-              <div className="min-w-0 rounded-lg border border-amber-200 bg-white/75 p-3 text-sm sm:w-72">
+              <div className="min-w-0 rounded-lg border border-amber-200 bg-white/75 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/25 sm:w-72">
                 <div className="text-xs font-semibold uppercase text-amber-900/70">
                   Revisão mais recente
                 </div>

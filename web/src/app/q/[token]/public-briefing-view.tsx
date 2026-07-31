@@ -333,7 +333,7 @@ export function PublicBriefingView({
 
         <div className="mt-4 flex items-center gap-3">
           <div
-            className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"
+            className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
             role="progressbar"
             aria-label="Progresso do briefing"
             aria-valuemin={0}
@@ -345,7 +345,7 @@ export function PublicBriefingView({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="shrink-0 text-xs font-semibold text-slate-600">
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground">
             {progress}%
           </span>
         </div>
@@ -353,7 +353,7 @@ export function PublicBriefingView({
 
       <nav
         aria-label="Etapas do briefing"
-        className="overflow-x-auto border-b bg-slate-50/70 px-3 py-2"
+        className="overflow-x-auto border-b bg-muted/60 px-3 py-2"
       >
         <ol className="flex min-w-max items-center gap-1">
           {snapshot.sections.map((section, index) => {
@@ -369,7 +369,7 @@ export function PublicBriefingView({
                     "inline-flex min-h-10 items-center gap-2 rounded-md px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     currentStep === index
                       ? "bg-emerald-700 text-white"
-                      : "text-slate-600 hover:bg-white hover:text-slate-950",
+                      : "text-muted-foreground hover:bg-card hover:text-foreground",
                   )}
                 >
                   <span
@@ -379,7 +379,7 @@ export function PublicBriefingView({
                         ? "border-white/40"
                         : complete
                           ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                          : "border-slate-300 bg-white",
+                          : "border-border bg-card",
                     )}
                   >
                     {complete ? <Check className="h-3 w-3" /> : index + 1}
@@ -398,7 +398,7 @@ export function PublicBriefingView({
                 "inline-flex min-h-10 items-center gap-2 rounded-md px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 currentStep === reviewStep
                   ? "bg-emerald-700 text-white"
-                  : "text-slate-600 hover:bg-white hover:text-slate-950",
+                  : "text-muted-foreground hover:bg-card hover:text-foreground",
               )}
             >
               <ClipboardCheck className="h-4 w-4" />
@@ -461,7 +461,7 @@ export function PublicBriefingView({
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-3 border-t bg-slate-50/70 px-4 py-3 sm:px-6">
+        <footer className="flex items-center justify-between gap-3 border-t bg-muted/60 px-4 py-3 sm:px-6">
           <Button
             type="button"
             variant="outline"
@@ -508,7 +508,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
     return (
       <span
         role="status"
-        className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-500"
+        className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-muted-foreground"
       >
         <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
         Salvando
@@ -519,7 +519,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
     return (
       <span
         role="status"
-        className="shrink-0 text-xs font-medium text-slate-500"
+        className="shrink-0 text-xs font-medium text-muted-foreground"
       >
         Alterado
       </span>
@@ -667,7 +667,7 @@ function BriefingQuestionField({
                   "flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-sm transition-colors",
                   checked
                     ? "border-emerald-500 bg-emerald-50 text-emerald-950"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                    : "border-border bg-card text-foreground hover:border-primary/35",
                 )}
               >
                 <input
@@ -722,7 +722,7 @@ function BriefingQuestionField({
                 "flex min-h-11 cursor-pointer items-center justify-center rounded-md border px-3 text-sm font-semibold transition-colors",
                 answer === option.value
                   ? "border-emerald-600 bg-emerald-700 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                  : "border-border bg-card text-foreground hover:border-primary/35",
               )}
             >
               <input
@@ -761,7 +761,7 @@ function BriefingQuestionField({
                 "flex min-h-11 cursor-pointer items-center justify-center rounded-md border text-sm font-semibold transition-colors",
                 answer === value
                   ? "border-emerald-600 bg-emerald-700 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
+                  : "border-border bg-card text-foreground hover:border-primary/35",
               )}
             >
               <input

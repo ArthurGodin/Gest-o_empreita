@@ -56,7 +56,7 @@ export function SendReadinessPanel({
         </div>
 
         <details className="group relative shrink-0 text-sm">
-          <summary className="flex min-h-11 cursor-pointer list-none touch-manipulation items-center justify-center rounded-md border border-current/15 bg-white/65 px-3 font-medium transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <summary className="flex min-h-11 cursor-pointer list-none touch-manipulation items-center justify-center rounded-md border border-current/15 bg-card/65 px-3 font-medium transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             {ready ? "Ver conferência" : "Ver pendências"}
           </summary>
           <ul className="mt-3 grid gap-2 border-t border-current/15 pt-3 sm:absolute sm:right-0 sm:z-20 sm:w-[min(30rem,calc(100vw-2rem))] sm:rounded-lg sm:border sm:bg-background sm:p-4 sm:text-foreground sm:shadow-md">

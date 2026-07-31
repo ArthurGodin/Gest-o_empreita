@@ -74,7 +74,7 @@ export default async function PendenciesPage({
                 "inline-flex min-h-11 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
                   ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:border-slate-400 hover:text-foreground",
+                  : "bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
             >
               {CATEGORY_LABEL[item]}

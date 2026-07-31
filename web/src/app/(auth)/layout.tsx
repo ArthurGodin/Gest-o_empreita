@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { HardHat } from "lucide-react";
+import { ThemeIconButton } from "@/components/theme-control";
 
 export const metadata: Metadata = {
   robots: {
@@ -17,15 +18,18 @@ export default function AuthLayout({
   return (
     <main className="min-h-svh bg-background text-foreground">
       <div className="mx-auto flex min-h-svh w-full max-w-md flex-col justify-center px-4 py-6 sm:px-6 sm:py-10">
-        <Link
-          href="/"
-          className="mb-5 flex w-fit items-center gap-2 text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <HardHat aria-hidden="true" className="h-5 w-5" />
-          </span>
-          Prumo
-        </Link>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="flex w-fit items-center gap-2 text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <HardHat aria-hidden="true" className="h-5 w-5" />
+            </span>
+            Prumo
+          </Link>
+          <ThemeIconButton className="h-10 w-10" />
+        </div>
         {children}
         <footer className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-muted-foreground">
           <Link href="/ajuda" className="hover:text-foreground hover:underline">

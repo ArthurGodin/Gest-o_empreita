@@ -263,7 +263,7 @@ function ImportResult({ result }: { result: CatalogImportActionResult }) {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md bg-white/70 px-3 py-2">
+    <div className="rounded-md bg-white/70 px-3 py-2 dark:bg-emerald-950/30">
       <div className="text-lg font-bold">{value}</div>
       <div className="text-[11px] uppercase tracking-wide text-emerald-900/70">
         {label}

@@ -22,7 +22,7 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-balance text-[22px] font-bold leading-7 text-slate-950 sm:text-2xl">
+        <h1 className="text-balance text-[22px] font-bold leading-7 text-foreground sm:text-2xl">
           {title}
         </h1>
         {description && (

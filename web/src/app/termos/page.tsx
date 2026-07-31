@@ -5,6 +5,7 @@ import {
   LegalIdentityDisclosure,
 } from "@/components/legal-identity-disclosure";
 import { SupportContactLink } from "@/components/support-contact-link";
+import { ThemeIconButton } from "@/components/theme-control";
 
 export const metadata = {
   title: "Termos de Uso - Prumo",
@@ -17,13 +18,16 @@ export default function TermsPage() {
   return (
     <main className="min-h-screen bg-background">
       <article className="mx-auto max-w-3xl px-4 py-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Link>
+          <ThemeIconButton className="h-10 w-10" />
+        </div>
 
         <h1 className="mt-8 text-3xl font-bold tracking-normal">
           Termos de Uso

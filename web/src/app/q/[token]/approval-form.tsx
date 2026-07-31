@@ -315,7 +315,7 @@ export function ApprovalForm({
                 {companyName} recebeu sua solicitação e vai analisar o seu pedido.
               </p>
               {contactUrl && (
-                <Button asChild variant="outline" className="mt-4 border-amber-200 bg-white text-amber-900 hover:bg-amber-100">
+                <Button asChild variant="outline" className="mt-4 border-amber-200 bg-white text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-900/50">
                   <a
                     href={contactUrl}
                     target="_blank"

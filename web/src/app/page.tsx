@@ -19,6 +19,7 @@ import {
 import { LandingFaq } from "@/app/landing-faq";
 import { MarketingMotion } from "@/components/marketing-motion";
 import { TrackedAnchor } from "@/components/tracked-anchor";
+import { ThemeIconButton } from "@/components/theme-control";
 import { Button } from "@/components/ui/button";
 import { legalIdentityState } from "@/lib/env-server";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site-metadata";
@@ -86,9 +87,9 @@ export default function LandingPage() {
   const legalIdentity = legalIdentityState.publicIdentity;
 
   return (
-    <main className="relative overflow-x-hidden bg-slate-50 font-sans text-slate-900 selection:bg-emerald-700/20">
+    <main className="relative overflow-x-hidden bg-background font-sans text-foreground selection:bg-emerald-700/20">
       <MarketingMotion>
-      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-slate-200/50 bg-white/70 backdrop-blur-md shadow-sm">
+      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-card/80 shadow-sm backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -97,10 +98,11 @@ export default function LandingPage() {
             <span className="truncate text-lg tracking-tight">Prumo</span>
           </Link>
           <nav className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full hover:bg-slate-100 font-medium">
+            <Button asChild variant="ghost" size="sm" className="hidden rounded-full font-medium hover:bg-accent sm:inline-flex">
               <Link href="/precos">Preços</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-full hover:bg-slate-100 font-medium">
+            <ThemeIconButton className="h-10 w-10 rounded-full" />
+            <Button asChild variant="ghost" size="sm" className="rounded-full font-medium hover:bg-accent">
               <Link href="/login">Entrar</Link>
             </Button>
             <Button asChild size="sm" className="marketing-button rounded-full font-bold shadow-sm hover:bg-emerald-800">
@@ -119,16 +121,16 @@ export default function LandingPage() {
 
       <section className="relative z-10 overflow-hidden pb-2 pt-20 sm:pb-6 sm:pt-24">
         <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
-          <div className="landing-hero-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms] sm:text-sm">
+          <div className="landing-hero-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms] dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 sm:text-sm">
             <ShieldCheck className="h-4 w-4" />
             Propostas, projetos e financeiro
           </div>
 
-          <h1 className="landing-hero-enter max-w-4xl text-4xl font-extrabold leading-tight text-slate-950 [--motion-delay:90ms] sm:text-5xl md:text-6xl">
+          <h1 className="landing-hero-enter max-w-4xl text-4xl font-extrabold leading-tight text-foreground [--motion-delay:90ms] sm:text-5xl md:text-6xl">
             Prumo: proposta aprovada, projeto no controle.
           </h1>
 
-          <p className="landing-hero-enter mt-4 max-w-2xl text-base font-medium leading-7 text-slate-600 [--motion-delay:140ms] sm:text-lg">
+          <p className="landing-hero-enter mt-4 max-w-2xl text-base font-medium leading-7 text-muted-foreground [--motion-delay:140ms] sm:text-lg">
             Para arquitetura, interiores, engenharia e obras: apresente seu
             trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
           </p>
@@ -152,7 +154,7 @@ export default function LandingPage() {
               asChild
               variant="outline"
               size="lg"
-              className="marketing-button h-11 w-full max-w-[17rem] rounded-full border-slate-300 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm hover:border-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 sm:h-12 sm:w-auto"
+              className="marketing-button h-11 w-full max-w-[17rem] rounded-full bg-card px-6 text-sm font-bold text-foreground shadow-sm hover:border-primary/50 hover:bg-accent hover:text-primary sm:h-12 sm:w-auto"
             >
               <TrackedAnchor
                 href="/precos"
@@ -164,7 +166,7 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          <div className="landing-hero-enter mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-600 [--motion-delay:230ms] sm:gap-x-5 sm:text-sm">
+          <div className="landing-hero-enter mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-muted-foreground [--motion-delay:230ms] sm:gap-x-5 sm:text-sm">
             {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
               <span key={fact} className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-700" />
@@ -173,7 +175,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="landing-dashboard-frame landing-product-enter relative mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10 [--motion-delay:280ms] sm:max-w-xl sm:p-2">
+          <div className="landing-dashboard-frame landing-product-enter relative mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border bg-card p-1.5 shadow-xl shadow-black/10 [--motion-delay:280ms] sm:max-w-xl sm:p-2">
             <Image
               src="/dashboard-mockup.png"
               alt="Painel do Prumo com propostas, projetos e visão financeira"
@@ -189,17 +191,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="relative z-10 border-y border-slate-200 bg-white">
+      <section className="relative z-10 border-y bg-card">
         <div className="mx-auto max-w-6xl px-4 py-6 md:py-12">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.6fr] lg:items-center">
             <div data-reveal="up">
               <p className="text-sm font-bold text-emerald-700">
                 Feito para o seu jeito de trabalhar
               </p>
-              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-slate-950 md:text-4xl">
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight text-foreground md:text-4xl">
                 Um fluxo, quatro perfis profissionais.
               </h2>
-              <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-slate-600 md:text-base">
+              <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-muted-foreground md:text-base">
                 Você escolhe o perfil no cadastro. O Prumo adapta linguagem,
                 modelos iniciais e navegação sem alterar seus dados, permissões
                 ou plano.
@@ -211,16 +213,16 @@ export default function LandingPage() {
                   key={profile.title}
                   data-reveal="scale"
                   style={{ "--reveal-delay": `${index * 55}ms` } as CSSProperties}
-                  className="flex min-h-28 gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 transition-[border-color,box-shadow] duration-200 hover:border-emerald-200 hover:shadow-sm"
+                  className="flex min-h-28 gap-3 rounded-lg border bg-muted/60 p-4 transition-[border-color,box-shadow] duration-200 hover:border-primary/35 hover:shadow-sm"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-white text-emerald-700">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-card text-primary">
                     <profile.icon aria-hidden="true" className="h-5 w-5" />
                   </span>
                   <span>
-                    <strong className="block text-sm text-slate-950">
+                    <strong className="block text-sm text-foreground">
                       {profile.title}
                     </strong>
-                    <span className="mt-1 block text-sm leading-5 text-slate-600">
+                    <span className="mt-1 block text-sm leading-5 text-muted-foreground">
                       {profile.text}
                     </span>
                   </span>
@@ -232,27 +234,27 @@ export default function LandingPage() {
       </section>
 
       {/* SEÇÃO BENTO GRID */}
-      <section className="relative z-10 border-y border-slate-200 bg-white">
+      <section className="relative z-10 border-y bg-card">
         <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
           <div data-reveal="up" className="mb-8 text-center md:mb-12">
-            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
+            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-foreground md:text-5xl">
               Do primeiro contato ao projeto entregue.
             </h2>
-            <p className="mt-4 text-base font-medium leading-7 text-slate-600 md:text-lg">
+            <p className="mt-4 text-base font-medium leading-7 text-muted-foreground md:text-lg">
               Um processo profissional para vender, executar e receber com clareza.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 auto-rows-auto md:grid-cols-3 md:gap-5 md:auto-rows-[250px]">
             {/* Bento Item 1 - Grande */}
-            <div data-reveal="scale" className="group relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:row-span-2 md:p-8">
+            <div data-reveal="scale" className="group relative overflow-hidden rounded-lg border bg-muted/60 p-4 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:row-span-2 md:p-8">
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
                   <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 text-emerald-800">
                     <FileText className="h-6 w-6" />
                   </div>
-                  <h3 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Propostas que apresentam bem o seu trabalho.</h3>
-                  <p className="mt-3 max-w-md text-sm font-medium leading-6 text-slate-600 md:text-base md:leading-relaxed">
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">Propostas que apresentam bem o seu trabalho.</h3>
+                  <p className="mt-3 max-w-md text-sm font-medium leading-6 text-muted-foreground md:text-base md:leading-relaxed">
                     Organize escopo, itens, valores e observações. Depois envie um
                     link limpo para o cliente revisar e decidir pelo celular.
                   </p>
@@ -285,7 +287,7 @@ export default function LandingPage() {
                       <span className="text-xs font-semibold text-slate-900">R$ 8.000</span>
                     </div>
                   </div>
-                  <div className="mt-5 flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-emerald-800">
+                  <div className="mt-5 flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
                     <span className="landing-status-pulse rounded-full">
                       <CheckCircle2 className="h-4 w-4" />
                     </span>
@@ -330,13 +332,13 @@ export default function LandingPage() {
             </div>
 
             {/* Bento Item 3 */}
-            <div data-reveal="scale" className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-slate-200 bg-white p-4 pb-0 shadow-sm transition-shadow [--reveal-delay:140ms] hover:shadow-md md:p-6 md:pb-0">
+            <div data-reveal="scale" className="group relative flex flex-col justify-between overflow-hidden rounded-lg border bg-card p-4 pb-0 shadow-sm transition-shadow [--reveal-delay:140ms] hover:shadow-md md:p-6 md:pb-0">
               <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
                   <Smartphone className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Aprovação mobile</h3>
-                <p className="mt-2 text-slate-500 text-sm font-medium leading-relaxed">
+                <h3 className="text-xl font-bold text-foreground tracking-tight">Aprovação mobile</h3>
+                <p className="mt-2 text-muted-foreground text-sm font-medium leading-relaxed">
                   Seu cliente abre a proposta no celular, revisa e aprova sem precisar criar conta.
                 </p>
               </div>
@@ -362,13 +364,13 @@ export default function LandingPage() {
       </section>
 
       {/* SEÇÃO: COMO FUNCIONA (4 passos) */}
-      <section className="relative z-10 bg-slate-50 py-14 md:py-20">
+      <section className="relative z-10 bg-background py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div data-reveal="up" className="mb-8 text-center md:mb-14">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 shadow-sm mb-6">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-sm font-bold text-muted-foreground shadow-sm">
               <ArrowRight className="h-4 w-4 text-emerald-800" /> 4 passos para receber
             </div>
-            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
+            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-foreground md:text-5xl">
               Da proposta ao{" "}
               <span className="text-emerald-800">projeto e ao recebimento.</span>
             </h2>
@@ -380,18 +382,18 @@ export default function LandingPage() {
                 key={step.title}
                 data-reveal="scale"
                 style={{ "--reveal-delay": `${i * 55}ms` } as CSSProperties}
-                className="group relative rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm md:border-0 md:bg-transparent md:p-0 md:text-center md:shadow-none"
+                className="group relative rounded-lg border bg-card p-4 text-left shadow-sm md:border-0 md:bg-transparent md:p-0 md:text-center md:shadow-none"
               >
                 {/* Connector line */}
                 {i < workflow.length - 1 && (
                   <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-slate-200 to-slate-100" />
                 )}
-                <div className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-lg border-2 border-slate-100 bg-white shadow-sm md:mx-auto md:mb-6 md:h-20 md:w-20">
+                <div className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-lg border-2 bg-card shadow-sm md:mx-auto md:mb-6 md:h-20 md:w-20">
                   <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-black text-primary-foreground shadow-sm">{i + 1}</span>
-                  <step.icon className="h-6 w-6 text-slate-600 md:h-8 md:w-8" />
+                  <step.icon className="h-6 w-6 text-muted-foreground md:h-8 md:w-8" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight">{step.title}</h3>
-                <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500 md:mx-auto md:max-w-[220px]">{step.text}</p>
+                <h3 className="text-lg font-bold text-foreground tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-muted-foreground md:mx-auto md:max-w-[220px]">{step.text}</p>
               </div>
             ))}
           </div>
@@ -401,7 +403,7 @@ export default function LandingPage() {
       {/* SEÇÃO: O PRODUTO COMEÇA ONDE DÓI */}
       <section className="mx-auto max-w-6xl px-4 py-14 md:py-20">
         <div data-reveal="up" className="mb-8 text-center md:mb-14">
-          <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl md:leading-snug">
+          <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-foreground md:text-5xl md:leading-snug">
             O produto começa onde dói:
             <span className="block text-emerald-800">
               venda, execução e dinheiro.
@@ -456,14 +458,14 @@ export default function LandingPage() {
       </section>
 
       {/* SEÇÃO: PROVA DO PRODUTO */}
-      <section className="relative z-10 border-y border-slate-200 bg-white py-14 md:py-20">
+      <section className="relative z-10 border-y bg-card py-14 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div data-reveal="up" className="mb-8 text-center md:mb-12">
-            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-5xl">
+            <h2 className="text-[2rem] font-extrabold leading-tight tracking-tight text-foreground md:text-5xl">
               Um fluxo completo,{" "}
               <span className="text-emerald-800">sem promessas vazias.</span>
             </h2>
-            <p className="mt-4 text-base font-medium leading-7 text-slate-600 md:text-lg">O que você já consegue fazer no Prumo hoje.</p>
+            <p className="mt-4 text-base font-medium leading-7 text-muted-foreground md:text-lg">O que você já consegue fazer no Prumo hoje.</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-4">
@@ -477,13 +479,13 @@ export default function LandingPage() {
                 key={item.title}
                 data-reveal="scale"
                 style={{ "--reveal-delay": `${i * 55}ms` } as CSSProperties}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6"
+                className="rounded-lg border bg-muted/60 p-5 shadow-sm md:p-6"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
                   {i === 0 ? <FileText className="h-5 w-5" /> : i === 1 ? <HardHat className="h-5 w-5" /> : i === 2 ? <PackageCheck className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
                 </div>
-                <h3 className="font-bold text-slate-950">{item.title}</h3>
-                <p className="mt-2 text-sm font-medium leading-6 text-slate-600">{item.text}</p>
+                <h3 className="font-bold text-foreground">{item.title}</h3>
+                <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">{item.text}</p>
               </div>
             ))}
           </div>
@@ -521,8 +523,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white px-4 py-8">
-        <div className="mx-auto max-w-6xl text-slate-600">
+      <footer className="border-t bg-card px-4 py-8">
+        <div className="mx-auto max-w-6xl text-muted-foreground">
           <div className="flex flex-col gap-4 text-sm font-semibold md:flex-row md:items-center md:justify-between">
             <p>© {new Date().getFullYear()} Prumo. Todos os direitos reservados.</p>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
@@ -541,7 +543,7 @@ export default function LandingPage() {
             </div>
           </div>
           {legalIdentity ? (
-            <p className="mt-4 border-t border-slate-100 pt-4 text-xs font-medium leading-5">
+            <p className="mt-4 border-t pt-4 text-xs font-medium leading-5">
               Operado por {legalIdentity.legalName} ·{" "}
               {legalIdentity.documentType} {legalIdentity.formattedDocument}
               <span className="block">{legalIdentity.legalAddress}</span>
@@ -564,15 +566,15 @@ function Reason({
   icon: ReactNode;
 }) {
   return (
-    <div data-reveal="up" className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
+    <div data-reveal="up" className="group relative overflow-hidden rounded-lg border bg-card p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       <div className="absolute inset-y-0 left-0 w-1 bg-emerald-700" />
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/50">
           {icon}
         </div>
         <div>
-          <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-          <p className="mt-3 leading-relaxed text-slate-600 font-medium">{text}</p>
+          <h3 className="text-xl font-bold text-foreground">{title}</h3>
+          <p className="mt-3 leading-relaxed text-muted-foreground font-medium">{text}</p>
         </div>
       </div>
     </div>

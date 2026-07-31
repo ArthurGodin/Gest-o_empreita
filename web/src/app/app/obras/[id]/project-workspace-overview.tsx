@@ -325,7 +325,7 @@ function OverviewLink({
   return (
     <Link
       href={href}
-      className="group flex min-h-24 min-w-0 items-start gap-3 p-4 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      className="group flex min-h-24 min-w-0 items-start gap-3 p-4 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
       <span
         className={

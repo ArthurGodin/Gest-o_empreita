@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                   <Link
                     key={project.id}
                     href={`/app/obras/${project.id}`}
-                    className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">
@@ -270,7 +270,7 @@ export default async function DashboardPage() {
                 <Link
                   key={quote.id}
                   href={`/app/orcamentos/${quote.id}`}
-                  className="grid min-h-16 gap-2 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[1fr_auto_auto] md:items-center"
+                  className="grid min-h-16 gap-2 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[1fr_auto_auto] md:items-center"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium">
@@ -349,7 +349,7 @@ function EmptyLine({
 
 function StatusPill({ label }: { label: string }) {
   const colorMap: Record<string, string> = {
-    Rascunho: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+    Rascunho: "bg-muted text-muted-foreground",
     Enviado: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
     Visualizado: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
     Aprovado: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",

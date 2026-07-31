@@ -41,13 +41,13 @@ export function LandingFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="bg-slate-50 py-14 md:py-20">
+    <section className="bg-background py-14 md:py-20">
       <div className="mx-auto max-w-3xl px-4">
         <div className="mb-8 text-center md:mb-10">
-          <h2 className="text-3xl font-extrabold leading-tight text-slate-950 md:text-5xl">
+          <h2 className="text-3xl font-extrabold leading-tight text-foreground md:text-5xl">
             Dúvidas frequentes
           </h2>
-          <p className="mt-3 text-base font-medium leading-7 text-slate-600 md:text-lg">
+          <p className="mt-3 text-base font-medium leading-7 text-muted-foreground md:text-lg">
             O que você precisa saber antes de começar.
           </p>
         </div>
@@ -60,20 +60,20 @@ export function LandingFaq() {
             return (
               <div
                 key={item.question}
-                className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
+                className="overflow-hidden rounded-lg border bg-card shadow-sm"
               >
                 <button
                   type="button"
                   aria-expanded={isOpen}
                   aria-controls={answerId}
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex min-h-12 w-full items-center justify-between gap-4 px-4 py-3 text-left text-base font-bold text-slate-950 outline-none transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700 md:px-5"
+                  className="flex min-h-12 w-full items-center justify-between gap-4 px-4 py-3 text-left text-base font-bold text-foreground outline-none transition-colors hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-5"
                 >
                   {item.question}
                   <ChevronDown
                     aria-hidden="true"
                     className={cn(
-                      "h-5 w-5 shrink-0 text-slate-500 transition-transform",
+                      "h-5 w-5 shrink-0 text-muted-foreground transition-transform",
                       isOpen && "rotate-180",
                     )}
                   />
@@ -81,7 +81,7 @@ export function LandingFaq() {
                 <div
                   id={answerId}
                   hidden={!isOpen}
-                  className="border-t border-slate-100 px-4 py-4 text-sm font-medium leading-6 text-slate-600 md:px-5"
+                  className="border-t px-4 py-4 text-sm font-medium leading-6 text-muted-foreground md:px-5"
                 >
                   {item.answer}
                 </div>

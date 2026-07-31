@@ -72,8 +72,8 @@ const COLOR_CLASSES: Record<
     text: "text-red-800 dark:text-red-200",
   },
   gray: {
-    bg: "bg-slate-100 dark:bg-slate-800",
-    text: "text-slate-700 dark:text-slate-300",
+    bg: "bg-muted",
+    text: "text-muted-foreground",
   },
 };
 
@@ -206,7 +206,7 @@ export function QuoteList({ quotes }: QuoteListProps) {
         />
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
-          <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] gap-4 border-b bg-slate-50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] gap-4 border-b bg-muted/60 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
             <span>{vocabulary.quoteSingular}</span>
             <span>Cliente</span>
             <span>Validade</span>
@@ -234,7 +234,7 @@ function QuoteRow({ quote }: { quote: QuoteListItem }) {
       <Link
         href={`/app/orcamentos/${quote.id}`}
         aria-label={`Abrir ${vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")} ${quote.number}`}
-        className="grid min-h-[92px] min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] md:items-center md:gap-4 md:py-3"
+        className="grid min-h-[92px] min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7rem_7rem_9rem] md:items-center md:gap-4 md:py-3"
       >
         <span className="col-span-2 min-w-0 md:col-span-1">
           <span className="block text-xs font-semibold text-muted-foreground">
@@ -242,7 +242,7 @@ function QuoteRow({ quote }: { quote: QuoteListItem }) {
           </span>
           <span
             title={quote.title}
-            className="block truncate text-sm font-semibold text-slate-950"
+            className="block truncate text-sm font-semibold text-foreground"
           >
             {quote.title}
           </span>
@@ -250,7 +250,7 @@ function QuoteRow({ quote }: { quote: QuoteListItem }) {
 
         <span
           title={quote.customer?.name ?? "Sem cliente"}
-          className="min-w-0 truncate text-sm text-slate-600"
+          className="min-w-0 truncate text-sm text-muted-foreground"
         >
           {quote.customer?.name ?? "Sem cliente"}
         </span>

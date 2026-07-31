@@ -58,7 +58,7 @@ import { createSuggestedProjectSpacesAction } from "./space-actions";
 const STATUS_COPY = {
   draft: {
     label: "Rascunho",
-    className: "border-slate-200 bg-slate-100 text-slate-700",
+    className: "border-border bg-muted text-muted-foreground",
   },
   shared: {
     label: "Com o cliente",
@@ -74,7 +74,7 @@ const STATUS_COPY = {
   },
   archived: {
     label: "Arquivado",
-    className: "border-slate-200 bg-slate-100 text-slate-700",
+    className: "border-border bg-muted text-muted-foreground",
   },
 } as const;
 
@@ -456,7 +456,7 @@ export function BriefingSection({
               </span>
             </div>
             <div
-              className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"
+              className="mt-2 h-2 overflow-hidden rounded-full bg-muted"
               role="progressbar"
               aria-label="Progresso do briefing"
               aria-valuemin={0}
@@ -714,7 +714,7 @@ function CreateBriefingDialog({
                 className={`flex min-h-20 cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors ${
                   selected
                     ? "border-emerald-500 bg-emerald-50"
-                    : "border-input bg-card hover:border-slate-400"
+                    : "border-input bg-card hover:border-primary/40"
                 }`}
               >
                 <input
@@ -730,7 +730,7 @@ function CreateBriefingDialog({
                   <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                     {template.description}
                   </span>
-                  <span className="mt-1 block text-xs font-medium text-slate-600">
+                  <span className="mt-1 block text-xs font-medium text-muted-foreground">
                     {template.sectionCount} blocos · {template.questionCount} perguntas
                   </span>
                 </span>

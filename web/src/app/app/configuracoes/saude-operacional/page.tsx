@@ -82,8 +82,8 @@ const STATE_COPY: Record<
     detail: "Confirme o cron da Vercel antes de considerar a operação monitorada.",
     icon: CircleHelp,
     className:
-      "border-slate-200 bg-slate-50 text-slate-950 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-50",
-    iconClassName: "text-slate-600 dark:text-slate-300",
+      "border-border bg-muted/60 text-foreground",
+    iconClassName: "text-muted-foreground",
   },
   unavailable: {
     label: "Indisponível",
@@ -91,8 +91,8 @@ const STATE_COPY: Record<
     detail: "Use o email operacional e os logs da Vercel enquanto a leitura é restabelecida.",
     icon: CloudOff,
     className:
-      "border-slate-300 bg-slate-100 text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50",
-    iconClassName: "text-slate-600 dark:text-slate-300",
+      "border-border bg-muted text-foreground",
+    iconClassName: "text-muted-foreground",
   },
 };
 

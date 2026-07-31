@@ -9,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeIconButton } from "@/components/theme-control";
 
 export const metadata = {
   title: "Link de orçamento indisponível - Prumo",
@@ -29,12 +30,15 @@ export default function PublicQuoteNotFound() {
             </span>
             Prumo
           </Link>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/login">
-              <LayoutDashboard aria-hidden="true" />
-              Painel
-            </Link>
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeIconButton className="h-10 w-10" />
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/login">
+                <LayoutDashboard aria-hidden="true" />
+                Painel
+              </Link>
+            </Button>
+          </div>
         </header>
 
         <div className="flex flex-1 items-center py-8">

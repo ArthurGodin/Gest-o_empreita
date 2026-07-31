@@ -147,7 +147,7 @@ export function PaymentForm({
         <div className="flex items-start gap-3 text-sm">
           <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
           <div>
-            <div className="font-semibold text-slate-900">
+            <div className="font-semibold text-foreground">
               Pagamento seguro no Asaas
             </div>
             <p className="mt-1 leading-6 text-muted-foreground">

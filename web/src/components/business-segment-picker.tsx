@@ -78,7 +78,7 @@ export function BusinessSegmentPicker({
                 "relative min-w-0 cursor-pointer rounded-lg border bg-card transition-[border-color,background-color,box-shadow] active:bg-muted/40",
                 selected
                   ? "border-primary bg-primary/[0.045] shadow-[0_0_0_1px_hsl(var(--primary))]"
-                  : "border-border hover:border-slate-300 hover:bg-muted/20",
+                  : "border-border hover:border-primary/35 hover:bg-muted/40",
                 disabled && "cursor-not-allowed opacity-60",
               )}
             >
@@ -99,7 +99,7 @@ export function BusinessSegmentPicker({
                       "flex h-8 w-8 items-center justify-center rounded-md",
                       selected
                         ? "bg-primary text-primary-foreground"
-                        : "bg-slate-100 text-slate-600",
+                        : "bg-muted text-muted-foreground",
                     )}
                   >
                     <Icon aria-hidden="true" className="h-4 w-4" />
@@ -110,7 +110,7 @@ export function BusinessSegmentPicker({
                       "flex h-5 w-5 items-center justify-center rounded-full border",
                       selected
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "border-slate-200 text-transparent",
+                        : "border-border text-transparent",
                     )}
                   >
                     <Check className="h-3 w-3" strokeWidth={3} />

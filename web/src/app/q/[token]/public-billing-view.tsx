@@ -209,7 +209,7 @@ export function PublicBillingView({
                 type="button"
                 size="sm"
                 variant="outline"
-                className="mt-3 h-10 border-amber-300 bg-white/70 hover:bg-white"
+                className="mt-3 h-10 border-amber-300 bg-white/70 hover:bg-white dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/50"
               >
                 <a href="?tab=entregas">Revisar entregas</a>
               </Button>

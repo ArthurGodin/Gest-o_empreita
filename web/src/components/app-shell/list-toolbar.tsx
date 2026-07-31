@@ -60,7 +60,7 @@ export function ListToolbar({
               onClick={() => search.onValueChange("")}
               aria-label="Limpar busca"
               title="Limpar busca"
-              className="absolute right-0 top-0 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              className="absolute right-0 top-0 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
             >
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
@@ -116,7 +116,7 @@ export function ListStatusFilter<T extends string>({
         <select
           value={value}
           onChange={(event) => onValueChange(event.target.value as T)}
-          className="h-11 w-full rounded-md border border-input bg-card px-3 text-base text-slate-800 outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
+          className="h-11 w-full rounded-md border border-input bg-card px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>
@@ -138,8 +138,8 @@ export function ListStatusFilter<T extends string>({
               className={cn(
                 "inline-flex h-10 items-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
-                  ? "border-primary/30 bg-primary/10 text-emerald-900"
-                  : "border-input bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-950",
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-input bg-card text-muted-foreground hover:border-primary/40 hover:bg-accent hover:text-foreground",
               )}
             >
               <span>{option.label}</span>
@@ -147,7 +147,7 @@ export function ListStatusFilter<T extends string>({
                 className={cn(
                   "rounded px-1.5 py-0.5 text-[11px] tabular-nums",
                   active
-                    ? "bg-primary/15 text-emerald-900"
+                    ? "bg-primary/15 text-primary"
                     : "bg-muted text-muted-foreground",
                 )}
               >

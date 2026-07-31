@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeIconButton } from "@/components/theme-control";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import {
   MarketingMotion,
@@ -41,9 +42,9 @@ const PLAN_SEQUENCE: AppPlan[] = ["free", "pro", "ultimate"];
 
 export default function PricingPage() {
   return (
-    <main className="pricing-page-surface min-h-screen pb-14 text-slate-900">
+    <main className="pricing-page-surface min-h-screen pb-14 text-foreground">
       <MarketingMotion>
-        <header className="landing-header-enter border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <header className="landing-header-enter border-b bg-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -52,6 +53,7 @@ export default function PricingPage() {
             <span className="truncate text-lg">Prumo</span>
           </Link>
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <ThemeIconButton className="h-10 w-10" />
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
@@ -66,14 +68,14 @@ export default function PricingPage() {
         </header>
 
       <section className="mx-auto max-w-6xl px-4 pb-8 pt-10 text-center md:pb-10 md:pt-14">
-        <div className="pricing-heading-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms]">
+        <div className="pricing-heading-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms] dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
           <ShieldCheck className="h-4 w-4" />
           Plano mensal e cancelamento dentro do app
         </div>
-        <h1 className="pricing-heading-enter text-3xl font-black leading-tight text-slate-950 [--motion-delay:90ms] md:text-5xl">
+        <h1 className="pricing-heading-enter text-3xl font-black leading-tight text-foreground [--motion-delay:90ms] md:text-5xl">
           Planos do Prumo
         </h1>
-        <p className="pricing-heading-enter mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 [--motion-delay:140ms] md:text-lg">
+        <p className="pricing-heading-enter mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground [--motion-delay:140ms] md:text-lg">
           Comece no Grátis sem cartão. Assine quando precisar remover limites,
           tirar a marca Prumo ou trabalhar com catálogo em lote.
         </p>
@@ -88,12 +90,12 @@ export default function PricingPage() {
       </section>
 
       <section className="mx-auto mt-8 max-w-3xl px-4 text-center">
-        <p className="text-sm leading-6 text-slate-600">
+        <p className="text-sm leading-6 text-muted-foreground">
           O proprietário pode cancelar a assinatura na tela de planos. A conta
           volta ao Grátis imediatamente. O cancelamento comum não gera
           reembolso automático, sem prejuízo dos direitos previstos em lei.
         </p>
-        <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-500">
+        <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-muted-foreground">
           <Link href="/ajuda" className="hover:text-emerald-700 hover:underline">
             Central de Ajuda
           </Link>
@@ -124,7 +126,7 @@ function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
         "relative flex min-h-[480px] flex-col overflow-hidden rounded-xl border p-5 md:p-6",
         featured
           ? "border-slate-800 bg-slate-950 text-white shadow-[0_24px_60px_-30px_rgba(15,23,42,0.9)]"
-          : "border-white/90 bg-white/[0.85] shadow-[0_18px_45px_-32px_rgba(15,23,42,0.45)] backdrop-blur-xl",
+          : "border-border/90 bg-card/90 shadow-[0_18px_45px_-32px_rgba(15,23,42,0.45)] backdrop-blur-xl",
       )}
     >
       {featured ? <span aria-hidden="true" className="pricing-featured-edge" /> : null}
@@ -149,7 +151,7 @@ function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
         <p
           className={cn(
             "mt-2 min-h-[72px] text-sm leading-6",
-            featured ? "text-slate-300" : "text-slate-600",
+            featured ? "text-slate-300" : "text-muted-foreground",
           )}
         >
           {definition.description}
@@ -163,7 +165,7 @@ function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
             <span
               className={cn(
                 "mb-1 text-sm",
-                featured ? "text-slate-400" : "text-slate-500",
+                featured ? "text-slate-400" : "text-muted-foreground",
               )}
             >
               /mês
@@ -199,7 +201,7 @@ function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
                   featured ? "text-emerald-300" : "text-emerald-600",
                 )}
               />
-              <span className={featured ? "text-slate-200" : "text-slate-700"}>
+              <span className={featured ? "text-slate-200" : "text-foreground"}>
                 {feature}
               </span>
             </li>

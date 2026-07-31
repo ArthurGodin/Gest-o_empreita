@@ -104,7 +104,7 @@ export function CatalogList({ items, currentPlan }: CatalogListProps) {
         />
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
-          <div className="hidden grid-cols-[minmax(0,1fr)_10rem_9rem_6.5rem] gap-4 border-b bg-slate-50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[minmax(0,1fr)_10rem_9rem_6.5rem] gap-4 border-b bg-muted/60 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
             <span>Item</span>
             <span>Preço padrão</span>
             <span>Uso</span>
@@ -118,11 +118,11 @@ export function CatalogList({ items, currentPlan }: CatalogListProps) {
               >
                 <span
                   title={item.description}
-                  className="col-span-2 min-w-0 truncate text-sm font-semibold text-slate-950 md:col-span-1"
+                  className="col-span-2 min-w-0 truncate text-sm font-semibold text-foreground md:col-span-1"
                 >
                   {item.description}
                 </span>
-                <span className="text-sm font-semibold tabular-nums text-slate-800">
+                <span className="text-sm font-semibold tabular-nums text-foreground">
                   {formatBRL(item.default_price_cents / 100)}
                   <span className="ml-1 font-normal text-muted-foreground">
                     / {item.unit}

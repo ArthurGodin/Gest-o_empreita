@@ -23,12 +23,12 @@ export default function GlobalError({
 
   return (
     <html lang="pt-BR">
-      <body className="flex min-h-screen items-center justify-center bg-[#f8fafc] px-4">
+      <body className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
         <div className="max-w-md text-center space-y-4">
-          <h2 className="text-xl font-semibold text-[#121826]">
+          <h2 className="text-xl font-semibold text-foreground">
             Algo deu errado
           </h2>
-          <p className="text-sm text-[#475569] leading-6">
+          <p className="text-sm leading-6 text-muted-foreground">
             Ocorreu um erro inesperado. Tente novamente ou volte para a página
             inicial.
           </p>
@@ -42,7 +42,7 @@ export default function GlobalError({
             </Button>
           </div>
           {error?.digest && (
-            <p className="text-xs text-[#94a3b8] font-mono mt-4">
+            <p className="mt-4 font-mono text-xs text-muted-foreground">
               Código: {error.digest}
             </p>
           )}

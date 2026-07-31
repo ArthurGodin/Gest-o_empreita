@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrackedAnchor } from "@/components/tracked-anchor";
+import { ThemeIconButton } from "@/components/theme-control";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import {
   formatPhone,
@@ -72,11 +73,13 @@ export function PublicQuoteView({
   status,
   shareToken,
   nowMs,
+  showThemeControl = true,
 }: {
   quote: PublicQuoteViewData;
   status: EffectiveQuoteStatus;
   shareToken: string;
   nowMs: number;
+  showThemeControl?: boolean;
 }) {
   const vocabulary = getBusinessVocabulary(
     quote.company.business_segment,
@@ -141,24 +144,29 @@ export function PublicQuoteView({
             </div>
           </div>
 
-          {contactUrl && (
-            <Button
-              asChild
-              variant="outline"
-              className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-            >
-              <TrackedAnchor
-                href={contactUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                analyticsEvent="quote_contact_whatsapp_clicked"
-                analyticsProperties={{ source: "public_header" }}
+          <div className="flex items-center justify-end gap-2">
+            {showThemeControl ? (
+              <ThemeIconButton className="h-10 w-10" />
+            ) : null}
+            {contactUrl && (
+              <Button
+                asChild
+                variant="outline"
+                className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
               >
-                <MessageCircle aria-hidden="true" />
-                Dúvida no WhatsApp
-              </TrackedAnchor>
-            </Button>
-          )}
+                <TrackedAnchor
+                  href={contactUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  analyticsEvent="quote_contact_whatsapp_clicked"
+                  analyticsProperties={{ source: "public_header" }}
+                >
+                  <MessageCircle aria-hidden="true" />
+                  Dúvida no WhatsApp
+                </TrackedAnchor>
+              </Button>
+            )}
+          </div>
         </header>
 
         <section className="mt-4 rounded-lg border bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.035)] sm:p-5">
@@ -345,7 +353,7 @@ export function PublicQuoteView({
             {status === "expired" && (
               <div className="rounded-lg border bg-muted p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-200 text-slate-700">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
                     <Clock aria-hidden="true" className="h-4 w-4" />
                   </div>
                   <div>

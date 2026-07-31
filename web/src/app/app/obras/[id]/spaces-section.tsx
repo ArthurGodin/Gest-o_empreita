@@ -80,7 +80,7 @@ const PRIORITY_COPY: Record<
   ProjectSpacePriority,
   { label: string; className: string }
 > = {
-  low: { label: "Baixa", className: "bg-slate-100 text-slate-700" },
+  low: { label: "Baixa", className: "bg-muted text-muted-foreground" },
   normal: { label: "Normal", className: "bg-sky-50 text-sky-800" },
   high: { label: "Alta", className: "bg-amber-50 text-amber-900" },
   essential: {

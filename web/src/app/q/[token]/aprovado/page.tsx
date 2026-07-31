@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrackedAnchor } from "@/components/tracked-anchor";
+import { ThemeIconButton } from "@/components/theme-control";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL, formatDateBR } from "@/lib/utils";
 import { formatPhone, whatsappDirectShareLink } from "@/lib/format";
@@ -132,12 +133,15 @@ export default async function ApprovedPage({
             </div>
           </div>
 
-          <Button asChild variant="outline">
-            <Link href={`/q/${token}`}>
-              <ArrowLeft className="h-4 w-4" />
-              Ver {vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")}
-            </Link>
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            <ThemeIconButton className="h-10 w-10" />
+            <Button asChild variant="outline">
+              <Link href={`/q/${token}`}>
+                <ArrowLeft className="h-4 w-4" />
+                Ver {vocabulary.quoteSingular.toLocaleLowerCase("pt-BR")}
+              </Link>
+            </Button>
+          </div>
         </header>
 
         <section className="grid flex-1 gap-4 py-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
@@ -307,7 +311,7 @@ export default async function ApprovedPage({
                   </TrackedAnchor>
                 </Button>
 
-                <Button asChild variant="outline" className="h-12 bg-white">
+                <Button asChild variant="outline" className="h-12 bg-card">
                   <Link href={`/q/${token}`}>
                     <FileText className="h-4 w-4" />
                     {isProposal

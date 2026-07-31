@@ -19,7 +19,7 @@ export function PendencySummary({
           <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
           <CardTitle className="text-base">Pendências</CardTitle>
           {pendencies.length > 0 ? (
-            <span className="inline-flex min-w-5 items-center justify-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-slate-700">
+            <span className="inline-flex min-w-5 items-center justify-center rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-foreground">
               {pendencies.length}
             </span>
           ) : null}

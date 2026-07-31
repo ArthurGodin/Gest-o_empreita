@@ -72,9 +72,9 @@ export default async function PlanPage() {
       <SubscriptionStatusPanel status={subscriptionStatus} />
 
       {currentPlan !== "free" && company.role === "owner" ? (
-        <section className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-950">
+            <h2 className="text-sm font-semibold text-foreground">
               Gerenciar assinatura
             </h2>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -205,7 +205,7 @@ function PlanCard({
       ) : null}
 
       {isCurrent ? (
-        <div className="absolute right-6 top-0 -translate-y-1/2 rounded-full border bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+        <div className="absolute right-6 top-0 -translate-y-1/2 rounded-full border bg-card px-3 py-1 text-xs font-semibold text-primary shadow-sm">
           Seu plano
         </div>
       ) : null}
@@ -449,7 +449,7 @@ function StatusCard({
           {icon}
         </div>
         <div>
-          <h2 className="font-semibold text-slate-950">{title}</h2>
+          <h2 className="font-semibold text-foreground">{title}</h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
             {text}
           </p>

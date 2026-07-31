@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { MarketingConsentManager } from "@/components/marketing-consent-banner";
 import { PublicIdentityProvider } from "@/components/public-identity-provider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeTransitionProvider } from "@/components/theme-transition";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
 import { legalIdentityState } from "@/lib/env-server";
@@ -24,7 +26,10 @@ const metadataBase = resolveSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#059669",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8faf9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1210" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -73,18 +78,22 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${manrope.variable} font-sans antialiased`}>
-        <PublicIdentityProvider
-          value={{
-            supportEmail: legalIdentityState.supportEmail,
-            legalIdentity: legalIdentityState.publicIdentity,
-          }}
-        >
-          {children}
-          <Toaster />
-          <MarketingConsentManager pixelId={metaPixelId} />
-          <Analytics />
-          {speedInsightsEnabled ? <SpeedInsights /> : null}
-        </PublicIdentityProvider>
+        <ThemeProvider>
+          <ThemeTransitionProvider>
+            <PublicIdentityProvider
+              value={{
+                supportEmail: legalIdentityState.supportEmail,
+                legalIdentity: legalIdentityState.publicIdentity,
+              }}
+            >
+              {children}
+              <Toaster />
+              <MarketingConsentManager pixelId={metaPixelId} />
+              <Analytics />
+              {speedInsightsEnabled ? <SpeedInsights /> : null}
+            </PublicIdentityProvider>
+          </ThemeTransitionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

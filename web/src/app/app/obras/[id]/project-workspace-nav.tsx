@@ -120,7 +120,7 @@ export function ProjectWorkspaceNav({
               trackViewChange(view, "mobile_select");
               router.push(href, { scroll: false });
             }}
-            className="h-11 w-full touch-manipulation rounded-md border border-input bg-card px-3 text-base font-medium text-slate-800 outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
+            className="h-11 w-full touch-manipulation rounded-md border border-input bg-card px-3 text-base font-medium text-foreground outline-none transition-[border-color,box-shadow] focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
           >
             {views.map((view) => (
               <option key={view.id} value={view.id}>
@@ -143,8 +143,8 @@ export function ProjectWorkspaceNav({
                 className={cn(
                   "inline-flex h-11 touch-manipulation items-center rounded-md px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   active
-                    ? "bg-primary/10 text-emerald-900"
-                    : "text-muted-foreground hover:bg-slate-100 hover:text-foreground",
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 {view.label}

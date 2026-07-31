@@ -92,11 +92,11 @@ type ConfirmAction =
   | null;
 
 const STATE_TONE: Record<DeliverableDisplayState, string> = {
-  draft: "border-slate-200 bg-slate-50 text-slate-700",
+  draft: "border-border bg-muted text-muted-foreground",
   waiting_review: "border-blue-200 bg-blue-50 text-blue-800",
   changes_requested: "border-amber-200 bg-amber-50 text-amber-900",
   approved: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  archived: "border-slate-200 bg-slate-100 text-slate-600",
+  archived: "border-border bg-muted text-muted-foreground",
 };
 
 const PLAN_LABEL: Record<AppPlan, string> = {

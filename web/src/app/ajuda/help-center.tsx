@@ -320,7 +320,7 @@ function CategoryButton({
         "inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-xs font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         active
           ? "border-primary bg-primary text-primary-foreground"
-          : "bg-card text-muted-foreground hover:border-slate-400 hover:text-foreground",
+          : "bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
       )}
     >
       {children}

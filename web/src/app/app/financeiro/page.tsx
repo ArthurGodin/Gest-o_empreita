@@ -206,7 +206,7 @@ export default async function FinanceiroPage() {
                 <Link
                   key={charge.id}
                   href={`/app/obras/${charge.project_id}`}
-                  className="grid min-h-16 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+                  className="grid min-h-16 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -238,7 +238,7 @@ export default async function FinanceiroPage() {
                       ) : null}
                     </p>
                   </div>
-                  <div className="text-left text-sm font-semibold tabular-nums text-slate-950 md:min-w-32 md:text-right">
+                  <div className="text-left text-sm font-semibold tabular-nums text-foreground md:min-w-32 md:text-right">
                     {formatBRL(charge.amount_cents / 100)}
                   </div>
                 </Link>
@@ -265,7 +265,7 @@ export default async function FinanceiroPage() {
                   <Link
                     key={project.id}
                     href={`/app/obras/${project.id}`}
-                    className="grid min-h-20 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+                    className="grid min-h-20 min-w-0 gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

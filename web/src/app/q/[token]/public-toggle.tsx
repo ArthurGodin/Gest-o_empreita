@@ -9,6 +9,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import type { EffectiveQuoteStatus } from "@/lib/quote-status";
+import { ThemeIconButton } from "@/components/theme-control";
 import type { PublicProjectBriefing } from "@/lib/queries/briefings";
 import {
   PublicQuoteView,
@@ -163,6 +164,9 @@ export function PublicToggle({
   return (
     <div className="min-h-svh bg-background px-4 py-4 text-foreground sm:px-6 sm:py-6">
       <div className="mx-auto w-full max-w-5xl">
+      <div className="mb-2 flex justify-end">
+        <ThemeIconButton className="h-10 w-10 bg-card/90" />
+      </div>
       <div
         className="mx-auto mb-4 grid max-w-2xl grid-flow-col auto-cols-fr gap-1 rounded-lg border bg-card p-1 shadow-sm"
         role="tablist"
@@ -233,6 +237,7 @@ export function PublicToggle({
             status={status}
             shareToken={shareToken}
             nowMs={nowMs}
+            showThemeControl={false}
           />
         )}
       </div>

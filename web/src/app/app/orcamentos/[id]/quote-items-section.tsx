@@ -97,10 +97,10 @@ export function QuoteItemsSection({
 
       {removedItem && (
         <div
-          className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2"
+          className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted px-3 py-2"
           aria-live="polite"
         >
-          <p className="min-w-0 text-sm text-slate-700">
+          <p className="min-w-0 text-sm text-foreground">
             Item removido:{" "}
             <span className="font-semibold">
               {removedItem.item.description.trim() || "Item sem descrição"}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, HardHat, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeIconButton } from "@/components/theme-control";
 import { findHelpTopic } from "@/lib/help-center";
 import { HelpCenter } from "./help-center";
 
@@ -35,6 +36,7 @@ export default async function HelpPage({
             <span className="truncate text-lg">Prumo</span>
           </Link>
           <div className="flex shrink-0 items-center gap-1">
+            <ThemeIconButton className="h-10 w-10" />
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
                 <ArrowLeft aria-hidden="true" />

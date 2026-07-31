@@ -52,7 +52,7 @@ const STATUS_CLASS: Record<ProjectStatus, string> = {
   planning: "bg-sky-100 text-sky-800",
   in_progress: "bg-emerald-100 text-emerald-800",
   paused: "bg-amber-100 text-amber-800",
-  completed: "bg-slate-100 text-slate-700",
+  completed: "bg-muted text-muted-foreground",
   cancelled: "bg-red-100 text-red-800",
 };
 
@@ -183,7 +183,7 @@ export function ProjectList({ projects }: { projects: ProjectListItem[] }) {
           aria-label={`Lista de ${vocabulary.projectPluralLower}`}
           className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]"
         >
-          <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7.5rem_7.5rem_9rem] gap-4 border-b bg-slate-50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7.5rem_7.5rem_9rem] gap-4 border-b bg-muted/60 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid">
             <span>{vocabulary.projectSingular}</span>
             <span>Cliente</span>
             <span>Status</span>
@@ -210,19 +210,19 @@ function ProjectRow({ project }: { project: ProjectListItem }) {
       <Link
         href={`/app/obras/${project.id}`}
         aria-label={`Abrir ${vocabulary.projectSingular.toLocaleLowerCase("pt-BR")} ${project.name}`}
-        className="grid min-h-[92px] grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7.5rem_7.5rem_9rem] md:items-center md:gap-4 md:py-3"
+        className="grid min-h-[92px] grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3.5 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:min-h-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.75fr)_7.5rem_7.5rem_9rem] md:items-center md:gap-4 md:py-3"
       >
         <span className="col-span-2 min-w-0 md:col-span-1">
           <span
             title={project.name}
-            className="block truncate text-sm font-semibold text-slate-950"
+            className="block truncate text-sm font-semibold text-foreground"
           >
             {project.name}
           </span>
         </span>
         <span
           title={project.customer?.name ?? "Sem cliente"}
-          className="min-w-0 truncate text-sm text-slate-600"
+          className="min-w-0 truncate text-sm text-muted-foreground"
         >
           {project.customer?.name ?? "Sem cliente"}
         </span>

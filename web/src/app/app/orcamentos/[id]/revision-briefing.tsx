@@ -76,7 +76,7 @@ export function RevisionBriefing({
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg border border-amber-200 bg-white/75 p-3">
+          <div className="mt-4 rounded-lg border border-amber-200 bg-white/75 p-3 dark:border-amber-900 dark:bg-amber-950/25">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <div className="text-xs font-semibold uppercase text-amber-900/70">
@@ -90,7 +90,7 @@ export function RevisionBriefing({
                 type="button"
                 variant="outline"
                 onClick={copyReason}
-                className="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+                className="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
               >
                 {copied ? (
                   <ClipboardCheck aria-hidden="true" className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function RevisionBriefing({
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-200 bg-white/75 p-3">
+        <div className="rounded-lg border border-amber-200 bg-white/75 p-3 dark:border-amber-900 dark:bg-amber-950/25">
           <div className="text-xs font-semibold uppercase text-amber-900/70">
             Roteiro de reenvio
           </div>
@@ -115,7 +115,7 @@ export function RevisionBriefing({
           <Button
             asChild
             variant="outline"
-            className="mt-3 w-full border-amber-300 bg-white text-amber-950 hover:bg-amber-100"
+            className="mt-3 w-full border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
           >
             <Link href={`/app/orcamentos/${sourceId}`}>
               Ver orçamento original

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { ProtectedFormNavigation } from "@/components/forms/protected-form-navigation";
+import { ThemeSettings } from "@/components/theme-control";
 import { Button } from "@/components/ui/button";
 import type { CompanyFull } from "@/lib/queries/company-settings";
 import { isDemoWorkspace } from "@/lib/workspace-mode";
@@ -24,6 +25,15 @@ export function SettingsForms({ company }: { company: CompanyFull }) {
         dirty={companyDirty || paymentDirty || profileDirty}
         contentLabel="nesta tela de configurações"
       />
+      <section className="rounded-lg border bg-card p-4">
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-foreground">Aparência</h2>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+            Escolha como o Prumo aparece neste dispositivo.
+          </p>
+        </div>
+        <ThemeSettings />
+      </section>
       <ProfessionalProfileForm
         initialSegment={company.business_segment}
         onDirtyChange={setProfileDirty}
@@ -34,9 +44,9 @@ export function SettingsForms({ company }: { company: CompanyFull }) {
       />
       <CompanyForm company={company} onDirtyChange={setCompanyDirty} />
       {isDemo ? (
-        <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4">
+        <section className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
           <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
               <ShieldCheck aria-hidden="true" className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">

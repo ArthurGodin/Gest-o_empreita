@@ -45,13 +45,13 @@ const PRIORITY_COPY: Record<
   },
   normal: {
     label: "Pendente",
-    badge: "border-slate-200 bg-slate-50 text-slate-700",
+    badge: "border-border bg-muted text-foreground",
     icon: "bg-primary/10 text-primary",
   },
   low: {
     label: "Quando puder",
-    badge: "border-slate-200 bg-white text-slate-600",
-    icon: "bg-slate-100 text-slate-600",
+    badge: "border-border bg-card text-muted-foreground",
+    icon: "bg-muted text-muted-foreground",
   },
 };
 
@@ -72,7 +72,7 @@ export function PendencyRow({
       category={pendency.category}
       priority={pendency.priority}
       className={cn(
-        "group grid min-h-16 grid-cols-[2rem_minmax(0,1fr)_1rem] items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+        "group grid min-h-16 grid-cols-[2rem_minmax(0,1fr)_1rem] items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
         !compact && "sm:grid-cols-[2.25rem_minmax(0,1fr)_1rem] sm:py-3.5",
       )}
     >

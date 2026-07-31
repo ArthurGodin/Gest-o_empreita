@@ -41,38 +41,158 @@
   }
 
   .dark {
-    --background: 222.2 47.4% 6%;
-    --foreground: 213 31% 91%;
+    --background: 150 10% 6%;
+    --foreground: 150 10% 92%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 150 7% 13%;
+    --muted-foreground: 150 6% 65%;
 
-    --popover: 222.2 47.4% 7%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 150 8% 9%;
+    --popover-foreground: 150 10% 92%;
 
-    --card: 222.2 47.4% 7%;
-    --card-foreground: 213 31% 91%;
+    --card: 150 8% 9%;
+    --card-foreground: 150 10% 92%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 150 6% 20%;
+    --input: 150 6% 24%;
 
-    --primary: 160 84% 39%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 160 76% 42%;
+    --primary-foreground: 150 18% 7%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 150 7% 14%;
+    --secondary-foreground: 150 10% 92%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 150 7% 15%;
+    --accent-foreground: 150 10% 92%;
 
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --ring: 160 84% 39%;
+    --ring: 160 76% 42%;
 
     --commercial: 25 90% 58%;
     --commercial-foreground: 222.2 47.4% 11.2%;
   }
+}
+
+/* Compatibilidade para alertas e badges legados enquanto preserva cores sólidas. */
+.dark :where(.bg-emerald-50, .bg-emerald-50\/50, .bg-emerald-50\/70, .bg-emerald-50\/90, .bg-emerald-100) {
+  background-color: rgb(2 44 34 / 0.62);
+}
+
+.dark :where(.bg-emerald-50, .bg-emerald-50\/50, .bg-emerald-50\/70, .bg-emerald-50\/90, .bg-emerald-100):where(.text-emerald-950, .text-emerald-900, .text-emerald-800, .text-emerald-700),
+.dark :where(.bg-emerald-50, .bg-emerald-50\/50, .bg-emerald-50\/70, .bg-emerald-50\/90, .bg-emerald-100) :where(.text-emerald-950, .text-emerald-900, .text-emerald-800, .text-emerald-700) {
+  color: rgb(167 243 208);
+}
+
+.dark :where(.border-emerald-100, .border-emerald-200, .border-emerald-300) {
+  border-color: rgb(6 78 59);
+}
+
+.dark :where(.bg-green-50, .bg-green-100) {
+  background-color: rgb(5 46 22 / 0.62);
+}
+
+.dark :where(.bg-green-50, .bg-green-100):where(.text-green-950, .text-green-900, .text-green-800, .text-green-700),
+.dark :where(.bg-green-50, .bg-green-100) :where(.text-green-950, .text-green-900, .text-green-800, .text-green-700) {
+  color: rgb(187 247 208);
+}
+
+.dark :where(.border-green-100, .border-green-200, .border-green-300) {
+  border-color: rgb(20 83 45);
+}
+
+.dark :where(.bg-amber-50, .bg-amber-50\/50, .bg-amber-50\/70, .bg-amber-100) {
+  background-color: rgb(69 26 3 / 0.62);
+}
+
+.dark :where(.bg-amber-50, .bg-amber-50\/50, .bg-amber-50\/70, .bg-amber-100):where(.text-amber-950, .text-amber-900, .text-amber-800, .text-amber-700),
+.dark :where(.bg-amber-50, .bg-amber-50\/50, .bg-amber-50\/70, .bg-amber-100) :where(.text-amber-950, .text-amber-900, .text-amber-800, .text-amber-700) {
+  color: rgb(253 230 138);
+}
+
+.dark :where(.border-amber-100, .border-amber-200, .border-amber-300) {
+  border-color: rgb(120 53 15);
+}
+
+.dark :where(.bg-red-50, .bg-red-50\/70, .bg-red-100) {
+  background-color: rgb(69 10 10 / 0.62);
+}
+
+.dark :where(.bg-red-50, .bg-red-50\/70, .bg-red-100):where(.text-red-950, .text-red-900, .text-red-800, .text-red-700),
+.dark :where(.bg-red-50, .bg-red-50\/70, .bg-red-100) :where(.text-red-950, .text-red-900, .text-red-800, .text-red-700) {
+  color: rgb(254 202 202);
+}
+
+.dark :where(.border-red-100, .border-red-200, .border-red-300) {
+  border-color: rgb(127 29 29);
+}
+
+.dark :where(.bg-blue-50, .bg-blue-50\/70, .bg-blue-100, .bg-sky-50, .bg-sky-100) {
+  background-color: rgb(8 47 73 / 0.62);
+}
+
+.dark :where(.bg-blue-50, .bg-blue-50\/70, .bg-blue-100, .bg-sky-50, .bg-sky-100):where(.text-blue-950, .text-blue-900, .text-blue-800, .text-blue-700, .text-sky-950, .text-sky-900, .text-sky-800, .text-sky-700),
+.dark :where(.bg-blue-50, .bg-blue-50\/70, .bg-blue-100, .bg-sky-50, .bg-sky-100) :where(.text-blue-950, .text-blue-900, .text-blue-800, .text-blue-700, .text-sky-950, .text-sky-900, .text-sky-800, .text-sky-700) {
+  color: rgb(186 230 253);
+}
+
+.dark :where(.border-blue-100, .border-blue-200, .border-blue-300, .border-sky-100, .border-sky-200, .border-sky-300) {
+  border-color: rgb(12 74 110);
+}
+
+.dark :where(.bg-violet-50, .bg-violet-100) {
+  background-color: rgb(46 16 101 / 0.55);
+}
+
+.dark :where(.bg-violet-50, .bg-violet-100):where(.text-violet-950, .text-violet-900, .text-violet-800, .text-violet-700),
+.dark :where(.bg-violet-50, .bg-violet-100) :where(.text-violet-950, .text-violet-900, .text-violet-800, .text-violet-700) {
+  color: rgb(221 214 254);
+}
+
+.dark :where(.border-violet-100, .border-violet-200, .border-violet-300) {
+  border-color: rgb(76 29 149);
+}
+
+.dark :where(.bg-orange-50, .bg-orange-100) {
+  background-color: rgb(67 20 7 / 0.62);
+}
+
+.dark :where(.bg-orange-50, .bg-orange-100):where(.text-orange-950, .text-orange-900, .text-orange-800, .text-orange-700),
+.dark :where(.bg-orange-50, .bg-orange-100) :where(.text-orange-950, .text-orange-900, .text-orange-800, .text-orange-700) {
+  color: rgb(254 215 170);
+}
+
+.dark :where(.border-orange-100, .border-orange-200, .border-orange-300) {
+  border-color: rgb(124 45 18);
+}
+
+.theme-curtain {
+  background: #f8faf9;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  transform: translate3d(0, -101%, 0);
+  will-change: transform;
+  z-index: 200;
+}
+
+.theme-curtain[data-theme="dark"] {
+  background: #0e1210;
+}
+
+.theme-curtain[data-state="covering"] {
+  transform: translate3d(0, 0, 0);
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.theme-curtain[data-state="revealing"] {
+  transform: translate3d(0, 101%, 0);
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.theme-curtain[data-state="idle"] {
+  transition: none;
 }
 
 @layer components {
@@ -168,10 +288,10 @@
   }
 
   .pricing-page-surface {
-    background-color: rgb(248 250 252);
+    background-color: hsl(var(--background));
     background-image:
-      linear-gradient(rgb(15 23 42 / 0.032) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(15 23 42 / 0.032) 1px, transparent 1px);
+      linear-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.035) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 

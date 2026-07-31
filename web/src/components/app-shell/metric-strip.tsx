@@ -38,7 +38,7 @@ interface MetricTileProps {
 
 const toneClasses: Record<MetricTone, string> = {
   neutral:
-    "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    "bg-muted text-muted-foreground",
   blue: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
   amber:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
@@ -68,7 +68,7 @@ export function MetricTile({
           {icon}
         </span>
       </div>
-      <div className="mt-1 break-words text-lg font-bold tabular-nums text-slate-950 sm:text-xl">
+      <div className="mt-1 break-words text-lg font-bold tabular-nums text-foreground sm:text-xl">
         {value}
       </div>
       <p className="mt-1 text-xs leading-4 text-muted-foreground">{hint}</p>
