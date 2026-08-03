@@ -5,6 +5,12 @@ export async function completeCompanyOnboarding(
   companyName: string,
   options: {
     profile?: "Arquitetura" | "Interiores" | "Engenharia" | "Obras";
+    goal?:
+      | "sell"
+      | "existing_project"
+      | "client_briefing"
+      | "deliverables"
+      | "execution_control";
   } = {},
 ) {
   const companyNameInput = page.getByLabel(/Nome profissional ou da empresa/);
@@ -26,6 +32,13 @@ export async function completeCompanyOnboarding(
   await phoneInput.fill("11999990000");
   await cityInput.fill("Sao Paulo");
   await stateInput.fill("SP");
-  await page.getByRole("button", { name: "Entrar no painel" }).click();
+  await page.getByRole("button", { name: "Continuar" }).click();
+
+  const goal = page.locator(
+    `input[name="activation_goal"][value="${options.goal ?? "sell"}"]`,
+  );
+  await expect(goal).toBeVisible({ timeout: 10_000 });
+  await goal.check({ force: true });
+  await page.getByRole("button", { name: "Começar agora" }).click();
   await expect(page).toHaveURL(/\/app(?:\?|$)/);
 }
