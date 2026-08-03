@@ -90,7 +90,7 @@ test("owner completes the core journey and simulated checkout", async ({
       companyId = quoteRecord?.company_id ?? "";
 
       await page.goto("/app");
-      await expect(page.getByText(/próximo: Aprovação/i)).toBeVisible();
+      await expect(page.getByText(/próximo: Aceite/i)).toBeVisible();
     });
 
     await test.step("customer approves from the public link", async () => {
