@@ -109,8 +109,9 @@ const CHECK_COPY: Record<
   },
   sinapi_release: {
     area: "Base SINAPI",
-    summary: "A competência publicada precisa de atualização.",
-    action: "Confira a competência oficial antes de publicar uma nova release.",
+    summary: "A base publicada está antiga ou ausente.",
+    action:
+      "Atualize a competência SINAPI oficial e confira a importação antes de vender Ultimate com esse recurso.",
   },
 };
 

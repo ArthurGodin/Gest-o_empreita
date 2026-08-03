@@ -52,7 +52,7 @@ const STATE_COPY: Record<
   warning: {
     label: "Atenção",
     title: "Há um sinal que precisa ser acompanhado",
-    detail: "Confira os itens abaixo e o email operacional antes de escalar vendas.",
+    detail: "Resolva ou acompanhe os itens abaixo antes de aumentar anúncios ou demos sem acompanhamento.",
     icon: AlertTriangle,
     className:
       "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-50",
@@ -61,7 +61,7 @@ const STATE_COPY: Record<
   critical: {
     label: "Crítico",
     title: "Há uma falha que exige verificação agora",
-    detail: "Revise o alerta operacional e confirme os estados antes de intervir.",
+    detail: "Pare ações comerciais sensíveis e confira os estados reais antes de intervir.",
     icon: ShieldAlert,
     className:
       "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/25 dark:text-red-50",
@@ -106,14 +106,20 @@ export default async function OperationalHealthPage() {
     <PageContainer size="medium" spacing="compact">
       <PageHeader
         title="Saúde do Prumo"
-        description="Leitura privada dos fluxos que protegem vendas, pagamentos e dados oficiais."
+        description="Painel interno de alertas que protegem vendas, pagamentos, assinaturas e dados oficiais."
         actions={
-          <Button asChild variant="outline">
-            <Link href="/app/configuracoes">
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
+          <>
+            <span className="inline-flex h-10 items-center gap-2 rounded-md border bg-muted/35 px-3 text-sm font-semibold text-muted-foreground">
+              <ShieldAlert aria-hidden="true" className="h-4 w-4" />
+              Somente admin
+            </span>
+            <Button asChild variant="outline">
+              <Link href="/app/configuracoes">
+                <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                Voltar
+              </Link>
+            </Button>
+          </>
         }
       />
 

@@ -6,6 +6,8 @@ import {
   ChevronRight,
   ClipboardList,
   LifeBuoy,
+  ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
@@ -22,7 +24,7 @@ export default async function SettingsPage() {
   const company = await getActiveCompanyFull();
   if (!company) redirect("/onboarding");
   const user = await getCurrentUser();
-  const showOperationalHealth = hasOperationalAdminAccess(user);
+  const showInternalOperations = hasOperationalAdminAccess(user);
 
   return (
     <PageContainer size="medium" spacing="compact">
@@ -44,20 +46,24 @@ export default async function SettingsPage() {
             title="Ajuda e suporte"
             description="Respostas rápidas e contato seguro com o Prumo"
           />
-          <SettingsLink
-            href="/app/configuracoes/diagnostico"
-            icon={BarChart3}
-            title="Diagnóstico de produção"
-            description="Checklist para demo, venda, Analytics, Asaas, Resend e PDF"
-          />
-          {showOperationalHealth && (
-            <SettingsLink
-              href="/app/configuracoes/saude-operacional"
-              icon={Activity}
-              title="Saúde do Prumo"
-              description="Monitor privado de pagamentos, assinaturas, webhook e SINAPI"
-            />
-          )}
+          {showInternalOperations ? (
+            <>
+              <SettingsLink
+                href="/app/configuracoes/diagnostico"
+                icon={BarChart3}
+                title="Painel interno de produção"
+                description="Checklist privado de venda, integrações, métricas e cobrança"
+                badge="Admin"
+              />
+              <SettingsLink
+                href="/app/configuracoes/saude-operacional"
+                icon={Activity}
+                title="Saúde operacional"
+                description="Alertas privados de pagamento, assinatura, webhook e SINAPI"
+                badge="Admin"
+              />
+            </>
+          ) : null}
           <SettingsLink
             href="/app/configuracoes/templates"
             icon={ClipboardList}
@@ -75,11 +81,13 @@ function SettingsLink({
   icon: Icon,
   title,
   description,
+  badge,
 }: {
   href: string;
-  icon: typeof ClipboardList;
+  icon: LucideIcon;
   title: string;
   description: string;
+  badge?: string;
 }) {
   return (
     <Link
@@ -89,7 +97,15 @@ function SettingsLink({
       <div className="flex min-w-0 items-center gap-3">
         <Icon aria-hidden="true" className="h-5 w-5 text-muted-foreground" />
         <div className="min-w-0">
-          <div className="font-medium">{title}</div>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="font-medium">{title}</span>
+            {badge ? (
+              <span className="inline-flex items-center gap-1 rounded-md border bg-muted/40 px-1.5 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
+                <ShieldCheck aria-hidden="true" className="h-3 w-3" />
+                {badge}
+              </span>
+            ) : null}
+          </div>
           <div className="text-xs leading-5 text-muted-foreground">{description}</div>
         </div>
       </div>

@@ -22,10 +22,11 @@ import { legalIdentityState, serverEnv } from "@/lib/env-server";
 import { whatsappLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { isDemoWorkspace } from "@/lib/workspace-mode";
+import { requireOperationalAdmin } from "@/lib/operations/operational-admin";
 import { DemoKitButton } from "./demo-kit-button";
 
 export const metadata = {
-  title: "Diagnóstico de produção — Prumo",
+  title: "Painel interno de produção — Prumo",
 };
 
 type ReadinessStatus = "ready" | "attention" | "blocked";
@@ -63,6 +64,7 @@ const statusCopy: Record<
 };
 
 export default async function ProductionDiagnosticsPage() {
+  await requireOperationalAdmin();
   const company = await getActiveCompanyFull();
   if (!company) redirect("/onboarding");
 
@@ -229,15 +231,21 @@ export default async function ProductionDiagnosticsPage() {
   return (
     <PageContainer spacing="compact">
       <PageHeader
-        title="Diagnóstico de produção"
-        description="Painel objetivo para saber se o Prumo está pronto para demonstrar, vender e cobrar sem improviso."
+        title="Painel interno de produção"
+        description="Checklist privado para acompanhar venda, integrações, métricas e cobrança sem expor detalhes técnicos ao cliente."
         actions={
-          <Button asChild variant="outline">
-            <Link href="/app/configuracoes">
-              <ChevronRight className="h-4 w-4 rotate-180" />
-              Voltar
-            </Link>
-          </Button>
+          <>
+            <span className="inline-flex h-10 items-center gap-2 rounded-md border bg-muted/35 px-3 text-sm font-semibold text-muted-foreground">
+              <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+              Somente admin
+            </span>
+            <Button asChild variant="outline">
+              <Link href="/app/configuracoes">
+                <ChevronRight className="h-4 w-4 rotate-180" />
+                Voltar
+              </Link>
+            </Button>
+          </>
         }
       />
 
@@ -246,7 +254,7 @@ export default async function ProductionDiagnosticsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Prontidão comercial
+                Prontidão comercial interna
               </div>
               <h2 className="mt-2 text-xl font-bold sm:text-2xl">
                 {pilotStatus}
@@ -278,8 +286,9 @@ export default async function ProductionDiagnosticsPage() {
             <div>
               <h2 className="font-bold">Regra de venda</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Se existir item em “Bloqueia venda”, não faça demo fria. Se
-                houver só “Atenção”, faça demo guiada e explique a limitação.
+                Se existir item em “Bloqueia venda”, não escale anúncio. Se
+                houver só “Atenção”, venda com acompanhamento e deixe a
+                limitação clara.
               </p>
             </div>
           </div>

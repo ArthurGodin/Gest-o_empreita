@@ -22,7 +22,10 @@ test("operational health panel stays private, sanitized and responsive", async (
   try {
     await createWorkspace(page, ordinaryEmail, "Prumo QA Cliente");
     await page.goto("/app/configuracoes");
-    await expect(page.getByRole("link", { name: /Saúde do Prumo/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Painel interno de produção/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Saúde operacional/ })).toHaveCount(0);
+    await page.goto("/app/configuracoes/diagnostico");
+    await expect(page.getByRole("heading", { name: /caminho não existe/i })).toBeVisible();
     await page.goto("/app/configuracoes/saude-operacional");
     await expect(page.getByRole("heading", { name: /caminho não existe/i })).toBeVisible();
 
@@ -31,7 +34,10 @@ test("operational health panel stays private, sanitized and responsive", async (
     runId = await seedOperationalState();
 
     await page.goto("/app/configuracoes");
-    await expect(page.getByRole("link", { name: /Saúde do Prumo/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Painel interno de produção/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Saúde operacional/ })).toBeVisible();
+    await page.goto("/app/configuracoes/diagnostico");
+    await expect(page.getByRole("heading", { name: "Painel interno de produção", level: 1 })).toBeVisible();
 
     await checkViewport(page, testInfo, 375, 812, "health-panel-375x812");
     await expect(page.getByRole("heading", { name: /falha que exige verificação/i })).toBeVisible();

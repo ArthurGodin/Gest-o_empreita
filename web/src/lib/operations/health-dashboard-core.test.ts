@@ -77,6 +77,28 @@ describe("operational health dashboard", () => {
     expect(serialized).not.toContain("safe_context");
   });
 
+  it("shows a practical action for SINAPI incidents", () => {
+    const result = build({
+      warningCount: 1,
+      incidents: [
+        {
+          checkName: "sinapi_release",
+          severity: "warning",
+          firstSeenAt: "2026-07-20T10:00:00.000Z",
+          lastSeenAt: "2026-07-20T11:00:00.000Z",
+          occurrenceCount: 1,
+        },
+      ],
+    });
+
+    expect(result.incidents[0]).toMatchObject({
+      area: "Base SINAPI",
+      summary: "A base publicada está antiga ou ausente.",
+      action:
+        "Atualize a competência SINAPI oficial e confira a importação antes de vender Ultimate com esse recurso.",
+    });
+  });
+
   it("limits the visible incident list and reports hidden items", () => {
     const incidents = Array.from({ length: 25 }, (_, index) => ({
       checkName: "asaas_webhook",
