@@ -5,14 +5,14 @@
 ## 1. Elegibilidade testavel
 
 - Criar uma funcao pura para decidir se a cena pode ser carregada.
-- Cobrir largura, WebGPU, movimento reduzido, economia de dados, conexao,
+- Cobrir largura, WebGL2, movimento reduzido, economia de dados, conexao,
   nucleos e memoria em testes unitarios.
 - No componente cliente, observar mudancas de viewport, movimento e conexao.
 - Adiar o import dinamico ate o navegador ficar ocioso.
 
 ## 2. Cena e dependencias
 
-- Manter React Three Fiber, Three WebGPU, TSL e o fallback por error boundary.
+- Manter React Three Fiber, Three Node/TSL em WebGL2 e o fallback por error boundary.
 - Substituir `useTexture` e `useAspect` por APIs do Fiber/Three para remover
   `@react-three/drei` e seu grafo de dependencias.
 - Pausar o frameloop fora da vizinhanca do viewport e limitar o DPR.
@@ -39,4 +39,3 @@
 - Commitar somente os arquivos deste lote, preservando alteracoes externas.
 - Enviar `main`, aguardar Vercel `Ready` e validar o dominio principal.
 - Registrar evidencias em `dogfood-output/prumo-topography-qa-2026-08-03/`.
-

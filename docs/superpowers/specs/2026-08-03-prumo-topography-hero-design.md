@@ -15,7 +15,7 @@ cadastro e precos.
 
 - Refinar somente o header e o primeiro bloco da landing.
 - Manter os textos, destinos dos CTAs e eventos de analytics atuais.
-- Usar a cena WebGPU apenas em desktop capaz de executa-la com folga.
+- Usar a cena Three/TSL apenas em desktop capaz de executa-la com folga.
 - Entregar uma composicao estatica equivalente em mobile e dispositivos sem
   suporte.
 - Preservar tema, cadastro, login, planos, Supabase, Asaas e demais fluxos.
@@ -56,14 +56,14 @@ O componente cliente decide se pode carregar a cena antes de montar o import
 dinamico. Todos os criterios abaixo precisam ser verdadeiros:
 
 1. viewport com pelo menos 1024 px de largura;
-2. `navigator.gpu` disponivel;
+2. WebGL2 disponivel sem alerta de desempenho grave;
 3. preferencia `prefers-reduced-motion` desativada;
 4. `Save-Data` nao ativado;
 5. conexao nao classificada como `slow-2g` ou `2g`;
 6. mais de 2 nucleos logicos e mais de 2 GB de memoria, quando informados.
 
 Se qualquer criterio falhar, fica somente a imagem estatica. Falha de
-inicializacao ou renderizacao WebGPU tambem cai silenciosamente no fallback,
+inicializacao ou renderizacao grafica tambem cai silenciosamente no fallback,
 sem remover conteudo e sem gerar erro para o usuario.
 
 O `IntersectionObserver` pausa o loop quando o hero sai da vizinhanca do
@@ -102,8 +102,8 @@ visivel. A cena nao e requisito para entender ou usar a landing.
 | Mobile | Composicao estatica sem chunk 3D |
 | Movimento reduzido | Composicao estatica sem chunk 3D |
 | Economia de dados ou conexao lenta | Composicao estatica sem chunk 3D |
-| WebGPU ausente | Composicao estatica sem erro de console |
-| WebGPU falha ao iniciar | Error boundary remove apenas o canvas |
+| WebGL2 ausente | Composicao estatica sem erro de console |
+| Renderer falha ao iniciar | Error boundary remove apenas o canvas |
 | Hero fora do viewport | Loop de renderizacao pausado |
 
 ## Validacao
@@ -121,7 +121,7 @@ visivel. A cena nao e requisito para entender ou usar a landing.
 - Confirmar texto, CTA, header, produto e inicio da proxima secao sem
   sobreposicao incoerente.
 - Confirmar ausencia de overflow horizontal.
-- Confirmar que mobile, movimento reduzido e WebGPU ausente nao carregam o
+- Confirmar que mobile, movimento reduzido e WebGL2 ausente nao carregam o
   chunk 3D.
 - Confirmar canvas nao vazio e em movimento no desktop compativel por duas
   capturas e comparacao de pixels.
@@ -135,4 +135,3 @@ enviado para `main`, o deploy Vercel precisa ficar `Ready` e a landing publica e
 revalidada em mobile e desktop. Se houver regressao de legibilidade,
 compatibilidade ou LCP, o commit visual pode ser revertido sem tocar nos fluxos
 do app.
-

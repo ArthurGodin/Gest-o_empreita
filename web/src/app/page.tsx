@@ -21,6 +21,7 @@ import { MarketingMotion } from "@/components/marketing-motion";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { ThemeIconButton } from "@/components/theme-control";
 import { Button } from "@/components/ui/button";
+import { PrumoTopographyHero } from "@/components/ui/prumo-topography-hero";
 import { legalIdentityState } from "@/lib/env-server";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site-metadata";
 
@@ -89,7 +90,7 @@ export default function LandingPage() {
   return (
     <main className="relative overflow-x-hidden bg-background font-sans text-foreground selection:bg-emerald-700/20">
       <MarketingMotion>
-      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-card/95 shadow-sm backdrop-blur-md">
+      <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#070c0a]/95 text-white shadow-sm backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-1 px-3 sm:gap-2 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
@@ -98,11 +99,11 @@ export default function LandingPage() {
             <span className="truncate text-base tracking-tight min-[340px]:text-lg">Prumo</span>
           </Link>
           <nav className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-            <Button asChild variant="ghost" size="sm" className="hidden rounded-full font-medium hover:bg-accent sm:inline-flex">
+            <Button asChild variant="ghost" size="sm" className="hidden rounded-full font-medium text-white hover:bg-white/10 hover:text-white sm:inline-flex">
               <Link href="/precos">Preços</Link>
             </Button>
-            <ThemeIconButton className="h-10 w-10 rounded-full" />
-            <Button asChild variant="ghost" size="sm" className="rounded-full font-medium hover:bg-accent">
+            <ThemeIconButton className="h-10 w-10 rounded-full border-white/15 bg-black/35 text-white hover:bg-white/10 hover:text-white" />
+            <Button asChild variant="ghost" size="sm" className="rounded-full font-medium text-white hover:bg-white/10 hover:text-white">
               <Link href="/login">Entrar</Link>
             </Button>
             <Button asChild size="sm" className="marketing-button rounded-full font-bold shadow-sm hover:bg-emerald-800">
@@ -119,63 +120,67 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <section className="relative z-10 overflow-hidden pb-2 pt-20 sm:pb-6 sm:pt-24">
-        <div className="mx-auto flex max-w-6xl flex-col items-center px-4 text-center">
-          <div className="landing-hero-enter mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-950 shadow-sm [--motion-delay:40ms] dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 sm:text-sm">
-            <ShieldCheck className="h-4 w-4" />
-            Propostas, projetos e financeiro
-          </div>
+      <section className="landing-topography-hero relative isolate z-10 overflow-hidden bg-[#070c0a] pb-3 pt-[4.5rem] text-white min-[360px]:pt-[4.75rem] sm:pb-4 sm:pt-20 lg:pt-24">
+        <PrumoTopographyHero />
 
-          <h1 className="landing-hero-enter max-w-4xl text-4xl font-extrabold leading-tight text-foreground [--motion-delay:90ms] sm:text-5xl md:text-6xl">
-            Prumo: proposta aprovada, projeto no controle.
-          </h1>
+        <div className="relative z-10 mx-auto flex max-w-6xl flex-col px-4">
+          <div className="flex flex-col items-center text-center sm:max-w-2xl sm:items-start sm:text-left lg:max-w-[34rem] xl:max-w-[40rem]">
+            <div className="landing-hero-enter mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-black/35 px-3 py-1.5 text-xs font-semibold text-emerald-100 shadow-sm backdrop-blur-sm [--motion-delay:40ms] sm:text-sm">
+              <ShieldCheck className="h-4 w-4" />
+              Propostas, projetos e financeiro
+            </div>
 
-          <p className="landing-hero-enter mt-4 max-w-2xl text-base font-medium leading-7 text-muted-foreground [--motion-delay:140ms] sm:text-lg">
-            Para arquitetura, interiores, engenharia e obras: apresente seu
-            trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
-          </p>
+            <h1 className="landing-hero-enter max-w-3xl text-[1.9rem] font-extrabold leading-[1.15] text-white [--motion-delay:90ms] min-[360px]:text-[2.125rem] min-[360px]:leading-tight sm:text-5xl">
+              Prumo: proposta aprovada, projeto no controle.
+            </h1>
 
-          <div className="landing-hero-enter mt-5 flex w-full flex-col items-center justify-center gap-2 [--motion-delay:190ms] sm:w-auto sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="marketing-button h-11 w-full max-w-[17rem] rounded-full px-7 text-base font-bold shadow-sm hover:bg-emerald-800 sm:h-12 sm:w-auto"
-            >
-              <TrackedAnchor
-                href="/signup"
-                analyticsEvent="marketing_cta_clicked"
-                analyticsProperties={{ source: "landing_hero", target: "signup" }}
+            <p className="landing-hero-enter mt-3 max-w-xl text-sm font-medium leading-6 text-slate-300 [--motion-delay:140ms] min-[360px]:text-base min-[360px]:leading-7 sm:mt-4 sm:text-lg">
+              Para arquitetura, interiores, engenharia e obras: apresente seu
+              trabalho, receba aprovações e acompanhe projetos, custos e cobranças.
+            </p>
+
+            <div className="landing-hero-enter mt-4 flex w-full flex-col items-center gap-2 [--motion-delay:190ms] min-[380px]:w-auto min-[380px]:flex-row sm:mt-5">
+              <Button
+                asChild
+                size="lg"
+                className="marketing-button h-11 w-full max-w-[17rem] rounded-full px-5 text-base font-bold shadow-sm hover:bg-emerald-800 min-[380px]:w-auto min-[380px]:max-w-none min-[420px]:px-7 sm:h-12"
               >
-                Começar grátis
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </TrackedAnchor>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="marketing-button h-11 w-full max-w-[17rem] rounded-full bg-card px-6 text-sm font-bold text-foreground shadow-sm hover:border-primary/50 hover:bg-accent hover:text-primary sm:h-12 sm:w-auto"
-            >
-              <TrackedAnchor
-                href="/precos"
-                analyticsEvent="marketing_cta_clicked"
-                analyticsProperties={{ source: "landing_hero", target: "pricing" }}
+                <TrackedAnchor
+                  href="/signup"
+                  analyticsEvent="marketing_cta_clicked"
+                  analyticsProperties={{ source: "landing_hero", target: "signup" }}
+                >
+                  Começar grátis
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </TrackedAnchor>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="marketing-button h-11 w-full max-w-[17rem] rounded-full border-white/25 bg-black/35 px-4 text-sm font-bold text-white shadow-sm backdrop-blur-sm hover:border-emerald-300/60 hover:bg-white/10 hover:text-white min-[380px]:w-auto min-[380px]:max-w-none min-[420px]:px-6 sm:h-12"
               >
-                Ver planos e preços
-              </TrackedAnchor>
-            </Button>
+                <TrackedAnchor
+                  href="/precos"
+                  analyticsEvent="marketing_cta_clicked"
+                  analyticsProperties={{ source: "landing_hero", target: "pricing" }}
+                >
+                  Ver planos e preços
+                </TrackedAnchor>
+              </Button>
+            </div>
+
+            <div className="landing-hero-enter mt-3 flex max-w-3xl flex-wrap justify-center gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-300 [--motion-delay:230ms] min-[360px]:gap-x-3 min-[360px]:gap-y-1.5 min-[360px]:text-xs sm:mt-4 sm:justify-start sm:gap-x-5 sm:text-sm">
+              {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
+                <span key={fact} className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  {fact}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="landing-hero-enter mt-4 flex max-w-3xl flex-wrap justify-center gap-x-3 gap-y-1.5 text-xs font-semibold text-muted-foreground [--motion-delay:230ms] sm:gap-x-5 sm:text-sm">
-            {["Grátis sem cartão", "Cliente aprova sem login", "Celular e computador"].map((fact) => (
-              <span key={fact} className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-                {fact}
-              </span>
-            ))}
-          </div>
-
-          <div className="landing-dashboard-frame landing-product-enter relative mt-5 w-full max-w-[20rem] overflow-hidden rounded-lg border bg-card p-1.5 shadow-xl shadow-black/10 [--motion-delay:280ms] sm:max-w-xl sm:p-2">
+          <div className="landing-hero-product-preview landing-product-enter relative z-10 mt-3 w-full max-w-[15rem] self-center overflow-hidden rounded-lg border border-white/15 bg-black/70 p-1.5 shadow-2xl shadow-black/40 backdrop-blur-sm [--motion-delay:280ms] min-[360px]:max-w-[17rem] sm:mt-4 sm:max-w-[26rem] sm:p-2 lg:max-w-[27rem] lg:self-start">
             <Image
               src="/dashboard-mockup.png"
               alt="Painel do Prumo com propostas, projetos e visão financeira"
@@ -183,7 +188,7 @@ export default function LandingPage() {
               height={561}
               priority
               fetchPriority="high"
-              sizes="(max-width: 768px) 100vw, 1024px"
+              sizes="(max-width: 359px) 240px, (max-width: 639px) 272px, (max-width: 1023px) 416px, 432px"
               className="h-auto w-full rounded-md object-contain"
               draggable={false}
             />
