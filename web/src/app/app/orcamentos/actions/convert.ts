@@ -222,6 +222,7 @@ export async function convertToProjectAction(
       starts_on: todayBR(),
       budget_cents: q.total_cents,
       entry_pct: entryPct,
+      creation_source: "quote",
       created_by: user.id,
     })
     .select("id")

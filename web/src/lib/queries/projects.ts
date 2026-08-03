@@ -12,6 +12,7 @@ import type {
   ProjectStatus,
   StageStatus,
 } from "@/lib/supabase/types";
+import type { ProjectCreationSource } from "@/lib/project-source";
 
 export interface Project {
   id: string;
@@ -32,6 +33,9 @@ export interface Project {
   delivery_approved_token: string | null;
   created_at: string;
   updated_at: string;
+  client_access_token: string | null;
+  creation_source: ProjectCreationSource;
+  creation_key: string | null;
 }
 
 export interface ProjectListItem extends Project {

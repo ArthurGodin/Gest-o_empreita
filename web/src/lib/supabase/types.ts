@@ -259,6 +259,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          activation_goal: string | null
           address: string | null
           business_segment: string
           city: string | null
@@ -291,6 +292,7 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          activation_goal?: string | null
           address?: string | null
           business_segment?: string
           city?: string | null
@@ -323,6 +325,7 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          activation_goal?: string | null
           address?: string | null
           business_segment?: string
           city?: string | null
@@ -1355,6 +1358,9 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          client_access_token: string | null
+          creation_key: string | null
+          creation_source: string
           customer_id: string
           delivery_approved_at: string | null
           delivery_approved_token: string | null
@@ -1376,6 +1382,9 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          client_access_token?: string | null
+          creation_key?: string | null
+          creation_source?: string
           customer_id: string
           delivery_approved_at?: string | null
           delivery_approved_token?: string | null
@@ -1397,6 +1406,9 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          client_access_token?: string | null
+          creation_key?: string | null
+          creation_source?: string
           customer_id?: string
           delivery_approved_at?: string | null
           delivery_approved_token?: string | null
@@ -2001,6 +2013,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_direct_project: {
+        Args: {
+          p_budget_cents: number | null
+          p_company_id: string
+          p_creation_key: string
+          p_customer_address: string | null
+          p_customer_city: string | null
+          p_customer_document: string | null
+          p_customer_email: string | null
+          p_customer_name: string | null
+          p_customer_phone: string | null
+          p_customer_state: string | null
+          p_customer_zip_code: string | null
+          p_ends_on: string | null
+          p_existing_customer_id: string | null
+          p_project_address: string | null
+          p_project_description: string | null
+          p_project_name: string
+          p_project_status: Database["public"]["Enums"]["project_status"]
+          p_starts_on: string | null
+          p_template_id: string | null
+        }
+        Returns: {
+          created_customer_id: string
+          created_project_id: string
+        }[]
+      }
+      regenerate_project_client_access_token: {
+        Args: { p_project_id: string }
+        Returns: string
+      }
       archive_project_briefing: {
         Args: { p_briefing_id: string }
         Returns: string

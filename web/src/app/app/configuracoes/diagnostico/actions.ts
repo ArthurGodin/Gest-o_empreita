@@ -1285,6 +1285,7 @@ async function ensureDemoProject(
         ends_on: addDaysBR(8),
         budget_cents: input.scenario.totalCents,
         entry_pct: input.scenario.entryPct,
+        creation_source: "demo",
         created_by: input.userId,
       })
       .select("id")
@@ -1305,6 +1306,7 @@ async function ensureDemoProject(
         ends_on: addDaysBR(8),
         budget_cents: input.scenario.totalCents,
         entry_pct: input.scenario.entryPct,
+        creation_source: "demo",
       })
       .eq("id", projectId)
       .eq("company_id", input.companyId);
