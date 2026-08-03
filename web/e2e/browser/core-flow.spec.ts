@@ -26,6 +26,8 @@ test("owner completes the core journey and simulated checkout", async ({
       await expect(page).toHaveURL(/\/onboarding/);
 
       await completeCompanyOnboarding(page, companyName);
+      await expect(page).toHaveURL(/\/app\/clientes\/novo\?after=quote/);
+      await page.goto("/app");
       await expect(
         page.getByRole("heading", { name: "Caminho até a primeira venda" }),
       ).toBeVisible();
