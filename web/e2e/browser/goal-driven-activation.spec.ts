@@ -28,6 +28,11 @@ test("architect activates Prumo through a direct project and public briefing", a
         goal: "client_briefing",
       });
 
+      await expect(page).toHaveURL(
+        /\/app\/obras\/novo\?goal=client_briefing/,
+      );
+      await page.goto("/app");
+
       await expect(
         page.getByRole("heading", { name: "Briefing pronto para o cliente" }),
       ).toBeVisible();
@@ -72,6 +77,10 @@ test("architect activates Prumo through a direct project and public briefing", a
         timeout: 20_000,
       });
 
+      await page
+        .locator("summary")
+        .filter({ hasText: "Histórico e opções" })
+        .click();
       const whatsappLink = page.getByRole("link", {
         name: "Enviar pelo WhatsApp",
       });
@@ -94,9 +103,15 @@ test("architect activates Prumo through a direct project and public briefing", a
         await publicPage.goto(publicUrl);
 
         await expect(
-          publicPage.getByRole("heading", { name: "Briefing do projeto" }),
+          publicPage.getByRole("heading", {
+            name: new RegExp(`Informações para ${projectName}`, "i"),
+          }),
         ).toBeVisible();
-        await expect(publicPage.getByText(projectName, { exact: true })).toBeVisible();
+        await expect(
+          publicPage.getByRole("heading", {
+            name: "Projeto arquitetônico residencial",
+          }),
+        ).toBeVisible();
         await expect(publicPage.getByText(/Valor contratado/i)).toHaveCount(0);
         await expect(publicPage.getByText(/Cobrança/i)).toHaveCount(0);
         await expect(publicPage.getByText(/Custo/i)).toHaveCount(0);

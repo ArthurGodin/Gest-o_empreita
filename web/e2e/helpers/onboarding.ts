@@ -40,5 +40,5 @@ export async function completeCompanyOnboarding(
   await expect(goal).toBeVisible({ timeout: 10_000 });
   await goal.check({ force: true });
   await page.getByRole("button", { name: "Começar agora" }).click();
-  await expect(page).toHaveURL(/\/app(?:\?|$)/);
+  await expect(page).toHaveURL(/\/app(?:\/|\?|$)/);
 }
