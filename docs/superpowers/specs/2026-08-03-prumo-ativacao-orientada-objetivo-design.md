@@ -195,6 +195,8 @@ acoes normais do produto, sem alongar o onboarding inicial.
 
 O usuario pode trocar o objetivo pelo proprio guia. A troca recalcula a trilha
 com base nos dados existentes e nunca apaga, duplica ou altera registros.
+Somente owner e manager podem alterar o objetivo compartilhado da empresa;
+foreman e worker visualizam a trilha sem o controle de troca.
 
 ### 5.4. Estados vazios e navegacao
 
@@ -209,6 +211,26 @@ objetivo efetivo:
 
 A pagina de Projetos ganhara a acao `Novo projeto`, `Novo servico` ou `Nova
 obra`, permitindo que o recurso continue acessivel depois do onboarding.
+
+### 5.5. Link publico de Briefing para projeto direto
+
+Projetos criados diretamente nao possuem proposta nem `quotes.share_token`.
+Para que `client_briefing` funcione sem fabricar uma proposta, o projeto direto
+recebera um token publico proprio e usara a rota `/p/[token]`.
+
+O primeiro lote dessa rota sera deliberadamente pequeno:
+
+- identificacao da empresa e do projeto;
+- Briefing compartilhado;
+- salvamento, retomada e envio das respostas;
+- estados de link indisponivel, briefing concluido e projeto encerrado.
+
+Ela nao exibira proposta, valores, cobrancas, custos, endereco completo,
+anotacoes internas, equipe ou controles administrativos. Projetos originados de
+proposta continuarao usando `/q/[token]` sem mudanca de URL ou comportamento.
+
+Owner e manager poderao regenerar o link do projeto. A regeneracao invalida o
+token anterior imediatamente e nao altera as respostas do Briefing.
 
 ## 6. Interface e responsividade
 
@@ -260,7 +282,7 @@ Uma restricao adicional garantira compatibilidade entre segmento e objetivo:
 - `deliverables` somente em Engenharia;
 - `execution_control` somente em Execucao de obras.
 
-Ao trocar o segmento em Configuracoes, um objetivo incompatível sera alterado
+Ao trocar o segmento em Configuracoes, um objetivo incompativel sera alterado
 para `sell` na mesma operacao.
 
 ### 7.2. Origem e idempotencia do projeto
@@ -289,6 +311,17 @@ e custos coerentes sem fabricar uma proposta antiga.
 Esse fallback nao cria cobrancas e nao altera projetos que ja possuem receita
 originada de proposta aprovada.
 
+### 7.4. `projects.client_access_token`
+
+Projetos diretos receberao um token URL-safe gerado com 32 bytes aleatorios e
+codificado em Base64 URL-safe sem padding. A coluna sera opcional e tera indice
+unico quando preenchida.
+
+O token sera gerado no servidor dentro da transacao. Projetos antigos e
+projetos por proposta permanecerao com valor nulo. A regeneracao usara uma
+Server Action autenticada, confirmara empresa e projeto e substituira o valor
+em uma unica operacao.
+
 ## 8. Arquitetura tecnica
 
 O lote sera dividido em unidades pequenas:
@@ -301,6 +334,10 @@ O lote sera dividido em unidades pequenas:
 - `direct project RPC`: criacao transacional e idempotente;
 - `direct project form`: interface autenticada;
 - `project source domain`: normalizacao e rotulos internos;
+- `public project access`: resolucao segura do token de projeto direto;
+- `direct project public page`: pagina publica minima para Briefing;
+- `briefing access resolver`: autoriza token de proposta aprovada ou token de
+  projeto direto sem duplicar a regra nas consultas e RPCs;
 - adaptacoes pontuais no painel, estados vazios e configuracoes.
 
 Componentes visuais nao determinam permissao, plano, empresa ou limite. O
@@ -312,6 +349,13 @@ Ela nao recebera `creation_source`: o proprio procedimento sempre gravara
 `direct`. O fluxo de conversao de proposta gravara `quote`, e o kit oficial de
 demonstracao gravara `demo`.
 
+A autorizacao publica do Briefing sera centralizada em uma funcao SQL interna
+que resolve o token para um unico projeto e tipo de acesso. Ela nao tera
+permissao de execucao para `anon` ou `authenticated`; somente as RPCs publicas
+de Briefing, com contrato de saida restrito, poderao utiliza-la. A pagina
+publica fara a mesma resolucao no servidor com o cliente administrativo e
+selecionara apenas os campos permitidos.
+
 ## 9. Fluxo de dados do cadastro direto
 
 1. O navegador gera uma `creation_key` e envia dados validados pelo formulario.
@@ -320,7 +364,7 @@ demonstracao gravara `demo`.
 4. A RPC procura um projeto ja criado com a mesma chave e o retorna se existir.
 5. A RPC confirma que o usuario pertence a empresa.
 6. A RPC valida cliente existente da mesma empresa ou cria o novo cliente.
-7. A RPC cria o projeto com origem `direct`.
+7. A RPC cria o projeto com origem `direct` e token publico gerado no servidor.
 8. O trigger existente aplica o limite atomico de projeto ativo no Gratis.
 9. Se houver modelo acessivel, suas etapas sao instanciadas na mesma transacao.
 10. A RPC retorna IDs de cliente e projeto.
@@ -338,6 +382,8 @@ operacao externa ocorre nesse fluxo.
 - insercoes continuam submetidas a RLS e triggers de quota;
 - `activation_goal` nao concede plano ou recurso;
 - `creation_source` e `creation_key` nao serao aceitos livremente do navegador;
+- `client_access_token` nunca sera aceito do navegador nem incluido em logs;
+- troca de objetivo e regeneracao de link exigem role owner ou manager;
 - IDs e chaves de outra empresa serao rejeitados;
 - logs nao terao nome, CPF, telefone, email, endereco ou texto do projeto;
 - workspaces demo nao executarao efeitos externos, preservando as protecoes
@@ -358,6 +404,12 @@ operacao externa ocorre nesse fluxo.
 - Falha ao carregar objetivo: usar `sell` como orientacao conservadora.
 - Projeto direto sem proposta: mostrar valor previsto e nunca link de proposta
   inexistente.
+- Token publico invalido ou regenerado: responder como link indisponivel, sem
+  revelar se projeto, empresa ou Briefing existem.
+- Projeto concluido ou cancelado: manter Briefing enviado somente para leitura
+  e bloquear novas alteracoes.
+- `/p/[token]` usara `noindex`, politica de referrer restritiva e respostas sem
+  cache compartilhado.
 
 ## 12. Eventos e observabilidade
 
@@ -391,10 +443,11 @@ Propriedades permitidas:
 - rejeicao de combinacoes invalidas;
 - destino apos criacao por objetivo;
 - normalizacao de empresa antiga sem objetivo;
-- troca de segmento com objetivo incompatível;
+- troca de segmento com objetivo incompativel;
 - trilhas, progresso e proxima acao;
 - validacao de datas e valores;
 - fallback de receita para projeto direto.
+- escolha entre URL `/q` e `/p` conforme a origem do acesso.
 
 ### 13.2. Banco e servidor
 
@@ -409,6 +462,12 @@ Propriedades permitidas:
 - nenhum caminho direto chama Asaas ou cria cobranca;
 - projeto por proposta continua com origem `quote`;
 - kit demo continua isolado.
+- token de projeto direto autoriza somente o projeto correspondente;
+- token regenerado deixa de autorizar imediatamente;
+- RPCs publicas de Briefing aceitam os dois tipos de token sem misturar
+  empresas ou projetos;
+- `/p/[token]` nao retorna proposta, cobranca, custo, endereco completo ou
+  anotacao interna.
 
 ### 13.3. Fluxos completos
 
@@ -420,6 +479,8 @@ Propriedades permitidas:
 6. Usuario troca objetivo e o guia reaproveita dados existentes.
 7. Usuario do Gratis atinge o limite sem deixar cliente orfao.
 8. Reenvio apos falha de rede abre o projeto ja criado.
+9. Cliente abre `/p/[token]`, salva, retoma e envia o Briefing pelo celular.
+10. Link regenerado invalida o anterior e preserva as respostas.
 
 ### 13.4. Gates de qualidade
 
@@ -439,14 +500,16 @@ Propriedades permitidas:
 1. Criar migracao aditiva, constraints, backfill e tipos.
 2. Implementar dominio de objetivos e testes puros.
 3. Implementar RPC transacional e testes de isolamento e idempotencia.
-4. Implementar cadastro direto e trilhas de ativacao.
-5. Atualizar onboarding, painel e estados vazios.
-6. Executar gates locais e QA visual autenticado.
-7. Aplicar migracao em preview e repetir os fluxos completos.
-8. Publicar o mesmo commit validado.
-9. Aplicar migracao em producao antes de ativar a nova interface.
-10. Executar smoke em empresa nova, antiga, Gratis, Pro, Ultimate e demo.
-11. Monitorar erros e conclusao por objetivo sem registrar dados pessoais.
+4. Implementar resolucao de acesso publico e `/p/[token]` com testes de
+   exposicao de dados.
+5. Implementar cadastro direto e trilhas de ativacao.
+6. Atualizar onboarding, painel e estados vazios.
+7. Executar gates locais e QA visual autenticado e publico.
+8. Aplicar migracao em preview e repetir os fluxos completos.
+9. Publicar o mesmo commit validado.
+10. Aplicar migracao em producao antes de ativar a nova interface.
+11. Executar smoke em empresa nova, antiga, Gratis, Pro, Ultimate e demo.
+12. Monitorar erros e conclusao por objetivo sem registrar dados pessoais.
 
 O rollback visual pode ocultar a segunda etapa e o cadastro direto. As colunas
 sao aditivas, empresas antigas aceitam objetivo nulo e projetos existentes nao
@@ -458,6 +521,8 @@ Este lote nao inclui:
 
 - visita virtual, fotos 360 ou VR;
 - upload de panoramas ou modelos 3D;
+- unificacao completa dos portais `/q` e `/p`;
+- cobranca, aceite final ou proposta dentro de `/p`;
 - criacao automatica de cobrancas em projeto direto;
 - importacao em lote;
 - mudanca de precos ou promessas dos planos;
@@ -492,6 +557,8 @@ O lote estara pronto quando:
 - cliente, projeto e etapas forem criados atomicamente;
 - retries nao criarem registros duplicados;
 - nenhum cadastro direto gerar cobranca ou chamada ao Asaas;
+- projeto direto compartilhar Briefing por `/p/[token]` sem proposta ficticia;
+- link regenerado revogar o acesso anterior;
 - o limite do Gratis continuar garantido pelo banco;
 - o painel mostrar uma proxima acao contextual e curta;
 - Briefing, Entregas e Gestao ficarem acessiveis no primeiro fluxo relevante;
