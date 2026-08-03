@@ -13,6 +13,7 @@ import type {
   StageStatus,
 } from "@/lib/supabase/types";
 import type { ProjectCreationSource } from "@/lib/project-source";
+import type { PublicProjectAccessKind } from "@/lib/queries/public-project-access";
 
 export interface Project {
   id: string;
@@ -192,6 +193,8 @@ const COST_LIST_LIMIT = 200;
 export interface ProjectRevenueReference {
   revenueCents: number | null;
   shareToken: string | null;
+  publicAccessToken: string | null;
+  publicAccessKind: PublicProjectAccessKind | null;
 }
 
 export const getProjectStages = cache(
@@ -211,20 +214,45 @@ export const getProjectStages = cache(
 export const getProjectRevenueReference = cache(
   async (projectId: string): Promise<ProjectRevenueReference> => {
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from("quotes")
-      .select("total_cents,status,share_token,approved_at")
-      .eq("project_id", projectId)
-      .order("approved_at", { ascending: false, nullsFirst: false })
-      .limit(1)
-      .maybeSingle();
+    const [quoteResult, projectResult] = await Promise.all([
+      supabase
+        .from("quotes")
+        .select("total_cents,status,share_token,approved_at")
+        .eq("project_id", projectId)
+        .order("approved_at", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("projects")
+        .select("budget_cents,creation_source,client_access_token")
+        .eq("id", projectId)
+        .maybeSingle(),
+    ]);
 
-    if (error) throw error;
+    if (quoteResult.error) throw quoteResult.error;
+    if (projectResult.error) throw projectResult.error;
+
+    const quote = quoteResult.data;
+    const project = projectResult.data;
+    const approvedQuoteToken =
+      quote?.status === "approved" ? quote.share_token : null;
+    const directProjectToken =
+      project?.creation_source === "direct"
+        ? project.client_access_token
+        : null;
 
     return {
       revenueCents:
-        data?.status === "approved" ? data.total_cents ?? null : null,
-      shareToken: data?.share_token ?? null,
+        quote?.status === "approved"
+          ? quote.total_cents ?? null
+          : project?.budget_cents ?? null,
+      shareToken: quote?.share_token ?? null,
+      publicAccessToken: approvedQuoteToken ?? directProjectToken,
+      publicAccessKind: approvedQuoteToken
+        ? "quote"
+        : directProjectToken
+          ? "project"
+          : null,
     };
   },
 );

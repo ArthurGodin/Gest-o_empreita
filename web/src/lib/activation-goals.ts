@@ -32,12 +32,12 @@ const GOALS_BY_SEGMENT: Record<
     {
       value: "existing_project",
       title: "Organizar projeto contratado",
-      description: "Comece pelas etapas de um trabalho que ja foi fechado.",
+      description: "Comece pelas etapas de um trabalho que já foi fechado.",
     },
     {
       value: "client_briefing",
       title: "Enviar briefing ao cliente",
-      description: "Crie o projeto e colete as informacoes pelo link.",
+      description: "Crie o projeto e colete as informações pelo link.",
     },
   ],
   interiors: [
@@ -54,41 +54,41 @@ const GOALS_BY_SEGMENT: Record<
     {
       value: "client_briefing",
       title: "Enviar briefing ao cliente",
-      description: "Crie o projeto e entenda necessidades e preferencias.",
+      description: "Crie o projeto e entenda necessidades e preferências.",
     },
   ],
   engineering: [
     {
       value: "sell",
-      title: "Conseguir um novo servico",
-      description: "Cadastre o cliente e prepare uma proposta tecnica.",
+      title: "Conseguir um novo serviço",
+      description: "Cadastre o cliente e prepare uma proposta técnica.",
     },
     {
       value: "existing_project",
-      title: "Organizar servico contratado",
+      title: "Organizar serviço contratado",
       description: "Estruture etapas e prazos de um trabalho em andamento.",
     },
     {
       value: "deliverables",
-      title: "Preparar entregas tecnicas",
-      description: "Crie o projeto e organize arquivos, versoes e aceite.",
+      title: "Preparar entregas técnicas",
+      description: "Crie o projeto e organize arquivos, versões e aceite.",
     },
   ],
   construction: [
     {
       value: "sell",
       title: "Conseguir uma nova obra",
-      description: "Cadastre o cliente e monte o primeiro orcamento.",
+      description: "Cadastre o cliente e monte o primeiro orçamento.",
     },
     {
       value: "existing_project",
       title: "Organizar obra contratada",
-      description: "Comece pelas etapas de uma obra que ja foi fechada.",
+      description: "Comece pelas etapas de uma obra que já foi fechada.",
     },
     {
       value: "execution_control",
-      title: "Controlar execucao e custos",
-      description: "Crie a obra e registre etapas, diario e despesas.",
+      title: "Controlar execução e custos",
+      description: "Crie a obra e registre etapas, diário e despesas.",
     },
   ],
 };
@@ -138,4 +138,3 @@ export function activationGoalStartHref(goal: ActivationGoal): string {
     ? "/app/clientes/novo?after=quote"
     : `/app/obras/novo?goal=${goal}`;
 }
-

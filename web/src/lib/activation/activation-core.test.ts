@@ -5,11 +5,8 @@ import {
 } from "./activation-core";
 
 const company = {
-  payment_provider: "manual_pix",
-  pix_key_type: null,
-  pix_key: null,
-  pix_receiver_name: null,
-  pix_receiver_city: null,
+  business_segment: "construction",
+  activation_goal: "sell",
 };
 
 function input(overrides: Partial<ActivationInput> = {}): ActivationInput {
@@ -18,7 +15,12 @@ function input(overrides: Partial<ActivationInput> = {}): ActivationInput {
     customersCount: 0,
     quotes: [],
     projects: [],
-    charges: [],
+    milestones: {
+      stageProjectIds: [],
+      briefings: [],
+      deliverableProjectIds: [],
+      managementProjectIds: [],
+    },
     ...overrides,
   };
 }
@@ -39,129 +41,180 @@ function quote(overrides: Partial<ActivationInput["quotes"][number]> = {}) {
 }
 
 describe("buildActivationProgress", () => {
-  it("points a new workspace to the first customer, not payment setup", () => {
-    const progress = buildActivationProgress(input());
+  it("keeps legacy companies on the sales path", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "architecture",
+          activation_goal: null,
+        },
+      }),
+    );
+
+    expect(progress.goal).toBe("sell");
+    expect(progress.nextStep?.id).toBe("customer");
+    expect(progress.nextStep?.href).toBe("/app/clientes/novo?after=quote");
+    expect(progress.guideTitle).toBe("Caminho até o primeiro contrato");
+  });
+
+  it("finishes the sales path at the first recorded acceptance", () => {
+    const progress = buildActivationProgress(
+      input({
+        customersCount: 1,
+        quotes: [
+          quote({
+            status: "approved",
+            effective_status: "approved",
+            total_cents: 125_000,
+            sent_at: "2026-07-20T10:00:00Z",
+            approved_at: "2026-07-20T11:00:00Z",
+          }),
+        ],
+      }),
+    );
+
+    expect(progress.steps.map((step) => step.id)).toEqual([
+      "customer",
+      "quote",
+      "share",
+      "approval",
+    ]);
+    expect(progress.isComplete).toBe(true);
+    expect(progress.doneCount).toBe(4);
+  });
+
+  it("uses direct project creation as the first action for contracted work", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "architecture",
+          activation_goal: "existing_project",
+        },
+      }),
+    );
 
     expect(progress.nextStep?.id).toBe("customer");
-    expect(progress.nextStep?.href).toBe("/app/clientes/novo");
-    expect(progress.doneCount).toBe(1);
-    expect(progress.guideTitle).toBe("Caminho até a primeira venda");
-  });
-
-  it("keeps an empty draft on the quote step until it has a value", () => {
-    const progress = buildActivationProgress(
-      input({ customersCount: 1, quotes: [quote()] }),
+    expect(progress.nextStep?.href).toBe(
+      "/app/obras/novo?goal=existing_project",
     );
-
-    expect(progress.nextStep?.id).toBe("quote");
-    expect(progress.nextStep?.action).toBe("Continuar orçamento");
+    expect(progress.nextStep?.action).toBe("Cadastrar trabalho");
   });
 
-  it("adapts activation language for a professional office", () => {
+  it("completes contracted work after a project stage exists", () => {
     const progress = buildActivationProgress(
       input({
-        company: { ...company, business_segment: "architecture" },
+        company: {
+          business_segment: "architecture",
+          activation_goal: "existing_project",
+        },
         customersCount: 1,
-        quotes: [quote()],
-      }),
-    );
-
-    const quoteStep = progress.steps.find((step) => step.id === "quote");
-    const projectStep = progress.steps.find((step) => step.id === "project");
-
-    expect(progress.steps[0]?.title).toBe("Escritório");
-    expect(progress.guideTitle).toBe("Caminho até o primeiro contrato");
-    expect(quoteStep?.title).toBe("Proposta");
-    expect(quoteStep?.action).toBe("Continuar proposta");
-    expect(projectStep?.title).toBe("Projeto");
-    expect(projectStep?.action).toBe("Criar projeto");
-  });
-
-  it("moves a ready proposal to review and sending", () => {
-    const progress = buildActivationProgress(
-      input({
-        customersCount: 1,
-        quotes: [quote({ total_cents: 125_000 })],
-      }),
-    );
-
-    expect(progress.nextStep?.id).toBe("share");
-    expect(progress.nextStep?.action).toBe("Revisar e enviar");
-  });
-
-  it("asks for receiving setup only after approval becomes a project", () => {
-    const progress = buildActivationProgress(
-      input({
-        customersCount: 1,
-        quotes: [
-          quote({
-            status: "approved",
-            effective_status: "approved",
-            total_cents: 125_000,
-            sent_at: "2026-07-20T10:00:00Z",
-            approved_at: "2026-07-20T11:00:00Z",
-            project_id: "project-1",
-          }),
-        ],
         projects: [{ id: "project-1" }],
-      }),
-    );
-
-    expect(progress.nextStep?.id).toBe("payment_setup");
-  });
-
-  it.each([
-    ["pending", "Cobrança enviada; aguardando confirmação."],
-    ["overdue", "Cobrança atrasada; revise antes de reenviar."],
-    ["cancelled", "Cobrança cancelada; gere uma nova."],
-  ])("describes an entry charge in %s status", (status, detail) => {
-    const progress = buildActivationProgress(
-      input({
-        customersCount: 1,
-        company: { ...company, payment_provider: "asaas" },
-        quotes: [
-          quote({
-            status: "approved",
-            effective_status: "approved",
-            total_cents: 125_000,
-            sent_at: "2026-07-20T10:00:00Z",
-            approved_at: "2026-07-20T11:00:00Z",
-            project_id: "project-1",
-          }),
-        ],
-        projects: [{ id: "project-1" }],
-        charges: [{ project_id: "project-1", kind: "entrada", status }],
-      }),
-    );
-
-    expect(progress.nextStep?.id).toBe("entry_payment");
-    expect(progress.nextStep?.detail).toBe(detail);
-  });
-
-  it("finishes when the first entry is confirmed", () => {
-    const progress = buildActivationProgress(
-      input({
-        customersCount: 1,
-        company: { ...company, payment_provider: "asaas" },
-        quotes: [
-          quote({
-            status: "approved",
-            effective_status: "approved",
-            total_cents: 125_000,
-            sent_at: "2026-07-20T10:00:00Z",
-            approved_at: "2026-07-20T11:00:00Z",
-            project_id: "project-1",
-          }),
-        ],
-        projects: [{ id: "project-1" }],
-        charges: [
-          { project_id: "project-1", kind: "entrada", status: "confirmed" },
-        ],
+        milestones: {
+          stageProjectIds: ["project-1"],
+          briefings: [],
+          deliverableProjectIds: [],
+          managementProjectIds: [],
+        },
       }),
     );
 
     expect(progress.isComplete).toBe(true);
-    expect(progress.nextStep).toBeNull();
-    expect(progress.doneCount).toBe(progress.totalCount);
+    expect(progress.steps.map((step) => step.id)).toEqual([
+      "customer",
+      "project",
+      "stage",
+    ]);
+  });
+
+  it("requires a created and shared briefing for the briefing goal", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "interiors",
+          activation_goal: "client_briefing",
+        },
+        customersCount: 1,
+        projects: [{ id: "project-1" }],
+        milestones: {
+          stageProjectIds: [],
+          briefings: [{ projectId: "project-1", sharedAt: null }],
+          deliverableProjectIds: [],
+          managementProjectIds: [],
+        },
+      }),
+    );
+
+    expect(progress.nextStep?.id).toBe("briefing_share");
+    expect(progress.nextStep?.href).toBe(
+      "/app/obras/project-1?view=briefing",
+    );
+  });
+
+  it("finishes the engineering path when the first deliverable exists", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "engineering",
+          activation_goal: "deliverables",
+        },
+        customersCount: 1,
+        projects: [{ id: "project-1" }],
+        milestones: {
+          stageProjectIds: [],
+          briefings: [],
+          deliverableProjectIds: ["project-1"],
+          managementProjectIds: [],
+        },
+      }),
+    );
+
+    expect(progress.steps.at(-1)?.id).toBe("deliverable");
+    expect(progress.isComplete).toBe(true);
+  });
+
+  it("requires a stage and a diary or cost record for execution control", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "construction",
+          activation_goal: "execution_control",
+        },
+        customersCount: 1,
+        projects: [{ id: "project-1" }],
+        milestones: {
+          stageProjectIds: ["project-1"],
+          briefings: [],
+          deliverableProjectIds: [],
+          managementProjectIds: [],
+        },
+      }),
+    );
+
+    expect(progress.nextStep?.id).toBe("management_record");
+    expect(progress.nextStep?.href).toBe(
+      "/app/obras/project-1?view=gestao#custos",
+    );
+  });
+
+  it("reuses the project with the furthest relevant progress", () => {
+    const progress = buildActivationProgress(
+      input({
+        company: {
+          business_segment: "construction",
+          activation_goal: "execution_control",
+        },
+        customersCount: 1,
+        projects: [{ id: "project-new" }, { id: "project-active" }],
+        milestones: {
+          stageProjectIds: ["project-active"],
+          briefings: [],
+          deliverableProjectIds: [],
+          managementProjectIds: ["project-active"],
+        },
+      }),
+    );
+
+    expect(progress.isComplete).toBe(true);
+    expect(progress.steps[1]?.href).toContain("project-active");
   });
 });

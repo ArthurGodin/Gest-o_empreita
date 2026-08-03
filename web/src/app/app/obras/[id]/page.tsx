@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PageContainer } from "@/components/app-shell/page-container";
 import { getActiveCompanyFull } from "@/lib/queries/company-settings";
+import { getActiveCompany } from "@/lib/queries/company";
 import { getProject } from "@/lib/queries/projects";
 import { ProjectHeader } from "./project-header";
 import {
@@ -39,9 +40,10 @@ export default async function ProjectDetailPage({
     params,
     searchParams ?? Promise.resolve<ProjectDetailSearchParams>({}),
   ]);
-  const [project, company] = await Promise.all([
+  const [project, company, membership] = await Promise.all([
     getProject(id),
     getActiveCompanyFull(),
+    getActiveCompany(),
   ]);
 
   if (!project) notFound();
@@ -69,6 +71,7 @@ export default async function ProjectDetailPage({
         <ProjectWorkspaceContent
           activeView={activeView}
           company={company}
+          companyRole={membership?.role ?? null}
           conversionBillingAttention={conversionBillingAttention}
           project={project}
         />

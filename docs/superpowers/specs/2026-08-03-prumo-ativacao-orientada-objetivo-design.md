@@ -1,7 +1,7 @@
 # Prumo - Ativacao orientada por objetivo
 
 Data: 3 de agosto de 2026  
-Status: desenho aprovado; especificacao revisada aguardando revisao do usuario
+Status: desenho aprovado; implementação concluída e em validação
 
 ## 1. Objetivo
 

@@ -9,29 +9,58 @@ import { clientErrorFor, logServerError, logServerEvent } from "@/lib/log";
 import { normalizePaidPlan } from "@/lib/plans";
 import { isBrazilStateCode } from "@/lib/brazil-states";
 import { BUSINESS_SEGMENTS } from "@/lib/business-segment";
+import {
+  ACTIVATION_GOALS,
+  activationGoalStartHref,
+  isActivationGoalAllowed,
+} from "@/lib/activation-goals";
 import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
 import { createProductEventId } from "@/lib/meta-events";
 
-const schema = z.object({
-  business_segment: z.enum(BUSINESS_SEGMENTS, {
-    error: "Escolha como você trabalha",
-  }),
-  name: z
-    .string()
-    .trim()
-    .min(2, "Informe seu nome profissional ou da empresa"),
-  phone: z.string().trim().optional().or(z.literal("")),
-  city: z.string().trim().optional().or(z.literal("")),
-  state: z
-    .string()
-    .trim()
-    .refine(
-      (value): boolean => value === "" || isBrazilStateCode(value),
-      "Selecione uma UF valida",
-    )
-    .optional()
-    .or(z.literal("")),
-});
+const schema = z
+  .object({
+    business_segment: z.enum(BUSINESS_SEGMENTS, {
+      error: "Escolha como você trabalha",
+    }),
+    activation_goal: z.enum(ACTIVATION_GOALS, {
+      error: "Escolha o que você quer resolver primeiro",
+    }),
+    name: z
+      .string()
+      .trim()
+      .min(2, "Informe seu nome profissional ou da empresa")
+      .max(200, "Use no máximo 200 caracteres"),
+    phone: z
+      .string()
+      .trim()
+      .max(30, "WhatsApp muito longo")
+      .optional()
+      .or(z.literal("")),
+    city: z
+      .string()
+      .trim()
+      .max(120, "Cidade muito longa")
+      .optional()
+      .or(z.literal("")),
+    state: z
+      .string()
+      .trim()
+      .refine(
+        (value): boolean => value === "" || isBrazilStateCode(value),
+        "Selecione uma UF válida",
+      )
+      .optional()
+      .or(z.literal("")),
+  })
+  .superRefine((data, context) => {
+    if (!isActivationGoalAllowed(data.activation_goal, data.business_segment)) {
+      context.addIssue({
+        code: "custom",
+        path: ["activation_goal"],
+        message: "Escolha um objetivo disponível para sua área",
+      });
+    }
+  });
 
 export type OnboardingResult =
   | { ok: true; redirectTo: string; eventId?: string }
@@ -52,6 +81,7 @@ export async function createCompanyAction(
   const plan = normalizePaidPlan(formData.get("plan")?.toString());
   const parsed = schema.safeParse({
     business_segment: formData.get("business_segment"),
+    activation_goal: formData.get("activation_goal"),
     name: formData.get("name"),
     phone: formData.get("phone"),
     city: formData.get("city"),
@@ -140,6 +170,7 @@ export async function createCompanyAction(
   logServerEvent("onboarding.completed", {
     company_id: companyId,
     business_segment: parsed.data.business_segment,
+    activation_goal: parsed.data.activation_goal,
     target_plan: plan ?? "free",
     redirects_to_checkout: Boolean(plan),
   });
@@ -149,6 +180,7 @@ export async function createCompanyAction(
     name: "onboarding_completed",
     properties: {
       business_segment: parsed.data.business_segment,
+      activation_goal: parsed.data.activation_goal,
       target_plan: plan ?? "free",
       redirects_to_checkout: Boolean(plan),
     },
@@ -166,5 +198,9 @@ export async function createCompanyAction(
       eventId,
     };
   }
-  return { ok: true, redirectTo: "/app", eventId };
+  return {
+    ok: true,
+    redirectTo: activationGoalStartHref(parsed.data.activation_goal),
+    eventId,
+  };
 }

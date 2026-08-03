@@ -46,9 +46,11 @@ import { trackProductEvent } from "@/lib/product-analytics";
 import { formatDateTimeBR } from "@/lib/utils";
 import type { ProjectBriefing } from "@/lib/queries/briefings";
 import type { ProjectSpace } from "@/lib/queries/project-spaces";
+import type { PublicProjectAccessKind } from "@/lib/queries/public-project-access";
 import {
   archiveProjectBriefingAction,
   createProjectBriefingAction,
+  regenerateProjectClientAccessTokenAction,
   reopenProjectBriefingAction,
   reviewProjectBriefingAction,
   shareProjectBriefingAction,
@@ -85,6 +87,8 @@ interface BriefingSectionProps {
   briefing: ProjectBriefing | null;
   spaces: ProjectSpace[];
   publicUrl: string | null;
+  publicAccessKind: PublicProjectAccessKind | null;
+  canManagePublicLink: boolean;
   projectLocked: boolean;
 }
 
@@ -93,6 +97,7 @@ type ActiveDialog =
   | "review"
   | "reopen"
   | "archive"
+  | "regenerate_link"
   | null;
 
 export function BriefingSection({
@@ -102,6 +107,8 @@ export function BriefingSection({
   briefing,
   spaces,
   publicUrl,
+  publicAccessKind,
+  canManagePublicLink,
   projectLocked,
 }: BriefingSectionProps) {
   const router = useRouter();
@@ -272,6 +279,30 @@ export function BriefingSection({
       router.refresh();
     } catch {
       setError("Não foi possível arquivar agora.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function regeneratePublicLink() {
+    setPending(true);
+    setError(null);
+    try {
+      const result = await regenerateProjectClientAccessTokenAction({
+        projectId,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setDialog(null);
+      toast({
+        title: "Novo link gerado",
+        description: "O link anterior deixou de funcionar imediatamente.",
+      });
+      router.refresh();
+    } catch {
+      setError("Não foi possível gerar um novo link agora.");
     } finally {
       setPending(false);
     }
@@ -631,6 +662,19 @@ export function BriefingSection({
                       </a>
                     </Button>
                   ) : null}
+                  {canUsePublicLink &&
+                  publicAccessKind === "project" &&
+                  canManagePublicLink ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openDialog("regenerate_link")}
+                    >
+                      <LockKeyhole className="h-4 w-4" />
+                      Gerar novo link
+                    </Button>
+                  ) : null}
                   <Button
                     type="button"
                     size="sm"
@@ -672,6 +716,15 @@ export function BriefingSection({
         pending={pending}
         error={dialog === "archive" ? error : null}
         onSubmit={archiveBriefing}
+      />
+      <RegeneratePublicLinkDialog
+        open={dialog === "regenerate_link"}
+        onOpenChange={(open) =>
+          setDialog(open ? "regenerate_link" : null)
+        }
+        pending={pending}
+        error={dialog === "regenerate_link" ? error : null}
+        onSubmit={regeneratePublicLink}
       />
     </>
   );
@@ -1042,6 +1095,53 @@ function ArchiveDialog({
               <Archive className="h-4 w-4" />
             )}
             Arquivar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RegeneratePublicLinkDialog({
+  open,
+  onOpenChange,
+  pending,
+  error,
+  onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pending: boolean;
+  error: string | null;
+  onSubmit: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(next) => !pending && onOpenChange(next)}>
+      <DialogContent className="max-w-sm p-4 sm:p-5">
+        <DialogHeader className="pr-7 text-left">
+          <DialogTitle className="text-base">Gerar um novo link?</DialogTitle>
+          <DialogDescription>
+            O link atual deixará de funcionar imediatamente. Gere outro apenas
+            se ele foi enviado à pessoa errada ou ficou exposto.
+          </DialogDescription>
+        </DialogHeader>
+        {error ? <DialogError>{error}</DialogError> : null}
+        <DialogFooter className="gap-2 sm:space-x-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}
+          >
+            Manter link atual
+          </Button>
+          <Button type="button" onClick={onSubmit} disabled={pending}>
+            {pending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LockKeyhole className="h-4 w-4" />
+            )}
+            Gerar novo link
           </Button>
         </DialogFooter>
       </DialogContent>

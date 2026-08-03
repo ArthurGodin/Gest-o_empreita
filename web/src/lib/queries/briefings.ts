@@ -10,6 +10,7 @@ import {
 } from "@/lib/briefings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { resolvePublicProjectAccess } from "@/lib/queries/public-project-access";
 import type {
   ProjectBriefingStatus,
   Database,
@@ -111,25 +112,14 @@ export const getPublicProjectBriefingByToken = cache(
       return null;
     }
 
+    const access = await resolvePublicProjectAccess(shareToken);
+    if (!access) return null;
+
     const admin = createAdminClient();
-    const { data: quoteData, error: quoteError } = await admin
-      .from("quotes")
-      .select("project_id,status")
-      .eq("share_token", shareToken)
-      .maybeSingle();
-
-    if (
-      quoteError ||
-      !quoteData?.project_id ||
-      quoteData.status !== "approved"
-    ) {
-      return null;
-    }
-
     const { data: briefingData, error: briefingError } = await admin
       .from("project_briefings")
       .select("*")
-      .eq("project_id", quoteData.project_id)
+      .eq("project_id", access.projectId)
       .in("status", ["shared", "submitted", "reviewed"])
       .is("archived_at", null)
       .maybeSingle();
@@ -140,7 +130,7 @@ export const getPublicProjectBriefingByToken = cache(
       const { data: projectState, error: projectStateError } = await admin
         .from("projects")
         .select("status,delivery_approved_at")
-        .eq("id", quoteData.project_id)
+        .eq("id", access.projectId)
         .maybeSingle();
       if (
         projectStateError ||

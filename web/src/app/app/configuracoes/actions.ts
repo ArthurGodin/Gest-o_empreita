@@ -14,6 +14,7 @@ import {
   BUSINESS_SEGMENTS,
   type BusinessSegment,
 } from "@/lib/business-segment";
+import { normalizeActivationGoal } from "@/lib/activation-goals";
 import {
   DEMO_WORKSPACE_BILLING_MESSAGE,
   isDemoWorkspace,
@@ -103,6 +104,9 @@ export async function updateBusinessSegmentAction(input: {
 
   const company = await getActiveCompany();
   if (!company) return { ok: false, error: "Empresa não encontrada." };
+  if (company.role !== "owner" && company.role !== "manager") {
+    return { ok: false, error: "Somente responsáveis podem alterar a área profissional." };
+  }
 
   const parsed = businessSegmentSchema.safeParse(input);
   if (!parsed.success) {
@@ -114,9 +118,16 @@ export async function updateBusinessSegmentAction(input: {
   }
 
   const supabase = createClient();
+  const activationGoal = normalizeActivationGoal(
+    company.company.activation_goal,
+    parsed.data.business_segment,
+  );
   const { error } = await supabase
     .from("companies")
-    .update({ business_segment: parsed.data.business_segment })
+    .update({
+      business_segment: parsed.data.business_segment,
+      activation_goal: activationGoal,
+    })
     .eq("id", company.company_id);
 
   if (error) {

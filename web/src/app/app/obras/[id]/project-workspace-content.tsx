@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 import { hasProfessionalProjectTools } from "./project-workspace";
 import type { ProjectWorkspaceView } from "./project-workspace";
 import type { CompanyFull } from "@/lib/queries/company-settings";
+import type { CompanyRole } from "@/lib/supabase/types";
 import {
   getDeliverableStorageUsage,
   getProjectDeliverables,
@@ -37,6 +38,7 @@ interface ProjectWorkspaceContentProps {
   activeView: ProjectWorkspaceView;
   company: CompanyFull | null;
   conversionBillingAttention: boolean;
+  companyRole: CompanyRole | null;
   project: ProjectListItem;
 }
 
@@ -44,6 +46,7 @@ export async function ProjectWorkspaceContent({
   activeView,
   company,
   conversionBillingAttention,
+  companyRole,
   project,
 }: ProjectWorkspaceContentProps) {
   const segment = company?.business_segment ?? "construction";
@@ -61,8 +64,10 @@ export async function ProjectWorkspaceContent({
         getProjectSpaces(project.id),
         getProjectRevenueReference(project.id),
       ]);
-      const publicUrl = revenue.shareToken
-        ? `${env.NEXT_PUBLIC_APP_URL}/q/${revenue.shareToken}?tab=briefing`
+      const publicUrl = revenue.publicAccessToken
+        ? revenue.publicAccessKind === "project"
+          ? `${env.NEXT_PUBLIC_APP_URL}/p/${revenue.publicAccessToken}`
+          : `${env.NEXT_PUBLIC_APP_URL}/q/${revenue.publicAccessToken}?tab=briefing`
         : null;
 
       return (
@@ -76,6 +81,10 @@ export async function ProjectWorkspaceContent({
           briefing={briefing}
           spaces={spaces}
           publicUrl={publicUrl}
+          publicAccessKind={revenue.publicAccessKind}
+          canManagePublicLink={
+            companyRole === "owner" || companyRole === "manager"
+          }
           projectLocked={projectLocked}
         />
       );

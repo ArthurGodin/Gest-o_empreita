@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CompanyRole } from "@/lib/supabase/types";
 import type { BusinessSegment } from "@/lib/business-segment";
 import type { WorkspaceMode } from "@/lib/workspace-mode";
+import type { ActivationGoal } from "@/lib/activation-goals";
 
 export interface CompanyMembership {
   company_id: string;
@@ -12,6 +13,7 @@ export interface CompanyMembership {
     name: string;
     logo_url: string | null;
     business_segment: BusinessSegment;
+    activation_goal: ActivationGoal | null;
     workspace_mode: WorkspaceMode;
   };
 }
@@ -33,6 +35,7 @@ export const getUserCompanies = cache(async (): Promise<CompanyMembership[]> => 
         name,
         logo_url,
         business_segment,
+        activation_goal,
         workspace_mode
       )
     `,

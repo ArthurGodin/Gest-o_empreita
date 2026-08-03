@@ -53,6 +53,15 @@ const nextConfig = {
         ],
       },
       {
+        // Projeto direto: expõe apenas o briefing autorizado pelo token.
+        source: "/p/:token*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
         // PDF público — não armazena em caches compartilhados (contém PII)
         source: "/q/:token/pdf",
         headers: [

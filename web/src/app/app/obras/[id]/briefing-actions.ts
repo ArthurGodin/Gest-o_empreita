@@ -54,6 +54,7 @@ async function requireBriefingContext() {
     ok: true as const,
     userId: user.id,
     companyId: company.company_id,
+    role: company.role,
     segment: company.company.business_segment,
   };
 }
@@ -139,23 +140,62 @@ export async function shareProjectBriefingAction(input: {
   }
 
   const supabase = createClient();
-  const { data: quote, error: quoteError } = await supabase
-    .from("quotes")
-    .select("share_token")
-    .eq("project_id", parsed.data.projectId)
-    .eq("company_id", context.companyId)
-    .eq("status", "approved")
-    .not("share_token", "is", null)
-    .order("approved_at", { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
+  const [briefingResult, quoteResult, projectResult] = await Promise.all([
+    supabase
+      .from("project_briefings")
+      .select("id")
+      .eq("id", parsed.data.briefingId)
+      .eq("project_id", parsed.data.projectId)
+      .eq("company_id", context.companyId)
+      .is("archived_at", null)
+      .maybeSingle(),
+    supabase
+      .from("quotes")
+      .select("share_token")
+      .eq("project_id", parsed.data.projectId)
+      .eq("company_id", context.companyId)
+      .eq("status", "approved")
+      .not("share_token", "is", null)
+      .order("approved_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("projects")
+      .select("creation_source,client_access_token")
+      .eq("id", parsed.data.projectId)
+      .eq("company_id", context.companyId)
+      .maybeSingle(),
+  ]);
 
-  if (quoteError || !quote?.share_token) {
+  if (briefingResult.error || !briefingResult.data) {
+    return { ok: false, error: "Briefing não encontrado.", code: "not_found" };
+  }
+
+  if (quoteResult.error || projectResult.error) {
+    logServerError(
+      "briefings.public-link",
+      quoteResult.error ?? projectResult.error,
+      {
+        company_id: context.companyId,
+        project_id: parsed.data.projectId,
+      },
+    );
+    return briefingActionError(quoteResult.error ?? projectResult.error);
+  }
+
+  const quoteToken = quoteResult.data?.share_token ?? null;
+  const directToken =
+    projectResult.data?.creation_source === "direct"
+      ? projectResult.data.client_access_token
+      : null;
+  const accessToken = quoteToken ?? directToken;
+  const accessKind = quoteToken ? "quote" : directToken ? "project" : null;
+
+  if (!accessToken || !accessKind) {
     return {
       ok: false,
       code: "public_link_unavailable",
-      error:
-        "Este projeto ainda não possui um link público de proposta aprovada.",
+      error: "Este projeto ainda não possui um acesso público disponível.",
     };
   }
 
@@ -180,7 +220,72 @@ export async function shareProjectBriefingAction(input: {
 
   return {
     ok: true,
-    shareUrl: `${env.NEXT_PUBLIC_APP_URL}/q/${encodeURIComponent(quote.share_token)}?tab=briefing`,
+    shareUrl:
+      accessKind === "project"
+        ? `${env.NEXT_PUBLIC_APP_URL}/p/${encodeURIComponent(accessToken)}`
+        : `${env.NEXT_PUBLIC_APP_URL}/q/${encodeURIComponent(accessToken)}?tab=briefing`,
+  };
+}
+
+export async function regenerateProjectClientAccessTokenAction(input: {
+  projectId: string;
+}): Promise<ShareBriefingActionResult> {
+  const context = await requireBriefingContext();
+  if (!context.ok) return context;
+  if (context.role !== "owner" && context.role !== "manager") {
+    return {
+      ok: false,
+      code: "not_allowed",
+      error: "Somente responsáveis podem gerar um novo link.",
+    };
+  }
+
+  const parsed = z.object({ projectId: uuidSchema }).safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Projeto inválido.", code: "invalid_fields" };
+  }
+
+  const supabase = createClient();
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("client_access_token,creation_source")
+    .eq("id", parsed.data.projectId)
+    .eq("company_id", context.companyId)
+    .maybeSingle();
+
+  if (projectError || project?.creation_source !== "direct") {
+    return {
+      ok: false,
+      code: "public_link_unavailable",
+      error: "Este projeto não usa um link público direto.",
+    };
+  }
+
+  const { data: token, error } = await supabase.rpc(
+    "regenerate_project_client_access_token",
+    { p_project_id: parsed.data.projectId },
+  );
+  if (error || !token) {
+    logServerError("briefings.public-link.regenerate", error, {
+      company_id: context.companyId,
+      project_id: parsed.data.projectId,
+    });
+    return briefingActionError(error);
+  }
+
+  revalidateProject(parsed.data.projectId);
+  if (project.client_access_token) {
+    revalidatePath(`/p/${project.client_access_token}`);
+  }
+  revalidatePath(`/p/${token}`);
+  logServerEvent("briefings.public-link.regenerated", {
+    company_id: context.companyId,
+    project_id: parsed.data.projectId,
+  });
+
+  return {
+    ok: true,
+    shareUrl: `${env.NEXT_PUBLIC_APP_URL}/p/${encodeURIComponent(token)}`,
   };
 }
 

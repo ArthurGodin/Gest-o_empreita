@@ -1,17 +1,27 @@
 import {
+  activationGoalStartHref,
+  normalizeActivationGoal,
+  type ActivationGoal,
+} from "@/lib/activation-goals";
+import {
   getBusinessVocabulary,
   isProfessionalSegment,
+  normalizeBusinessSegment,
+  type BusinessSegment,
 } from "@/lib/business-segment";
+import type { ActivationMilestones } from "@/lib/queries/activation";
 
 export type ActivationStage =
-  | "company"
   | "customer"
   | "quote"
   | "share"
   | "approval"
   | "project"
-  | "payment_setup"
-  | "entry_payment";
+  | "stage"
+  | "briefing"
+  | "briefing_share"
+  | "deliverable"
+  | "management_record";
 
 export interface ActivationStep {
   id: ActivationStage;
@@ -23,12 +33,8 @@ export interface ActivationStep {
 }
 
 interface ActivationCompany {
-  payment_provider: string | null;
-  pix_key_type: string | null;
-  pix_key: string | null;
-  pix_receiver_name: string | null;
-  pix_receiver_city: string | null;
   business_segment?: string | null;
+  activation_goal?: string | null;
 }
 
 interface ActivationQuote {
@@ -47,21 +53,17 @@ interface ActivationProject {
   id: string;
 }
 
-interface ActivationCharge {
-  project_id: string;
-  kind: string;
-  status: string;
-}
-
 export interface ActivationInput {
   company: ActivationCompany | null;
   customersCount: number;
   quotes: ActivationQuote[];
   projects: ActivationProject[];
-  charges: ActivationCharge[];
+  milestones?: ActivationMilestones;
 }
 
 export interface ActivationProgress {
+  goal: ActivationGoal;
+  segment: BusinessSegment;
   guideTitle: string;
   steps: ActivationStep[];
   nextStep: ActivationStep | null;
@@ -71,157 +73,348 @@ export interface ActivationProgress {
   isComplete: boolean;
 }
 
-const PAID_CHARGE_STATUSES = new Set(["received", "confirmed"]);
+const EMPTY_MILESTONES: ActivationMilestones = {
+  stageProjectIds: [],
+  briefings: [],
+  deliverableProjectIds: [],
+  managementProjectIds: [],
+};
 
 export function buildActivationProgress(
   input: ActivationInput,
 ): ActivationProgress {
-  const { company, customersCount, quotes, projects, charges } = input;
-  const vocabulary = getBusinessVocabulary(company?.business_segment);
-  const isProfessional = isProfessionalSegment(company?.business_segment);
-  const isOrganizationMasculine =
-    vocabulary.organizationLabel === "Escritório";
+  const segment = normalizeBusinessSegment(input.company?.business_segment);
+  const goal = normalizeActivationGoal(
+    input.company?.activation_goal,
+    segment,
+  );
+  const milestones = input.milestones ?? EMPTY_MILESTONES;
+
+  switch (goal) {
+    case "existing_project":
+      return buildExistingProjectProgress(input, milestones, segment, goal);
+    case "client_briefing":
+      return buildBriefingProgress(input, milestones, segment, goal);
+    case "deliverables":
+      return buildDeliverablesProgress(input, milestones, segment, goal);
+    case "execution_control":
+      return buildExecutionProgress(input, milestones, segment, goal);
+    default:
+      return buildSalesProgress(input, segment, goal);
+  }
+}
+
+function buildSalesProgress(
+  input: ActivationInput,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+) {
+  const vocabulary = getBusinessVocabulary(segment);
+  const isProfessional = isProfessionalSegment(segment);
   const quoteLower = vocabulary.quoteSingular.toLowerCase();
-  const projectLower = vocabulary.projectSingular.toLowerCase();
-  const firstQuote = quotes[0];
-  const readyQuote = quotes.find((quote) => quote.total_cents > 0);
-  const sharedQuote = quotes.find(isSharedQuote);
-  const approvedQuote = quotes.find(
+  const firstQuote = input.quotes[0];
+  const sharedQuote = input.quotes.find(isSharedQuote);
+  const approvedQuote = input.quotes.find(
     (quote) => quote.effective_status === "approved",
   );
-  const project =
-    (approvedQuote?.project_id
-      ? projects.find((item) => item.id === approvedQuote.project_id)
-      : null) ?? projects[0];
-  const entryCharge =
-    (project
-      ? charges.find(
-          (charge) =>
-            charge.project_id === project.id && charge.kind === "entrada",
-        )
-      : null) ?? charges.find((charge) => charge.kind === "entrada");
-  const paymentReady = isCompanyPaymentReady(company);
-
-  const quoteHref = readyQuote
-    ? `/app/orcamentos/${readyQuote.id}`
-    : firstQuote
-      ? `/app/orcamentos/${firstQuote.id}`
-      : "/app/orcamentos/novo";
+  const quoteHref = firstQuote
+    ? `/app/orcamentos/${firstQuote.id}`
+    : "/app/orcamentos/novo";
+  const sharedHref = sharedQuote
+    ? `/app/orcamentos/${sharedQuote.id}`
+    : quoteHref;
   const approvalHref = approvedQuote
     ? `/app/orcamentos/${approvedQuote.id}`
-    : sharedQuote
-      ? `/app/orcamentos/${sharedQuote.id}`
-      : quoteHref;
-  const projectHref = project
-    ? `/app/obras/${project.id}`
-    : approvedQuote
-      ? `/app/orcamentos/${approvedQuote.id}`
-      : approvalHref;
+    : sharedHref;
 
-  const steps: ActivationStep[] = [
-    {
-      id: "company",
-      title: vocabulary.organizationLabel,
-      detail: company
-        ? "Perfil criado."
-        : `Crie o perfil ${isOrganizationMasculine ? "do" : "da"} ${vocabulary.organizationLabel.toLowerCase()}.`,
-      href: company ? "/app/configuracoes" : "/onboarding",
-      action: company
-        ? `Revisar ${vocabulary.organizationLabel.toLowerCase()}`
-        : `Criar ${vocabulary.organizationLabel.toLowerCase()}`,
-      done: Boolean(company),
-    },
-    {
-      id: "customer",
-      title: "Cliente",
-      detail:
-        customersCount > 0
-          ? "Primeiro cliente cadastrado."
-          : "Cadastre quem receberá a proposta.",
-      href: customersCount > 0 ? "/app/clientes" : "/app/clientes/novo",
-      action: customersCount > 0 ? "Ver clientes" : "Cadastrar cliente",
-      done: customersCount > 0,
-    },
-    {
-      id: "quote",
-      title: vocabulary.quoteSingular,
-      detail: readyQuote
-        ? `${vocabulary.quoteSingular} ${isProfessional ? "pronta" : "pronto"} para revisar e enviar.`
-        : firstQuote
-          ? "Adicione os itens e confira o total."
+  return finalizeProgress(
+    goal,
+    segment,
+    isProfessional
+      ? "Caminho até o primeiro contrato"
+      : "Caminho até a primeira venda",
+    [
+      customerStep(input.customersCount, "sell"),
+      {
+        id: "quote",
+        title: vocabulary.quoteSingular,
+        detail: firstQuote
+          ? `${vocabulary.quoteSingular} ${isProfessional ? "criada" : "criado"}. Confira os itens antes de enviar.`
           : `Monte ${isProfessional ? "a primeira" : "o primeiro"} ${quoteLower}.`,
-      href: quoteHref,
-      action: readyQuote
-        ? `Revisar ${quoteLower}`
-        : firstQuote
-          ? `Continuar ${quoteLower}`
+        href: quoteHref,
+        action: firstQuote
+          ? `Revisar ${quoteLower}`
           : `Criar ${quoteLower}`,
-      done: Boolean(readyQuote),
-    },
-    {
-      id: "share",
-      title: "Envio",
-      detail: sharedQuote
-        ? "Link enviado ou aberto pelo cliente."
-        : `Envie o link ${isProfessional ? "da" : "do"} ${quoteLower} ao cliente.`,
-      href: sharedQuote
-        ? `/app/orcamentos/${sharedQuote.id}`
-        : quoteHref,
-      action: sharedQuote
-        ? `Acompanhar ${quoteLower}`
-        : "Revisar e enviar",
-      done: Boolean(sharedQuote),
-    },
-    {
-      id: "approval",
-      title: "Aprovação",
-      detail: approvedQuote
-        ? "Aceite registrado no Prumo."
-        : "Acompanhe a decisão do cliente.",
-      href: approvalHref,
-      action: approvedQuote ? "Ver aprovação" : "Acompanhar aprovação",
-      done: Boolean(approvedQuote),
-    },
-    {
-      id: "project",
-      title: vocabulary.projectSingular,
-      detail: project
-        ? `${vocabulary.quoteSingular} ${isProfessional ? "convertida" : "convertido"} em ${projectLower}.`
-        : isProfessional
-          ? "Transforme a proposta aprovada em projeto."
-          : "Transforme o aprovado em obra.",
-      href: projectHref,
-      action: project
-        ? `Abrir ${projectLower}`
-        : `Criar ${projectLower}`,
-      done: Boolean(project),
-    },
-    {
-      id: "payment_setup",
-      title: "Recebimento",
-      detail: paymentReady
-        ? "Forma de recebimento configurada."
-        : "Configure o recebimento antes de cobrar.",
-      href: "/app/configuracoes",
-      action: paymentReady ? "Revisar recebimento" : "Configurar recebimento",
-      done: paymentReady,
-    },
-    buildEntryPaymentStep({
-      project,
-      charge: entryCharge ?? null,
-      projectHref,
-      projectLabel: projectLower,
-      isProfessional,
-    }),
-  ];
+        done: Boolean(firstQuote),
+      },
+      {
+        id: "share",
+        title: "Envio",
+        detail: sharedQuote
+          ? "Link compartilhado ou aberto pelo cliente."
+          : `Compartilhe o link ${isProfessional ? "da" : "do"} ${quoteLower}.`,
+        href: sharedHref,
+        action: sharedQuote ? `Acompanhar ${quoteLower}` : "Revisar e enviar",
+        done: Boolean(sharedQuote),
+      },
+      {
+        id: "approval",
+        title: "Aceite",
+        detail: approvedQuote
+          ? "Aceite registrado no Prumo."
+          : "Acompanhe a decisão do cliente.",
+        href: approvalHref,
+        action: approvedQuote ? "Ver aceite" : "Acompanhar aceite",
+        done: Boolean(approvedQuote),
+      },
+    ],
+  );
+}
 
+function buildExistingProjectProgress(
+  input: ActivationInput,
+  milestones: ActivationMilestones,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+) {
+  const vocabulary = getBusinessVocabulary(segment);
+  const project = selectProject(input.projects, milestones.stageProjectIds);
+  const projectHref = project
+    ? `/app/obras/${project.id}?view=etapas`
+    : activationGoalStartHref(goal);
+  const hasStage = Boolean(
+    project && milestones.stageProjectIds.includes(project.id),
+  );
+
+  return finalizeProgress(
+    goal,
+    segment,
+    `Organize ${articleForProject(segment)} ${vocabulary.projectSingular.toLowerCase()} ${isProfessionalSegment(segment) ? "contratado" : "contratada"}`,
+    [
+      customerStep(input.customersCount, goal),
+      projectStep(project, projectHref, segment, goal),
+      {
+        id: "stage",
+        title: "Primeira etapa",
+        detail: hasStage
+          ? "A estrutura inicial do trabalho está organizada."
+          : "Defina a primeira etapa para acompanhar o andamento.",
+        href: projectHref,
+        action: hasStage ? "Ver etapas" : "Adicionar etapa",
+        done: hasStage,
+      },
+    ],
+  );
+}
+
+function buildBriefingProgress(
+  input: ActivationInput,
+  milestones: ActivationMilestones,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+) {
+  const sharedProjectIds = milestones.briefings
+    .filter((briefing) => briefing.sharedAt)
+    .map((briefing) => briefing.projectId);
+  const briefingProjectIds = milestones.briefings.map(
+    (briefing) => briefing.projectId,
+  );
+  const project = selectProject(
+    input.projects,
+    sharedProjectIds.length > 0 ? sharedProjectIds : briefingProjectIds,
+  );
+  const projectHref = project
+    ? `/app/obras/${project.id}?view=briefing`
+    : activationGoalStartHref(goal);
+  const briefing = project
+    ? milestones.briefings.find((item) => item.projectId === project.id)
+    : null;
+
+  return finalizeProgress(goal, segment, "Briefing pronto para o cliente", [
+    customerStep(input.customersCount, goal),
+    projectStep(project, projectHref, segment, goal),
+    {
+      id: "briefing",
+      title: "Briefing",
+      detail: briefing
+        ? "Briefing criado para este projeto."
+        : "Prepare as perguntas para entender o cliente.",
+      href: projectHref,
+      action: briefing ? "Revisar briefing" : "Criar briefing",
+      done: Boolean(briefing),
+    },
+    {
+      id: "briefing_share",
+      title: "Compartilhamento",
+      detail: briefing?.sharedAt
+        ? "Link do briefing compartilhado."
+        : "Envie o link para o cliente responder de onde estiver.",
+      href: projectHref,
+      action: briefing?.sharedAt ? "Acompanhar respostas" : "Compartilhar briefing",
+      done: Boolean(briefing?.sharedAt),
+    },
+  ]);
+}
+
+function buildDeliverablesProgress(
+  input: ActivationInput,
+  milestones: ActivationMilestones,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+) {
+  const project = selectProject(
+    input.projects,
+    milestones.deliverableProjectIds,
+  );
+  const projectHref = project
+    ? `/app/obras/${project.id}?view=entregas`
+    : activationGoalStartHref(goal);
+  const hasDeliverable = Boolean(
+    project && milestones.deliverableProjectIds.includes(project.id),
+  );
+
+  return finalizeProgress(goal, segment, "Prepare sua primeira entrega", [
+    customerStep(input.customersCount, goal),
+    projectStep(project, projectHref, segment, goal),
+    {
+      id: "deliverable",
+      title: "Primeira entrega",
+      detail: hasDeliverable
+        ? "Uma entrega técnica já está organizada."
+        : "Crie a primeira entrega para controlar arquivos e versões.",
+      href: projectHref,
+      action: hasDeliverable ? "Ver entregas" : "Criar entrega",
+      done: hasDeliverable,
+    },
+  ]);
+}
+
+function buildExecutionProgress(
+  input: ActivationInput,
+  milestones: ActivationMilestones,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+) {
+  const preferredProjectIds =
+    milestones.managementProjectIds.length > 0
+      ? milestones.managementProjectIds
+      : milestones.stageProjectIds;
+  const project = selectProject(input.projects, preferredProjectIds);
+  const projectBase = project ? `/app/obras/${project.id}` : null;
+  const stageHref = projectBase
+    ? `${projectBase}?view=etapas`
+    : activationGoalStartHref(goal);
+  const managementHref = projectBase
+    ? `${projectBase}?view=gestao#custos`
+    : activationGoalStartHref(goal);
+  const hasStage = Boolean(
+    project && milestones.stageProjectIds.includes(project.id),
+  );
+  const hasManagementRecord = Boolean(
+    project && milestones.managementProjectIds.includes(project.id),
+  );
+
+  return finalizeProgress(goal, segment, "Controle sua primeira obra", [
+    customerStep(input.customersCount, goal),
+    projectStep(project, managementHref, segment, goal),
+    {
+      id: "stage",
+      title: "Primeira etapa",
+      detail: hasStage
+        ? "A execução já possui uma etapa organizada."
+        : "Divida a obra em etapas para acompanhar o avanço.",
+      href: stageHref,
+      action: hasStage ? "Ver etapas" : "Adicionar etapa",
+      done: hasStage,
+    },
+    {
+      id: "management_record",
+      title: "Primeiro registro",
+      detail: hasManagementRecord
+        ? "Diário ou custo registrado na gestão da obra."
+        : "Registre um custo ou atualização do diário.",
+      href: managementHref,
+      action: hasManagementRecord ? "Abrir gestão" : "Fazer registro",
+      done: hasManagementRecord,
+    },
+  ]);
+}
+
+function customerStep(
+  customersCount: number,
+  goal: ActivationGoal,
+): ActivationStep {
+  const isSalesGoal = goal === "sell";
+  const href = isSalesGoal
+    ? customersCount > 0
+      ? "/app/clientes"
+      : "/app/clientes/novo?after=quote"
+    : customersCount > 0
+      ? "/app/clientes"
+      : activationGoalStartHref(goal);
+
+  return {
+    id: "customer",
+    title: "Cliente",
+    detail:
+      customersCount > 0
+        ? "Primeiro cliente cadastrado."
+        : isSalesGoal
+          ? "Cadastre quem receberá sua proposta."
+          : "Informe o cliente junto com o trabalho contratado.",
+    href,
+    action:
+      customersCount > 0
+        ? "Ver clientes"
+        : isSalesGoal
+          ? "Cadastrar cliente"
+          : "Cadastrar trabalho",
+    done: customersCount > 0,
+  };
+}
+
+function projectStep(
+  project: ActivationProject | undefined,
+  projectHref: string,
+  segment: BusinessSegment,
+  goal: ActivationGoal,
+): ActivationStep {
+  const vocabulary = getBusinessVocabulary(segment);
+  const projectLower = vocabulary.projectSingular.toLowerCase();
+
+  return {
+    id: "project",
+    title: vocabulary.projectSingular,
+    detail: project
+      ? `${vocabulary.projectSingular} ${isProfessionalSegment(segment) ? "cadastrado" : "cadastrada"} no Prumo.`
+      : `Cadastre ${articleForProject(segment)} ${projectLower} que já foi contratado.`,
+    href: project ? projectHref : activationGoalStartHref(goal),
+    action: project ? `Abrir ${projectLower}` : `Cadastrar ${projectLower}`,
+    done: Boolean(project),
+  };
+}
+
+function selectProject(
+  projects: ActivationProject[],
+  preferredProjectIds: string[],
+) {
+  const preferred = new Set(preferredProjectIds);
+  return projects.find((project) => preferred.has(project.id)) ?? projects[0];
+}
+
+function finalizeProgress(
+  goal: ActivationGoal,
+  segment: BusinessSegment,
+  guideTitle: string,
+  steps: ActivationStep[],
+): ActivationProgress {
   const doneCount = steps.filter((step) => step.done).length;
   const nextStep = steps.find((step) => !step.done) ?? null;
 
   return {
-    guideTitle: isProfessional
-      ? "Caminho até o primeiro contrato"
-      : "Caminho até a primeira venda",
+    goal,
+    segment,
+    guideTitle,
     steps,
     nextStep,
     doneCount,
@@ -229,20 +422,6 @@ export function buildActivationProgress(
     progressPercent: Math.round((doneCount / steps.length) * 100),
     isComplete: nextStep === null,
   };
-}
-
-export function isCompanyPaymentReady(
-  company: ActivationCompany | null,
-): boolean {
-  if (!company) return false;
-  if (company.payment_provider === "asaas") return true;
-
-  return Boolean(
-    company.pix_key_type &&
-      company.pix_key?.trim() &&
-      company.pix_receiver_name?.trim() &&
-      company.pix_receiver_city?.trim(),
-  );
 }
 
 function isSharedQuote(quote: ActivationQuote): boolean {
@@ -254,80 +433,6 @@ function isSharedQuote(quote: ActivationQuote): boolean {
   );
 }
 
-function buildEntryPaymentStep({
-  project,
-  charge,
-  projectHref,
-  projectLabel,
-  isProfessional,
-}: {
-  project: ActivationProject | undefined;
-  charge: ActivationCharge | null;
-  projectHref: string;
-  projectLabel: string;
-  isProfessional: boolean;
-}): ActivationStep {
-  if (!project) {
-    return {
-      id: "entry_payment",
-      title: "Entrada",
-      detail: `Crie ${isProfessional ? "o" : "a"} ${projectLabel} antes de gerar a entrada.`,
-      href: projectHref,
-      action: `Criar ${projectLabel}`,
-      done: false,
-    };
-  }
-
-  if (!charge || charge.status === "draft") {
-    return {
-      id: "entry_payment",
-      title: "Entrada",
-      detail: "Gere e envie a cobrança da entrada.",
-      href: projectHref,
-      action: "Gerar entrada",
-      done: false,
-    };
-  }
-
-  if (PAID_CHARGE_STATUSES.has(charge.status)) {
-    return {
-      id: "entry_payment",
-      title: "Entrada",
-      detail: "Pagamento confirmado no financeiro.",
-      href: "/app/financeiro",
-      action: "Ver financeiro",
-      done: true,
-    };
-  }
-
-  if (charge.status === "overdue") {
-    return {
-      id: "entry_payment",
-      title: "Entrada",
-      detail: "Cobrança atrasada; revise antes de reenviar.",
-      href: projectHref,
-      action: "Revisar cobrança",
-      done: false,
-    };
-  }
-
-  if (charge.status === "cancelled") {
-    return {
-      id: "entry_payment",
-      title: "Entrada",
-      detail: "Cobrança cancelada; gere uma nova.",
-      href: projectHref,
-      action: "Gerar nova entrada",
-      done: false,
-    };
-  }
-
-  return {
-    id: "entry_payment",
-    title: "Entrada",
-    detail: "Cobrança enviada; aguardando confirmação.",
-    href: projectHref,
-    action: "Acompanhar cobrança",
-    done: false,
-  };
+function articleForProject(segment: BusinessSegment) {
+  return isProfessionalSegment(segment) ? "o" : "a";
 }

@@ -33,9 +33,13 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: mocks.createClient,
 }));
 
-function onboardingForm(plan?: "pro" | "ultimate") {
+function onboardingForm(
+  plan?: "pro" | "ultimate",
+  goal = "sell",
+) {
   const form = new FormData();
   form.set("business_segment", "architecture");
+  form.set("activation_goal", goal);
   form.set("name", "Estúdio Teste");
   form.set("phone", "");
   form.set("city", "Fortaleza");
@@ -112,6 +116,7 @@ describe("onboarding conversion", () => {
       name: "onboarding_completed",
       properties: {
         business_segment: "architecture",
+        activation_goal: "sell",
         target_plan: "pro",
         redirects_to_checkout: true,
       },
@@ -138,5 +143,37 @@ describe("onboarding conversion", () => {
     });
     expect(mocks.createAdminClient).not.toHaveBeenCalled();
     expect(mocks.sendMetaConversionsEvent).not.toHaveBeenCalled();
+  });
+
+  it("sends a free account directly to its chosen first result", async () => {
+    mocks.createClient.mockReturnValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-id" } },
+        }),
+      },
+      from: vi.fn(() => membershipQuery([])),
+    });
+    mocks.createAdminClient.mockReturnValue(bootstrapAdmin().client);
+
+    await expect(
+      createCompanyAction(onboardingForm(undefined, "client_briefing")),
+    ).resolves.toMatchObject({
+      ok: true,
+      redirectTo: "/app/obras/novo?goal=client_briefing",
+    });
+  });
+
+  it("rejects a goal that does not belong to the selected segment", async () => {
+    await expect(
+      createCompanyAction(onboardingForm(undefined, "execution_control")),
+    ).resolves.toMatchObject({
+      ok: false,
+      fieldErrors: {
+        activation_goal: expect.any(Array),
+      },
+    });
+    expect(mocks.createClient).not.toHaveBeenCalled();
+    expect(mocks.createAdminClient).not.toHaveBeenCalled();
   });
 });

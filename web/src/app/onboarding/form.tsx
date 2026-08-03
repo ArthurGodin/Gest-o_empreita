@@ -1,8 +1,21 @@
 "use client";
 
-import { useEffect, useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Building2, HardHat, MapPin, Phone } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  HardHat,
+  MapPin,
+  Phone,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,18 +24,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BusinessSegmentPicker } from "@/components/business-segment-picker";
+import { ActivationGoalPicker } from "@/components/activation-goal-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { BusinessSegment } from "@/lib/business-segment";
+import type { ActivationGoal } from "@/lib/activation-goals";
+import { isBrazilStateCode } from "@/lib/brazil-states";
 import {
   MARKETING_CONSENT_CHANGED_EVENT,
   marketingConsentFromCookieHeader,
 } from "@/lib/marketing-consent";
 import { createCompanyAction, type OnboardingResult } from "./actions";
 
-const FIELD_ORDER = ["business_segment", "name", "phone", "city", "state"];
+const FIELD_ORDER = [
+  "business_segment",
+  "name",
+  "phone",
+  "city",
+  "state",
+  "activation_goal",
+];
+
+type OnboardingStep = "profile" | "goal";
 
 export function OnboardingForm({
   initialSignupEventId,
@@ -36,20 +61,37 @@ export function OnboardingForm({
   const [businessSegment, setBusinessSegment] = useState<
     BusinessSegment | undefined
   >();
+  const [activationGoal, setActivationGoal] = useState<
+    ActivationGoal | undefined
+  >();
+  const [step, setStep] = useState<OnboardingStep>("profile");
+  const formRef = useRef<HTMLFormElement>(null);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
 
   useEffect(() => {
     if (!fieldErrors) return;
     const firstInvalidField = FIELD_ORDER.find((field) => fieldErrors[field]);
-    if (firstInvalidField === "business_segment") {
-      document
-        .querySelector<HTMLInputElement>('input[name="business_segment"]')
-        ?.focus();
-      return;
-    }
-    if (firstInvalidField) document.getElementById(firstInvalidField)?.focus();
+    window.requestAnimationFrame(() => {
+      if (
+        firstInvalidField === "business_segment" ||
+        firstInvalidField === "activation_goal"
+      ) {
+        document
+          .querySelector<HTMLInputElement>(
+            `input[name="${firstInvalidField}"]`,
+          )
+          ?.focus();
+        return;
+      }
+      if (firstInvalidField) document.getElementById(firstInvalidField)?.focus();
+    });
   }, [fieldErrors]);
+
+  useEffect(() => {
+    trackProductEvent("onboarding_step_viewed", { step });
+  }, [step]);
 
   useEffect(() => {
     if (!initialSignupEventId) return;
@@ -92,9 +134,72 @@ export function OnboardingForm({
     };
   }, [initialSignupEventId, metaConfigured]);
 
+  function moveToGoalStep() {
+    setResult(null);
+    const form = formRef.current;
+    if (!form) return;
+
+    if (!businessSegment) {
+      setResult({
+        ok: false,
+        error: "Escolha sua área para continuar.",
+        fieldErrors: { business_segment: ["Escolha como você trabalha"] },
+      });
+      return;
+    }
+
+    const nameInput = form.elements.namedItem("name") as HTMLInputElement | null;
+    if (!nameInput || nameInput.value.trim().length < 2) {
+      setResult({
+        ok: false,
+        error: "Confira os campos.",
+        fieldErrors: {
+          name: ["Informe seu nome profissional ou da empresa"],
+        },
+      });
+      return;
+    }
+
+    const stateInput = form.elements.namedItem("state") as HTMLInputElement | null;
+    if (stateInput?.value && !isBrazilStateCode(stateInput.value)) {
+      setResult({
+        ok: false,
+        error: "Confira os campos.",
+        fieldErrors: { state: ["Selecione uma UF válida"] },
+      });
+      return;
+    }
+
+    setStep("goal");
+    window.requestAnimationFrame(() => stepHeadingRef.current?.focus());
+  }
+
+  function moveToProfileStep() {
+    setResult(null);
+    setStep("profile");
+    window.requestAnimationFrame(() => stepHeadingRef.current?.focus());
+  }
+
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setResult(null);
+
+    if (step === "profile") {
+      moveToGoalStep();
+      return;
+    }
+
+    if (!activationGoal) {
+      setResult({
+        ok: false,
+        error: "Escolha como você quer começar.",
+        fieldErrors: {
+          activation_goal: ["Escolha o que você quer resolver primeiro"],
+        },
+      });
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
@@ -103,14 +208,22 @@ export function OnboardingForm({
       if (plan) formData.append("plan", plan);
       trackProductEvent("onboarding_submitted", {
         business_segment: businessSegment ?? "not_selected",
+        activation_goal: activationGoal,
         target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
       });
 
       try {
         const nextResult = await createCompanyAction(formData);
         if (!nextResult.ok) {
+          const firstInvalidField = FIELD_ORDER.find(
+            (field) => nextResult.fieldErrors?.[field],
+          );
+          setStep(
+            firstInvalidField === "activation_goal" ? "goal" : "profile",
+          );
           trackProductEvent("onboarding_failed", {
             business_segment: businessSegment ?? "not_selected",
+            activation_goal: activationGoal,
             target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
             has_field_errors: Boolean(nextResult.fieldErrors),
           });
@@ -120,6 +233,7 @@ export function OnboardingForm({
 
         trackProductEvent("onboarding_completed", {
           business_segment: businessSegment ?? "construction",
+          activation_goal: activationGoal,
           target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
           redirects_to_checkout: nextResult.redirectTo.includes("/checkout"),
         }, nextResult.eventId ? { eventId: nextResult.eventId } : undefined);
@@ -128,6 +242,7 @@ export function OnboardingForm({
       } catch {
         trackProductEvent("onboarding_failed", {
           business_segment: businessSegment ?? "not_selected",
+          activation_goal: activationGoal,
           target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
           thrown: true,
         });
@@ -150,21 +265,28 @@ export function OnboardingForm({
             Prumo
           </div>
           <span className="text-xs font-medium text-muted-foreground">
-            Configuração inicial
+            Etapa {step === "profile" ? "1" : "2"} de 2
           </span>
         </header>
 
         <div className="grid gap-5 pt-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start lg:gap-10 lg:pt-10">
           <section className="lg:pt-3">
             <p className="text-sm font-semibold text-primary">
-              Seu espaço de trabalho
+              {step === "profile" ? "Seu espaço de trabalho" : "Seu primeiro resultado"}
             </p>
-            <h1 className="mt-2 max-w-md text-balance text-2xl font-bold leading-tight sm:text-3xl">
-              Deixe o Prumo com a cara da sua rotina
+            <h1
+              ref={stepHeadingRef}
+              tabIndex={-1}
+              className="mt-2 max-w-md text-balance text-2xl font-bold leading-tight outline-none sm:text-3xl"
+            >
+              {step === "profile"
+                ? "Deixe o Prumo com a cara da sua rotina"
+                : "Comece pelo que precisa resolver agora"}
             </h1>
             <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-              Escolha sua área e informe o essencial. O Prumo adapta a linguagem
-              e os modelos sem mudar seus dados ou seu plano.
+              {step === "profile"
+                ? "Escolha sua área e informe o essencial. O Prumo adapta a linguagem e os modelos sem mudar seus dados ou seu plano."
+                : "Sua escolha organiza o próximo passo. Você poderá mudar de objetivo sem perder nenhum dado."}
             </p>
 
             <ol className="mt-6 hidden space-y-4 border-l pl-5 lg:block">
@@ -184,10 +306,10 @@ export function OnboardingForm({
               </li>
               <li>
                 <p className="text-sm font-semibold">
-                  3. Crie a primeira proposta
+                  3. Alcance a primeira vitória
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Recebimento será configurado apenas na hora de cobrar.
+                  O painel mostra somente o próximo passo relevante.
                 </p>
               </li>
             </ol>
@@ -195,18 +317,29 @@ export function OnboardingForm({
 
           <Card>
             <CardHeader className="border-b">
-              <CardTitle className="text-lg">Configuração inicial</CardTitle>
+              <CardTitle className="text-lg">
+                {step === "profile" ? "Perfil profissional" : "Como quer começar?"}
+              </CardTitle>
               <CardDescription>
-                Leva menos de dois minutos.
+                {step === "profile"
+                  ? "Leva menos de dois minutos."
+                  : "Escolha uma opção; o Prumo prepara o caminho."}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <form onSubmit={onSubmit} className="space-y-4" noValidate>
+              <form
+                ref={formRef}
+                onSubmit={onSubmit}
+                className="space-y-4"
+                noValidate
+              >
+                <div hidden={step !== "profile"} className="space-y-4">
                 <BusinessSegmentPicker
                   idPrefix="onboarding-segment"
                   value={businessSegment}
                   onValueChange={(value) => {
                     setBusinessSegment(value);
+                    setActivationGoal(undefined);
                     setResult(null);
                   }}
                   description="Isso só adapta textos e sugestões. Você poderá mudar depois."
@@ -228,8 +361,9 @@ export function OnboardingForm({
                       name="name"
                       type="text"
                       required
+                      maxLength={200}
                       autoComplete="organization"
-                      placeholder="Ex.: Estúdio Norte"
+                      placeholder="Ex.: Estúdio Norte…"
                       aria-invalid={Boolean(fieldErrors?.name)}
                       aria-describedby={
                         fieldErrors?.name ? "onboarding-name-error" : undefined
@@ -259,6 +393,7 @@ export function OnboardingForm({
                       name="phone"
                       type="tel"
                       inputMode="tel"
+                      maxLength={30}
                       autoComplete="tel"
                       placeholder="(11) 99999-0000…"
                       aria-invalid={Boolean(fieldErrors?.phone)}
@@ -294,6 +429,7 @@ export function OnboardingForm({
                         id="city"
                         name="city"
                         type="text"
+                        maxLength={120}
                         autoComplete="address-level2"
                         placeholder="Fortaleza…"
                         aria-invalid={Boolean(fieldErrors?.city)}
@@ -345,6 +481,28 @@ export function OnboardingForm({
                   </div>
                 </div>
 
+                </div>
+
+                {businessSegment ? (
+                  <div hidden={step !== "goal"}>
+                    <ActivationGoalPicker
+                      idPrefix="onboarding-goal"
+                      segment={businessSegment}
+                      value={activationGoal}
+                      onValueChange={(value) => {
+                        setActivationGoal(value);
+                        setResult(null);
+                        trackProductEvent("onboarding_goal_selected", {
+                          business_segment: businessSegment,
+                          activation_goal: value,
+                        });
+                      }}
+                      error={fieldErrors?.activation_goal?.[0]}
+                      disabled={pending}
+                    />
+                  </div>
+                ) : null}
+
                 {result && !result.ok ? (
                   <p
                     className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
@@ -355,15 +513,40 @@ export function OnboardingForm({
                   </p>
                 ) : null}
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full"
-                  disabled={pending}
-                >
-                  {pending ? "Preparando painel…" : "Entrar no painel"}
-                  {!pending ? <ArrowRight aria-hidden="true" /> : null}
-                </Button>
+                {step === "profile" ? (
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="w-full"
+                    onClick={moveToGoalStep}
+                    disabled={pending}
+                  >
+                    Continuar
+                    <ArrowRight aria-hidden="true" />
+                  </Button>
+                ) : (
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      onClick={moveToProfileStep}
+                      disabled={pending}
+                    >
+                      <ArrowLeft aria-hidden="true" />
+                      Voltar
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="sm:min-w-48"
+                      disabled={pending}
+                    >
+                      {pending ? "Preparando painel…" : "Começar agora"}
+                      {!pending ? <ArrowRight aria-hidden="true" /> : null}
+                    </Button>
+                  </div>
+                )}
               </form>
             </CardContent>
           </Card>

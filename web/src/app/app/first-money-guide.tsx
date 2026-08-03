@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CheckCircle2,
@@ -10,15 +11,28 @@ import {
   ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  getActivationGoalOptions,
+  type ActivationGoal,
+} from "@/lib/activation-goals";
 import type { ActivationProgress } from "@/lib/activation/activation-core";
 import { trackProductEvent } from "@/lib/product-analytics";
+import { updateActivationGoalAction } from "./activation-actions";
 
 export function FirstMoneyGuide({
   progress,
+  canChangeGoal,
 }: {
   progress: ActivationProgress;
+  canChangeGoal: boolean;
 }) {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [optimisticGoal, setOptimisticGoal] = useState<ActivationGoal | null>(
+    null,
+  );
+  const [goalError, setGoalError] = useState<string | null>(null);
+  const [goalPending, startGoalTransition] = useTransition();
   const {
     guideTitle,
     steps,
@@ -29,19 +43,62 @@ export function FirstMoneyGuide({
     isComplete,
   } = progress;
 
-  if (isComplete || !nextStep) return null;
+  useEffect(() => {
+    if (!isComplete) return;
+    const key = `prumo:activation-completed:${progress.goal}`;
+    try {
+      if (window.sessionStorage.getItem(key)) return;
+      window.sessionStorage.setItem(key, "1");
+      trackProductEvent("activation_goal_completed", {
+        activation_goal: progress.goal,
+        business_segment: progress.segment,
+      });
+    } catch {
+      // Analytics must never block the dashboard.
+    }
+  }, [isComplete, progress.goal, progress.segment]);
+
+  function changeGoal(goal: ActivationGoal) {
+    if (goal === progress.goal || goalPending) return;
+    const previousGoal = progress.goal;
+    setOptimisticGoal(goal);
+    setGoalError(null);
+
+    startGoalTransition(async () => {
+      const result = await updateActivationGoalAction({ goal });
+      if (!result.ok) {
+        setOptimisticGoal(null);
+        setGoalError(result.error);
+        return;
+      }
+
+      trackProductEvent("activation_goal_changed", {
+        business_segment: progress.segment,
+        from_goal: previousGoal,
+        to_goal: goal,
+      });
+      router.refresh();
+    });
+  }
+
+  function trackNextStep() {
+    if (!nextStep) return;
+    trackProductEvent("activation_goal_next_step_opened", {
+      activation_goal: progress.goal,
+      business_segment: progress.segment,
+      step: nextStep.id,
+    });
+  }
 
   return (
     <section className="overflow-hidden rounded-lg border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.035)]">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <button
           type="button"
-          onClick={() =>
-            setIsExpanded((current) => {
-              if (!current) trackProductEvent("activation_guide_expanded");
-              return !current;
-            })
-          }
+          onClick={() => {
+            if (!isExpanded) trackProductEvent("activation_guide_expanded");
+            setIsExpanded(!isExpanded);
+          }}
           aria-expanded={isExpanded}
           aria-controls="activation-steps"
           className="flex min-h-16 w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
@@ -49,16 +106,25 @@ export function FirstMoneyGuide({
           <span className="flex min-w-0 items-center gap-3">
             <span
               aria-hidden="true"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${
+                isComplete
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "bg-primary/10 text-primary"
+              }`}
             >
-              <ListChecks className="h-4 w-4" />
+              {isComplete ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <ListChecks className="h-4 w-4" />
+              )}
             </span>
             <span className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground sm:text-base">
                 {guideTitle}
               </h2>
               <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                {doneCount} de {totalCount} concluídos · próximo: {nextStep.title}
+                {doneCount} de {totalCount} concluídos
+                {nextStep ? ` · próximo: ${nextStep.title}` : " · objetivo concluído"}
               </span>
             </span>
           </span>
@@ -71,34 +137,22 @@ export function FirstMoneyGuide({
           </span>
         </button>
 
-        <div className="hidden border-l px-3 lg:block">
-          <Button asChild size="sm">
-            <Link
-              href={nextStep.href}
-              onClick={() =>
-                trackProductEvent("activation_next_step_opened", {
-                  step: nextStep.id,
-                })
-              }
-            >
-              {nextStep.action}
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          </Button>
-        </div>
+        {nextStep ? (
+          <div className="hidden border-l px-3 lg:block">
+            <Button asChild size="sm">
+              <Link href={nextStep.href} onClick={trackNextStep}>
+                {nextStep.action}
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : null}
       </div>
 
-      {!isExpanded ? (
+      {!isExpanded && nextStep ? (
         <div className="border-t p-3 lg:hidden">
           <Button asChild className="w-full">
-            <Link
-              href={nextStep.href}
-              onClick={() =>
-                trackProductEvent("activation_next_step_opened", {
-                  step: nextStep.id,
-                })
-              }
-            >
+            <Link href={nextStep.href} onClick={trackNextStep}>
               {nextStep.action}
               <ArrowRight aria-hidden="true" />
             </Link>
@@ -126,7 +180,7 @@ export function FirstMoneyGuide({
 
           <div className="mt-3 grid border-t sm:grid-cols-2 xl:grid-cols-4">
             {steps.map((step, index) => {
-              const isNext = step.id === nextStep.id;
+              const isNext = step.id === nextStep?.id;
 
               return (
                 <Link
@@ -168,20 +222,55 @@ export function FirstMoneyGuide({
             })}
           </div>
 
-          <div className="border-t p-3 lg:hidden">
-            <Button asChild className="w-full">
-              <Link
-                href={nextStep.href}
-                onClick={() =>
-                  trackProductEvent("activation_next_step_opened", {
-                    step: nextStep.id,
-                  })
-                }
-              >
-                {nextStep.action}
-                <ArrowRight aria-hidden="true" />
-              </Link>
-            </Button>
+          <div className="grid gap-3 border-t p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            {canChangeGoal ? (
+              <div className="min-w-0">
+                <label
+                  htmlFor="activation-goal"
+                  className="mb-1.5 block text-xs font-medium text-muted-foreground"
+                >
+                  Objetivo atual
+                </label>
+                <select
+                  id="activation-goal"
+                  value={optimisticGoal ?? progress.goal}
+                  disabled={goalPending}
+                  onChange={(event) =>
+                    changeGoal(event.target.value as ActivationGoal)
+                  }
+                  className="h-11 w-full max-w-md rounded-md border border-input bg-card px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-ring/20 disabled:opacity-60 md:text-sm"
+                >
+                  {getActivationGoalOptions(progress.segment).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.title}
+                    </option>
+                  ))}
+                </select>
+                {goalError ? (
+                  <p role="alert" className="mt-1.5 text-xs text-destructive">
+                    {goalError}
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-xs leading-5 text-muted-foreground">
+                O objetivo é definido pelos responsáveis da empresa.
+              </p>
+            )}
+
+            {nextStep ? (
+              <Button asChild className="w-full sm:w-auto">
+                <Link href={nextStep.href} onClick={trackNextStep}>
+                  {nextStep.action}
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+            ) : (
+              <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+                Objetivo inicial concluído
+              </span>
+            )}
           </div>
         </div>
       ) : null}
