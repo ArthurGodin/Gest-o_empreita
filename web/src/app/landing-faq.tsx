@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,35 +56,62 @@ export function LandingFaq() {
         <div className="space-y-3">
           {questions.map((item, index) => {
             const isOpen = openIndex === index;
+            const buttonId = `landing-faq-button-${index}`;
             const answerId = `landing-faq-answer-${index}`;
 
             return (
               <div
                 key={item.question}
-                className="overflow-hidden rounded-lg border bg-card shadow-sm"
+                data-reveal="up"
+                style={
+                  { "--reveal-delay": `${index * 45}ms` } as CSSProperties
+                }
+                className={cn(
+                  "landing-faq-item group relative overflow-hidden rounded-lg border bg-card shadow-sm",
+                  isOpen && "landing-faq-item-open border-primary/30 shadow-md",
+                )}
               >
                 <button
+                  id={buttonId}
                   type="button"
                   aria-expanded={isOpen}
                   aria-controls={answerId}
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex min-h-12 w-full items-center justify-between gap-4 px-4 py-3 text-left text-base font-bold text-foreground outline-none transition-colors hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-5"
+                  className="flex min-h-14 w-full items-center justify-between gap-4 px-4 py-3 text-left text-[0.95rem] font-bold text-foreground outline-none transition-colors duration-200 hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-5 md:text-base"
                 >
-                  {item.question}
-                  <ChevronDown
-                    aria-hidden="true"
+                  <span className="pr-2">{item.question}</span>
+                  <span
                     className={cn(
-                      "h-5 w-5 shrink-0 text-muted-foreground transition-transform",
-                      isOpen && "rotate-180",
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground transition-[transform,background-color,border-color,color] duration-300",
+                      isOpen &&
+                        "rotate-180 border-primary/25 bg-primary/10 text-primary",
                     )}
-                  />
+                  >
+                    <ChevronDown aria-hidden="true" className="h-4 w-4" />
+                  </span>
                 </button>
                 <div
                   id={answerId}
-                  hidden={!isOpen}
-                  className="border-t px-4 py-4 text-sm font-medium leading-6 text-muted-foreground md:px-5"
+                  role="region"
+                  aria-labelledby={buttonId}
+                  aria-hidden={!isOpen}
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                  )}
                 >
-                  {item.answer}
+                  <div className="min-h-0 overflow-hidden">
+                    <p
+                      className={cn(
+                        "border-t px-4 py-4 text-sm font-medium leading-6 text-muted-foreground transition-[opacity,transform,border-color] duration-300 md:px-5",
+                        isOpen
+                          ? "translate-y-0 border-border opacity-100"
+                          : "-translate-y-1 border-transparent opacity-0",
+                      )}
+                    >
+                      {item.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
             );

@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { LandingFaq } from "@/app/landing-faq";
+import { LandingIntro } from "@/components/landing-intro";
 import { MarketingMotion } from "@/components/marketing-motion";
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { ThemeIconButton } from "@/components/theme-control";
@@ -89,6 +90,7 @@ export default function LandingPage() {
 
   return (
     <main className="relative overflow-x-hidden bg-background font-sans text-foreground selection:bg-emerald-700/20">
+      <LandingIntro />
       <MarketingMotion>
       <header className="landing-header-enter fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#070c0a]/95 text-white shadow-sm backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-1 px-3 sm:gap-2 sm:px-4">
