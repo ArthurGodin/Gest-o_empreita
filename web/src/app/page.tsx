@@ -11,6 +11,7 @@ import {
   LineChart,
   PackageCheck,
   Palette,
+  PlayCircle,
   Ruler,
   ShieldCheck,
   Smartphone,
@@ -213,6 +214,25 @@ export default function LandingPage() {
                 modelos iniciais e navegação sem alterar seus dados, permissões
                 ou plano.
               </p>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="marketing-button mt-4 rounded-full bg-background"
+              >
+                <TrackedAnchor
+                  href="/demo"
+                  analyticsEvent="public_demo_cta_clicked"
+                  analyticsProperties={{
+                    source: "landing_profiles",
+                    target: "public_demo",
+                  }}
+                >
+                  <PlayCircle aria-hidden="true" className="h-4 w-4" />
+                  Explorar demonstração
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </TrackedAnchor>
+              </Button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {professionalProfiles.map((profile, index) => (

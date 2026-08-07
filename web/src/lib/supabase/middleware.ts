@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
+import { shouldBypassAuthRefresh } from "@/lib/public-route-bypass";
 import type { Database } from "@/lib/supabase/types";
 
 const PUBLIC_PATHS = [
@@ -25,6 +26,11 @@ function paidPlanFromQuery(value: string | null): "pro" | "ultimate" | null {
 }
 
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (shouldBypassAuthRefresh(pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
@@ -52,7 +58,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isAppRoute = APP_PATHS.some((p) => pathname.startsWith(p));
   const isPublicRoute = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
