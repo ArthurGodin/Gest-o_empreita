@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useState, useTransition, type MouseEvent } from "react";
+import { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,12 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  acquisitionContextFromSearchParams,
+  buildAcquisitionHref,
+} from "@/lib/acquisition-context";
+import { getBusinessSegmentOption } from "@/lib/business-segment";
 import { trackProductEvent } from "@/lib/product-analytics";
 import { signupAction, type AuthResult } from "../actions";
-
-function normalizePlan(value: string | null): "pro" | "ultimate" | null {
-  return value === "pro" || value === "ultimate" ? value : null;
-}
 
 export default function SignupPage() {
   return (
@@ -31,15 +33,30 @@ export default function SignupPage() {
 function SignupForm() {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<AuthResult | null>(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const selectedPlan = normalizePlan(searchParams.get("plan"));
+  const {
+    businessSegment: selectedBusinessSegment,
+    plan: selectedPlan,
+  } = acquisitionContextFromSearchParams(searchParams);
+  const selectedProfile = selectedBusinessSegment
+    ? getBusinessSegmentOption(selectedBusinessSegment)
+    : null;
+  const loginHref = buildAcquisitionHref("/login", {
+    businessSegment: selectedBusinessSegment,
+    plan: selectedPlan,
+  });
 
   function onSubmit(formData: FormData) {
     setResult(null);
     if (selectedPlan) formData.append("plan", selectedPlan);
+    if (selectedBusinessSegment) {
+      formData.append("business_segment", selectedBusinessSegment);
+    }
     trackProductEvent("signup_form_submitted", {
       target_plan: selectedPlan ?? "free",
+      ...(selectedBusinessSegment
+        ? { business_segment: selectedBusinessSegment }
+        : {}),
     });
 
     startTransition(async () => {
@@ -48,16 +65,13 @@ function SignupForm() {
         trackProductEvent("signup_failed", {
           target_plan: selectedPlan ?? "free",
           has_field_errors: Boolean(nextResult.fieldErrors),
+          ...(selectedBusinessSegment
+            ? { business_segment: selectedBusinessSegment }
+            : {}),
         });
         setResult(nextResult);
       }
     });
-  }
-
-  function onLoginClick(event: MouseEvent<HTMLAnchorElement>) {
-    if (!selectedPlan) return;
-    event.preventDefault();
-    router.push(`/login?plan=${selectedPlan}`);
   }
 
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
@@ -74,6 +88,21 @@ function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
+        {selectedProfile ? (
+          <div className="mb-4 flex items-start gap-2.5 rounded-md border border-primary/20 bg-primary/[0.045] px-3 py-2.5 text-sm">
+            <BadgeCheck
+              aria-hidden="true"
+              className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+            />
+            <p className="leading-5 text-muted-foreground">
+              Preparando seu espaço para{" "}
+              <span className="font-semibold text-foreground">
+                {selectedProfile.label}
+              </span>
+              . Você poderá confirmar ou alterar no próximo passo.
+            </p>
+          </div>
+        ) : null}
         <form action={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">
@@ -167,8 +196,7 @@ function SignupForm() {
           <p className="pt-2 text-center text-sm text-muted-foreground">
             Já tem conta?{" "}
             <Link
-              href="/login"
-              onClick={onLoginClick}
+              href={loginHref}
               className="font-semibold text-primary hover:underline"
             >
               Entrar

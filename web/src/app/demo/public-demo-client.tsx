@@ -18,6 +18,7 @@ import {
 import { TrackedAnchor } from "@/components/tracked-anchor";
 import { ThemeIconButton } from "@/components/theme-control";
 import { Button } from "@/components/ui/button";
+import { buildAcquisitionHref } from "@/lib/acquisition-context";
 import {
   BUSINESS_SEGMENT_OPTIONS,
   type BusinessSegment,
@@ -60,6 +61,12 @@ export function PublicDemoClient() {
   const [segment, setSegment] = useState<BusinessSegment>("architecture");
   const [section, setSection] = useState<PublicDemoSectionId>("overview");
   const scenario = getPublicDemoScenario(segment);
+  const signupHref = buildAcquisitionHref("/signup", {
+    businessSegment: segment,
+  });
+  const pricingHref = buildAcquisitionHref("/precos", {
+    businessSegment: segment,
+  });
 
   useEffect(() => {
     trackProductEvent("public_demo_opened", {
@@ -90,7 +97,7 @@ export function PublicDemoClient() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <DemoHeader />
+      <DemoHeader segment={segment} />
 
       <main>
         <section className="border-b bg-card">
@@ -209,7 +216,7 @@ export function PublicDemoClient() {
                 className="w-full rounded-full min-[420px]:w-auto"
               >
                 <TrackedAnchor
-                  href="/signup"
+                  href={signupHref}
                   analyticsEvent="public_demo_cta_clicked"
                   analyticsProperties={{
                     source: "public_demo_final",
@@ -228,7 +235,7 @@ export function PublicDemoClient() {
                 className="w-full rounded-full border-white/25 bg-transparent text-white hover:bg-white/10 hover:text-white min-[420px]:w-auto"
               >
                 <TrackedAnchor
-                  href="/precos"
+                  href={pricingHref}
                   analyticsEvent="public_demo_cta_clicked"
                   analyticsProperties={{
                     source: "public_demo_final",
@@ -247,7 +254,14 @@ export function PublicDemoClient() {
   );
 }
 
-function DemoHeader() {
+function DemoHeader({ segment }: { segment: BusinessSegment }) {
+  const signupHref = buildAcquisitionHref("/signup", {
+    businessSegment: segment,
+  });
+  const pricingHref = buildAcquisitionHref("/precos", {
+    businessSegment: segment,
+  });
+
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07100c]/95 text-white shadow-sm backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1184px] items-center justify-between gap-2 px-3 sm:px-6 lg:px-8">
@@ -271,9 +285,13 @@ function DemoHeader() {
             className="hidden rounded-full text-white hover:bg-white/10 hover:text-white sm:inline-flex"
           >
             <TrackedAnchor
-              href="/precos"
+              href={pricingHref}
               analyticsEvent="public_demo_cta_clicked"
-              analyticsProperties={{ source: "public_demo_header", target: "pricing" }}
+              analyticsProperties={{
+                source: "public_demo_header",
+                target: "pricing",
+                profile: segment,
+              }}
             >
               Planos
             </TrackedAnchor>
@@ -281,9 +299,13 @@ function DemoHeader() {
           <ThemeIconButton className="h-10 w-10 rounded-full border-white/15 bg-black/20 text-white hover:bg-white/10 hover:text-white" />
           <Button asChild size="sm" className="rounded-full px-3 sm:px-4">
             <TrackedAnchor
-              href="/signup"
+              href={signupHref}
               analyticsEvent="public_demo_cta_clicked"
-              analyticsProperties={{ source: "public_demo_header", target: "signup" }}
+              analyticsProperties={{
+                source: "public_demo_header",
+                target: "signup",
+                profile: segment,
+              }}
             >
               <span className="hidden min-[390px]:inline">Criar conta</span>
               <span className="min-[390px]:hidden">Criar</span>

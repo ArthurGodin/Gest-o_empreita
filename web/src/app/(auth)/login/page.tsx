@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState, useTransition, type MouseEvent } from "react";
+import { Suspense, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +13,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  acquisitionContextFromSearchParams,
+  buildAcquisitionHref,
+} from "@/lib/acquisition-context";
 import { loginAction, type AuthResult } from "../actions";
 
 function paidPlanFromRedirect(value: string | null): "pro" | "ultimate" | null {
@@ -37,26 +41,27 @@ export default function LoginPage() {
 function LoginForm() {
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<AuthResult | null>(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
-  const selectedPlan =
-    searchParams.get("plan") ?? paidPlanFromRedirect(redirectParam);
+  const context = acquisitionContextFromSearchParams(searchParams);
+  const selectedPlan = context.plan ?? paidPlanFromRedirect(redirectParam);
+  const signupHref = buildAcquisitionHref("/signup", {
+    businessSegment: context.businessSegment,
+    plan: selectedPlan,
+  });
 
   function onSubmit(formData: FormData) {
     setResult(null);
     if (redirectParam) formData.append("redirect", redirectParam);
+    if (selectedPlan) formData.append("plan", selectedPlan);
+    if (context.businessSegment) {
+      formData.append("business_segment", context.businessSegment);
+    }
 
     startTransition(async () => {
       const nextResult = await loginAction(formData);
       if (!nextResult.ok) setResult(nextResult);
     });
-  }
-
-  function onSignupClick(event: MouseEvent<HTMLAnchorElement>) {
-    if (selectedPlan !== "pro" && selectedPlan !== "ultimate") return;
-    event.preventDefault();
-    router.push(`/signup?plan=${selectedPlan}`);
   }
 
   const fieldErrors = result && !result.ok ? result.fieldErrors : undefined;
@@ -151,8 +156,7 @@ function LoginForm() {
           <p className="pt-2 text-center text-sm text-muted-foreground">
             Ainda não tem conta?{" "}
             <Link
-              href="/signup"
-              onClick={onSignupClick}
+              href={signupHref}
               className="font-semibold text-primary hover:underline"
             >
               Comece grátis

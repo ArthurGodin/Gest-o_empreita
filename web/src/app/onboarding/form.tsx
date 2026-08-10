@@ -28,6 +28,7 @@ import { ActivationGoalPicker } from "@/components/activation-goal-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { acquisitionContextFromSearchParams } from "@/lib/acquisition-context";
 import { trackProductEvent } from "@/lib/product-analytics";
 import type { BusinessSegment } from "@/lib/business-segment";
 import type { ActivationGoal } from "@/lib/activation-goals";
@@ -50,9 +51,11 @@ const FIELD_ORDER = [
 type OnboardingStep = "profile" | "goal";
 
 export function OnboardingForm({
+  initialBusinessSegment,
   initialSignupEventId,
   metaConfigured,
 }: {
+  initialBusinessSegment?: BusinessSegment;
   initialSignupEventId?: string;
   metaConfigured: boolean;
 }) {
@@ -60,7 +63,7 @@ export function OnboardingForm({
   const [result, setResult] = useState<OnboardingResult | null>(null);
   const [businessSegment, setBusinessSegment] = useState<
     BusinessSegment | undefined
-  >();
+  >(initialBusinessSegment);
   const [activationGoal, setActivationGoal] = useState<
     ActivationGoal | undefined
   >();
@@ -103,12 +106,12 @@ export function OnboardingForm({
       if (metaConfigured && consent === null) return;
 
       const url = new URL(window.location.href);
-      const plan = url.searchParams.get("plan");
+      const { plan } = acquisitionContextFromSearchParams(url.searchParams);
       trackProductEvent(
         "signup_completed",
         {
           target_plan:
-            plan === "pro" || plan === "ultimate" ? plan : "free",
+            plan ?? "free",
         },
         { eventId: initialSignupEventId },
       );
@@ -204,12 +207,12 @@ export function OnboardingForm({
 
     startTransition(async () => {
       const url = new URL(window.location.href);
-      const plan = url.searchParams.get("plan");
+      const { plan } = acquisitionContextFromSearchParams(url.searchParams);
       if (plan) formData.append("plan", plan);
       trackProductEvent("onboarding_submitted", {
         business_segment: businessSegment ?? "not_selected",
         activation_goal: activationGoal,
-        target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+        target_plan: plan ?? "free",
       });
 
       try {
@@ -224,7 +227,7 @@ export function OnboardingForm({
           trackProductEvent("onboarding_failed", {
             business_segment: businessSegment ?? "not_selected",
             activation_goal: activationGoal,
-            target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+            target_plan: plan ?? "free",
             has_field_errors: Boolean(nextResult.fieldErrors),
           });
           setResult(nextResult);
@@ -234,7 +237,7 @@ export function OnboardingForm({
         trackProductEvent("onboarding_completed", {
           business_segment: businessSegment ?? "construction",
           activation_goal: activationGoal,
-          target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+          target_plan: plan ?? "free",
           redirects_to_checkout: nextResult.redirectTo.includes("/checkout"),
         }, nextResult.eventId ? { eventId: nextResult.eventId } : undefined);
         router.push(nextResult.redirectTo);
@@ -243,7 +246,7 @@ export function OnboardingForm({
         trackProductEvent("onboarding_failed", {
           business_segment: businessSegment ?? "not_selected",
           activation_goal: activationGoal,
-          target_plan: plan === "pro" || plan === "ultimate" ? plan : "free",
+          target_plan: plan ?? "free",
           thrown: true,
         });
         setResult({
@@ -342,7 +345,12 @@ export function OnboardingForm({
                     setActivationGoal(undefined);
                     setResult(null);
                   }}
-                  description="Isso só adapta textos e sugestões. Você poderá mudar depois."
+                  description={
+                    initialBusinessSegment &&
+                    businessSegment === initialBusinessSegment
+                      ? "Perfil trazido da demonstração. Confirme ou escolha outra área."
+                      : "Isso só adapta textos e sugestões. Você poderá mudar depois."
+                  }
                   error={fieldErrors?.business_segment?.[0]}
                   disabled={pending}
                 />

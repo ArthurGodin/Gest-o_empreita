@@ -5,6 +5,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { sendOperationalAlert } from "@/lib/alerts";
+import {
+  buildAcquisitionHref,
+  normalizeAcquisitionBusinessSegment,
+} from "@/lib/acquisition-context";
 import { env } from "@/lib/env";
 import { logServerError, logServerEvent } from "@/lib/log";
 import { sendMetaConversionsEvent } from "@/lib/meta-conversions";
@@ -63,6 +67,10 @@ function paidPlanFromCheckoutRedirect(
 }
 
 export async function loginAction(formData: FormData): Promise<AuthResult> {
+  const businessSegment = normalizeAcquisitionBusinessSegment(
+    formData.get("business_segment"),
+  );
+  const selectedPlan = normalizePaidPlan(formData.get("plan")?.toString());
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -89,16 +97,21 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
 
   revalidatePath("/", "layout");
   const redirectTo = safeInternalAppRedirect(parsed.data.redirect);
-  const targetPlan = paidPlanFromCheckoutRedirect(redirectTo);
+  const targetPlan = selectedPlan ?? paidPlanFromCheckoutRedirect(redirectTo);
 
-  if (targetPlan) {
+  if (targetPlan || businessSegment) {
     const { data: memberships, error: membershipError } = await supabase
       .from("company_members")
       .select("company_id")
       .limit(1);
 
     if (!membershipError && (!memberships || memberships.length === 0)) {
-      redirect(`/onboarding?plan=${targetPlan}`);
+      redirect(
+        buildAcquisitionHref("/onboarding", {
+          businessSegment,
+          plan: targetPlan,
+        }),
+      );
     }
   }
 
@@ -107,6 +120,9 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
 
 export async function signupAction(formData: FormData): Promise<AuthResult> {
   const plan = normalizePaidPlan(formData.get("plan")?.toString());
+  const businessSegment = normalizeAcquisitionBusinessSegment(
+    formData.get("business_segment"),
+  );
   const parsed = signupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -133,6 +149,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   if (error) {
     logServerError("auth.signup", error, {
       target_plan: plan ?? "free",
+      ...(businessSegment ? { business_segment: businessSegment } : {}),
     });
     await sendOperationalAlert({
       area: "auth",
@@ -143,6 +160,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
       dedupeKey: `auth-signup-${error.name ?? "error"}-${error.status ?? "unknown"}`,
       context: {
         target_plan: plan ?? "free",
+        ...(businessSegment ? { business_segment: businessSegment } : {}),
         error_name: error.name ?? null,
         error_status: error.status ?? null,
       },
@@ -156,6 +174,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
 
   logServerEvent("auth.signup.succeeded", {
     target_plan: plan ?? "free",
+    ...(businessSegment ? { business_segment: businessSegment } : {}),
   });
 
   const eventId = createProductEventId("signup_completed");
@@ -163,6 +182,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
     name: "signup_completed",
     properties: {
       target_plan: plan ?? "free",
+      ...(businessSegment ? { business_segment: businessSegment } : {}),
     },
     eventId,
     path: "/signup",
@@ -170,13 +190,14 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
     externalId: data.user?.id,
   });
 
-  const onboardingQuery = new URLSearchParams({
-    signup_event_id: eventId,
-  });
-  if (plan) onboardingQuery.set("plan", plan);
-
   revalidatePath("/", "layout");
-  redirect(`/onboarding?${onboardingQuery.toString()}`);
+  redirect(
+    buildAcquisitionHref(
+      "/onboarding",
+      { businessSegment, plan },
+      [["signup_event_id", eventId]],
+    ),
+  );
 }
 
 export async function requestPasswordResetAction(

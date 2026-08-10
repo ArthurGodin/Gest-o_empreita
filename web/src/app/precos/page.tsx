@@ -17,6 +17,11 @@ import {
   PricingCardFrame,
 } from "@/components/marketing-motion";
 import {
+  buildAcquisitionHref,
+  parseAcquisitionContext,
+} from "@/lib/acquisition-context";
+import type { BusinessSegment } from "@/lib/business-segment";
+import {
   formatPlanPrice,
   PLAN_DEFINITIONS,
   type AppPlan,
@@ -40,7 +45,19 @@ export const metadata: Metadata = {
 
 const PLAN_SEQUENCE: AppPlan[] = ["free", "pro", "ultimate"];
 
-export default function PricingPage() {
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    perfil?: string | string[];
+  }>;
+}) {
+  const query = searchParams ? await searchParams : {};
+  const { businessSegment } = parseAcquisitionContext({
+    perfil: query.perfil,
+  });
+  const signupHref = buildAcquisitionHref("/signup", { businessSegment });
+
   return (
     <main className="pricing-page-surface min-h-screen pb-14 text-foreground">
       <MarketingMotion>
@@ -61,7 +78,7 @@ export default function PricingPage() {
               </Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/signup" aria-label="Criar conta">
+              <Link href={signupHref} aria-label="Criar conta">
                 <span className="hidden min-[340px]:inline">Criar conta</span>
                 <span className="min-[340px]:hidden">Criar</span>
               </Link>
@@ -87,7 +104,12 @@ export default function PricingPage() {
       <section className="mx-auto max-w-6xl px-4" aria-label="Planos disponíveis">
         <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
           {PLAN_SEQUENCE.map((plan, index) => (
-            <PricingCard key={plan} plan={plan} index={index} />
+            <PricingCard
+              key={plan}
+              plan={plan}
+              index={index}
+              businessSegment={businessSegment}
+            />
           ))}
         </div>
       </section>
@@ -115,11 +137,22 @@ export default function PricingPage() {
   );
 }
 
-function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
+function PricingCard({
+  plan,
+  index,
+  businessSegment,
+}: {
+  plan: AppPlan;
+  index: number;
+  businessSegment: BusinessSegment | null;
+}) {
   const definition = PLAN_DEFINITIONS[plan];
   const featured = plan === "pro";
   const Icon = plan === "ultimate" ? Crown : plan === "pro" ? Sparkles : ShieldCheck;
-  const href = plan === "free" ? "/signup" : `/signup?plan=${plan}`;
+  const href = buildAcquisitionHref("/signup", {
+    businessSegment,
+    plan: plan === "free" ? null : plan,
+  });
 
   return (
     <PricingCardFrame
@@ -188,7 +221,13 @@ function PricingCard({ plan, index }: { plan: AppPlan; index: number }) {
           <TrackedAnchor
             href={href}
             analyticsEvent="pricing_plan_clicked"
-            analyticsProperties={{ plan, source: "pricing_page" }}
+            analyticsProperties={{
+              plan,
+              source: "pricing_page",
+              ...(businessSegment
+                ? { business_segment: businessSegment }
+                : {}),
+            }}
           >
             {plan === "free" ? "Começar grátis" : definition.cta}
             <ArrowRight className="h-4 w-4" />
