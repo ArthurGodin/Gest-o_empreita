@@ -50,7 +50,7 @@ export function DemoDeliverables({
           </h3>
         </div>
         <ol className="divide-y overflow-hidden rounded-lg border bg-card">
-          {scenario.deliverables.map((deliverable, index) => {
+          {scenario.deliverables.map((deliverable) => {
             const meta = statusCopy[deliverable.status];
             const Icon = meta.icon;
             return (

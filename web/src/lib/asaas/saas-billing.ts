@@ -14,6 +14,7 @@ import {
   type PaidPlan,
 } from "@/lib/plans";
 import {
+  buildSaasPaymentLinkPayload,
   findReusableCheckoutPayment,
   hasPaidSubscriptionPayment,
   isSubscriptionInactive,
@@ -390,21 +391,9 @@ async function createSaasPaymentLink({
   companyId: string;
   companyName: string;
 }) {
-  const planDefinition = PLAN_DEFINITIONS[plan];
-
   return asaasRequest<AsaasPaymentLinkResponse>("/paymentLinks", {
     method: "POST",
-    body: {
-      name: `Prumo - ${planDefinition.label}`,
-      description: `Assinatura mensal do ${planDefinition.label} para ${companyName}.`,
-      billingType: "UNDEFINED",
-      chargeType: "RECURRENT",
-      subscriptionCycle: "MONTHLY",
-      value: planDefinition.priceCents / 100,
-      dueDateLimitDays: 3,
-      externalReference: makeSaasSubscriptionReference(plan, companyId),
-      isAddressRequired: false,
-    },
+    body: buildSaasPaymentLinkPayload({ plan, companyId, companyName }),
   });
 }
 

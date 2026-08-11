@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PRUMO_E2E_BASE_URL ?? "http://127.0.0.1:3100";
+const serverReadyURL = new URL("/api/health", baseURL).toString();
 const localBrowser = process.env.CI ? {} : { channel: "chrome" as const };
 
 export default defineConfig({
@@ -22,9 +23,9 @@ export default defineConfig({
   },
   webServer: {
     command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
-    url: baseURL,
+    url: serverReadyURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
     stdout: "pipe",
     stderr: "pipe",
   },
