@@ -165,6 +165,7 @@ export default async function DashboardPage() {
         <FirstMoneyGuide
           progress={activation}
           canChangeGoal={canChangeGoal}
+          defaultExpanded={isEmptyWorkspace}
         />
       ) : null}
 

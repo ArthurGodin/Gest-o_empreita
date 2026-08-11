@@ -22,12 +22,14 @@ import { updateActivationGoalAction } from "./activation-actions";
 export function FirstMoneyGuide({
   progress,
   canChangeGoal,
+  defaultExpanded = false,
 }: {
   progress: ActivationProgress;
   canChangeGoal: boolean;
+  defaultExpanded?: boolean;
 }) {
   const router = useRouter();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [optimisticGoal, setOptimisticGoal] = useState<ActivationGoal | null>(
     null,
   );
@@ -122,9 +124,17 @@ export function FirstMoneyGuide({
               <h2 className="text-sm font-semibold text-foreground sm:text-base">
                 {guideTitle}
               </h2>
-              <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                {doneCount} de {totalCount} concluídos
-                {nextStep ? ` · próximo: ${nextStep.title}` : " · objetivo concluído"}
+              <span className="mt-0.5 block text-xs font-semibold leading-5 text-primary">
+                {nextStep
+                  ? `PrÃ³ximo passo: ${nextStep.title}`
+                  : "Objetivo inicial concluÃ­do"}
+              </span>
+              <span className="mt-2 block h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-muted">
+                <span
+                  aria-hidden="true"
+                  className="block h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </span>
             </span>
           </span>
@@ -149,7 +159,7 @@ export function FirstMoneyGuide({
         ) : null}
       </div>
 
-      {!isExpanded && nextStep ? (
+      {nextStep ? (
         <div className="border-t p-3 lg:hidden">
           <Button asChild className="w-full">
             <Link href={nextStep.href} onClick={trackNextStep}>
