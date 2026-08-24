@@ -16,7 +16,13 @@ import { toast } from "@/components/ui/use-toast";
 import type { AppPlan } from "@/lib/plans";
 import { exportFinanceDataAction } from "./actions";
 
-export function ExportButton({ currentPlan }: { currentPlan: AppPlan }) {
+export function ExportButton({
+  currentPlan,
+  projectPluralLower,
+}: {
+  currentPlan: AppPlan;
+  projectPluralLower: string;
+}) {
   const [loading, setLoading] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const isUltimate = currentPlan === "ultimate";
@@ -34,7 +40,7 @@ export function ExportButton({ currentPlan }: { currentPlan: AppPlan }) {
     if (!result.ok) {
       toast({
         variant: "destructive",
-        title: "Nao foi possivel exportar",
+        title: "Não foi possível exportar",
         description: result.error,
       });
       return;
@@ -63,30 +69,37 @@ export function ExportButton({ currentPlan }: { currentPlan: AppPlan }) {
         className="gap-2 font-medium"
         aria-label={
           isUltimate
-            ? "Exportar relatorio contabil em CSV"
-            : "Exportar relatorio contabil em CSV, recurso do Ultimate"
+            ? "Exportar relatório contábil em CSV"
+            : "Exportar relatório contábil em CSV, recurso do Ultimate"
         }
       >
-        <Download className="h-4 w-4 text-emerald-600" />
-        {loading ? "Gerando..." : "Exportar contábil"}
-        <Crown className="ml-1 h-3 w-3 text-amber-500" />
+        <Download
+          aria-hidden="true"
+          className="h-4 w-4 text-emerald-600"
+        />
+        {loading ? "Gerando…" : "Exportar contábil"}
+        <Crown aria-hidden="true" className="ml-1 h-3 w-3 text-amber-500" />
       </Button>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Exportacao contabil no Ultimate</DialogTitle>
+            <DialogTitle>Exportação contábil no Ultimate</DialogTitle>
             <DialogDescription>
-              O CSV reune receitas recebidas e custos das obras para enviar ao
-              contador ou analisar em uma planilha.
+              O CSV reúne receitas recebidas e custos registrados em{" "}
+              {projectPluralLower} para enviar ao contador ou analisar em uma
+              planilha.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-            <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <LockKeyhole
+              aria-hidden="true"
+              className="mt-0.5 h-4 w-4 shrink-0 text-amber-700"
+            />
             <p className="leading-6">
-              Seu financeiro continua disponivel no Prumo. Apenas a exportacao
-              em lote e exclusiva do plano Ultimate.
+              Seu financeiro continua disponível no Prumo. Apenas a exportação
+              em lote é exclusiva do plano Ultimate.
             </p>
           </div>
 

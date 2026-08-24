@@ -38,12 +38,14 @@ export default async function ProjectsPage() {
         title={vocabulary.projectPlural}
         description={`Acompanhe etapas, prazo, custos e cobranças em ${vocabulary.projectPluralLower}.`}
         actions={
-          <Button asChild>
-            <Link href={directProjectHref}>
-              <Plus aria-hidden="true" />
-              {professional ? "Cadastrar projeto" : "Cadastrar obra"}
-            </Link>
-          </Button>
+          projects.length > 0 ? (
+            <Button asChild>
+              <Link href={directProjectHref}>
+                <Plus aria-hidden="true" />
+                {professional ? "Cadastrar projeto" : "Cadastrar obra"}
+              </Link>
+            </Button>
+          ) : null
         }
       />
 

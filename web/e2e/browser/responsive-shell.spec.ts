@@ -30,6 +30,14 @@ test("app shell fits every reference viewport", async ({ page }, testInfo) => {
       heading: "In.cio",
       screenshot: "app-375x812",
     });
+    await expect(
+      page.getByText("Próximo passo: Cliente", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator("#activation-steps")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Cadastrar cliente", exact: true }),
+    ).toHaveCount(1);
+    await expect(page.getByLabel("Resumo da operação")).toHaveCount(0);
     await expect(page.getByLabel("Abrir menu da conta")).toBeVisible();
     await page.getByLabel("Abrir menu da conta").click();
     await expect(

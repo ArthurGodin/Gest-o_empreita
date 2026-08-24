@@ -136,6 +136,7 @@ export default async function DashboardPage() {
     : `Novo ${projectLower}`;
   const canChangeGoal =
     membership?.role === "owner" || membership?.role === "manager";
+  const showOperationalOverview = !isEmptyWorkspace;
 
   return (
     <PageContainer>
@@ -143,16 +144,18 @@ export default async function DashboardPage() {
         title="Início"
         description="Veja o que precisa de atenção e avance para o próximo resultado."
         actions={
-          <Button asChild>
-            <Link href={startHref}>
-              <Plus aria-hidden="true" className="h-4 w-4" />
-              {startLabel}
-            </Link>
-          </Button>
+          !isEmptyWorkspace ? (
+            <Button asChild>
+              <Link href={startHref}>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {startLabel}
+              </Link>
+            </Button>
+          ) : null
         }
       />
 
-      {isEmptyWorkspace ? (
+      {isEmptyWorkspace && isDemo ? (
         <EmptyWorkspaceCard
           isDemo={isDemo}
           isSalesGoal={isSalesGoal}
@@ -169,106 +172,157 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      <MetricStrip ariaLabel="Resumo da operação">
-        <MetricTile
-          className="border-b border-r xl:border-b-0"
-          icon={<Send className="h-4 w-4" />}
-          label="Esperando cliente"
-          value={pendingQuotes.length.toString()}
-          hint={`${vocabulary.quotePlural} ${isProfessional ? "enviadas" : "enviados"} ou ${isProfessional ? "vistas" : "vistos"}`}
-          tone="amber"
-        />
-        <MetricTile
-          className="border-b xl:border-b-0 xl:border-r"
-          icon={<CheckCircle2 className="h-4 w-4" />}
-          label="Aprovado no mês"
-          value={formatBRL(approvedValueThisMonth / 100)}
-          hint={`${approvedThisMonth.length} ${
-            approvedThisMonth.length === 1
-              ? quoteLower
-              : vocabulary.quotePluralLower
-          } ${
-            approvedThisMonth.length === 1
-              ? isProfessional
-                ? "aprovada"
-                : "aprovado"
-              : isProfessional
-                ? "aprovadas"
-                : "aprovados"
-          }`}
-          tone="green"
-        />
-        <MetricTile
-          className="border-r xl:border-r"
-          icon={<ProjectIcon className="h-4 w-4" />}
-          label={`${vocabulary.projectPlural} ${isProfessional ? "abertos" : "abertas"}`}
-          value={openProjects.length.toString()}
-          hint={
-            lateProjects.length > 0
-              ? `${lateProjects.length} com prazo estourado`
-              : isProfessional
-                ? "Planejados, em execução ou pausados"
-                : "Planejadas, em execução ou pausadas"
-          }
-          tone={lateProjects.length > 0 ? "red" : "blue"}
-        />
-        <MetricTile
-          icon={<Users className="h-4 w-4" />}
-          label="Clientes"
-          value={customers.length.toString()}
-          hint="Base cadastrada da empresa"
-          tone="neutral"
-        />
-      </MetricStrip>
+      {showOperationalOverview ? (
+        <MetricStrip ariaLabel="Resumo da operação">
+          <MetricTile
+            className="border-b border-r xl:border-b-0"
+            icon={<Send className="h-4 w-4" />}
+            label="Esperando cliente"
+            value={pendingQuotes.length.toString()}
+            hint={`${vocabulary.quotePlural} ${isProfessional ? "enviadas" : "enviados"} ou ${isProfessional ? "vistas" : "vistos"}`}
+            tone="amber"
+          />
+          <MetricTile
+            className="border-b xl:border-b-0 xl:border-r"
+            icon={<CheckCircle2 className="h-4 w-4" />}
+            label="Valor aprovado no mês"
+            value={formatBRL(approvedValueThisMonth / 100)}
+            hint={`${approvedThisMonth.length} ${
+              approvedThisMonth.length === 1
+                ? quoteLower
+                : vocabulary.quotePluralLower
+            } ${
+              approvedThisMonth.length === 1
+                ? isProfessional
+                  ? "aprovada"
+                  : "aprovado"
+                : isProfessional
+                  ? "aprovadas"
+                  : "aprovados"
+            }`}
+            tone="green"
+          />
+          <MetricTile
+            className="border-r xl:border-r"
+            icon={<ProjectIcon className="h-4 w-4" />}
+            label={`${vocabulary.projectPlural} ${isProfessional ? "abertos" : "abertas"}`}
+            value={openProjects.length.toString()}
+            hint={
+              lateProjects.length > 0
+                ? `${lateProjects.length} com prazo estourado`
+                : isProfessional
+                  ? "Planejados, em execução ou pausados"
+                  : "Planejadas, em execução ou pausadas"
+            }
+            tone={lateProjects.length > 0 ? "red" : "blue"}
+          />
+          <MetricTile
+            icon={<Users className="h-4 w-4" />}
+            label="Clientes"
+            value={customers.length.toString()}
+            hint="Base cadastrada da empresa"
+            tone="neutral"
+          />
+        </MetricStrip>
+      ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <PendencySummary pendencies={pendencies} />
+      {showOperationalOverview ? (
+        <section className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
+          <PendencySummary pendencies={pendencies} />
 
+          <Card className="min-w-0">
+            <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
+              <CardTitle className="text-base">
+                {vocabulary.projectPlural}{" "}
+                {isProfessional ? "abertos" : "abertas"}
+              </CardTitle>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/app/obras">Ver todas</Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              {openProjects.length === 0 ? (
+                <EmptyLine
+                  title={`Nenhum${isProfessional ? "" : "a"} ${projectLower} ${isProfessional ? "aberto" : "aberta"}`}
+                  detail={`Quando ${isProfessional ? "uma" : "um"} ${quoteLower} for ${isProfessional ? "aprovada" : "aprovado"}, transforme em ${projectLower} para acompanhar prazo, registros e custos.`}
+                  href="/app/orcamentos"
+                  action={`Ver ${vocabulary.quotePluralLower}`}
+                />
+              ) : (
+                <div className="divide-y">
+                  {openProjects.slice(0, 5).map((project) => (
+                    <Link
+                      key={project.id}
+                      href={`/app/obras/${project.id}`}
+                      className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">
+                          {project.name}
+                        </span>
+                        <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <span>{project.customer?.name ?? "Sem cliente"}</span>
+                          <span>•</span>
+                          <span>{projectStatusLabels[project.status]}</span>
+                          {project.ends_on ? (
+                            <>
+                              <span>•</span>
+                              <span>Prazo {formatDateBR(project.ends_on)}</span>
+                            </>
+                          ) : null}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-sm font-semibold text-primary">
+                        {project.budget_cents == null
+                          ? "Sem valor"
+                          : formatBRL(project.budget_cents / 100)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {showOperationalOverview ? (
         <Card className="min-w-0">
           <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
             <CardTitle className="text-base">
-              {vocabulary.projectPlural} {isProfessional ? "abertos" : "abertas"}
+              {vocabulary.quotePlural} recentes
             </CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/app/obras">Ver todas</Link>
+              <Link href="/app/orcamentos">Ver todos</Link>
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            {openProjects.length === 0 ? (
+            {quotes.length === 0 ? (
               <EmptyLine
-                title={`Nenhum${isProfessional ? "" : "a"} ${projectLower} ${isProfessional ? "aberto" : "aberta"}`}
-                detail={`Quando ${isProfessional ? "uma" : "um"} ${quoteLower} for ${isProfessional ? "aprovada" : "aprovado"}, transforme em ${projectLower} para acompanhar prazo, registros e custos.`}
-                href="/app/orcamentos"
-                action={`Ver ${vocabulary.quotePluralLower}`}
+                title={`Nenhum${isProfessional ? "a" : ""} ${quoteLower} ${isProfessional ? "criada" : "criado"}`}
+                detail={`${isProfessional ? "A primeira" : "O primeiro"} ${quoteLower} é o caminho mais curto para o cliente perceber profissionalismo.`}
+                href="/app/orcamentos/novo"
+                action={`Criar ${quoteLower}`}
               />
             ) : (
               <div className="divide-y">
-                {openProjects.slice(0, 5).map((project) => (
+                {quotes.slice(0, 5).map((quote) => (
                   <Link
-                    key={project.id}
-                    href={`/app/obras/${project.id}`}
-                    className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    key={quote.id}
+                    href={`/app/orcamentos/${quote.id}`}
+                    className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] gap-2 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[1fr_auto_auto] md:items-center"
                   >
-                    <span className="min-w-0">
+                    <span className="col-span-2 min-w-0 md:col-span-1">
                       <span className="block truncate text-sm font-medium">
-                        {project.name}
+                        {quote.number} · {quote.title}
                       </span>
-                      <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span>{project.customer?.name ?? "Sem cliente"}</span>
-                        <span>•</span>
-                        <span>{projectStatusLabels[project.status]}</span>
-                        {project.ends_on ? (
-                          <>
-                            <span>•</span>
-                            <span>Prazo {formatDateBR(project.ends_on)}</span>
-                          </>
-                        ) : null}
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {quote.customer?.name ?? "Cliente não informado"}
                       </span>
                     </span>
-                    <span className="shrink-0 text-sm font-semibold text-primary">
-                      {project.budget_cents == null
-                        ? "Sem valor"
-                        : formatBRL(project.budget_cents / 100)}
+                    <StatusPill label={STATUS_LABEL[quote.effective_status]} />
+                    <span className="text-right text-sm font-semibold tabular-nums text-primary">
+                      {formatBRL(quote.total_cents / 100)}
                     </span>
                   </Link>
                 ))}
@@ -276,51 +330,7 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-      </section>
-
-      <Card className="min-w-0">
-        <CardHeader className="flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
-          <CardTitle className="text-base">
-            {vocabulary.quotePlural} recentes
-          </CardTitle>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/app/orcamentos">Ver todos</Link>
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          {quotes.length === 0 ? (
-            <EmptyLine
-              title={`Nenhum${isProfessional ? "a" : ""} ${quoteLower} ${isProfessional ? "criada" : "criado"}`}
-              detail={`${isProfessional ? "A primeira" : "O primeiro"} ${quoteLower} é o caminho mais curto para o cliente perceber profissionalismo.`}
-              href="/app/orcamentos/novo"
-              action={`Criar ${quoteLower}`}
-            />
-          ) : (
-            <div className="divide-y">
-              {quotes.slice(0, 5).map((quote) => (
-                <Link
-                  key={quote.id}
-                  href={`/app/orcamentos/${quote.id}`}
-                  className="grid min-h-16 gap-2 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[1fr_auto_auto] md:items-center"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">
-                      {quote.number} · {quote.title}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {quote.customer?.name ?? "Cliente não informado"}
-                    </span>
-                  </span>
-                  <StatusPill label={STATUS_LABEL[quote.effective_status]} />
-                  <span className="text-sm font-semibold text-primary md:text-right">
-                    {formatBRL(quote.total_cents / 100)}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      ) : null}
     </PageContainer>
   );
 }

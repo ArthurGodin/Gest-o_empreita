@@ -126,10 +126,17 @@ export function FirstMoneyGuide({
               </h2>
               <span className="mt-0.5 block text-xs font-semibold leading-5 text-primary">
                 {nextStep
-                  ? `PrÃ³ximo passo: ${nextStep.title}`
-                  : "Objetivo inicial concluÃ­do"}
+                  ? `Próximo passo: ${nextStep.title}`
+                  : "Objetivo inicial concluído"}
               </span>
-              <span className="mt-2 block h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-muted">
+              <span
+                role="progressbar"
+                aria-label="Progresso da ativação"
+                aria-valuemin={0}
+                aria-valuemax={totalCount}
+                aria-valuenow={doneCount}
+                className="mt-2 block h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-muted"
+              >
                 <span
                   aria-hidden="true"
                   className="block h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none"
@@ -172,23 +179,7 @@ export function FirstMoneyGuide({
 
       {isExpanded ? (
         <div id="activation-steps" className="border-t">
-          <div className="px-4 pt-4">
-            <div
-              role="progressbar"
-              aria-label="Progresso da ativação"
-              aria-valuemin={0}
-              aria-valuemax={totalCount}
-              aria-valuenow={doneCount}
-              className="h-1.5 overflow-hidden rounded-full bg-muted"
-            >
-              <div
-                className="h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3 grid border-t sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4">
             {steps.map((step, index) => {
               const isNext = step.id === nextStep?.id;
 
@@ -197,7 +188,7 @@ export function FirstMoneyGuide({
                   key={step.id}
                   href={step.href}
                   aria-current={isNext ? "step" : undefined}
-                  className={`flex min-h-16 items-start gap-2.5 border-b px-4 py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:border-r xl:[&:nth-child(4n)]:border-r-0 ${
+                  className={`flex min-h-16 items-start gap-2.5 border-b px-4 py-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&:last-child]:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 xl:[&:nth-child(2n)]:border-r xl:[&:nth-child(4n)]:border-r-0 ${
                     isNext
                       ? "bg-primary/5 hover:bg-primary/10"
                       : "hover:bg-accent/60"
@@ -232,7 +223,7 @@ export function FirstMoneyGuide({
             })}
           </div>
 
-          <div className="grid gap-3 border-t p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="border-t p-3">
             {canChangeGoal ? (
               <div className="min-w-0">
                 <label
@@ -267,20 +258,12 @@ export function FirstMoneyGuide({
                 O objetivo é definido pelos responsáveis da empresa.
               </p>
             )}
-
-            {nextStep ? (
-              <Button asChild className="w-full sm:w-auto">
-                <Link href={nextStep.href} onClick={trackNextStep}>
-                  {nextStep.action}
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-            ) : (
-              <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+            {!nextStep ? (
+              <span className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
                 <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                 Objetivo inicial concluído
               </span>
-            )}
+            ) : null}
           </div>
         </div>
       ) : null}

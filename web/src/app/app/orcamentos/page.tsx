@@ -31,7 +31,7 @@ export default async function QuotesPage() {
           quotes.length > 0 ? (
             <Button asChild>
               <Link href="/app/orcamentos/novo">
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 {vocabulary.newQuoteLabel}
               </Link>
             </Button>
@@ -51,7 +51,7 @@ export default async function QuotesPage() {
           action={
             <Button asChild>
               <Link href="/app/orcamentos/novo">
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 {vocabulary.createQuoteLabel}
               </Link>
             </Button>

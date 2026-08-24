@@ -1,10 +1,11 @@
 import Link from "next/link";
 import {
   AlertTriangle,
-  ArrowRight,
   Banknote,
   FileCheck2,
+  FolderKanban,
   HardHat,
+  Plus,
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
@@ -16,6 +17,10 @@ import { PageContainer } from "@/components/app-shell/page-container";
 import { PageHeader } from "@/components/app-shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  getBusinessVocabulary,
+  isProfessionalSegment,
+} from "@/lib/business-segment";
 import { normalizeAppPlan } from "@/lib/plans";
 import { getActiveCompany } from "@/lib/queries/company";
 import { getFinanceOverview } from "@/lib/queries/finance";
@@ -36,12 +41,20 @@ const CATEGORY_LABEL: Record<CostCategory, string> = {
   other: "Outros",
 };
 
-const STATUS_LABEL: Record<ProjectStatus, string> = {
+const CONSTRUCTION_STATUS_LABEL: Record<ProjectStatus, string> = {
   planning: "Planejada",
   in_progress: "Em execução",
   paused: "Pausada",
   completed: "Concluída",
   cancelled: "Cancelada",
+};
+
+const PROFESSIONAL_STATUS_LABEL: Record<ProjectStatus, string> = {
+  planning: "Planejado",
+  in_progress: "Em andamento",
+  paused: "Pausado",
+  completed: "Concluído",
+  cancelled: "Cancelado",
 };
 
 const CHARGE_KIND_LABEL: Record<ChargeKind, string> = {
@@ -77,6 +90,12 @@ export default async function FinanceiroPage() {
     : { data: null };
   const currentPlan = normalizeAppPlan(companyData?.plan);
   const isDemoWorkspace = activeCompany?.company.workspace_mode === "demo";
+  const vocabulary = getBusinessVocabulary(
+    activeCompany?.company.business_segment,
+  );
+  const isProfessional = isProfessionalSegment(
+    activeCompany?.company.business_segment,
+  );
   const marginPct =
     overview.approved_revenue_cents > 0
       ? Math.round(
@@ -91,18 +110,23 @@ export default async function FinanceiroPage() {
         description={
           isDemoWorkspace
             ? "Explore recebimentos, gastos e margem com dados fictícios."
-            : "Acompanhe recebimentos, gastos e margem estimada das obras."
+            : `Acompanhe recebimentos, gastos e margem estimada ${
+                isProfessional ? "dos projetos" : "das obras"
+              }.`
         }
         actions={
-          <div className="flex flex-wrap gap-2">
-            <ExportButton currentPlan={currentPlan} />
+          <>
+            <ExportButton
+              currentPlan={currentPlan}
+              projectPluralLower={vocabulary.projectPluralLower}
+            />
             <Button asChild>
               <Link href="/app/orcamentos/novo">
-                Novo orçamento
-                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {vocabulary.newQuoteLabel}
               </Link>
             </Button>
-          </div>
+          </>
         }
       />
 
@@ -173,12 +197,15 @@ export default async function FinanceiroPage() {
           <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="space-y-1 text-sm">
             <p className="font-medium">
-              Existem aprovados que ainda não viraram obra.
+              {isProfessional
+                ? "Há propostas aprovadas que ainda não viraram projeto."
+                : "Há orçamentos aprovados que ainda não viraram obra."}
             </p>
             <p>
               {formatBRL(overview.approved_without_project_cents / 100)} já foi
-              aprovado pelo cliente. Transforme em obra para controlar custo,
-              fotos e margem.
+              aprovado pelo cliente. Transforme em {isProfessional
+                ? "projeto"
+                : "obra"} para controlar custos, registros e margem.
             </p>
           </div>
         </div>
@@ -197,8 +224,9 @@ export default async function FinanceiroPage() {
         <CardContent className="p-0">
           {overview.charge_rows.length === 0 ? (
             <div className="px-4 py-6 text-sm leading-6 text-muted-foreground">
-              Nenhuma cobrança criada ainda. Quando um orçamento aprovado virar
-              obra, as parcelas aparecem aqui.
+              {isProfessional
+                ? "Nenhuma cobrança criada ainda. Quando uma proposta aprovada virar projeto, as parcelas aparecem aqui."
+                : "Nenhuma cobrança criada ainda. Quando um orçamento aprovado virar obra, as parcelas aparecem aqui."}
             </div>
           ) : (
             <div className="min-w-0 divide-y">
@@ -214,7 +242,8 @@ export default async function FinanceiroPage() {
                         {CHARGE_KIND_LABEL[charge.kind]}
                       </span>
                       <span className="truncate font-medium">
-                        {charge.project_name ?? "Obra sem nome"}
+                        {charge.project_name ??
+                          `${vocabulary.projectSingular} sem nome`}
                       </span>
                       <span
                         className={
@@ -251,14 +280,18 @@ export default async function FinanceiroPage() {
       <section className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
         <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b py-2.5 pl-4 pr-2">
-            <CardTitle className="text-base">Margem por obra</CardTitle>
+            <CardTitle className="text-base">
+              Margem por {vocabulary.projectSingular.toLocaleLowerCase("pt-BR")}
+            </CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/app/obras">Ver obras</Link>
+              <Link href="/app/obras">
+                Ver {vocabulary.projectPluralLower}
+              </Link>
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {overview.project_rows.length === 0 ? (
-              <EmptyFinanceState />
+              <EmptyFinanceState isProfessional={isProfessional} />
             ) : (
               <div className="min-w-0 divide-y">
                 {overview.project_rows.map((project) => (
@@ -273,14 +306,16 @@ export default async function FinanceiroPage() {
                           {project.name}
                         </span>
                         <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                          {STATUS_LABEL[project.status]}
+                          {isProfessional
+                            ? PROFESSIONAL_STATUS_LABEL[project.status]
+                            : CONSTRUCTION_STATUS_LABEL[project.status]}
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                           {project.customer_name ?? "Cliente não informado"}
                       </p>
                     </div>
-                    <div className="grid min-w-0 grid-cols-1 gap-2 text-sm min-[420px]:grid-cols-3 md:min-w-[380px] md:gap-3">
+                    <div className="grid min-w-0 grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-3 md:min-w-[380px] md:gap-3">
                       <MoneyColumn
                         label="Receita"
                         value={project.approved_revenue_cents || project.budget_cents}
@@ -337,7 +372,7 @@ export default async function FinanceiroPage() {
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-primary transition-[width] duration-300"
+                        className="h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -354,7 +389,9 @@ export default async function FinanceiroPage() {
             <CardContent className="p-0">
               {overview.recent_costs.length === 0 ? (
                 <p className="px-4 py-6 text-sm leading-6 text-muted-foreground">
-                  Lance gastos dentro de uma obra para enxergar a margem real.
+                  Lance gastos dentro de {isProfessional
+                    ? "um projeto"
+                    : "uma obra"} para enxergar a margem real.
                 </p>
               ) : (
                 <div className="divide-y">
@@ -366,7 +403,12 @@ export default async function FinanceiroPage() {
                             {cost.description}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {cost.project_name ?? "Obra não encontrada"} -{" "}
+                            {cost.project_name ??
+                              `${vocabulary.projectSingular} ${
+                                isProfessional
+                                  ? "não encontrado"
+                                  : "não encontrada"
+                              }`} -{" "}
                             {formatDateBR(cost.incurred_on)}
                           </p>
                         </div>
@@ -419,17 +461,29 @@ function MoneyColumn({
   );
 }
 
-function EmptyFinanceState() {
+function EmptyFinanceState({ isProfessional }: { isProfessional: boolean }) {
+  const ProjectIcon = isProfessional ? FolderKanban : HardHat;
+
   return (
     <div className="px-4 py-8 text-center">
-      <HardHat aria-hidden="true" className="mx-auto h-8 w-8 text-muted-foreground" />
-      <p className="mt-3 text-sm font-medium">Ainda não há financeiro para ler.</p>
+      <ProjectIcon
+        aria-hidden="true"
+        className="mx-auto h-8 w-8 text-muted-foreground"
+      />
+      <p className="mt-3 text-sm font-medium">
+        Ainda não há dados financeiros para analisar.
+      </p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-        Crie um orçamento, envie para o cliente e transforme o aprovado em obra.
-        Depois lance gastos para acompanhar a margem.
+        {isProfessional
+          ? "Crie uma proposta, envie ao cliente e transforme a aprovada em projeto. Depois lance gastos para acompanhar a margem."
+          : "Crie um orçamento, envie ao cliente e transforme o aprovado em obra. Depois lance gastos para acompanhar a margem."}
       </p>
       <Button asChild className="mt-4" size="sm">
-        <Link href="/app/orcamentos/novo">Criar primeiro orçamento</Link>
+        <Link href="/app/orcamentos/novo">
+          {isProfessional
+            ? "Criar primeira proposta"
+            : "Criar primeiro orçamento"}
+        </Link>
       </Button>
     </div>
   );
