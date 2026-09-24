@@ -105,7 +105,9 @@ export function parseSinapiMoneyToCents(value: unknown): number | null {
   if (typeof value === "number") {
     if (!Number.isFinite(value) || value < 0) return null;
     const cents = Math.round(value * 100);
-    return Math.abs(value * 100 - cents) < 1e-7 && Number.isSafeInteger(cents)
+    // XLSX stores decimal money as IEEE-754 floats. Large valid prices can
+    // differ from their integer-cent representation by ~1e-7.
+    return Math.abs(value * 100 - cents) < 1e-5 && Number.isSafeInteger(cents)
       ? cents
       : null;
   }

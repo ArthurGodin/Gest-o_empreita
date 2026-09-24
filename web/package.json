@@ -12,6 +12,7 @@
     "ops:test-alert": "node --conditions=react-server --import tsx scripts/send-operational-test-alert.ts",
     "backup:verify": "tsx scripts/verify-backup.ts",
     "sinapi:dry-run": "tsx scripts/sinapi/import.ts --dry-run",
+    "sinapi:update": "tsx scripts/sinapi/update-official.ts",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:ui": "node scripts/run-e2e.mjs --ui",
     "test:e2e:install": "playwright install chromium",

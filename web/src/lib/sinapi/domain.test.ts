@@ -48,11 +48,12 @@ describe("SINAPI domain", () => {
     ["R$ 0,05", 5],
     ["12", 1200],
     [0, 0],
+    [10078558.6, 1007855860],
   ])("converts monetary value %s to exact cents", (input, expected) => {
     expect(parseSinapiMoneyToCents(input)).toBe(expected);
   });
 
-  it.each([-1, "-1,00", "1.234", "1,234", Number.NaN, null])(
+  it.each([-1, "-1,00", "1.234", "1,234", 1.234, Number.NaN, null])(
     "rejects invalid monetary value %s",
     (input) => expect(parseSinapiMoneyToCents(input)).toBeNull(),
   );

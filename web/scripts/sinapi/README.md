@@ -1,5 +1,26 @@
 # Fonte oficial SINAPI
 
+## Atualizacao mensal
+
+`npm run sinapi:update`, executado a partir de `web`, procura o pacote XLSX mais
+recente na CAIXA, confere tipo/tamanho/assinatura ZIP, valida layout, competencia
+e contagens, mede a ocupacao do banco e so entao publica. Se qualquer etapa
+falhar, a competencia anterior continua ativa. A origem e o SHA-256 ficam no
+relatorio em `.sinapi/reports/`; os arquivos locais sao ignorados pelo Git.
+
+O workflow `.github/workflows/sinapi-update.yml` roda nos dias 4, 11, 18 e 25
+de cada mes e tambem manualmente. Para ativa-lo no GitHub, definir os secrets
+`SINAPI_SUPABASE_URL` e `SINAPI_SUPABASE_SERVICE_ROLE_KEY` com os valores do
+projeto de producao. Nao usar credenciais de Preview. Sem esses secrets, o job
+falha sem alterar a base. Conferir o historico de Actions e notificacoes de
+falha; o agendamento nao garante que a CAIXA ja publicou o mes corrente.
+
+O importador pausa quando o tamanho atual do banco, somado a uma reserva para
+a proxima competencia, ultrapassaria 400 MiB. No plano Free, isso evita uma
+publicacao que possa esgotar o limite. Revisar capacidade e historico antes
+de liberar novas competencias; releases antigas nao sao apagadas porque podem
+estar referenciadas por orcamentos e catalogos existentes.
+
 Registro da fonte usada para desenvolver e validar o importador. O pacote e os
 XLSX ficam em `.sinapi/sources/` e nunca entram no Git.
 

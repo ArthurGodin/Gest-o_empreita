@@ -2016,6 +2016,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_sinapi_database_size: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_finance_overview: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
       create_direct_project: {
         Args: {
           p_budget_cents: number | null
