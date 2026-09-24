@@ -176,7 +176,7 @@ export function PaymentSettingsForm({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className={company.manual_pix_only ? "mt-4" : "mt-4 grid gap-3 md:grid-cols-2"}>
         <ProviderOption
           checked={manualPix}
           icon={WalletCards}
@@ -185,14 +185,16 @@ export function PaymentSettingsForm({
           description="Gera QR Code e copia-e-cola sem API. O dinheiro cai na conta vinculada à chave configurada."
           onClick={() => updateField("payment_provider", "manual_pix")}
         />
-        <ProviderOption
-          checked={draft.payment_provider === "asaas"}
-          icon={Landmark}
-          title="Asaas automático"
-          badge="Avançado"
-          description="Usa API e webhook para baixa automática. Não é obrigatório para vender o primeiro projeto."
-          onClick={() => updateField("payment_provider", "asaas")}
-        />
+        {!company.manual_pix_only ? (
+          <ProviderOption
+            checked={draft.payment_provider === "asaas"}
+            icon={Landmark}
+            title="Asaas automático"
+            badge="Avançado"
+            description="Usa API e webhook para baixa automática. Não é obrigatório para vender o primeiro projeto."
+            onClick={() => updateField("payment_provider", "asaas")}
+          />
+        ) : null}
       </div>
 
       {manualPix ? (

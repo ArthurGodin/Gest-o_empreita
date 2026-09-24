@@ -12,6 +12,7 @@ type SupabaseServer = SupabaseClient<Database>;
 
 export interface CompanyPaymentSettings {
   payment_provider: PaymentProvider;
+  manual_pix_only: boolean;
   pix_key_type: PixKeyType | null;
   pix_key: string | null;
   pix_receiver_name: string | null;
@@ -26,7 +27,7 @@ export async function getCompanyPaymentSettings(
   const { data, error } = await supabase
     .from("companies")
     .select(
-      "payment_provider, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
+      "payment_provider, manual_pix_only, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
     )
     .eq("id", companyId)
     .maybeSingle();

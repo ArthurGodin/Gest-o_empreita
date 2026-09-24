@@ -13,6 +13,7 @@ export interface CompanyFull {
   business_segment: BusinessSegment;
   activation_goal: ActivationGoal | null;
   workspace_mode: WorkspaceMode;
+  manual_pix_only: boolean;
   legal_name: string | null;
   cnpj: string | null;
   phone: string | null;
@@ -36,7 +37,7 @@ export const getActiveCompanyFull = cache(
     const { data, error } = await supabase
       .from("companies")
       .select(
-        "id, name, plan, business_segment, activation_goal, workspace_mode, legal_name, cnpj, phone, email, logo_url, address, city, state, zip_code, payment_provider, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
+        "id, name, plan, business_segment, activation_goal, workspace_mode, manual_pix_only, legal_name, cnpj, phone, email, logo_url, address, city, state, zip_code, payment_provider, pix_key_type, pix_key, pix_receiver_name, pix_receiver_city, pix_instructions",
       )
       .limit(1)
       .maybeSingle();

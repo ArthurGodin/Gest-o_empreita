@@ -269,6 +269,7 @@ export type Database = {
           id: string
           legal_name: string | null
           logo_url: string | null
+          manual_pix_only: boolean
           name: string
           payment_provider: string
           phone: string | null
@@ -302,6 +303,7 @@ export type Database = {
           id?: string
           legal_name?: string | null
           logo_url?: string | null
+          manual_pix_only?: boolean
           name: string
           payment_provider?: string
           phone?: string | null
@@ -335,6 +337,7 @@ export type Database = {
           id?: string
           legal_name?: string | null
           logo_url?: string | null
+          manual_pix_only?: boolean
           name?: string
           payment_provider?: string
           phone?: string | null

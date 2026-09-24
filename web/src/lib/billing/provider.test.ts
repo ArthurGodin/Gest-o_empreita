@@ -96,4 +96,17 @@ describe("preferred billing provider", () => {
     expect(mocks.generatePixForCharge).toHaveBeenCalled();
     expect(mocks.generateManualPixForCharge).not.toHaveBeenCalled();
   });
+
+  it("blocks Asaas for manual-Pix-only workspaces", async () => {
+    mocks.getCompanyPaymentSettings.mockResolvedValue({
+      payment_provider: "asaas",
+      manual_pix_only: true,
+    });
+
+    await expect(
+      generatePreferredPixForCharge({} as never, params),
+    ).rejects.toThrow("somente por Pix direto");
+
+    expect(mocks.generatePixForCharge).not.toHaveBeenCalled();
+  });
 });

@@ -49,6 +49,10 @@ export async function generatePreferredPixForCharge(
   );
   const settings = await getCompanyPaymentSettings(supabase, params.companyId);
 
+  if (settings.manual_pix_only && settings.payment_provider !== "manual_pix") {
+    throw new Error("Esta empresa recebe somente por Pix direto.");
+  }
+
   if (settings.payment_provider === "manual_pix") {
     return generateManualPixForCharge(supabase, {
       chargeId: params.chargeId,
