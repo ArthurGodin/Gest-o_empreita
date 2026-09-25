@@ -31,7 +31,7 @@ test("owner completes the core journey and simulated checkout", async ({
       await expect(
         page.getByRole("heading", { name: "Caminho até a primeira venda" }),
       ).toBeVisible();
-      await expect(page.getByText(/próximo: Cliente/i)).toBeVisible();
+      await expect(page.getByText(/próximo passo: Cliente/i)).toBeVisible();
     });
 
     await test.step("create customer through the app", async () => {
@@ -44,7 +44,7 @@ test("owner completes the core journey and simulated checkout", async ({
       await expect(page).toHaveURL(/\/app\/clientes\/[0-9a-f-]+$/);
 
       await page.goto("/app");
-      await expect(page.getByText(/próximo: Orçamento/i)).toBeVisible();
+      await expect(page.getByText(/próximo passo: Orçamento/i)).toBeVisible();
     });
 
     let quoteUrl = "";
@@ -90,7 +90,7 @@ test("owner completes the core journey and simulated checkout", async ({
       companyId = quoteRecord?.company_id ?? "";
 
       await page.goto("/app");
-      await expect(page.getByText(/próximo: Aceite/i)).toBeVisible();
+      await expect(page.getByText(/próximo passo: Aceite/i)).toBeVisible();
     });
 
     await test.step("customer approves from the public link", async () => {

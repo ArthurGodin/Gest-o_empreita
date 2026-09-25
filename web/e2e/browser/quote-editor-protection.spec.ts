@@ -103,15 +103,14 @@ test("quote editor protects explicit draft saving", async ({ page }, testInfo) =
     });
 
     await test.step("protect browser history and allow confirmed exit", async () => {
-      const dialogHandled = new Promise<void>((resolve) => {
-        page.once("dialog", async (dialog) => {
-          expect(["beforeunload", "confirm"]).toContain(dialog.type());
-          await dialog.dismiss();
-          resolve();
-        });
+      const dialogPromise = page.waitForEvent("dialog", { timeout: 10_000 });
+      await page.evaluate(() => {
+        window.history.pushState({ e2eHistoryGuard: true }, "", window.location.href);
+        window.history.back();
       });
-      await page.evaluate(() => window.history.back());
-      await dialogHandled;
+      const browserDialog = await dialogPromise;
+      expect(["beforeunload", "confirm"]).toContain(browserDialog.type());
+      await browserDialog.dismiss();
       await expect(page).toHaveURL(quoteUrl);
 
       await page.getByRole("link", { name: "Clientes", exact: true }).click();
