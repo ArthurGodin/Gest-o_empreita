@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, realpath, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Unzip, UnzipInflate } from "fflate";
@@ -101,7 +101,15 @@ async function main() {
       storage_buckets: storageInventory?.buckets.length ?? null,
     });
   } finally {
-    await rm(temporaryDirectory, { recursive: true, force: true });
+    const resolvedTemporary = await realpath(temporaryDirectory);
+    const resolvedParent = await realpath(tmpdir());
+    if (
+      path.dirname(resolvedTemporary) !== resolvedParent ||
+      !path.basename(resolvedTemporary).startsWith("prumo-backup-verify-")
+    ) {
+      throw new Error("Temporary verification directory outside expected location");
+    }
+    await rm(resolvedTemporary, { recursive: true, force: true });
   }
 }
 

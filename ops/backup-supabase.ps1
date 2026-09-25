@@ -132,6 +132,12 @@ try {
   Write-Output "Checksum SHA-256: $checksumFile"
 } finally {
   if (Test-Path -LiteralPath $temporaryRoot) {
-    Remove-Item -LiteralPath $temporaryRoot -Recurse -Force
+    $resolvedTemporaryRoot = (Resolve-Path -LiteralPath $temporaryRoot).ProviderPath
+    $temporaryPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    if (-not $resolvedTemporaryRoot.StartsWith($temporaryPrefix, [StringComparison]::OrdinalIgnoreCase) -or
+      [IO.Path]::GetFileName($resolvedTemporaryRoot) -notmatch '^prumo-backup-\d{8}T\d{6}Z-[a-f0-9]{32}$') {
+      throw "Pasta temporaria fora do destino esperado; limpeza cancelada."
+    }
+    Remove-Item -LiteralPath $resolvedTemporaryRoot -Recurse -Force
   }
 }

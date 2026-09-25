@@ -250,7 +250,13 @@ on conflict (id) do update set
   }
 } finally {
   if (Test-Path -LiteralPath $temporaryDirectory) {
-    Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force
+    $resolvedTemporaryDirectory = (Resolve-Path -LiteralPath $temporaryDirectory).ProviderPath
+    $temporaryPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    if (-not $resolvedTemporaryDirectory.StartsWith($temporaryPrefix, [StringComparison]::OrdinalIgnoreCase) -or
+      [IO.Path]::GetFileName($resolvedTemporaryDirectory) -notmatch '^prumo-restore-[a-f0-9]{32}$') {
+      throw "Pasta temporaria fora do destino esperado; limpeza cancelada."
+    }
+    Remove-Item -LiteralPath $resolvedTemporaryDirectory -Recurse -Force
   }
 }
 
