@@ -56,11 +56,8 @@ export default function AppError({
           <Button onClick={reset} variant="default">
             Tentar novamente
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => (window.location.href = "/app")}
-          >
-            Voltar ao início
+          <Button asChild variant="outline">
+            <a href="/app">Voltar ao início</a>
           </Button>
           <Button asChild variant="ghost">
             <SupportContactLink source="app_error">

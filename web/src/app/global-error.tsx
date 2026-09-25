@@ -34,11 +34,10 @@ export default function GlobalError({
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Button onClick={reset}>Tentar novamente</Button>
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = "/")}
-            >
-              Página inicial
+            <Button asChild variant="outline">
+              {/* A root error may include the router itself; force a fresh document. */}
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              <a href="/">Página inicial</a>
             </Button>
           </div>
           {error?.digest && (
